@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Mesh — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-15.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #03060b;
+  --s1:    #060b12;
+  --s2:    #09101a;
+  --bd:    #102030;
+  --b2:    #183048;
+
+  /* Mesh palette */
+  --mesh:  #6C63FF;   /* generic mesh purple */
+  --m2:    #9B93FF;
+  --ist:   #466BB0;   /* Istio blue */
+  --ist2:  #6EA4E8;
+  --lnk:   #2BAADF;   /* Linkerd cyan */
+  --lnk2:  #5EC8F5;
+  --kum:   #00C4A1;   /* Kuma teal */
+  --kum2:  #3FE0C0;
+  --env:   #9B6DFF;   /* Envoy violet */
+  --grn:   #00E676;
+  --yel:   #FFD740;
+  --red:   #FF5252;
+  --orn:   #FF8F00;
+  --pink:  #F06292;
+  --sky:   #40C4FF;
+
+  --text:  #cee0f5;
+  --dim:   #0a1e35;
+  --mid:   #264560;
+
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Manrope', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% -8%,rgba(108,99,255,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 25% at 0%   65%,rgba(43,170,223,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 25% 20% at 100% 70%,rgba(0,196,161,.05) 0%,transparent 45%);}
+
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;
+  background:
+    radial-gradient(circle 1px at 30px  30px ,rgba(108,99,255,.3) 0%,transparent 1px),
+    radial-gradient(circle 1px at 90px  30px ,rgba(108,99,255,.15) 0%,transparent 1px),
+    radial-gradient(circle 1px at 60px  60px ,rgba(108,99,255,.2) 0%,transparent 1px);
+  background-size:60px 60px;}
+
+.page{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:28px 22px 80px;}
+
+/* ── HERO ── */
+.hero{position:relative;border:1px solid rgba(108,99,255,.22);border-radius:14px;padding:30px 36px;margin-bottom:22px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(108,99,255,.08) 0%,rgba(43,170,223,.04) 50%,rgba(0,196,161,.04) 100%);}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--mesh),var(--ist2),var(--lnk),var(--kum));}
+.hero-bg{position:absolute;right:20px;bottom:-20px;font-size:160px;font-weight:800;color:rgba(108,99,255,.04);line-height:1;pointer-events:none;font-family:var(--mono);}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
+.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--m2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--mesh);}
+.hero h1{font-size:62px;font-weight:800;line-height:.88;letter-spacing:-2px;}
+.h1a{background:linear-gradient(135deg,var(--m2) 0%,var(--ist2) 40%,var(--lnk2) 70%,var(--kum2) 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h1b{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(108,99,255,.2);}
+.hero-sub{font-size:11px;color:var(--mid);margin-top:10px;line-height:1.9;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
+.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
+.hm{background:rgba(108,99,255,.09);border-color:rgba(108,99,255,.35);color:var(--m2);}
+.hi{background:rgba(70,107,176,.09);border-color:rgba(70,107,176,.35);color:var(--ist2);}
+.hl{background:rgba(43,170,223,.08);border-color:rgba(43,170,223,.3);color:var(--lnk2);}
+.hk{background:rgba(0,196,161,.08);border-color:rgba(0,196,161,.3);color:var(--kum2);}
+.hg{background:rgba(0,230,118,.07);border-color:rgba(0,230,118,.3);color:var(--grn);}
+.hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
+.hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
+.hcard-n{font-size:18px;font-weight:800;line-height:1;margin-bottom:4px;}
+.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nb.on{background:rgba(108,99,255,.12);color:var(--m2);box-shadow:0 0 0 1px rgba(108,99,255,.3);}
+
+/* ── SECTIONS ── */
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-i{font-size:18px;flex-shrink:0;}
+.sh-l{font-size:20px;font-weight:800;letter-spacing:-.3px;}
+.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cm::before{background:linear-gradient(90deg,var(--mesh),transparent);}
+.ci::before{background:linear-gradient(90deg,var(--ist),transparent);}
+.cl::before{background:linear-gradient(90deg,var(--lnk),transparent);}
+.ck::before{background:linear-gradient(90deg,var(--kum),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.cy::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.co::before{background:linear-gradient(90deg,var(--orn),transparent);}
+.cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
+.ce::before{background:linear-gradient(90deg,var(--env),transparent);}
+
+.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:122px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+
+/* code */
+.code{background:#020508;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--env);} .ky{color:var(--grn);} .st{color:var(--yel);}
+.nu{color:var(--sky);} .cmm{color:#102030;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+
+/* trap / note */
+.trap{background:rgba(255,82,82,.04);border:1px solid rgba(255,82,82,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(108,99,255,.4);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(108,99,255,.03);}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.55;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── TOOL DEEP DIVE CARDS ── */
+.tool-card{background:var(--s2);border:1px solid var(--bd);border-radius:11px;overflow:hidden;cursor:pointer;transition:.2s;margin-bottom:10px;}
+.tool-card:hover{border-color:rgba(255,255,255,.1);}
+.tc-head{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center;padding:18px 20px;}
+.tc-logo{width:50px;height:50px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0;}
+.tc-name{font-size:16px;font-weight:800;letter-spacing:-.2px;}
+.tc-tagline{font-family:var(--mono);font-size:8.5px;color:var(--mid);margin-top:3px;}
+.tc-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.tc-pill{font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;border:1px solid;}
+.tc-arrow{color:var(--mid);transition:.2s;font-size:14px;flex-shrink:0;}
+.tool-card.open .tc-arrow{transform:rotate(90deg);}
+.tc-body{display:none;padding:0 20px 20px;border-top:1px solid var(--bd);}
+.tool-card.open .tc-body{display:block;}
+
+/* ── DECISION TREE ── */
+.dtree{background:#020508;border:1px solid var(--bd);border-radius:8px;padding:18px;font-family:var(--mono);font-size:9.5px;line-height:2.4;margin-bottom:12px;}
+.dt-q{color:var(--m2);font-weight:600;}
+.dt-a{padding-left:16px;color:var(--mid);}
+.dt-y{color:var(--grn);}
+.dt-n{color:var(--mid);}
+.dt-res{padding-left:28px;font-weight:700;}
+.dt-ist{color:var(--ist2);}
+.dt-lnk{color:var(--lnk2);}
+.dt-kum{color:var(--kum2);}
+.dt-no{color:var(--yel);}
+
+/* ── TRAP GRID ── */
+.trap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.trap-card{background:var(--s1);border:1px solid rgba(255,82,82,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
+.trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,82,82,.4),transparent);}
+.tc-n{position:absolute;top:7px;right:11px;font-family:var(--mono);font-size:28px;color:rgba(255,82,82,.06);line-height:1;}
+.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q2{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-a2{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.tc-a2 b{color:var(--text);}
+.tc-a2 code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
+.quiz-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.quiz-title{font-size:14px;font-weight:700;color:var(--mesh);}
+.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score span{color:var(--grn);font-weight:700;}
+.q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
+.q-item.revealed{border-color:rgba(0,230,118,.2);}
+.q-item.revealed-bad{border-color:rgba(255,82,82,.2);}
+.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-opts{display:flex;flex-direction:column;gap:5px;}
+.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt:hover:not(:disabled){background:rgba(108,99,255,.07);border-color:rgba(108,99,255,.3);color:var(--text);}
+.q-opt.correct{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.35);color:var(--grn);}
+.q-opt.wrong{background:rgba(255,82,82,.07);border-color:rgba(255,82,82,.3);color:var(--red);}
+.q-opt:disabled{cursor:default;}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain.show{display:block;}
+.q-explain b{color:var(--text);}
+.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.quiz-btns{display:flex;gap:8px;margin-top:12px;}
+.qbtn{font-family:var(--mono);font-size:8.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
+.qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.qb-m{background:rgba(108,99,255,.09);border-color:rgba(108,99,255,.3);color:var(--m2);}
+.qb-m:hover{background:rgba(108,99,255,.18);}
+
+/* ── SCENARIO CARDS ── */
+.scenario{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;}
+.sc-icon{font-size:20px;}
+.sc-title{font-size:12px;font-weight:700;margin-bottom:3px;}
+.sc-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.sc-desc b{color:var(--text);}
+.sc-rec{font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:5px;border:1px solid;font-weight:700;white-space:nowrap;text-align:center;min-width:80px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec.on>*{animation:fi .3s ease both;}
+.sec.on>*:nth-child(1){animation-delay:.02s}.sec.on>*:nth-child(2){animation-delay:.05s}
+.sec.on>*:nth-child(3){animation-delay:.08s}.sec.on>*:nth-child(4){animation-delay:.11s}
+.sec.on>*:nth-child(5){animation-delay:.14s}.sec.on>*:nth-child(6){animation-delay:.17s}
+.sec.on>*:nth-child(7){animation-delay:.20s}
+
+.footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-bg">MESH</div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Field Guide · 2026</div>
+      <h1><span class="h1a">Service</span><br><span class="h1b">Mesh Guide</span></h1>
+      <div class="hero-sub">
+        Why you need it · How it works · Istio · Linkerd · Kuma<br>
+        mTLS · observability · traffic management · when NOT to use it
+      </div>
+      <div class="hero-pills">
+        <div class="hp hm">🕸️ Service mesh concepts</div>
+        <div class="hp hi">⛵ Istio (sidecar + ambient)</div>
+        <div class="hp hl">🔗 Linkerd (Rust proxy)</div>
+        <div class="hp hk">🦊 Kuma (multi-zone)</div>
+        <div class="hp hg">🔒 mTLS · SPIFFE/SPIRE</div>
+        <div class="hp hm">📊 Observability · Tracing</div>
+        <div class="hp hl">🚦 Traffic management</div>
+        <div class="hp hk">🗺️ Decision guide</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hcard"><div class="hcard-n" style="color:var(--ist2);">⛵</div><div class="hcard-l">Istio</div></div>
+      <div class="hcard"><div class="hcard-n" style="color:var(--lnk2);">🔗</div><div class="hcard-l">Linkerd</div></div>
+      <div class="hcard"><div class="hcard-n" style="color:var(--kum2);">🦊</div><div class="hcard-l">Kuma</div></div>
+      <div class="hcard"><div class="hcard-n" style="color:var(--m2);">🕸️</div><div class="hcard-l">Mesh concepts</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nb on" onclick="show('why')">💡 Why Mesh?</button>
+  <button class="nb" onclick="show('how')">⚙️ How It Works</button>
+  <button class="nb" onclick="show('istio')">⛵ Istio</button>
+  <button class="nb" onclick="show('linkerd')">🔗 Linkerd</button>
+  <button class="nb" onclick="show('kuma')">🦊 Kuma</button>
+  <button class="nb" onclick="show('compare')">⚖️ Comparison</button>
+  <button class="nb" onclick="show('when')">🗺️ When & Why</button>
+  <button class="nb" onclick="show('traps')">⚡ Traps & Quiz</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--               WHY MESH?               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec on" id="sec-why">
+
+<div class="sh"><div class="sh-i">💡</div><div class="sh-l" style="color:var(--m2);">Why Service Mesh?</div><div class="sh-s">// the problem · what K8s doesn't solve · what mesh actually gives you</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(108,99,255,.3),transparent);"></div></div>
+
+<!-- The problem diagram -->
+<div class="card cm" style="margin-bottom:12px;padding:20px;">
+<svg viewBox="0 0 1360 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+  <defs>
+    <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(255,82,82,.8)"/></marker>
+    <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(0,230,118,.7)"/></marker>
+    <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(108,99,255,.7)"/></marker>
+    <filter id="gw"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- WITHOUT MESH (left) -->
+  <text x="320" y="22" text-anchor="middle" font-family="Manrope" font-size="13" fill="rgba(255,82,82,.6)" font-weight="700" letter-spacing="2">WITHOUT MESH</text>
+
+  <!-- Pods (chaotic) -->
+  <g transform="translate(30,45)">
+    <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.3)" stroke-width="1.5"/>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-A</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.45)">owns retry logic</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.35)">auth in code</text>
+  </g>
+  <g transform="translate(160,45)">
+    <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.25)" stroke-width="1.5"/>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-B</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.4)">different timeout</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.3)">no tracing</text>
+  </g>
+  <g transform="translate(290,45)">
+    <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.2)" stroke-width="1.5"/>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-C</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.35)">HTTP only</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.25)">no circuit break</text>
+  </g>
+  <g transform="translate(420,45)">
+    <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.18)" stroke-width="1.5"/>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-D</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.3)">plaintext traffic</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.2)">no identity</text>
+  </g>
+
+  <!-- Chaotic connections -->
+  <path d="M 130 72 Q 170 40 160 72" fill="none" stroke="rgba(255,82,82,.4)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <path d="M 260 72 Q 300 40 290 72" fill="none" stroke="rgba(255,82,82,.3)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <path d="M 390 72 Q 430 40 420 72" fill="none" stroke="rgba(255,82,82,.25)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <path d="M 130 90 Q 250 130 290 90" fill="none" stroke="rgba(255,82,82,.2)" stroke-width="1" stroke-dasharray="3 4" marker-end="url(#a1)"/>
+  <path d="M 260 90 Q 380 130 420 80" fill="none" stroke="rgba(255,82,82,.18)" stroke-width="1" stroke-dasharray="3 4" marker-end="url(#a1)"/>
+
+  <!-- Problems list -->
+  <g transform="translate(30,130)">
+    <rect width="490" height="120" rx="8" fill="rgba(255,82,82,.03)" stroke="rgba(255,82,82,.1)" stroke-width="1"/>
+    <text x="15" y="22" font-family="Manrope" font-size="10" fill="rgba(255,82,82,.6)" font-weight="700">Problems you end up solving in application code:</text>
+    <text x="15" y="42" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.45)">✗  Retry logic duplicated in every service (and inconsistently)</text>
+    <text x="15" y="58" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.4)">✗  TLS/mTLS negotiation owned by each team — or skipped</text>
+    <text x="15" y="74" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.35)">✗  No unified observability — tracing requires SDK changes per service</text>
+    <text x="15" y="90" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.3)">✗  Traffic splitting / canaries need code changes or separate tools</text>
+    <text x="15" y="106" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.25)">✗  No service identity — any pod can talk to any pod</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="560" y1="20" x2="560" y2="260" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="6 4"/>
+
+  <!-- WITH MESH (right) -->
+  <text x="960" y="22" text-anchor="middle" font-family="Manrope" font-size="13" fill="rgba(0,230,118,.6)" font-weight="700" letter-spacing="2">WITH MESH</text>
+
+  <!-- Pods with sidecars -->
+  <g transform="translate(610,45)">
+    <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.06)" stroke="rgba(0,230,118,.25)" stroke-width="1.5"/>
+    <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-A</text>
+    <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">mTLS auto</text>
+  </g>
+  <g transform="translate(740,45)">
+    <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.05)" stroke="rgba(0,230,118,.2)" stroke-width="1.5"/>
+    <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-B</text>
+    <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">retry auto</text>
+  </g>
+  <g transform="translate(870,45)">
+    <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.05)" stroke="rgba(0,230,118,.18)" stroke-width="1.5"/>
+    <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-C</text>
+    <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">tracing auto</text>
+  </g>
+  <g transform="translate(1000,45)">
+    <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.04)" stroke="rgba(0,230,118,.15)" stroke-width="1.5"/>
+    <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-D</text>
+    <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">SPIFFE identity</text>
+  </g>
+
+  <!-- Control plane -->
+  <g transform="translate(1130,45)">
+    <rect width="180" height="65" rx="7" fill="rgba(108,99,255,.08)" stroke="rgba(108,99,255,.3)" stroke-width="1.5" filter="url(#gw)"/>
+    <text x="90" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#9B93FF" font-weight="700">Control Plane</text>
+    <text x="90" y="38" text-anchor="middle" font-family="Manrope" font-size="8.5" fill="rgba(108,99,255,.5)">policy · certs · config</text>
+    <text x="90" y="52" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.4)">istiod / linkerd-cp / kuma-cp</text>
+  </g>
+
+  <!-- Ordered mesh connections -->
+  <path d="M 710 77 L 740 77" fill="none" stroke="rgba(0,230,118,.5)" stroke-width="2" marker-end="url(#a2)"/>
+  <path d="M 840 77 L 870 77" fill="none" stroke="rgba(0,230,118,.4)" stroke-width="2" marker-end="url(#a2)"/>
+  <path d="M 970 77 L 1000 77" fill="none" stroke="rgba(0,230,118,.35)" stroke-width="2" marker-end="url(#a2)"/>
+
+  <!-- CP to proxies -->
+  <path d="M 1130 77 Q 1100 77 1100 77" fill="none" stroke="rgba(108,99,255,.35)" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- Benefits list -->
+  <g transform="translate(610,140)">
+    <rect width="700" height="110" rx="8" fill="rgba(0,230,118,.03)" stroke="rgba(0,230,118,.1)" stroke-width="1"/>
+    <text x="15" y="22" font-family="Manrope" font-size="10" fill="rgba(0,230,118,.6)" font-weight="700">What mesh gives you — in the proxy, transparent to your code:</text>
+    <text x="15" y="42" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.5)">✓  Automatic mTLS between every service (zero code changes)</text>
+    <text x="15" y="58" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.45)">✓  Unified retry / timeout / circuit-breaker policy via CRDs</text>
+    <text x="15" y="74" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.4)">✓  Automatic distributed tracing and golden signals (L7 metrics)</text>
+    <text x="15" y="90" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.35)">✓  Traffic splitting, canary, blue-green without app changes</text>
+    <text x="15" y="106" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.3)">✓  SPIFFE service identity — authorization policies per workload</text>
+  </g>
+</svg>
+</div>
+
+<div class="g3">
+  <div class="card cm">
+    <div class="ctit" style="color:var(--m2);">🔒 The mTLS Problem</div>
+    <div class="fr"><span class="fk">Without mesh</span><span class="fv">Traffic between pods is <b>plaintext by default.</b> A compromised pod can read any inter-service traffic. TLS requires every team to manage certs, rotation, CA trust. In practice: nobody does it consistently.</span></div>
+    <div class="fr"><span class="fk">With mesh</span><span class="fv">The proxy sidecar intercepts all traffic and <b>automatically negotiates mTLS</b> using SPIFFE/SVID certificates issued by the control plane. Zero application changes. Cert rotation is automatic. Every service-to-service connection is encrypted and authenticated.</span></div>
+    <div class="fr"><span class="fk">SPIFFE/SPIRE</span><span class="fv">Service identity standard used by all major meshes. Each workload gets a cryptographic identity: <code>spiffe://cluster.local/ns/default/sa/myapp</code>. Authorization policies use this identity — not IP addresses, which can be spoofed.</span></div>
+    <div class="note"><b>mTLS without mesh</b> = every service manages its own TLS, cert rotation, CA trust chain. With mesh: one control plane, automatic issuance, zero-touch rotation. This alone justifies mesh for regulated environments.</div>
+  </div>
+
+  <div class="card cm">
+    <div class="ctit" style="color:var(--m2);">📊 The Observability Problem</div>
+    <div class="fr"><span class="fk">Without mesh</span><span class="fv">Distributed tracing requires adding SDK to every service (OpenTelemetry, Zipkin, Jaeger client). Teams skip it. You have no visibility into latency between services, retries, error rates — unless every team instruments their service.</span></div>
+    <div class="fr"><span class="fk">With mesh</span><span class="fv">The proxy captures <b>all L7 traffic automatically:</b> request rate, error rate, latency percentiles (P50/P99), per-service-pair. You get the "golden signals" for every service combination without a single line of instrumentation code.</span></div>
+    <div class="fr"><span class="fk">Tracing</span><span class="fv">Meshes inject trace headers (B3, W3C TraceContext) automatically. Services that propagate headers get full traces. Services that don't at least show up in the mesh topology graph.</span></div>
+    <div class="fr"><span class="fk">Topology</span><span class="fv">Every major mesh generates a live service topology map showing which services talk to which, with real-time traffic rates and error rates. Invaluable for incident response and capacity planning.</span></div>
+  </div>
+
+  <div class="card cm">
+    <div class="ctit" style="color:var(--m2);">🚦 The Traffic Problem</div>
+    <div class="fr"><span class="fk">Canary without mesh</span><span class="fv">Deploy two Deployments, split traffic via Service weights or an Ingress annotation. Coarse-grained: you can't split by HTTP header, user ID, or percentage at the connection level.</span></div>
+    <div class="fr"><span class="fk">With mesh</span><span class="fv"><b>Fine-grained L7 traffic control:</b> split 5% of requests matching header <code>x-beta: true</code> to v2. Split by user segment. Mirror traffic to shadow service. All via CRDs, no code changes.</span></div>
+    <div class="fr"><span class="fk">Retries / timeouts</span><span class="fv">Define retry policy once as a CRD — applies to every caller of a service. Without mesh, every team implements retries differently (or not at all). Mesh enforces consistent network behavior.</span></div>
+    <div class="fr"><span class="fk">Circuit breaker</span><span class="fv">Automatically stop sending traffic to a failing upstream. Configurable per service, no library integration. The proxy makes the decision — not the calling service's code.</span></div>
+    <div class="trap"><b>Service mesh ≠ API gateway.</b> Mesh handles east-west traffic (service-to-service). API gateways handle north-south (ingress → services). They complement each other. Don't replace your Ingress with a mesh — use both.</div>
+  </div>
+</div>
+
+</div><!-- /why -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--             HOW IT WORKS              -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-how">
+
+<div class="sh"><div class="sh-i">⚙️</div><div class="sh-l" style="color:var(--grn);">How It Works</div><div class="sh-s">// sidecar model · ambient mode · data plane · control plane · xDS · SPIFFE</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,230,118,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🔧 The Sidecar Model (Classic)</div>
+    <svg viewBox="0 0 560 200" style="width:100%;margin-bottom:10px;">
+      <defs>
+        <marker id="b1" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,1 L4,2.5 L0,4 Z" fill="rgba(0,230,118,.7)"/></marker>
+        <marker id="b2" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,1 L4,2.5 L0,4 Z" fill="rgba(108,99,255,.7)"/></marker>
+      </defs>
+
+      <!-- Pod A -->
+      <g transform="translate(10,20)">
+        <rect width="200" height="155" rx="8" fill="rgba(0,230,118,.04)" stroke="rgba(0,230,118,.2)" stroke-width="1.5"/>
+        <text x="100" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.5)">POD A</text>
+        <rect x="12" y="28" width="176" height="40" rx="5" fill="rgba(0,230,118,.08)" stroke="rgba(0,230,118,.25)" stroke-width="1"/>
+        <text x="100" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00E676" font-weight="600">app container</text>
+        <rect x="12" y="78" width="176" height="40" rx="5" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.3)" stroke-width="1.5"/>
+        <text x="100" y="96" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#9B93FF" font-weight="700">proxy (sidecar)</text>
+        <text x="100" y="109" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(108,99,255,.5)">Envoy / linkerd2-proxy</text>
+        <rect x="12" y="128" width="176" height="20" rx="3" fill="rgba(108,99,255,.05)" stroke="rgba(108,99,255,.15)" stroke-width="1"/>
+        <text x="100" y="141" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.5)">iptables redirect all traffic to proxy</text>
+      </g>
+
+      <!-- Arrow (encrypted) -->
+      <path d="M 212 98 L 340 98" fill="none" stroke="rgba(0,230,118,.6)" stroke-width="2" marker-end="url(#b1)"/>
+      <text x="276" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(0,230,118,.6)">mTLS</text>
+      <text x="276" y="113" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(0,230,118,.4)">encrypted</text>
+
+      <!-- Pod B -->
+      <g transform="translate(340,20)">
+        <rect width="200" height="155" rx="8" fill="rgba(0,230,118,.04)" stroke="rgba(0,230,118,.2)" stroke-width="1.5"/>
+        <text x="100" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.5)">POD B</text>
+        <rect x="12" y="78" width="176" height="40" rx="5" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.3)" stroke-width="1.5"/>
+        <text x="100" y="96" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#9B93FF" font-weight="700">proxy (sidecar)</text>
+        <text x="100" y="109" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(108,99,255,.5)">terminates mTLS</text>
+        <rect x="12" y="28" width="176" height="40" rx="5" fill="rgba(0,230,118,.08)" stroke="rgba(0,230,118,.25)" stroke-width="1"/>
+        <text x="100" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00E676" font-weight="600">app container</text>
+        <rect x="12" y="128" width="176" height="20" rx="3" fill="rgba(108,99,255,.05)" stroke="rgba(108,99,255,.15)" stroke-width="1"/>
+        <text x="100" y="141" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.5)">app sees plaintext</text>
+      </g>
+    </svg>
+    <div class="fr"><span class="fk">How injection works</span><span class="fv"><b>Init container</b> runs first, rewrites iptables rules to redirect all inbound/outbound traffic to the sidecar proxy port. App container starts normally — it sends to <code>localhost:80</code>, iptables catches it, proxy handles the rest.</span></div>
+    <div class="fr"><span class="fk">Auto-injection</span><span class="fv">Label the namespace: <code>istio-injection: enabled</code> or <code>linkerd.io/inject: enabled</code>. A MutatingWebhookConfiguration intercepts pod creation and injects the sidecar container automatically. Zero manifest changes needed.</span></div>
+    <div class="fr"><span class="fk">Resource cost</span><span class="fv">Each sidecar consumes CPU + memory. Rough baseline: Envoy (Istio) ~50-100MB RAM + ~0.1 vCPU at idle. Linkerd's Rust proxy ~10-20MB RAM. At 1000 pods: significant overhead. This drove the invention of ambient mesh.</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🌊 Ambient Mesh (Istio v1.21+)</div>
+    <div class="fr"><span class="fk">The problem</span><span class="fv">Sidecars add a container per pod, consume resources, complicate upgrades, and increase latency per hop. For large clusters (1000+ pods) the overhead is substantial.</span></div>
+    <div class="fr"><span class="fk">Ambient approach</span><span class="fv"><b>No sidecar per pod.</b> Instead: a <code>ztunnel</code> DaemonSet on each node handles L4 (mTLS, SPIFFE identity). Optionally: a <code>waypoint proxy</code> per namespace/service handles L7 (retries, routing) — only deployed when you need L7 features.</span></div>
+    <div class="fr"><span class="fk">Layers</span><span class="fv"><b>Secure overlay layer:</b> ztunnel = always-on mTLS + identity for all pods on the node. <b>L7 processing layer:</b> waypoint proxy = opt-in per service when you need retries, traffic splitting, auth policies.</span></div>
+    <div class="fr"><span class="fk">Benefits</span><span class="fv">Dramatically lower resource usage. No pod restart needed to add to mesh. Easier upgrades (upgrade ztunnel DaemonSet, not every pod). Graduated adoption: start with L4 security, add L7 per service as needed.</span></div>
+    <div class="fr"><span class="fk">Status</span><span class="fv">Ambient mode became <b>stable in Istio 1.24 (late 2024)</b>. It's the recommended path for new Istio installations. Sidecar mode still supported and widely deployed.</span></div>
+    <div class="note"><b>Ambient mesh is a architectural shift.</b> ztunnel runs as a DaemonSet — one per node, not one per pod. waypoint proxies are Envoy instances that sit in the path only for services that opt into L7 features. This is fundamentally different from the sidecar model.</div>
+    <div class="trap"><b>Ambient + sidecar can coexist in a cluster during migration.</b> You can run some namespaces in sidecar mode and others in ambient mode. This lets you migrate gradually — critical for large production clusters.</div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🎛️ Control Plane vs Data Plane</div>
+    <div class="fr"><span class="fk">Control plane</span><span class="fv"><b>The brain.</b> Manages certificate issuance (CA), distributes configuration to proxies via xDS API, enforces policy, handles service discovery. Runs as a deployment — not in the data path.</span></div>
+    <div class="fr"><span class="fk">Data plane</span><span class="fv"><b>The body.</b> The actual proxies (sidecars or ztunnel) that handle every packet. They enforce what the control plane configures. If the control plane is down, data plane still serves traffic using last-known config.</span></div>
+    <div class="fr"><span class="fk">xDS API</span><span class="fv">Envoy's configuration protocol. Control plane (istiod) pushes LDS (listeners), RDS (routes), CDS (clusters), EDS (endpoints) to each Envoy proxy. Any control plane that speaks xDS can manage Envoy proxies.</span></div>
+    <div class="fr"><span class="fk">Failure modes</span><span class="fv">Control plane down: proxies keep serving with last config. No new cert issuance, no config updates. Data plane down on a node: pods on that node lose mesh features (depending on mode). Neither failure = total outage.</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🪪 SPIFFE & SVID Identity</div>
+    <div class="fr"><span class="fk">SPIFFE</span><span class="fv">Secure Production Identity Framework for Everyone. An open standard for workload identity. Defines how workloads get cryptographic identities, independent of the runtime environment.</span></div>
+    <div class="fr"><span class="fk">SVID</span><span class="fv">SPIFFE Verifiable Identity Document. A certificate with a URI SAN: <code>spiffe://trust-domain/ns/namespace/sa/serviceaccount</code>. Short-lived (1h by default), auto-rotated by the control plane.</span></div>
+    <div class="fr"><span class="fk">Authorization</span><span class="fv">Policies reference SPIFFE identities: "allow <code>spiffe://.../payments</code> to call <code>spiffe://.../orders</code> on /checkout". <b>Identity-based, not IP-based.</b> IP addresses change. SPIFFE identities don't.</span></div>
+    <div class="fr"><span class="fk">Zero Trust</span><span class="fv">mTLS + SPIFFE = every connection authenticated + encrypted + authorized by policy. This is the technical foundation of Zero Trust networking inside a cluster.</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🚦 L4 vs L7 Mesh Features</div>
+    <table class="st">
+      <tr><th>Feature</th><th>L4</th><th>L7</th></tr>
+      <tr><td>mTLS</td><td class="good">✓ (all meshes)</td><td>N/A</td></tr>
+      <tr><td>Service identity</td><td class="good">✓ (all meshes)</td><td>N/A</td></tr>
+      <tr><td>Connection-level metrics</td><td class="good">✓</td><td>N/A</td></tr>
+      <tr><td>HTTP metrics (rate/error/lat)</td><td class="bad">✗</td><td class="good">✓</td></tr>
+      <tr><td>Retries / timeouts</td><td class="bad">✗</td><td class="good">✓</td></tr>
+      <tr><td>Traffic splitting</td><td class="bad">✗</td><td class="good">✓</td></tr>
+      <tr><td>Header-based routing</td><td class="bad">✗</td><td class="good">✓</td></tr>
+      <tr><td>Circuit breaker</td><td class="bad">✗</td><td class="good">✓</td></tr>
+      <tr><td>JWT auth</td><td class="bad">✗</td><td class="good">✓</td></tr>
+      <tr><td>Resource overhead</td><td class="good">Low (ztunnel)</td><td class="warn">Medium (waypoint)</td></tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- /how -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--                ISTIO                   -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-istio">
+
+<div class="sh"><div class="sh-i">⛵</div><div class="sh-l" style="color:var(--ist2);">Istio Deep Dive</div><div class="sh-s">// most feature-rich · ambient mesh (v1.24) · CRDs · VirtualService · AuthorizationPolicy</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(70,107,176,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card ci" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--ist2);">⛵ Architecture (Ambient Mode)</div>
+    <div class="fr"><span class="fk">istiod</span><span class="fv"><b>Single control plane binary.</b> Combines: Pilot (xDS config distribution), Citadel (certificate authority), Galley (config validation). Issues mTLS certs, pushes config to all proxies via gRPC xDS stream.</span></div>
+    <div class="fr"><span class="fk">ztunnel</span><span class="fv">DaemonSet, one pod per node. Handles L4 for all pods on the node: mTLS, SPIFFE identity, connection-level metrics. <b>Transparent to pods — no sidecar injection needed.</b></span></div>
+    <div class="fr"><span class="fk">Waypoint proxy</span><span class="fv">Opt-in Envoy instance per namespace/service for L7 features. Deploy: <code>istioctl waypoint apply</code>. All traffic to a service routes through its waypoint. Only needed when you want retries, traffic splitting, or L7 auth policies.</span></div>
+    <div class="fr"><span class="fk">Envoy</span><span class="fv">The data plane proxy (in sidecar mode). Most fully-featured L7 proxy. Supports gRPC, WebSocket, HTTP/1/2/3, TCP. High performance but higher resource footprint than Linkerd's Rust proxy.</span></div>
+    <div class="fr"><span class="fk">Kiali</span><span class="fv">Official Istio observability dashboard. Service graph, traffic metrics, configuration validation, Jaeger tracing integration. Install separately but purpose-built for Istio.</span></div>
+    <div class="code"><span class="cmm"># Install Istio (ambient mode — recommended)</span>
+istioctl install --set profile=ambient
+
+<span class="cmm"># Enable ambient for a namespace</span>
+kubectl label namespace default istio.io/dataplane-mode=ambient
+
+<span class="cmm"># Deploy waypoint for L7 features</span>
+istioctl waypoint apply --namespace default
+
+<span class="cmm"># Check mesh status</span>
+istioctl status
+istioctl proxy-status
+
+<span class="cmm"># Verify mTLS (sidecar mode)</span>
+istioctl authn tls-check svc-a.default.svc.cluster.local</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card ci">
+    <div class="ctit" style="color:var(--ist2);">📋 Key CRDs</div>
+    <div class="fr"><span class="fk">VirtualService</span><span class="fv">Traffic routing rules: split by weight, match by header, retry policy, timeout. Applied to outgoing traffic from callers.</span></div>
+    <div class="fr"><span class="fk">DestinationRule</span><span class="fv">Policy for traffic to a specific service: load balancing, circuit breaker thresholds, TLS mode, connection pool limits.</span></div>
+    <div class="fr"><span class="fk">AuthorizationPolicy</span><span class="fv">Allow/deny rules based on source identity (SPIFFE), method, path, headers. Zero-trust policy enforcement.</span></div>
+    <div class="fr"><span class="fk">Gateway</span><span class="fv">Configure inbound/outbound traffic for the mesh edge. Exposes services outside the cluster through the ingress gateway.</span></div>
+    <div class="fr"><span class="fk">PeerAuthentication</span><span class="fv">Set mTLS mode per namespace/workload: STRICT (mTLS required), PERMISSIVE (mTLS or plaintext), DISABLE.</span></div>
+    <div class="code" style="font-size:9px;"><span class="cmm"># Traffic split: 90% stable, 10% canary</span>
+<span class="kw">kind</span>: VirtualService
+<span class="ky">spec</span>:
+  <span class="ky">hosts</span>: [<span class="st">myapp</span>]
+  <span class="ky">http</span>:
+  - <span class="ky">route</span>:
+    - { <span class="ky">destination</span>: { <span class="ky">host</span>: <span class="st">myapp</span>, <span class="ky">subset</span>: <span class="st">stable</span> }, <span class="ky">weight</span>: <span class="nu">90</span> }
+    - { <span class="ky">destination</span>: { <span class="ky">host</span>: <span class="st">myapp</span>, <span class="ky">subset</span>: <span class="st">canary</span> }, <span class="ky">weight</span>: <span class="nu">10</span> }
+    <span class="ky">retries</span>:
+      <span class="ky">attempts</span>: <span class="nu">3</span>
+      <span class="ky">perTryTimeout</span>: <span class="st">2s</span>
+      <span class="ky">retryOn</span>: <span class="st">5xx,reset,connect-failure</span>
+
+<span class="cmm"># AuthorizationPolicy: zero trust</span>
+<span class="kw">kind</span>: AuthorizationPolicy
+<span class="ky">spec</span>:
+  <span class="ky">action</span>: <span class="st">ALLOW</span>
+  <span class="ky">rules</span>:
+  - <span class="ky">from</span>:
+    - <span class="ky">source</span>:
+        <span class="ky">principals</span>: [<span class="st">"cluster.local/ns/payments/sa/payments-api"</span>]
+    <span class="ky">to</span>:
+    - <span class="ky">operation</span>:
+        <span class="ky">methods</span>: [<span class="st">GET</span>]
+        <span class="ky">paths</span>: [<span class="st">"/orders/*"</span>]</div>
+  </div>
+
+  <div class="card ci">
+    <div class="ctit" style="color:var(--ist2);">⚖️ Istio Strengths & Weaknesses</div>
+    <div class="fr"><span class="fk">✅ Strengths</span><span class="fv"><b>Most feature-complete mesh.</b> Best L7 traffic management. Ambient mode solves the resource overhead problem. Large community + CNCF graduated. Envoy's ecosystem.</span></div>
+    <div class="fr"><span class="fk">⚠️ Weaknesses</span><span class="fv"><b>Historically complex.</b> Many CRDs, steep learning curve. Sidecar mode overhead at scale. Debugging Envoy config is hard. Configuration errors silently break things.</span></div>
+    <div class="fr"><span class="fk">Best for</span><span class="fv">Large, complex microservices environments. Organizations needing full L7 traffic management, zero-trust auth policies, multi-protocol support (gRPC, HTTP/2). Ambient mode for large clusters.</span></div>
+    <div class="trap"><b>Permissive mTLS mode is a trap.</b> It's the default in many setups — allows plaintext traffic to bypass mTLS. Set to STRICT in production: <code>kubectl apply -f peer-auth-strict.yaml</code>. Otherwise you have mTLS theater — services think they're secure but aren't.</div>
+  </div>
+</div>
+</div>
+
+</div><!-- /istio -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--               LINKERD                  -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-linkerd">
+
+<div class="sh"><div class="sh-i">🔗</div><div class="sh-l" style="color:var(--lnk2);">Linkerd Deep Dive</div><div class="sh-s">// simplicity first · Rust proxy · ultra-low overhead · CNCF graduated</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(43,170,223,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cl" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--lnk2);">🔗 Architecture</div>
+    <div class="fr"><span class="fk">linkerd2-proxy</span><span class="fv">Linkerd's data plane is <b>not Envoy</b> — it's a purpose-built Rust proxy. Ultra-lightweight: ~10MB RAM at idle vs Envoy's 50-100MB. Dramatically lower CPU overhead. Built specifically for HTTP/gRPC, TCP.</span></div>
+    <div class="fr"><span class="fk">Control plane</span><span class="fv">Three components: <code>destination</code> (service discovery, policy), <code>identity</code> (certificate CA, SPIFFE issuance), <code>proxy-injector</code> (webhook for sidecar injection). Minimal footprint.</span></div>
+    <div class="fr"><span class="fk">Policy</span><span class="fv">Authorization policies via <code>Server</code> and <code>AuthorizationPolicy</code> CRDs. Simpler than Istio but covering the common cases. Focused on "allow/deny based on identity" rather than complex routing rules.</span></div>
+    <div class="fr"><span class="fk">No ambient mode</span><span class="fv">Linkerd uses sidecars only (as of 2026). The Rust proxy is so lightweight that the sidecar overhead argument is largely moot — 10MB per pod is far less painful than 100MB.</span></div>
+    <div class="fr"><span class="fk">Viz extension</span><span class="fv">Linkerd's observability dashboard. Real-time service graph, golden signals (success rate, requests/sec, P99 latency), live request tapping, and per-route metrics. Installed separately as an extension.</span></div>
+    <div class="code"><span class="cmm"># Install Linkerd</span>
+linkerd install --crds | kubectl apply -f -
+linkerd install | kubectl apply -f -
+linkerd check
+
+<span class="cmm"># Inject a namespace</span>
+kubectl annotate namespace default \
+  linkerd.io/inject=enabled
+
+<span class="cmm"># Or inject a deployment</span>
+kubectl get deploy myapp -o yaml | \
+  linkerd inject - | kubectl apply -f -
+
+<span class="cmm"># Observe live traffic</span>
+linkerd viz stat deploy
+linkerd viz top deploy/myapp      <span class="cmm"># real-time top</span>
+linkerd viz tap deploy/myapp      <span class="cmm"># live request tap</span>
+
+<span class="cmm"># Check proxy health</span>
+linkerd check --proxy -n default</div>
+    <div class="note"><b>Linkerd's <code>viz tap</code> is uniquely powerful.</b> It shows you live HTTP requests passing through the mesh in real time — method, path, response code, latency. Zero additional tooling. Indispensable for debugging in production.</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cl">
+    <div class="ctit" style="color:var(--lnk2);">📋 Key CRDs (Linkerd SMI-compatible)</div>
+    <div class="fr"><span class="fk">Server</span><span class="fv">Defines which ports/protocols a workload exposes. Required for policy to work. Acts as the "identity anchor" for a service.</span></div>
+    <div class="fr"><span class="fk">AuthorizationPolicy</span><span class="fv">Allow specific clients (by identity or namespace) to access a Server. Default: deny all in locked-down mode.</span></div>
+    <div class="fr"><span class="fk">HTTPRoute</span><span class="fv">Gateway API compatible. Fine-grained HTTP routing: path matching, header matching, traffic splitting, retries, timeouts.</span></div>
+    <div class="fr"><span class="fk">ServiceProfile</span><span class="fv">Legacy CRD: per-route metrics, retries, timeouts per endpoint. Replaced by HTTPRoute in newer Linkerd versions.</span></div>
+    <div class="code" style="font-size:9px;"><span class="cmm"># Server: define what myapp exposes</span>
+<span class="kw">apiVersion</span>: policy.linkerd.io/v1beta3
+<span class="kw">kind</span>: Server
+<span class="ky">spec</span>:
+  <span class="ky">podSelector</span>:
+    <span class="ky">matchLabels</span>: { <span class="ky">app</span>: <span class="st">myapp</span> }
+  <span class="ky">port</span>: <span class="nu">8080</span>
+  <span class="ky">proxyProtocol</span>: <span class="st">HTTP/2</span>
+
+<span class="cmm"># AuthorizationPolicy: only allow payments service</span>
+<span class="kw">kind</span>: AuthorizationPolicy
+<span class="ky">spec</span>:
+  <span class="ky">targetRef</span>:
+    <span class="ky">group</span>: <span class="st">policy.linkerd.io</span>
+    <span class="ky">kind</span>: <span class="st">Server</span>
+    <span class="ky">name</span>: <span class="st">myapp-server</span>
+  <span class="ky">requiredAuthenticationRefs</span>:
+  - <span class="ky">name</span>: <span class="st">payments-auth</span>
+    <span class="ky">kind</span>: <span class="st">MeshTLSAuthentication</span>
+---
+<span class="cmm"># HTTPRoute: traffic split</span>
+<span class="kw">kind</span>: HTTPRoute
+<span class="ky">spec</span>:
+  <span class="ky">rules</span>:
+  - <span class="ky">backendRefs</span>:
+    - { <span class="ky">name</span>: <span class="st">myapp-stable</span>, <span class="ky">weight</span>: <span class="nu">90</span> }
+    - { <span class="ky">name</span>: <span class="st">myapp-canary</span>, <span class="ky">weight</span>: <span class="nu">10</span> }
+    <span class="ky">timeouts</span>:
+      <span class="ky">request</span>: <span class="st">10s</span>
+    <span class="ky">retry</span>:
+      <span class="ky">limit</span>: <span class="nu">3</span>
+      <span class="ky">timeout</span>: <span class="st">2s</span></div>
+  </div>
+
+  <div class="card cl">
+    <div class="ctit" style="color:var(--lnk2);">⚖️ Linkerd Strengths & Weaknesses</div>
+    <div class="fr"><span class="fk">✅ Strengths</span><span class="fv"><b>Simplest production mesh.</b> Ultra-low resource overhead (Rust proxy). Much easier to operate than Istio. Fewer CRDs, smaller attack surface. Excellent UX (viz, tap). CNCF graduated.</span></div>
+    <div class="fr"><span class="fk">⚠️ Weaknesses</span><span class="fv">Fewer features than Istio. No Envoy ecosystem. L7 features less mature. Multi-cluster support is good but simpler than Kuma. No ambient mode — sidecars required.</span></div>
+    <div class="fr"><span class="fk">Best for</span><span class="fv">Teams that want "mesh without the complexity." Kubernetes-only environments. Organizations where resource efficiency matters. Teams that want operational simplicity over feature depth.</span></div>
+    <div class="trap"><b>Linkerd 2.x dropped Helm support in some versions — use the CLI for install.</b> Also: Linkerd Enterprise is separate from the open-source version. Some features (FIPS compliance, certain extensions) are enterprise-only. Check before assuming parity.</div>
+  </div>
+</div>
+</div>
+
+</div><!-- /linkerd -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--                 KUMA                   -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-kuma">
+
+<div class="sh"><div class="sh-i">🦊</div><div class="sh-l" style="color:var(--kum2);">Kuma Deep Dive</div><div class="sh-s">// multi-zone native · Envoy-based · universal mode · Kong-backed · CNCF</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,196,161,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card ck" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--kum2);">🦊 Architecture</div>
+    <div class="fr"><span class="fk">Control plane</span><span class="fv"><code>kuma-cp</code>: the control plane. Runs in <b>standalone</b> mode (single cluster) or <b>global + zone</b> mode (multi-cluster). Zone control planes connect to a global CP. Most distinctive feature: multi-zone is first-class, not an afterthought.</span></div>
+    <div class="fr"><span class="fk">Data plane</span><span class="fv"><code>kuma-dp</code> — an Envoy wrapper. Handles the xDS communication with kuma-cp and manages the Envoy process. Same rich L7 feature set as Istio (they both use Envoy) without Istio's historical complexity.</span></div>
+    <div class="fr"><span class="fk">Universal mode</span><span class="fv"><b>Key differentiator.</b> Kuma runs on Kubernetes AND on VMs/bare-metal. Same control plane, same policies, same observability. A single Kuma CP can manage services running on K8s pods and services running on legacy VMs simultaneously.</span></div>
+    <div class="fr"><span class="fk">Multi-zone</span><span class="fv">Built for multi-cluster and multi-cloud. Global control plane coordinates multiple zone CPs across regions. Cross-zone traffic is automatically routed, with locality-aware load balancing and zone health awareness.</span></div>
+    <div class="fr"><span class="fk">Policies</span><span class="fv">Kuma uses a policy model based on <code>MeshTrafficPermission</code>, <code>MeshRetry</code>, <code>MeshTimeout</code>, <code>MeshHTTPRoute</code>, etc. Policies can target by tag selectors across all zones simultaneously — very powerful for fleet-wide rules.</span></div>
+    <div class="code"><span class="cmm"># Install Kuma (K8s mode)</span>
+kumactl install control-plane | kubectl apply -f -
+kumactl install observability  | kubectl apply -f -
+kubectl wait -n kuma-system \
+  deploy/kuma-control-plane --for=condition=Available
+
+<span class="cmm"># Enable namespace for mesh</span>
+kubectl label namespace myapp kuma.io/sidecar-injection=enabled
+
+<span class="cmm"># Multi-zone: install global CP</span>
+kumactl install control-plane \
+  --mode=global | kubectl apply -f -
+
+<span class="cmm"># Add a zone (another cluster)</span>
+kumactl install control-plane \
+  --mode=zone \
+  --zone=us-east-1 \
+  --kds-global-address=grpcs://global-cp:5685 | \
+  kubectl apply -f -
+
+<span class="cmm"># Check zones</span>
+kumactl get zones
+kumactl get dataplanes --mesh default</div>
+    <div class="note"><b>Kuma's tag-based policy targeting is powerful.</b> Policies use Kuma's tag system: <code>kuma.io/service: myapp</code>, <code>version: v2</code>, <code>env: prod</code>. Apply a retry policy to "all services tagged env=prod" across all zones in one policy object.</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card ck">
+    <div class="ctit" style="color:var(--kum2);">📋 Key Policies</div>
+    <div class="code" style="font-size:9px;"><span class="cmm"># MeshTrafficPermission (zero trust)</span>
+<span class="kw">kind</span>: MeshTrafficPermission
+<span class="ky">spec</span>:
+  <span class="ky">targetRef</span>:
+    <span class="ky">kind</span>: <span class="st">MeshService</span>
+    <span class="ky">name</span>: <span class="st">orders</span>
+  <span class="ky">from</span>:
+  - <span class="ky">targetRef</span>:
+      <span class="ky">kind</span>: <span class="st">MeshService</span>
+      <span class="ky">name</span>: <span class="st">payments</span>
+    <span class="ky">default</span>:
+      <span class="ky">action</span>: <span class="st">Allow</span>
+
+<span class="cmm"># MeshRetry across all services in mesh</span>
+<span class="kw">kind</span>: MeshRetry
+<span class="ky">spec</span>:
+  <span class="ky">targetRef</span>:
+    <span class="ky">kind</span>: <span class="st">Mesh</span>    <span class="cmm"># applies to ALL services</span>
+  <span class="ky">to</span>:
+  - <span class="ky">targetRef</span>:
+      <span class="ky">kind</span>: <span class="st">Mesh</span>
+    <span class="ky">default</span>:
+      <span class="ky">http</span>:
+        <span class="ky">numRetries</span>: <span class="nu">3</span>
+        <span class="ky">retryOn</span>: [<span class="st">5xx</span>, <span class="st">reset</span>, <span class="st">connect-failure</span>]
+        <span class="ky">perTryTimeout</span>: <span class="st">2s</span>
+
+<span class="cmm"># MeshHTTPRoute: traffic splitting</span>
+<span class="kw">kind</span>: MeshHTTPRoute
+<span class="ky">spec</span>:
+  <span class="ky">targetRef</span>:
+    <span class="ky">kind</span>: <span class="st">MeshService</span>
+    <span class="ky">name</span>: <span class="st">myapp</span>
+  <span class="ky">to</span>:
+  - <span class="ky">targetRef</span>: { <span class="ky">kind</span>: <span class="st">MeshService</span>, <span class="ky">name</span>: <span class="st">myapp</span> }
+    <span class="ky">rules</span>:
+    - <span class="ky">backendRefs</span>:
+      - { <span class="ky">kind</span>: <span class="st">MeshService</span>, <span class="ky">name</span>: <span class="st">myapp-v1</span>, <span class="ky">weight</span>: <span class="nu">90</span> }
+      - { <span class="ky">kind</span>: <span class="st">MeshService</span>, <span class="ky">name</span>: <span class="st">myapp-v2</span>, <span class="ky">weight</span>: <span class="nu">10</span> }</div>
+  </div>
+
+  <div class="card ck">
+    <div class="ctit" style="color:var(--kum2);">⚖️ Kuma Strengths & Weaknesses</div>
+    <div class="fr"><span class="fk">✅ Strengths</span><span class="fv"><b>Multi-zone native.</b> Universal mode (K8s + VMs). Fleet-wide policy targeting by tags. Simpler than Istio but more powerful than Linkerd for multi-cluster. Kong ecosystem integration.</span></div>
+    <div class="fr"><span class="fk">⚠️ Weaknesses</span><span class="fv">Smaller community than Istio or Linkerd. Less ecosystem tooling. Still Envoy under the hood — resource overhead similar to Istio. Less "battle-tested" at extreme scale.</span></div>
+    <div class="fr"><span class="fk">Best for</span><span class="fv">Multi-cluster, multi-cloud, or hybrid (K8s + VMs) environments. Organizations already using Kong API gateway (integration is seamless). Teams needing fleet-wide policy management across many clusters.</span></div>
+    <div class="trap"><b>Kuma's "Universal mode" requires a Postgres database for the control plane state</b> (in standalone or global mode for non-K8s). The K8s mode uses K8s CRDs as storage — no external DB. Make sure you're clear on which mode you're deploying before going to production.</div>
+  </div>
+</div>
+</div>
+
+</div><!-- /kuma -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--              COMPARISON               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-compare">
+
+<div class="sh"><div class="sh-i">⚖️</div><div class="sh-l" style="color:var(--yel);">Head-to-Head Comparison</div><div class="sh-s">// Istio · Linkerd · Kuma · Consul · full feature matrix</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,215,64,.3),transparent);"></div></div>
+
+<div class="card cy" style="margin-bottom:12px;overflow-x:auto;">
+  <div class="ctit" style="color:var(--yel);">📊 Full Feature Matrix</div>
+  <table class="st" style="min-width:900px;">
+    <tr>
+      <th>Feature</th>
+      <th style="color:var(--ist2);">⛵ Istio</th>
+      <th style="color:var(--lnk2);">🔗 Linkerd</th>
+      <th style="color:var(--kum2);">🦊 Kuma</th>
+      <th style="color:var(--orn);">🏛️ Consul</th>
+    </tr>
+    <tr><td>Data plane proxy</td><td>Envoy</td><td class="good">linkerd2-proxy (Rust)</td><td>Envoy</td><td>Envoy</td></tr>
+    <tr><td>Ambient / node proxy mode</td><td class="good">✓ Stable (v1.24+)</td><td class="bad">✗ Sidecars only</td><td class="bad">✗</td><td class="bad">✗</td></tr>
+    <tr><td>mTLS</td><td class="good">✓ Auto</td><td class="good">✓ Auto</td><td class="good">✓ Auto</td><td class="good">✓ Auto</td></tr>
+    <tr><td>SPIFFE identity</td><td class="good">✓</td><td class="good">✓</td><td class="good">✓</td><td class="good">✓</td></tr>
+    <tr><td>Traffic splitting</td><td class="good">✓ Rich</td><td class="good">✓ Via HTTPRoute</td><td class="good">✓</td><td class="good">✓</td></tr>
+    <tr><td>Retries / timeouts</td><td class="good">✓</td><td class="good">✓</td><td class="good">✓</td><td class="good">✓</td></tr>
+    <tr><td>Circuit breaker</td><td class="good">✓</td><td class="warn">Partial</td><td class="good">✓</td><td class="good">✓</td></tr>
+    <tr><td>L7 AuthZ policies</td><td class="good">✓ Rich (JWT, RBAC)</td><td class="good">✓ Identity-based</td><td class="good">✓</td><td class="good">✓</td></tr>
+    <tr><td>Distributed tracing</td><td class="good">✓ Auto header inject</td><td class="good">✓</td><td class="good">✓</td><td class="good">✓</td></tr>
+    <tr><td>Service topology UI</td><td class="good">✓ Kiali</td><td class="good">✓ viz</td><td class="good">✓ built-in</td><td class="good">✓ UI</td></tr>
+    <tr><td>Multi-cluster</td><td class="good">✓ (complex setup)</td><td class="warn">✓ (simpler)</td><td class="good">✓ First-class</td><td class="good">✓</td></tr>
+    <tr><td>Non-K8s (VMs)</td><td class="warn">✓ Workload entries</td><td class="bad">✗ K8s only</td><td class="good">✓ Universal mode</td><td class="good">✓ Native</td></tr>
+    <tr><td>CNCF status</td><td class="good">Graduated</td><td class="good">Graduated</td><td class="good">Sandbox</td><td style="color:var(--mid);">HashiCorp (non-CNCF)</td></tr>
+    <tr><td>Sidecar RAM overhead</td><td class="warn">~50-100MB/pod</td><td class="good">~10-20MB/pod</td><td class="warn">~50-100MB/pod</td><td class="warn">~50MB/pod</td></tr>
+    <tr><td>Operational complexity</td><td class="bad">High</td><td class="good">Low</td><td class="warn">Medium</td><td class="warn">Medium-High</td></tr>
+    <tr><td>Learning curve</td><td class="bad">Steep</td><td class="good">Gentle</td><td class="warn">Moderate</td><td class="warn">Moderate-Steep</td></tr>
+    <tr><td>gRPC support</td><td class="good">✓ Full</td><td class="good">✓ Full</td><td class="good">✓ Full</td><td class="good">✓</td></tr>
+    <tr><td>Gateway API compat.</td><td class="good">✓ Full</td><td class="good">✓ Full</td><td class="good">✓</td><td class="warn">Partial</td></tr>
+    <tr><td>Wasm plugin support</td><td class="good">✓ (Envoy filters)</td><td class="bad">✗</td><td class="good">✓ (Envoy)</td><td class="warn">Limited</td></tr>
+  </table>
+</div>
+
+<div class="g3">
+  <div class="card ci">
+    <div class="ctit" style="color:var(--ist2);">⛵ Choose Istio When</div>
+    <div class="fr"><span class="fk">Need full feature set</span><span class="fv">Complex traffic routing (header-based, weighted, mirror), JWT authentication, Wasm plugin extensibility, advanced authorization policies.</span></div>
+    <div class="fr"><span class="fk">Large scale</span><span class="fv">500+ services or 1000+ pods — use ambient mode to eliminate per-pod overhead. Ambient ztunnel scales much better than per-pod sidecars.</span></div>
+    <div class="fr"><span class="fk">Compliance</span><span class="fv">PCI DSS, HIPAA, SOC2 environments that need proven, CNCF-graduated mesh with audit trail, fine-grained authorization policies, and mTLS enforcement.</span></div>
+    <div class="fr"><span class="fk">Multi-protocol</span><span class="fv">Mixed HTTP/1, HTTP/2, gRPC, TCP workloads that all need consistent policy enforcement.</span></div>
+    <div class="note"><b>If you can afford the learning curve</b> and need the full feature set — Istio ambient is the current state of the art. It eliminates the historical resource overhead argument against Istio.</div>
+  </div>
+
+  <div class="card cl">
+    <div class="ctit" style="color:var(--lnk2);">🔗 Choose Linkerd When</div>
+    <div class="fr"><span class="fk">Simplicity matters</span><span class="fv">Small-to-medium cluster (under 500 pods). Team doesn't have dedicated platform engineers. Want mesh benefits without mesh complexity.</span></div>
+    <div class="fr"><span class="fk">Resource constrained</span><span class="fv">Every MB matters (edge clusters, small nodes). Linkerd's Rust proxy at 10-20MB vs Envoy's 50-100MB is a meaningful difference at scale.</span></div>
+    <div class="fr"><span class="fk">K8s-only</span><span class="fv">No VMs, no multi-cluster (or simple multi-cluster), no need for Wasm extensibility. Pure Kubernetes environments.</span></div>
+    <div class="fr"><span class="fk">Developer experience</span><span class="fv"><code>linkerd viz tap</code> and <code>linkerd viz top</code> are genuinely excellent debugging tools. If developer productivity is a priority, Linkerd's UX wins.</span></div>
+    <div class="note"><b>Linkerd is the "start here" mesh</b> for most teams. If you outgrow it, migrating to Istio is easier than starting with Istio and fighting its complexity from day one.</div>
+  </div>
+
+  <div class="card ck">
+    <div class="ctit" style="color:var(--kum2);">🦊 Choose Kuma When</div>
+    <div class="fr"><span class="fk">Multi-cluster first</span><span class="fv">Managing 3+ clusters across regions or cloud providers. Kuma's global+zone CP model is purpose-built for this — not bolted on later like Istio's multi-cluster.</span></div>
+    <div class="fr"><span class="fk">Hybrid (K8s + VMs)</span><span class="fv">Legacy services running on VMs that need to communicate securely with K8s workloads. Kuma's Universal mode manages both from a single control plane.</span></div>
+    <div class="fr"><span class="fk">Kong shops</span><span class="fv">Already using Kong API Gateway? Kuma is made by the same company, integrates natively. Consistent data plane (Envoy) across ingress and mesh.</span></div>
+    <div class="fr"><span class="fk">Fleet-wide policy</span><span class="fv">Need to apply a single retry policy to all services across all clusters simultaneously. Kuma's tag-based global policy targeting is uniquely powerful for this.</span></div>
+  </div>
+</div>
+
+</div><!-- /compare -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--           WHEN & WHY                  -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-when">
+
+<div class="sh"><div class="sh-i">🗺️</div><div class="sh-l" style="color:var(--grn);">When, Why & Decision Guide</div><div class="sh-s">// when NOT to use mesh · the decision tree · migration strategy · real scenarios</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,230,118,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🚦 When NOT To Use Service Mesh</div>
+    <div class="fr"><span class="fk">3 services or fewer</span><span class="fv"><b>Don't add mesh to a monolith or tiny service set.</b> The complexity and resource overhead vastly outweigh the benefits. You don't need mTLS automation for 2 services — just configure it manually.</span></div>
+    <div class="fr"><span class="fk">Dev/test environments</span><span class="fv">Mesh in dev is overhead without benefit. Dev teams need fast iteration, not 10+ second cold starts from sidecar injection. Keep mesh in staging and above.</span></div>
+    <div class="fr"><span class="fk">Simple internal traffic</span><span class="fv">If all your services run in a single trusted namespace and you have no compliance requirements, the network already provides isolation. Mesh is overkill.</span></div>
+    <div class="fr"><span class="fk">Team isn't ready</span><span class="fv">If your team doesn't understand what a mesh does, adding one creates a new class of production incidents they won't know how to debug. Mesh is an operations multiplier — in both directions.</span></div>
+    <div class="fr"><span class="fk">Performance critical L3</span><span class="fv">Ultra-low latency workloads (HFT, real-time gaming servers, media streaming) may find even the ~0.2ms proxy overhead unacceptable. Measure first.</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🌱 When TO Use Service Mesh</div>
+    <div class="fr"><span class="fk">10+ microservices</span><span class="fv"><b>The complexity threshold.</b> Once you have 10+ services communicating with each other, the operational value of unified observability, consistent retry policies, and automatic mTLS pays off immediately.</span></div>
+    <div class="fr"><span class="fk">Compliance requirements</span><span class="fv">PCI DSS, HIPAA, SOC2, FedRAMP — any framework requiring encrypted in-transit data and audit trail of service-to-service communication. Mesh proves it with zero code changes.</span></div>
+    <div class="fr"><span class="fk">Zero trust mandate</span><span class="fv">Organization moving to Zero Trust networking. Mesh provides the cryptographic identity layer (SPIFFE) and allows AuthorizationPolicies that enforce "least privilege" between services.</span></div>
+    <div class="fr"><span class="fk">Multiple teams, multiple services</span><span class="fv">When 5+ teams each own services and each team implements network concerns differently (retries, timeouts, auth) — mesh enforces consistency without requiring teams to change their code.</span></div>
+    <div class="fr"><span class="fk">Canary / progressive delivery</span><span class="fv">If you're using Argo Rollouts or Flagger for canary deployments, a mesh provides the precise traffic splitting they need at the L7 level.</span></div>
+  </div>
+</div>
+
+<!-- Decision tree -->
+<div class="card cy" style="margin-bottom:12px;">
+  <div class="ctit" style="color:var(--yel);">🔍 Decision Tree</div>
+  <div class="dtree">
+    <div class="dt-q">How many microservices communicating with each other?</div>
+    <div class="dt-a"><span class="dt-n">→ &lt; 5 services:</span><span class="dt-res dt-no">  🚫 Skip mesh. mTLS manually. Come back when you grow.</span></div>
+    <div class="dt-a"><span class="dt-y">→ 5–20 services:</span>
+      <div style="padding-left:14px;">
+        <div class="dt-q">Do you have compliance requirements (PCI/HIPAA) or Zero Trust mandate?</div>
+        <div class="dt-a"><span class="dt-y">→ YES:</span><span class="dt-res dt-lnk">  🔗 Start with Linkerd. Simple, proven, graduated.</span></div>
+        <div class="dt-a"><span class="dt-n">→ NO, just want observability?</span><span class="dt-res dt-lnk">  🔗 Linkerd. Add mesh for metrics + tracing.</span></div>
+      </div>
+    </div>
+    <div class="dt-a"><span class="dt-y">→ 20+ services:</span>
+      <div style="padding-left:14px;">
+        <div class="dt-q">Do you run multiple clusters or hybrid K8s + VMs?</div>
+        <div class="dt-a"><span class="dt-y">→ YES, multi-cluster / multi-zone:</span><span class="dt-res dt-kum">  🦊 Kuma. Multi-zone is first-class.</span></div>
+        <div class="dt-a"><span class="dt-n">→ NO, K8s-only:</span>
+          <div style="padding-left:14px;">
+            <div class="dt-q">Need complex L7 routing, Wasm extensibility, or 1000+ pods?</div>
+            <div class="dt-a"><span class="dt-y">→ YES:</span><span class="dt-res dt-ist">  ⛵ Istio with ambient mode.</span></div>
+            <div class="dt-a"><span class="dt-n">→ NO, want simplicity:</span><span class="dt-res dt-lnk">  🔗 Linkerd scales to large clusters fine.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Real scenarios -->
+<div class="ctit" style="font-size:13px;color:var(--text);margin-bottom:10px;">📋 Real-World Scenarios</div>
+<div class="stage-wrap" style="display:flex;flex-direction:column;gap:8px;">
+  <div class="scenario">
+    <div class="sc-icon">🏦</div>
+    <div>
+      <div class="sc-title">Fintech: 80 microservices, PCI DSS, mixed teams</div>
+      <div class="sc-desc"><b>Needs:</b> encrypted in-transit (audit evidence), service-level authorization (payments can't be called by everyone), consistent observability across 12 teams each with different instrumentation practices.</div>
+    </div>
+    <div class="sc-rec" style="background:rgba(70,107,176,.1);border-color:rgba(70,107,176,.3);color:var(--ist2);">Istio<br>ambient mode</div>
+  </div>
+  <div class="scenario">
+    <div class="sc-icon">🛒</div>
+    <div>
+      <div class="sc-title">E-commerce: 25 services, single cluster, K8s-native team</div>
+      <div class="sc-desc"><b>Needs:</b> better observability (currently blind between services), progressive delivery for checkout service (high risk changes), reasonable mTLS without massive overhead or complexity.</div>
+    </div>
+    <div class="sc-rec" style="background:rgba(43,170,223,.08);border-color:rgba(43,170,223,.3);color:var(--lnk2);">Linkerd</div>
+  </div>
+  <div class="scenario">
+    <div class="sc-icon">🌍</div>
+    <div>
+      <div class="sc-title">Global SaaS: 5 clusters (3 AWS regions + 2 GCP), some legacy VMs</div>
+      <div class="sc-desc"><b>Needs:</b> unified policy management across all clusters, cross-zone traffic routing, VMs in one region that can't be containerized yet but need to participate in the mesh.</div>
+    </div>
+    <div class="sc-rec" style="background:rgba(0,196,161,.08);border-color:rgba(0,196,161,.3);color:var(--kum2);">Kuma<br>global mode</div>
+  </div>
+  <div class="scenario">
+    <div class="sc-icon">🎮</div>
+    <div>
+      <div class="sc-title">Gaming platform: 8 services, tight latency budget, no compliance</div>
+      <div class="sc-desc"><b>Needs:</b> real-time traffic (WebSocket, UDP-like patterns), very low latency, small team, not planning to grow service count significantly.</div>
+    </div>
+    <div class="sc-rec" style="background:rgba(255,215,64,.06);border-color:rgba(255,215,64,.25);color:var(--yel);">Skip mesh<br>for now</div>
+  </div>
+</div>
+
+<!-- Migration strategy -->
+<div class="card cg" style="margin-top:12px;">
+  <div class="ctit" style="color:var(--grn);">🛤️ Mesh Adoption Strategy</div>
+  <div class="g3" style="margin-bottom:0;">
+    <div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 1: Observe</div>
+      <div class="fr" style="border-top:none;"><span class="fk">Install mesh</span><span class="fv">Install with PERMISSIVE mTLS mode. Enable injection on one namespace. Zero changes to applications.</span></div>
+      <div class="fr"><span class="fk">Observe</span><span class="fv">Watch the service topology appear. See where traffic is flowing, which services are communicating, baseline latencies and error rates.</span></div>
+      <div class="fr"><span class="fk">Fix issues</span><span class="fv">Some apps have health checks that break with sidecar injection (timing, port conflicts). Fix before proceeding.</span></div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 2: Secure</div>
+      <div class="fr" style="border-top:none;"><span class="fk">Enable namespace</span><span class="fv">Inject remaining namespaces. Still PERMISSIVE — apps that don't support mTLS won't break.</span></div>
+      <div class="fr"><span class="fk">Strict mTLS</span><span class="fv">Switch to STRICT per namespace as you verify each service handles mTLS correctly. PeerAuthentication policy per namespace.</span></div>
+      <div class="fr"><span class="fk">AuthZ policies</span><span class="fv">Start with deny-all default, then add explicit ALLOW rules between services. Zero trust by default.</span></div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 3: Control</div>
+      <div class="fr" style="border-top:none;"><span class="fk">Traffic policies</span><span class="fv">Add retry policies, circuit breakers, timeouts via mesh CRDs. Remove the same logic from application code over time.</span></div>
+      <div class="fr"><span class="fk">Canary infra</span><span class="fv">Configure Argo Rollouts or Flagger to use the mesh for traffic splitting. Progressive delivery now works at L7.</span></div>
+      <div class="fr"><span class="fk">Tune & optimize</span><span class="fv">Ambient mode (Istio): migrate namespaces from sidecar to ambient for resource savings. Fine-tune timeouts based on observed P99 latencies.</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /when -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--             TRAPS & QUIZ               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-traps">
+
+<div class="sh"><div class="sh-i">⚡</div><div class="sh-l" style="color:var(--red);">Traps & Quiz</div><div class="sh-s">// 12 operational gotchas · interactive quiz</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,82,82,.3),transparent);"></div></div>
+
+<div class="trap-grid">
+  <div class="trap-card"><div class="tc-n">01</div>
+    <div class="tc-tag">mTLS</div>
+    <div class="tc-q2">Mesh is installed, mTLS "enabled" — but traffic is still plaintext. Why?</div>
+    <div class="tc-a2"><b>PERMISSIVE mode allows both plaintext and mTLS.</b> This is the default in Istio to ease adoption. Services that don't have the sidecar can still communicate. For actual encryption: set <code>PeerAuthentication</code> to <code>STRICT</code> per namespace. Without STRICT, you have mTLS theater.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">02</div>
+    <div class="tc-tag">Health checks</div>
+    <div class="tc-q2">Pods crash on startup after enabling sidecar injection. Health check failures.</div>
+    <div class="tc-a2"><b>Sidecar starts before the app is ready — or vice versa.</b> iptables rules redirect traffic immediately, but the app isn't listening yet. Fix: set <code>holdApplicationUntilProxyStarts: true</code> in Istio, or add <code>startupProbe</code> with enough delay. Also: kubelet bypasses mesh for health checks by default (port-based) but some configs break this.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">03</div>
+    <div class="tc-tag">Observability</div>
+    <div class="tc-q2">Mesh topology shows all traffic going through one service — looks like a star. Is that right?</div>
+    <div class="tc-a2"><b>Likely a missing sidecar on some services.</b> Traffic between two sidecars shows both ends. If service B has no sidecar, all traffic to B appears to come from the last sidecar-enabled hop. Check: <code>kubectl get pods -n myns -o jsonpath='{.items[*].spec.containers[*].name}'</code> — every pod should have the proxy container.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">04</div>
+    <div class="tc-tag">AuthZ Policy</div>
+    <div class="tc-q2">You apply a deny-all AuthorizationPolicy. Suddenly health checks from the kubelet fail too.</div>
+    <div class="tc-a2"><b>Kubelet health checks bypass the mesh — but some configurations don't.</b> Istio automatically excludes kubelet health check ports from mTLS interception (via <code>excludeInboundPorts</code>). But if your deny-all policy is too aggressive, kubelet probes can be caught. Fix: explicitly allow ingress from <code>notPrincipals</code> for health check ports, or use <code>ALLOW</code> policies instead of DENY.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">05</div>
+    <div class="tc-tag">Istio CRDs</div>
+    <div class="tc-q2">VirtualService is applied but traffic still goes 100% to the old service. No split.</div>
+    <div class="tc-a2"><b>VirtualService requires matching DestinationRule subsets.</b> If you reference <code>subset: canary</code> in VirtualService but don't define that subset in a DestinationRule, Istio silently ignores the rule. Also: VirtualService must match the hostname exactly as called by clients. <code>myapp</code> ≠ <code>myapp.default.svc.cluster.local</code> in some contexts.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">06</div>
+    <div class="tc-tag">Resource overhead</div>
+    <div class="tc-q2">Mesh deployed on 800-pod cluster. Node CPU spikes with no application load change. Why?</div>
+    <div class="tc-a2"><b>Envoy sidecar overhead.</b> 800 Envoy sidecars × 50-100MB RAM + CPU for xDS config reconciliation when istiod pushes updates (e.g., service endpoint changes). Fix: (1) migrate to Istio ambient mode — eliminates per-pod Envoy, (2) tune <code>PILOT_PUSH_THROTTLE</code> to reduce istiod push rate, (3) use Linkerd's Rust proxy instead.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">07</div>
+    <div class="tc-tag">Tracing</div>
+    <div class="tc-q2">Mesh shows traces but each trace has only one span — no parent-child relationships between services.</div>
+    <div class="tc-a2"><b>Applications aren't propagating trace headers.</b> The mesh injects and reads B3/W3C trace headers, but the app must forward them between inbound and outbound requests. If Service A receives <code>x-request-id: abc</code> and makes a call to B without forwarding it, B's span appears as a new trace. Fix: use OpenTelemetry auto-instrumentation or manually propagate headers in each service.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">08</div>
+    <div class="tc-tag">Upgrade</div>
+    <div class="tc-q2">After upgrading Istio control plane, some pods still show the old proxy version. Traffic works but metrics are inconsistent.</div>
+    <div class="tc-a2"><b>Sidecars don't auto-upgrade — pods must be restarted.</b> Istio upgrades the control plane (istiod) but sidecars in running pods stay at the old version until those pods restart. Rolling restart: <code>kubectl rollout restart deployment -n mynamespace</code>. Ambient mode (ztunnel DaemonSet) upgrades all pods on a node simultaneously without pod restarts — another advantage of ambient.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">09</div>
+    <div class="tc-tag">Linkerd</div>
+    <div class="tc-q2">Linkerd installed but <code>linkerd viz tap</code> shows no traffic for a deployment.</div>
+    <div class="tc-a2"><b>The namespace isn't annotated for injection, or pods predate the annotation.</b> Check: <code>kubectl get namespace myns -o yaml | grep inject</code>. If the annotation was added after pods started, existing pods don't have the sidecar. Restart them: <code>kubectl rollout restart deployment -n myns</code>. Also verify with <code>linkerd check --proxy -n myns</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">10</div>
+    <div class="tc-tag">Kuma multi-zone</div>
+    <div class="tc-q2">Services in zone-A can't reach services in zone-B even though both zones are healthy.</div>
+    <div class="tc-a2"><b>Zone Ingress not configured or network connectivity between zones missing.</b> Kuma requires each zone to have a <code>ZoneIngress</code> (a gateway for cross-zone traffic). Also: the network between zone CPs and the global CP must allow traffic on port 5685 (KDS). Check: <code>kumactl get zone-ingresses</code> and verify the global CP can reach each zone CP.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">11</div>
+    <div class="tc-tag">Ambient</div>
+    <div class="tc-q2">Migrating namespace to Istio ambient mode — existing pods break. What happened?</div>
+    <div class="tc-a2"><b>Pods need to be restarted after enabling ambient for the namespace.</b> The ztunnel intercepts traffic at the node network level, but pods that started before ambient was enabled on the namespace may not be registered with ztunnel correctly. Restart all pods in the namespace after labeling it for ambient. Also: check ztunnel logs for enrollment errors.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">12</div>
+    <div class="tc-tag">Common mistake</div>
+    <div class="tc-q2">Team adds mesh "for observability" then uses Datadog for metrics, Jaeger for tracing, and ignores mesh dashboards. Did they need mesh?</div>
+    <div class="tc-a2"><b>Probably not just for observability.</b> If you already have APM (Datadog/New Relic) with agents in every service, and a tracing library already integrated — mesh observability is redundant. The real mesh value propositions are: mTLS encryption, SPIFFE identity, zero-trust authorization policies, and L7 traffic control. Don't pay mesh overhead to duplicate what you already have.</div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap">
+  <div class="quiz-hdr">
+    <div class="quiz-title">🎯 Service Mesh Interview Quiz</div>
+    <div class="quiz-score">Score: <span id="qScore">0</span> / <span id="qTotal">0</span></div>
+  </div>
+  <div id="qContainer"></div>
+  <div class="quiz-btns">
+    <button class="qbtn qb-r" onclick="resetQuiz()">↺ Reset</button>
+    <button class="qbtn qb-m" onclick="revealAll()">Show All Answers</button>
+  </div>
+</div>
+
+</div><!-- /traps -->
+
+<div class="footer">
+  <div class="ft">Service Mesh Field Guide · 2026 · Istio · Linkerd · Kuma · mTLS · SPIFFE · Ambient mesh</div>
+  <div class="ft" style="color:rgba(108,99,255,.25);">PERMISSIVE = not actually secure · sidecar ≠ ambient · mesh ≠ ingress · SPIFFE identity &gt; IP address · only 10+ services</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleStage(el) {
+  const detail = el.nextElementSibling;
+  if (!detail || !detail.classList.contains('stage-detail')) return;
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.stage-detail').forEach(d => d.style.display = 'none');
+  if (!isOpen) { el.classList.add('open'); detail.style.display = 'block'; }
+}
+
+const QS = [
+  {
+    q: "A developer says 'we have Istio installed, so all our traffic is encrypted.' Is this true?",
+    opts: [
+      "Yes — Istio automatically encrypts all traffic once installed",
+      "No — Istio defaults to PERMISSIVE mode which allows plaintext traffic. STRICT PeerAuthentication must be explicitly applied per namespace.",
+      "Yes, but only between services in the same namespace",
+      "No — Istio only encrypts traffic going through the Ingress gateway"
+    ],
+    ans: 1,
+    ex: "<b>PERMISSIVE mode is the default</b> — it allows both mTLS and plaintext connections. Without setting PeerAuthentication to STRICT, services without sidecars can still communicate in plaintext with meshed services. You must explicitly apply STRICT mTLS per namespace or globally."
+  },
+  {
+    q: "What is the key architectural difference between Istio's ambient mesh and the traditional sidecar model?",
+    opts: [
+      "Ambient mesh uses UDP instead of TCP for better performance",
+      "Ambient mesh removes per-pod sidecars — a ztunnel DaemonSet on each node handles L4, with optional per-service waypoint proxies for L7",
+      "Ambient mesh runs the proxy in the kernel instead of userspace",
+      "Ambient mesh eliminates the control plane — proxies self-configure"
+    ],
+    ans: 1,
+    ex: "<b>Ambient splits concerns across two layers:</b> ztunnel (node-level DaemonSet) handles L4 (mTLS, SPIFFE identity) for all pods on that node — no per-pod sidecar needed. Optional waypoint proxies (per namespace or service) handle L7 features. This eliminates the sidecar resource overhead while keeping all features available on-demand."
+  },
+  {
+    q: "You need to allow only the 'payments' service to call the 'orders' service POST /checkout. Which Istio CRD handles this?",
+    opts: [
+      "VirtualService — defines routing rules for the orders service",
+      "DestinationRule — defines policies for the orders service",
+      "AuthorizationPolicy — allows specific source principals to access specific paths/methods",
+      "PeerAuthentication — controls mTLS mode for the orders service"
+    ],
+    ans: 2,
+    ex: "<b>AuthorizationPolicy</b> is for identity-based access control. It specifies: FROM (source principal/namespace) TO (method, path). Uses SPIFFE identity so it's cryptographically verified, not IP-based. VirtualService controls traffic routing. DestinationRule controls connection behavior. PeerAuthentication controls mTLS mode."
+  },
+  {
+    q: "Why does Linkerd use a custom Rust proxy (linkerd2-proxy) instead of Envoy?",
+    opts: [
+      "Because Envoy doesn't support HTTP/2",
+      "Envoy has a license incompatible with Linkerd's CNCF requirements",
+      "linkerd2-proxy is purpose-built for K8s service mesh — ~10-20MB RAM vs Envoy's ~50-100MB. Simpler, lower overhead, faster cold start.",
+      "Rust proxies automatically support SPIFFE while Envoy doesn't"
+    ],
+    ans: 2,
+    ex: "<b>linkerd2-proxy is designed specifically for the service mesh sidecar use case</b> — it doesn't need Envoy's full general-purpose proxy feature set. The result: dramatically lower resource consumption (~10-20MB vs 50-100MB), faster startup, simpler configuration. The tradeoff: no Wasm plugin support, no Envoy ecosystem tooling."
+  },
+  {
+    q: "When should you choose Kuma over Istio or Linkerd?",
+    opts: [
+      "When you need the lowest possible memory footprint",
+      "When you need multi-cluster (multi-zone) as a first-class feature, or when you have hybrid K8s + VM workloads in the same mesh",
+      "When you need the simplest possible configuration",
+      "When you need Wasm plugin extensibility"
+    ],
+    ans: 1,
+    ex: "<b>Kuma's unique strengths are multi-zone native support and Universal mode (K8s + VMs).</b> Its global+zone control plane architecture is built for fleet management across multiple clusters from day one — not bolted on. Universal mode lets legacy VMs participate in the same mesh as K8s workloads with the same control plane and policies."
+  },
+  {
+    q: "Distributed tracing is enabled in your mesh but all traces have only one span. What's most likely wrong?",
+    opts: [
+      "The mesh isn't installed correctly — it should generate multi-span traces automatically",
+      "Applications need to propagate trace headers (x-request-id, b3) between inbound and outbound requests",
+      "You need to increase the trace sampling rate in the control plane",
+      "Linkerd doesn't support distributed tracing"
+    ],
+    ans: 1,
+    ex: "<b>Mesh injects and reads headers but cannot propagate them inside your application.</b> When service A receives a request with trace header X and calls service B, A must forward header X in the outgoing call. Otherwise, B's span has no parent and appears as a new trace. Solution: use OpenTelemetry auto-instrumentation or manual header propagation in each service."
+  },
+  {
+    q: "A 5-service startup asks whether they should install Istio. What's your recommendation?",
+    opts: [
+      "Yes — mTLS and observability are worth it at any scale",
+      "Yes — start with Istio ambient mode to minimize overhead",
+      "No — at 5 services the operational complexity outweighs benefits. Consider Linkerd when you reach 10+ services.",
+      "Yes — but start with Linkerd and migrate to Istio later"
+    ],
+    ans: 2,
+    ex: "<b>5 services is below the complexity threshold where mesh adds value.</b> The operational overhead (CRDs, debugging, resource usage, learning curve) exceeds the benefits at this scale. You can configure mTLS manually for 5 services. Revisit mesh at 10-15 services when unified observability, consistent policy enforcement, and mTLS automation start paying off."
+  },
+  {
+    q: "What does SPIFFE provide in a service mesh context and why is it better than IP-based authorization?",
+    opts: [
+      "SPIFFE is a load balancing protocol for service meshes",
+      "SPIFFE provides cryptographic workload identity (URI SANs in short-lived certificates) — identity is tied to the workload, not the IP address, which can be spoofed or reassigned",
+      "SPIFFE is the API for pushing configuration to Envoy proxies",
+      "SPIFFE provides service discovery so services can find each other by name"
+    ],
+    ans: 1,
+    ex: "<b>SPIFFE (Secure Production Identity Framework for Everyone)</b> gives each workload a cryptographic identity: <code>spiffe://trust-domain/ns/namespace/sa/serviceaccount</code>. IPs are ephemeral and can be spoofed — a new pod can get an old pod's IP. SPIFFE identity is bound to the ServiceAccount and cryptographically verified via mTLS. AuthorizationPolicies based on SPIFFE identity can't be spoofed."
+  }
+];
+
+let score = 0, answered = 0;
+function buildQuiz() {
+  const c = document.getElementById('qContainer');
+  c.innerHTML = '';
+  score = 0; answered = 0;
+  updateScore();
+  QS.forEach((q, qi) => {
+    const d = document.createElement('div');
+    d.className = 'q-item'; d.id = 'qi-'+qi;
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+      <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
+      <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
+    c.appendChild(d);
+  });
+}
+function answer(qi, chosen) {
+  const qEl = document.getElementById('qi-'+qi);
+  if (qEl.dataset.done) return;
+  qEl.dataset.done = '1';
+  const q = QS[qi];
+  q.opts.forEach((_,oi) => {
+    const b = document.getElementById(`qo-${qi}-${oi}`);
+    b.disabled = true;
+    if (oi === q.ans) b.classList.add('correct');
+    else if (oi === chosen && chosen !== q.ans) b.classList.add('wrong');
+  });
+  qEl.classList.add(chosen === q.ans ? 'revealed' : 'revealed-bad');
+  document.getElementById('qe-'+qi).classList.add('show');
+  if (chosen === q.ans) score++;
+  answered++;
+  updateScore();
+}
+function updateScore() {
+  document.getElementById('qScore').textContent = score;
+  document.getElementById('qTotal').textContent = answered;
+}
+function resetQuiz() { buildQuiz(); }
+function revealAll() {
+  QS.forEach((q,qi) => {
+    const qEl = document.getElementById('qi-'+qi);
+    if (qEl.dataset.done) return;
+    qEl.dataset.done = '1';
+    q.opts.forEach((_,oi) => {
+      const b = document.getElementById(`qo-${qi}-${oi}`);
+      b.disabled = true;
+      if (oi === q.ans) b.classList.add('correct');
+    });
+    qEl.classList.add('revealed');
+    document.getElementById('qe-'+qi).classList.add('show');
+    answered++;
+  });
+  updateScore();
+}
+buildQuiz();
+</script>
+</body>
+</html>

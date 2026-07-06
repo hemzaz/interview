@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI Pipelines — Actions / GitLab CI / Jenkins Interview Cheatsheet</title>
+<style>
+:root{
+  --bg:#0a0c10;
+  --surface:#111318;
+  --surface2:#161923;
+  --border:#232838;
+  --text:#e6edf3;
+  --muted:#8b98a9;
+  --accent:#4f8ef7;
+  --accent-dim:rgba(79,142,247,.12);
+  --good:#3fb950;
+  --warn:#e3b341;
+  --bad:#f85149;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.6;
+}
+.wrap{max-width:1100px;margin:0 auto;padding:64px 24px 80px;}
+
+header.page-head{margin-bottom:36px;border-bottom:1px solid var(--border);padding-bottom:24px;}
+header.page-head .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+header.page-head h1{font-size:32px;line-height:1.25;margin:0 0 10px;font-weight:700;}
+header.page-head p.lede{color:var(--muted);font-size:15px;max-width:74ch;margin:0;}
+.tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.tag{font-family:var(--mono);font-size:11.5px;padding:3px 9px;border-radius:6px;border:1px solid var(--border);color:var(--muted);background:var(--surface);}
+
+section{margin:40px 0;}
+h2{font-size:22px;margin:0 0 6px;font-weight:700;display:flex;align-items:center;gap:10px;}
+h2 .num{font-family:var(--mono);font-size:13px;color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:2px 8px;background:var(--surface);}
+h3{font-size:16.5px;margin:22px 0 8px;font-weight:650;color:var(--text);}
+h3.sub{color:var(--accent);}
+p{margin:0 0 12px;}
+ul,ol{margin:0 0 14px;padding-left:22px;}
+li{margin-bottom:6px;}
+.section-intro{color:var(--muted);margin-bottom:18px;max-width:80ch;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0;}
+.card h4{margin:0 0 8px;font-size:14.5px;font-weight:700;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+code{font-family:var(--mono);font-size:.88em;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px;color:#ffd479;}
+pre{
+  background:#06070a;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:16px 18px;
+  overflow-x:auto;
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.65;
+  margin:12px 0 16px;
+}
+pre code{background:none;padding:0;color:var(--text);}
+.cm{color:var(--muted);}
+.kw{color:#c39bf0;}
+.st{color:#8ecb85;}
+.nu{color:#79c0ff;}
+
+.tbl-wrap{overflow-x:auto;margin:14px 0;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2);}
+td:first-child{color:var(--text);font-weight:600;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+
+.trap{
+  border:1px solid rgba(248,81,73,.35);
+  background:rgba(248,81,73,.07);
+  border-radius:8px;
+  padding:12px 16px;
+  margin:14px 0;
+  font-size:14px;
+}
+.trap .lbl{font-family:var(--mono);font-weight:700;color:var(--bad);text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;margin-bottom:5px;display:block;}
+.qa{
+  border-left:3px solid var(--accent);
+  background:var(--accent-dim);
+  border-radius:0 8px 8px 0;
+  padding:12px 16px;
+  margin:14px 0;
+  font-size:14px;
+}
+.qa .lbl{font-family:var(--mono);font-weight:700;color:var(--accent);text-transform:uppercase;font-size:11.5px;letter-spacing:.06em;margin-bottom:5px;display:block;}
+.qa .a{color:var(--muted);margin-top:6px;}
+.note{
+  border-left:3px solid var(--good);
+  background:rgba(63,185,80,.06);
+  border-radius:0 8px 8px 0;
+  padding:12px 16px;
+  margin:14px 0;
+  font-size:14px;
+  color:var(--muted);
+}
+.note b{color:var(--text);}
+
+.pill-list{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;}
+.pill{font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:36px;}
+.toc h2{font-size:14px;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.toc ol{columns:2;column-gap:28px;padding-left:20px;margin:0;}
+.toc a{color:var(--text);text-decoration:none;font-size:14px;}
+.toc a:hover{color:var(--accent);}
+@media (max-width:640px){.toc ol{columns:1;}}
+
+footer{border-top:1px solid var(--border);margin-top:60px;padding-top:20px;color:var(--muted);font-size:12.5px;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<div class="wrap">
+
+<header class="page-head">
+  <div class="kicker">Senior DevOps Interview — CI Track</div>
+  <h1>CI Pipelines: Concepts, GitHub Actions, GitLab CI &amp; Jenkins</h1>
+  <p class="lede">The continuous-integration side of the pipeline: what CI actually solves, how the three dominant engines model workflows, and the design/security traps interviewers probe for. CD and GitOps (Argo CD, Flux) are covered separately.</p>
+  <div class="tag-row">
+    <span class="tag">build → test → scan → package → publish</span>
+    <span class="tag">trunk-based dev</span>
+    <span class="tag">OIDC keyless auth</span>
+    <span class="tag">supply-chain security</span>
+    <span class="tag">SBOM &amp; scan gates</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#concepts">1. CI Concepts &amp; Pipeline Model</a></li>
+    <li><a href="#actions">2. GitHub Actions</a></li>
+    <li><a href="#gitlab">3. GitLab CI</a></li>
+    <li><a href="#jenkins">4. Jenkins</a></li>
+    <li><a href="#comparison">5. Actions vs GitLab CI vs Jenkins</a></li>
+    <li><a href="#design">6. Pipeline Design Principles</a></li>
+    <li><a href="#supply-chain">7. Supply-Chain Security</a></li>
+    <li><a href="#testing">8. Testing in CI</a></li>
+    <li><a href="#traps">9. Traps &amp; Gotchas Summary</a></li>
+    <li><a href="#qa">10. Rapid Q&amp;A Round</a></li>
+  </ol>
+</nav>
+
+<section id="concepts">
+  <h2><span class="num">01</span> CI Concepts &amp; Pipeline Model</h2>
+  <p class="section-intro">CI is the discipline of merging small changes frequently and validating each one automatically, so integration problems surface in minutes, not weeks.</p>
+
+  <h3>What CI actually solves</h3>
+  <ul>
+    <li><b>Integration risk</b> — without CI, divergent branches accumulate conflicts that compound over time ("integration hell"). Frequent merges + automated validation keep divergence small.</li>
+    <li><b>Fast feedback</b> — a broken build/test is caught within minutes of the commit that caused it, while the change is still fresh in the author's head.</li>
+    <li><b>Deterministic quality bar</b> — the same checks run for every change, removing "works on my machine" and reviewer inconsistency.</li>
+    <li><b>Shippable artifact</b> — the end product of CI is a versioned, scanned, immutable artifact (image, package, binary) that CD promotes — CI never deploys to production itself in a clean split.</li>
+  </ul>
+
+  <h3>Canonical pipeline stages</h3>
+  <div class="card">
+    <h4>build → test → scan → package → publish</h4>
+    <table>
+      <tr><th>Stage</th><th>Purpose</th><th>Typical gate</th></tr>
+      <tr><td>Build</td><td>Compile / transpile / install deps</td><td>Non-zero exit fails the pipeline</td></tr>
+      <tr><td>Test</td><td>Unit → integration → (e2e in CD/staging)</td><td>Coverage threshold, no regressions</td></tr>
+      <tr><td>Scan</td><td>SAST, dependency/SCA, secret scan, license check</td><td>No new CRITICAL/HIGH findings</td></tr>
+      <tr><td>Package</td><td>Produce the immutable artifact (container image, jar, wheel)</td><td>SBOM generated, image signed</td></tr>
+      <tr><td>Publish</td><td>Push to registry/artifact store with an immutable tag</td><td>Provenance attestation attached</td></tr>
+    </table>
+  </div>
+
+  <h3>Trunk-based development &amp; PR/merge checks</h3>
+  <p>Trunk-based dev keeps everyone merging small commits into <code>main</code>/<code>trunk</code> at least daily, behind short-lived feature branches (or feature flags instead of long-lived branches). This is what makes fast CI feedback meaningful — you can't get fast feedback on a branch that diverges for three weeks.</p>
+  <ul>
+    <li><b>PR/merge-request checks</b> run the pipeline against the merge result (not just the branch tip) — GitHub's "merge queue" and GitLab's "merged results pipelines" both validate the hypothetical post-merge state before it lands.</li>
+    <li>Required status checks + branch protection make CI the actual gatekeeper, not a suggestion.</li>
+  </ul>
+
+  <h3>Artifact management, caching, fan-out/fan-in</h3>
+  <ul>
+    <li><b>Artifacts</b> are the pipeline's persistent outputs (test reports, coverage, built binaries) — passed between stages/jobs and often retained for a fixed period for audit/debugging.</li>
+    <li><b>Cache</b> is a performance optimization (dependency directories, build layers) — best-effort, restorable, and safe to lose; never treat cache as a source of truth for what shipped.</li>
+    <li><b>Fan-out/fan-in</b>: one pipeline triggers N parallel jobs (matrix builds, per-package tests) that fan back into a single aggregate gate before deploy — this is how large monorepos keep CI fast without sacrificing full coverage.</li>
+  </ul>
+
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    "What's the difference between CI and CD?" — CI validates and produces an artifact on every change; CD takes that already-validated artifact and promotes it through environments. Conflating them (rebuilding per environment) breaks the "build once, promote the artifact" guarantee and is a common interview red flag to call out.
+  </div>
+</section>
+
+<section id="actions">
+  <h2><span class="num">02</span> GitHub Actions</h2>
+  <p class="section-intro">Event-driven automation native to GitHub. Model: repository events trigger <b>workflows</b>, which contain one or more <b>jobs</b>, which run ordered <b>steps</b> on a <b>runner</b>.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Core hierarchy</h4>
+      <ul>
+        <li><b>Workflow</b> — a YAML file in <code>.github/workflows/</code>, triggered by one or more events.</li>
+        <li><b>Job</b> — a set of steps that run on the same runner instance; jobs run in parallel by default unless <code>needs</code> orders them.</li>
+        <li><b>Step</b> — a single command (<code>run:</code>) or reusable unit (<code>uses:</code> an Action).</li>
+        <li><b>Action</b> — a reusable packaged unit (Docker, JS, or composite) versioned like a dependency.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Events / triggers</h4>
+      <ul>
+        <li><code>push</code>, <code>pull_request</code>, <code>pull_request_target</code> (runs with base-repo secrets — a classic injection vector, see traps)</li>
+        <li><code>workflow_dispatch</code> (manual), <code>schedule</code> (cron), <code>release</code></li>
+        <li><code>workflow_call</code> — makes a workflow reusable/callable from other workflows</li>
+        <li><code>repository_dispatch</code> — external system triggers via API</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Runners: hosted vs self-hosted</h3>
+  <table>
+    <tr><th></th><th>GitHub-hosted</th><th>Self-hosted</th></tr>
+    <tr><td>Provisioning</td><td>Ephemeral VM per job, auto-provisioned</td><td>You provision (VM, container, bare metal)</td></tr>
+    <tr><td>State</td><td>Clean every run — no residue</td><td>Persistent by default — must be made ephemeral deliberately</td></tr>
+    <tr><td>Cost model</td><td>Per-minute billing</td><td>Your infra cost, no per-minute fee</td></tr>
+    <tr><td>Use case</td><td>Default choice, public/standard workloads</td><td>Custom hardware (GPU), network-restricted access, compliance</td></tr>
+    <tr><td>Security note</td><td>Isolated per job</td><td>Fork PRs must never run on self-hosted runners with secrets — untrusted code gets a foothold on your infra</td></tr>
+  </table>
+
+  <h3>Matrix builds, caching, reusable workflows</h3>
+  <ul>
+    <li><b>Matrix</b> (<code>strategy.matrix</code>) fans a job out across a cross-product of variables (OS × language version, etc.) — each combination runs as an independent parallel job.</li>
+    <li><code>actions/cache</code> keys on a hash (e.g. lockfile checksum) with restore-key fallback; a cache miss just means a slower run, never a correctness issue — unless you cache something that should be revalidated (see cache poisoning trap).</li>
+    <li><b>Reusable workflows</b> (<code>workflow_call</code>) let one workflow invoke another with typed inputs/secrets — the way to DRY across many repos.</li>
+    <li><b>Composite actions</b> bundle several steps into one reusable action (single repo, simpler than a full reusable workflow).</li>
+  </ul>
+
+  <h3>Secrets &amp; OIDC (keyless cloud auth)</h3>
+  <p>Modern best practice: don't store long-lived cloud credentials as GitHub secrets at all. GitHub's OIDC provider issues a short-lived signed token per workflow run; AWS/GCP/Azure trust that token via a configured identity-provider/trust-policy and hand back temporary credentials scoped to that specific repo/branch. No static keys sit in the secrets store waiting to leak.</p>
+
+  <h3>Permissions &amp; concurrency</h3>
+  <ul>
+    <li><code>permissions:</code> at workflow or job level scopes the auto-generated <code>GITHUB_TOKEN</code> — default should be <code>contents: read</code>, granting write/id-token only to the jobs that need it (least privilege).</li>
+    <li><code>concurrency:</code> with a <code>group</code> key + <code>cancel-in-progress: true</code> avoids redundant/overlapping runs (e.g. superseded PR pushes) racing each other.</li>
+    <li><code>actions/upload-artifact</code> / <code>download-artifact</code> pass build outputs between jobs; default retention is time-boxed (org/repo configurable).</li>
+  </ul>
+
+  <h3>Example workflow</h3>
+  <pre><code><span class="kw">name:</span> <span class="st">CI</span>
+
+<span class="kw">on:</span>
+  <span class="kw">push:</span>
+    <span class="kw">branches:</span> [<span class="st">main</span>]
+  <span class="kw">pull_request:</span>
+
+<span class="kw">permissions:</span>
+  <span class="kw">contents:</span> <span class="st">read</span>   <span class="cm"># least-privilege default; id-token granted only to the deploy job below</span>
+
+<span class="kw">concurrency:</span>
+  <span class="kw">group:</span> <span class="st">${{ github.workflow }}-${{ github.ref }}</span>
+  <span class="kw">cancel-in-progress:</span> <span class="nu">true</span>
+
+<span class="kw">jobs:</span>
+  <span class="kw">test:</span>
+    <span class="kw">runs-on:</span> <span class="st">ubuntu-latest</span>
+    <span class="kw">strategy:</span>
+      <span class="kw">matrix:</span>
+        <span class="kw">node:</span> [<span class="nu">18</span>, <span class="nu">20</span>, <span class="nu">22</span>]
+    <span class="kw">steps:</span>
+      <span class="kw">- uses:</span> <span class="st">actions/checkout@v4</span>
+      <span class="kw">- uses:</span> <span class="st">actions/setup-node@v4</span>
+        <span class="kw">with:</span>
+          <span class="kw">node-version:</span> <span class="st">${{ matrix.node }}</span>
+      <span class="kw">- uses:</span> <span class="st">actions/cache@v4</span>
+        <span class="kw">with:</span>
+          <span class="kw">path:</span> <span class="st">~/.npm</span>
+          <span class="kw">key:</span> <span class="st">npm-${{ hashFiles('package-lock.json') }}</span>
+      <span class="kw">- run:</span> <span class="st">npm ci</span>
+      <span class="kw">- run:</span> <span class="st">npm test -- --coverage</span>
+
+  <span class="kw">deploy:</span>
+    <span class="kw">needs:</span> <span class="st">test</span>
+    <span class="kw">runs-on:</span> <span class="st">ubuntu-latest</span>
+    <span class="kw">permissions:</span>
+      <span class="kw">id-token:</span> <span class="st">write</span>
+      <span class="kw">contents:</span> <span class="st">read</span>
+    <span class="kw">steps:</span>
+      <span class="kw">- uses:</span> <span class="st">aws-actions/configure-aws-credentials@v4</span>
+        <span class="kw">with:</span>
+          <span class="kw">role-to-assume:</span> <span class="st">arn:aws:iam::123456789012:role/ci-deploy</span>
+          <span class="kw">aws-region:</span> <span class="st">us-east-1</span>
+          <span class="cm"># no access-key-id / secret-access-key — OIDC issues a short-lived token</span>
+</code></pre>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <code>pull_request_target</code> runs with the <b>base</b> repo's secrets and permissions, even for a PR from a fork — combined with checking out and running the fork's untrusted code, this is the classic path to secret exfiltration. If you need to build fork PRs, use plain <code>pull_request</code> (no secrets, runs in a restricted context) or explicitly isolate what gets checked out.
+  </div>
+</section>
+
+<section id="gitlab">
+  <h2><span class="num">03</span> GitLab CI</h2>
+  <p class="section-intro">Config lives in a single <code>.gitlab-ci.yml</code> at repo root (or included from elsewhere). Jobs are assigned to <b>stages</b> that run sequentially; jobs within a stage run in parallel by default.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Stages &amp; jobs</h4>
+      <ul>
+        <li><code>stages:</code> defines the sequential phases (e.g. build, test, deploy).</li>
+        <li>Each job specifies <code>stage:</code>; jobs in the same stage run concurrently.</li>
+        <li><code>needs:</code> lets a job skip waiting for its whole stage and instead depend on specific jobs — this is what enables a DAG instead of strict stage-by-stage execution.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><code>rules</code> vs the deprecated <code>only</code>/<code>except</code></h4>
+      <ul>
+        <li><code>rules:</code> is the modern, more expressive way to control whether/how a job runs (conditions, <code>when:</code>, variables) — it supersedes <code>only</code>/<code>except</code>.</li>
+        <li><code>only</code>/<code>except</code> still work but are legacy and cannot combine conditions as flexibly as <code>rules</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Runners &amp; executors</h3>
+  <table>
+    <tr><th>Executor</th><th>What it runs jobs in</th></tr>
+    <tr><td><code>shell</code></td><td>Directly on the runner host — fast but no isolation between jobs</td></tr>
+    <tr><td><code>docker</code></td><td>Each job in a fresh container from the specified <code>image:</code> — the common default</td></tr>
+    <tr><td><code>kubernetes</code></td><td>Each job as a pod in a cluster — scales elastically, good for large fleets</td></tr>
+    <tr><td><code>docker-machine</code>/autoscale</td><td>Runner provisions/tears down VMs on demand</td></tr>
+  </table>
+  <p>Runners can be <b>shared</b> (instance-wide, GitLab.com's pool) or <b>project/group-specific</b> (dedicated, registered with a runner token).</p>
+
+  <h3>Cache vs artifacts</h3>
+  <ul>
+    <li><code>cache:</code> is keyed, best-effort, and meant for dependency directories to speed up subsequent runs — not guaranteed to exist.</li>
+    <li><code>artifacts:</code> are the job's actual outputs, passed to later stages automatically and stored per GitLab's retention/expiry settings (<code>expire_in:</code>).</li>
+  </ul>
+
+  <h3>Includes, templates, environments</h3>
+  <ul>
+    <li><code>include:</code> pulls in config from local files, other projects, remote URLs, or GitLab's own template library — the DRY mechanism analogous to Actions' reusable workflows.</li>
+    <li><code>environment:</code> on a job ties it to a named deployment target, enabling environment-scoped variables, deployment history, and manual approval gates.</li>
+  </ul>
+
+  <h3>Example pipeline</h3>
+  <pre><code><span class="kw">stages:</span>
+  <span class="kw">-</span> <span class="st">build</span>
+  <span class="kw">-</span> <span class="st">test</span>
+  <span class="kw">-</span> <span class="st">deploy</span>
+
+<span class="kw">variables:</span>
+  <span class="kw">NODE_ENV:</span> <span class="st">test</span>
+
+<span class="kw">.build_template:</span>
+  <span class="kw">image:</span> <span class="st">node:20</span>
+  <span class="kw">cache:</span>
+    <span class="kw">key:</span>
+      <span class="kw">files:</span> [<span class="st">package-lock.json</span>]
+    <span class="kw">paths:</span>
+      <span class="kw">-</span> <span class="st">.npm/</span>
+
+<span class="kw">build:</span>
+  <span class="kw">extends:</span> <span class="st">.build_template</span>
+  <span class="kw">stage:</span> <span class="st">build</span>
+  <span class="kw">script:</span>
+    <span class="kw">-</span> <span class="st">npm ci --cache .npm</span>
+    <span class="kw">-</span> <span class="st">npm run build</span>
+  <span class="kw">artifacts:</span>
+    <span class="kw">paths:</span>
+      <span class="kw">-</span> <span class="st">dist/</span>
+    <span class="kw">expire_in:</span> <span class="st">1 week</span>
+
+<span class="kw">test:</span>
+  <span class="kw">extends:</span> <span class="st">.build_template</span>
+  <span class="kw">stage:</span> <span class="st">test</span>
+  <span class="kw">needs:</span> [<span class="st">build</span>]
+  <span class="kw">script:</span>
+    <span class="kw">-</span> <span class="st">npm test -- --coverage</span>
+  <span class="kw">rules:</span>
+    <span class="kw">- if:</span> <span class="st">'$CI_PIPELINE_SOURCE == "merge_request_event"'</span>
+    <span class="kw">- if:</span> <span class="st">'$CI_COMMIT_BRANCH == "main"'</span>
+
+<span class="kw">deploy_prod:</span>
+  <span class="kw">stage:</span> <span class="st">deploy</span>
+  <span class="kw">needs:</span> [<span class="st">test</span>]
+  <span class="kw">environment:</span>
+    <span class="kw">name:</span> <span class="st">production</span>
+  <span class="kw">script:</span>
+    <span class="kw">-</span> <span class="st">./deploy.sh</span>
+  <span class="kw">rules:</span>
+    <span class="kw">- if:</span> <span class="st">'$CI_COMMIT_BRANCH == "main"'</span>
+      <span class="kw">when:</span> <span class="st">manual</span>
+</code></pre>
+
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    "How do you get a DAG instead of stage-by-stage waiting in GitLab CI?" — Add <code>needs:</code> listing specific job names on each job; GitLab then starts a job as soon as its named dependencies finish, ignoring the rest of its nominal stage.
+  </div>
+</section>
+
+<section id="jenkins">
+  <h2><span class="num">04</span> Jenkins</h2>
+  <p class="section-intro">The long-standing self-hosted automation server. Pipelines are defined as code in a <code>Jenkinsfile</code>, executed by a controller that dispatches work to agents.</p>
+
+  <h3>Declarative vs Scripted Pipeline</h3>
+  <table>
+    <tr><th></th><th>Declarative</th><th>Scripted</th></tr>
+    <tr><td>Syntax</td><td>Structured <code>pipeline { }</code> block, fixed sections</td><td>Full Groovy DSL, imperative</td></tr>
+    <tr><td>Learning curve</td><td>Lower, guided structure</td><td>Higher, requires Groovy fluency</td></tr>
+    <tr><td>Validation</td><td>Linted up front, errors caught before running stages</td><td>Errors often surface mid-run</td></tr>
+    <tr><td>When to use</td><td>Default choice for the vast majority of pipelines today</td><td>Complex conditional/dynamic logic that declarative's <code>script{}</code> escape hatch can't cleanly express</td></tr>
+  </table>
+
+  <h3>Core building blocks</h3>
+  <ul>
+    <li><b>Jenkinsfile</b> — the pipeline-as-code file, checked into the repo (or configured inline in older jobs — avoid this, it defeats "pipeline as code").</li>
+    <li><b>Agent</b> (<code>agent { }</code>) — where a stage or the whole pipeline executes: a labeled static node, a Docker container, or a dynamically provisioned pod (Kubernetes plugin).</li>
+    <li><b>Stages/Steps</b> — same conceptual shape as Actions/GitLab: named phases containing ordered commands.</li>
+    <li><b>Shared libraries</b> — versioned Groovy code (<code>vars/</code>, <code>src/</code>) loaded into any Jenkinsfile via <code>@Library</code>, the mechanism for DRY across many pipelines/teams.</li>
+    <li><b>Plugin ecosystem</b> — Jenkins' core strength and core liability: thousands of plugins provide integrations, but plugin compatibility/security maintenance is an ongoing operational burden.</li>
+  </ul>
+
+  <h3>Example Jenkinsfile (declarative)</h3>
+  <pre><code><span class="kw">pipeline</span> {
+    <span class="kw">agent</span> {
+        <span class="kw">kubernetes</span> {
+            <span class="kw">yaml</span> <span class="st">'''
+              spec:
+                containers:
+                - name: node
+                  image: node:20
+            '''</span>
+        }
+    }
+    <span class="kw">options</span> {
+        <span class="kw">timeout</span>(<span class="kw">time:</span> <span class="nu">30</span>, <span class="kw">unit:</span> <span class="st">'MINUTES'</span>)
+        <span class="kw">disableConcurrentBuilds</span>()
+    }
+    <span class="kw">stages</span> {
+        <span class="kw">stage</span>(<span class="st">'Build'</span>) {
+            <span class="kw">steps</span> {
+                <span class="kw">sh</span> <span class="st">'npm ci && npm run build'</span>
+            }
+        }
+        <span class="kw">stage</span>(<span class="st">'Test'</span>) {
+            <span class="kw">steps</span> {
+                <span class="kw">sh</span> <span class="st">'npm test -- --coverage'</span>
+            }
+        }
+        <span class="kw">stage</span>(<span class="st">'Publish'</span>) {
+            <span class="kw">when</span> { <span class="kw">branch</span> <span class="st">'main'</span> }
+            <span class="kw">steps</span> {
+                <span class="kw">withCredentials</span>([<span class="kw">string</span>(<span class="kw">credentialsId:</span> <span class="st">'registry-token'</span>, <span class="kw">variable:</span> <span class="st">'TOKEN'</span>)]) {
+                    <span class="kw">sh</span> <span class="st">'echo "$TOKEN" | docker login -u ci --password-stdin'</span>
+                }
+            }
+        }
+    }
+}
+</code></pre>
+
+  <h3>Why teams migrate off Jenkins</h3>
+  <ul>
+    <li>Controller/agent architecture demands ongoing self-managed infra (patching, scaling, plugin upgrades) vs. hosted-runner SaaS models.</li>
+    <li>Plugin sprawl creates version-compatibility matrices that become a maintenance tax, and plugins are a recurring CVE source.</li>
+    <li>Groovy scripted pipelines can become unmaintainable "pipeline spaghetti" without strong shared-library discipline.</li>
+    <li>Native GitHub/GitLab CI removes a whole separate system to operate when a team is already consolidated on one Git host.</li>
+    <li>Jenkins still wins where: complex on-prem/air-gapped requirements, deep legacy plugin integrations, or highly custom orchestration logic that hosted CI's YAML models don't express well.</li>
+  </ul>
+
+  <div class="note">
+    <b>Interview framing:</b> "Jenkins isn't dead, it's a different trade-off." Expect the interviewer to want you to name the trade-off (control &amp; extensibility vs. operational overhead), not declare a winner.
+  </div>
+</section>
+
+<section id="comparison">
+  <h2><span class="num">05</span> Actions vs GitLab CI vs Jenkins</h2>
+  <div class="tbl-wrap">
+  <table>
+    <tr><th>Dimension</th><th>GitHub Actions</th><th>GitLab CI</th><th>Jenkins</th></tr>
+    <tr><td>Config location</td><td><code>.github/workflows/*.yml</code></td><td><code>.gitlab-ci.yml</code></td><td><code>Jenkinsfile</code></td></tr>
+    <tr><td>Hosting model</td><td>SaaS (or self-hosted runners)</td><td>SaaS/self-managed GitLab + runners</td><td>Fully self-hosted controller</td></tr>
+    <tr><td>Execution unit</td><td>Job (steps) on a runner</td><td>Job (script) on a runner via executor</td><td>Stage (steps) on an agent</td></tr>
+    <tr><td>Reuse mechanism</td><td>Reusable workflows / composite actions</td><td><code>include</code> / templates / <code>extends</code></td><td>Shared libraries</td></tr>
+    <tr><td>DAG support</td><td><code>needs:</code> between jobs</td><td><code>needs:</code> between jobs (breaks stage ordering)</td><td>Parallel stages block; less native DAG</td></tr>
+    <tr><td>Secrets/cloud auth</td><td>OIDC to AWS/GCP/Azure, encrypted secrets</td><td>OIDC (<code>id_tokens</code>), CI/CD variables (masked/protected)</td><td>Credentials plugin, external vault integrations</td></tr>
+    <tr><td>Marketplace/ecosystem</td><td>Actions Marketplace (huge, variable trust)</td><td>Smaller catalog, more built-in templates</td><td>Plugin ecosystem (huge, maintenance burden)</td></tr>
+    <tr><td>Best fit</td><td>GitHub-hosted repos, fast setup, broad community actions</td><td>Teams on GitLab wanting integrated DevOps platform</td><td>Complex/legacy/on-prem, custom orchestration needs</td></tr>
+  </table>
+  </div>
+</section>
+
+<section id="design">
+  <h2><span class="num">06</span> Pipeline Design Principles</h2>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Idempotency &amp; ephemeral runners</h4>
+      <p>A pipeline run should produce the same result regardless of what ran before it on that machine. Ephemeral, single-use runners (fresh container/VM per job) enforce this by construction — no leftover state from a previous job can leak into the next one.</p>
+    </div>
+    <div class="card">
+      <h4>Build once, promote the artifact</h4>
+      <p>Build and package exactly once per commit; the identical artifact (same digest) moves through dev → staging → prod. Rebuilding per environment risks "it built differently in prod" and breaks provenance guarantees.</p>
+    </div>
+    <div class="card">
+      <h4>Semantic versioning &amp; immutable tags</h4>
+      <p>Tag artifacts by content-addressable digest or semver, never mutate a tag after publish. This is what makes rollback deterministic and what CD tooling (Argo/Flux image updaters) relies on to detect new versions.</p>
+    </div>
+    <div class="card">
+      <h4>SBOM &amp; scan gates</h4>
+      <p>Generate a Software Bill of Materials at package time (Syft, cdxgen, etc.) and gate publish on dependency/container scan results — this is what lets you answer "are we affected by CVE-X" in minutes instead of days.</p>
+    </div>
+  </div>
+
+  <h3>Secrets handling</h3>
+  <ul>
+    <li>Never <code>echo</code>, print, or log a secret value — most CI engines mask known secret variables in log output, but only for values registered as secrets; string-concatenated or derived secrets can bypass masking.</li>
+    <li>Prefer OIDC/workload-identity federation over long-lived static keys wherever the cloud provider supports it — nothing to leak because nothing persists.</li>
+    <li>Scope secrets to the narrowest job/environment that needs them; a build job almost never needs deploy credentials.</li>
+  </ul>
+</section>
+
+<section id="supply-chain">
+  <h2><span class="num">07</span> Supply-Chain Security</h2>
+  <p class="section-intro">CI is high-value attack surface: it has secrets, write access to registries, and runs arbitrary code from dependencies. This is squarely 2026 interview territory after several real-world incidents.</p>
+
+  <h3>Pin third-party actions/dependencies by SHA</h3>
+  <p>Referencing a third-party Action by a mutable tag (<code>uses: some/action@v3</code>) means the maintainer (or an attacker who compromises their account) can silently change what that tag points to — your pipeline then runs different code with zero diff in your own repo. Pin to a full commit SHA instead:</p>
+  <pre><code><span class="cm"># risky — tag can be repointed after the fact</span>
+<span class="kw">- uses:</span> <span class="st">tj-actions/changed-files@v41</span>
+
+<span class="cm"># safer — SHA is immutable, tag is just a human-readable comment</span>
+<span class="kw">- uses:</span> <span class="st">tj-actions/changed-files@a1b2c3d4e5f6...</span> <span class="cm"># v41.0.0</span>
+</code></pre>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap — the tj-actions style compromise</span>
+    In a real supply-chain incident, a popular third-party Action was compromised and its version tags were repointed to a malicious commit that dumped CI secrets into build logs. Every workflow pinning that action by tag (not SHA) pulled the compromised code on its next run automatically — no code change, no PR, no review trail in the victim's own repo. Interviewers use this as the canonical example for "why pin by SHA."
+  </div>
+
+  <h3>Other supply-chain gates</h3>
+  <ul>
+    <li><b>Provenance/attestation</b> (SLSA, in-toto) — cryptographically link an artifact back to the exact source commit and build steps that produced it.</li>
+    <li><b>Image signing</b> (cosign/Sigstore) — sign artifacts at publish time; deploy-time policy (e.g. Kyverno/OPA) can refuse unsigned images.</li>
+    <li><b>Dependency review</b> — block PRs that introduce a dependency with known critical vulnerabilities or a newly-changed maintainer/publish pattern.</li>
+    <li><b>Least-privilege tokens</b> — narrow <code>GITHUB_TOKEN</code>/CI job token scopes so a compromised job can't push to unrelated repos or packages.</li>
+  </ul>
+</section>
+
+<section id="testing">
+  <h2><span class="num">08</span> Testing in CI</h2>
+
+  <h3>Layering</h3>
+  <div class="grid3">
+    <div class="card">
+      <h4>Unit</h4>
+      <p>Fast, isolated, no I/O. Run on every commit/PR. Should be the large base of the pyramid — hundreds to thousands, seconds to run.</p>
+    </div>
+    <div class="card">
+      <h4>Integration</h4>
+      <p>Exercises real boundaries (DB, queue, internal service). Slower, fewer of them, usually still runs in CI with ephemeral dependencies (containers/testcontainers).</p>
+    </div>
+    <div class="card">
+      <h4>E2E</h4>
+      <p>Full user-flow-level, against a deployed environment. Slowest and most brittle — often run post-deploy in CD/staging rather than blocking every commit.</p>
+    </div>
+  </div>
+
+  <h3>Flaky test handling</h3>
+  <ul>
+    <li>Quarantine known-flaky tests into a non-blocking job/tag rather than silently retrying forever — retries hide real intermittent bugs (race conditions, shared state, network timing).</li>
+    <li>Track flake rate per test; a test that fails >X% of runs without a code change is a bug in the test (or the code under test), not noise to ignore.</li>
+    <li>Automatic retry-on-failure is acceptable for genuinely environmental flakiness (network blips) but should be capped and logged, never silent/unlimited.</li>
+  </ul>
+
+  <h3>Coverage gates &amp; parallelism</h3>
+  <ul>
+    <li>Coverage thresholds (e.g. 80%) are a floor, not a target — 100% coverage with weak assertions is worse than 80% with meaningful ones. Interviewers probe for this nuance.</li>
+    <li>Parallelize test suites by splitting on historical timing data (not just file count) to balance shard duration — naive splitting leaves one shard as the bottleneck.</li>
+  </ul>
+</section>
+
+<section id="traps">
+  <h2><span class="num">09</span> Traps &amp; Gotchas Summary</h2>
+
+  <div class="trap">
+    <span class="lbl">⚠ Secrets in logs</span>
+    A secret concatenated into a derived string, base64-encoded, or split across variables can bypass the CI engine's log-masking, which typically only masks exact literal matches of registered secret values.
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Unpinned third-party actions/images</span>
+    Mutable tags (<code>@v3</code>, <code>:latest</code>) on third-party Actions, Docker base images, or dependencies let upstream change what actually runs without any change in your own repo history.
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Cache poisoning</span>
+    A cache keyed too broadly (e.g. by branch name instead of lockfile hash) can serve a malicious or stale dependency tree across unrelated builds — always key cache on content hashes, never trust cache for anything security-sensitive without revalidation.
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ <code>latest</code> tag in production pipelines</span>
+    Deploying/building against <code>:latest</code> makes builds non-reproducible and rollbacks meaningless — you can't roll back to "whatever latest was an hour ago."
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Non-ephemeral self-hosted runners</span>
+    A long-lived self-hosted runner accumulates state (cached creds, leftover files, installed tooling) between jobs from different branches/PRs — a compromised or malicious job can leave a persistent foothold for the next job that lands on the same box.
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Fork PRs on privileged triggers</span>
+    <code>pull_request_target</code> (Actions) or any trigger that grants base-repo secrets/write-access to a job that also checks out fork code is a direct path to secret exfiltration — separate "build untrusted fork code" from "have access to secrets."
+  </div>
+</section>
+
+<section id="qa">
+  <h2><span class="num">10</span> Rapid Q&amp;A Round</h2>
+
+  <div class="qa">
+    <span class="lbl">Q</span> Why prefer OIDC over stored cloud credentials in CI?
+    <div class="a">Short-lived, per-run tokens scoped to a specific repo/branch/workflow — nothing static to rotate, leak, or forget to revoke. Removes an entire class of "old key still valid" incidents.</div>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q</span> What's the difference between cache and artifacts?
+    <div class="a">Cache is a best-effort speed optimization you can lose without consequence; artifacts are the actual outputs of the job that later stages or humans depend on and are retained deliberately.</div>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q</span> How do you keep a large monorepo's CI fast?
+    <div class="a">Fan out affected packages/services into parallel jobs (matrix or DAG via <code>needs</code>), cache aggressively on content hashes, and only run the full suite for changes that actually touch shared code — path-filtered triggers reduce redundant runs.</div>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q</span> Declarative or scripted Jenkins Pipeline — which do you default to?
+    <div class="a">Declarative, because it's linted before execution and easier for a team to reason about; drop into a <code>script{}</code> block only for logic declarative genuinely can't express.</div>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q</span> Your CI passed but the same commit fails in CD's staging deploy — what's your first hypothesis?
+    <div class="a">Environment drift or a rebuild — check whether CD rebuilt the artifact instead of promoting the exact digest CI produced; that's the single most common cause of "passed in CI, fails in CD" bugs.</div>
+  </div>
+</section>
+
+<footer>
+  CI Pipelines Interview Cheatsheet — part of the DevOps interview prep collection. See the GitOps/CD sheets (Argo CD, Flux) for the deployment side of the pipeline.
+</footer>
+
+</div>
+</body>
+</html>

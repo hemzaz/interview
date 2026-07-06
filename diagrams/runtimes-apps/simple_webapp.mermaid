@@ -1,0 +1,87 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#FF9900', 
+    'primaryBorderColor': '#E88A00', 
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#232F3E',
+    'tertiaryColor': '#527FFF',
+    'lineColor': '#CCCCCC',
+    'textColor': '#CCCCCC',
+    'clusterBkg': '#1E1E1E',
+    'clusterBorder': '#444444',
+    'background': '#282a36'
+}}}%%
+
+flowchart TD
+    %% === AWS SIMPLE WEB APPLICATION ARCHITECTURE ===
+    %% Title: AWS-Based Web Application Architecture
+    %% Description: Basic three-tier web application architecture in AWS VPC
+
+    %% External User Connection
+    User(["👤 Internet Users"]) -- "HTTPS (443)" --> CloudFront["📡 CloudFront CDN"]
+    CloudFront -- "Origin Requests" --> WAF
+    
+    %% VPC Architecture
+    subgraph VPC ["☁️ Virtual Private Cloud"]
+        direction TB
+        
+        %% Public Tier
+        subgraph PublicSubnets ["🌐 Public Subnets"]
+            direction LR
+            WAF["🛡️ WAF"]
+            LB["⚖️ Load Balancer"]
+            NAT["🔀 NAT Gateway"]
+            Bastion["🔒 Bastion Host"]
+        end
+        
+        %% Application Tier
+        subgraph PrivateSubnets ["🔒 Private Subnets"]
+            direction TB
+            
+            subgraph AppLayer ["Application Layer"]
+                direction LR
+                TG_FE["🎯 Target Group - FE"]
+                TG_BE["🎯 Target Group - BE"]
+                FE["🖥️ Front End (EC2/ECS)"]
+                BE["⚙️ Back End (EC2/ECS)"]
+            end
+            
+            subgraph DataLayer ["Data Layer"]
+                direction LR
+                RDS["💾 Aurora/RDS"]
+                ElastiCache["⚡ ElastiCache"]
+            end
+        end
+        
+        %% VPC Flow
+        WAF --> LB
+        LB -- "Route: /api/*" --> TG_BE
+        LB -- "Route: /*" --> TG_FE
+        TG_FE --> FE
+        TG_BE --> BE
+        
+        %% Private Resources Communication
+        FE -- "API Calls" --> BE
+        BE -- "CRUD Operations" --> RDS
+        BE -- "Cache Operations" --> ElastiCache
+        FE -- "Cache Reads" --> ElastiCache
+        
+        %% Outbound Internet Access
+        FE & BE -.-> NAT
+        NAT -.-> Internet(["🌎 Internet"])
+    end
+    
+    %% Supporting Services
+    subgraph SupportingServices ["Supporting Services"]
+        direction LR
+        CW["📊 CloudWatch"]
+        S3["📦 S3 Buckets"]
+        SecretsManager["🔑 Secrets Manager"]
+    end
+    
+    %% Supporting Services Integration
+    FE & BE --> CW
+    FE & BE --> S3
+    BE --> SecretsManager
+    SecretsManager -..-> RDS
+    
+    %% No custom styling for better compatibility

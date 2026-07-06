@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Trap Sheet — Senior DevOps Interview</title>
+<link href="../assets/fonts/font-set-14.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0c;
+  --s1: #0c1014;
+  --s2: #101418;
+  --bd: #1a2028;
+  --b2: #22303e;
+  /* wrong = red, right = acid green */
+  --wrong: #ff2d55;
+  --right: #39ff14;
+  --right2: #22c55e;
+  /* domain colors */
+  --k8s:  #00d4ff;  /* K8s = cyan */
+  --kfk:  #ff6b35;  /* Kafka = orange */
+  --lnx:  #a855f7;  /* Linux = purple */
+  --aws:  #ff9900;  /* AWS = AWS orange */
+  --arc:  #ffd700;  /* Architecture = gold */
+  --text: #d4dde5;
+  --dim:  #3d5060;
+  --mid:  #6b8090;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Barlow',sans-serif;
+  font-size:12px;
+  line-height:1.45;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(255,45,85,0.018) 25px),
+    repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(255,45,85,0.018) 25px);
+  pointer-events:none;
+}
+.page{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:30px 20px 60px;}
+
+/* ── HEADER ── */
+.header{margin-bottom:32px;border-bottom:1px solid var(--bd);padding-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;}
+.hl h1{font-family:'Barlow Condensed',sans-serif;font-size:80px;font-weight:900;letter-spacing:-2px;line-height:.9;text-transform:uppercase;}
+.hl h1 .t1{color:var(--wrong);}
+.hl h1 .t2{color:rgba(255,255,255,0.08);-webkit-text-stroke:1px rgba(255,45,85,0.3);}
+.hl .sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:8px;}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+.legend{display:flex;gap:10px;align-items:center;}
+.leg{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+.leg-x{width:8px;height:8px;background:var(--wrong);border-radius:2px;}
+.leg-c{width:8px;height:8px;background:var(--right);border-radius:2px;}
+.domains{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:4px;}
+.dtag{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid;}
+.dk8{border-color:rgba(0,212,255,.4);color:var(--k8s);background:rgba(0,212,255,.05);}
+.dkf{border-color:rgba(255,107,53,.4);color:var(--kfk);background:rgba(255,107,53,.05);}
+.dlx{border-color:rgba(168,85,247,.4);color:var(--lnx);background:rgba(168,85,247,.05);}
+.daw{border-color:rgba(255,153,0,.4);color:var(--aws);background:rgba(255,153,0,.05);}
+.dar{border-color:rgba(255,215,0,.4);color:var(--arc);background:rgba(255,215,0,.05);}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:16px;margin:24px 0 12px;}
+.sh-label{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;letter-spacing:3px;text-transform:uppercase;}
+.sh-count{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px;}
+.sh::after{content:'';flex:1;height:1px;}
+.k8s-s .sh-label{color:var(--k8s);} .k8s-s .sh::after{background:linear-gradient(90deg,rgba(0,212,255,.3),transparent);}
+.kfk-s .sh-label{color:var(--kfk);} .kfk-s .sh::after{background:linear-gradient(90deg,rgba(255,107,53,.3),transparent);}
+.lnx-s .sh-label{color:var(--lnx);} .lnx-s .sh::after{background:linear-gradient(90deg,rgba(168,85,247,.3),transparent);}
+.aws-s .sh-label{color:var(--aws);} .aws-s .sh::after{background:linear-gradient(90deg,rgba(255,153,0,.3),transparent);}
+.arc-s .sh-label{color:var(--arc);} .arc-s .sh::after{background:linear-gradient(90deg,rgba(255,215,0,.3),transparent);}
+
+/* ── TRAP GRID ── */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
+.tgrid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;}
+.tgrid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px;}
+
+/* ── TRAP CARD ── */
+.trap{
+  background:var(--s1);
+  border:1px solid var(--bd);
+  border-radius:6px;
+  overflow:hidden;
+  position:relative;
+}
+.trap::before{
+  content:'';
+  position:absolute;top:0;left:0;bottom:0;width:3px;
+}
+.t-k8s::before{background:var(--k8s);}
+.t-kfk::before{background:var(--kfk);}
+.t-lnx::before{background:var(--lnx);}
+.t-aws::before{background:var(--aws);}
+.t-arc::before{background:var(--arc);}
+
+.trap-inner{padding:12px 12px 12px 15px;}
+
+/* question */
+.tq{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;
+  font-weight:700;
+  color:var(--text);
+  line-height:1.2;
+  margin-bottom:9px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--bd);
+}
+.tq .num{
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;
+  font-weight:400;
+  color:var(--dim);
+  display:block;
+  margin-bottom:2px;
+  letter-spacing:1px;
+}
+
+/* wrong / right rows */
+.tw, .tr{display:flex;gap:8px;margin-bottom:4px;align-items:flex-start;}
+.tw-badge, .tr-badge{
+  font-family:'Share Tech Mono',monospace;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:1px;
+  padding:2px 6px;
+  border-radius:2px;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.tw-badge{background:rgba(255,45,85,.15);color:var(--wrong);border:1px solid rgba(255,45,85,.3);}
+.tr-badge{background:rgba(57,255,20,.1);color:var(--right);border:1px solid rgba(57,255,20,.25);}
+.tw-text{font-size:11px;color:rgba(255,45,85,.8);line-height:1.45;}
+.tr-text{font-size:11px;color:rgba(57,255,20,.85);line-height:1.45;}
+.tr-text b{color:#7fff5a;font-weight:600;}
+.tr-text code{font-family:'Share Tech Mono',monospace;font-size:9.5px;background:rgba(57,255,20,.08);padding:1px 4px;border-radius:2px;color:#39ff14;}
+
+/* note strip */
+.tnote{
+  font-size:10px;
+  color:var(--mid);
+  background:var(--s2);
+  border-top:1px solid var(--bd);
+  padding:6px 12px 6px 15px;
+  line-height:1.5;
+}
+.tnote b{color:var(--text);}
+.tnote code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:rgba(0,212,255,.8);}
+
+/* MEGA trap — big important one */
+.trap-mega .tq{font-size:16px;}
+.trap-mega .tw-text,.trap-mega .tr-text{font-size:12px;}
+
+/* severity badge */
+.sev{
+  position:absolute;top:8px;right:8px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:7px;letter-spacing:1px;text-transform:uppercase;
+  padding:2px 5px;border-radius:2px;
+}
+.sev-crit{background:rgba(255,45,85,.2);color:var(--wrong);border:1px solid rgba(255,45,85,.35);}
+.sev-high{background:rgba(255,107,53,.15);color:var(--kfk);border:1px solid rgba(255,107,53,.3);}
+.sev-med{background:rgba(255,215,0,.1);color:var(--arc);border:1px solid rgba(255,215,0,.25);}
+
+/* BANNER — summary / formula */
+.banner{
+  background:rgba(255,45,85,.04);
+  border:1px solid rgba(255,45,85,.15);
+  border-radius:6px;
+  padding:12px 16px;
+  margin-bottom:10px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  color:var(--mid);
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+}
+.banner b{color:var(--wrong);}
+.bitem{display:flex;align-items:center;gap:6px;}
+.bsep{color:var(--dim);}
+
+/* animation */
+@keyframes fi{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fi .4s ease both;}
+.page>*:nth-child(1){animation-delay:.00s} .page>*:nth-child(2){animation-delay:.03s}
+.page>*:nth-child(3){animation-delay:.06s} .page>*:nth-child(4){animation-delay:.09s}
+.page>*:nth-child(5){animation-delay:.12s} .page>*:nth-child(6){animation-delay:.15s}
+.page>*:nth-child(7){animation-delay:.18s} .page>*:nth-child(8){animation-delay:.21s}
+.page>*:nth-child(9){animation-delay:.24s} .page>*:nth-child(10){animation-delay:.27s}
+.page>*:nth-child(11){animation-delay:.30s} .page>*:nth-child(12){animation-delay:.33s}
+.page>*:nth-child(13){animation-delay:.36s} .page>*:nth-child(14){animation-delay:.39s}
+
+.footer{margin-top:32px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;}
+.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft-count{font-family:'Barlow Condensed',monospace;font-size:18px;font-weight:700;color:var(--wrong);}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hl">
+    <h1><span class="t1">TRAP</span><br><span class="t2">SHEET</span></h1>
+    <div class="sub">// senior devops interview · k8s · kafka · linux · cloud · architecture · 55 traps</div>
+  </div>
+  <div class="hright">
+    <div class="legend">
+      <div class="leg"><div class="leg-x"></div><span style="color:var(--wrong)">Wrong</span></div>
+      <div class="leg"><div class="leg-c"></div><span style="color:var(--right)">Right</span></div>
+    </div>
+    <div class="domains">
+      <div class="dtag dk8">Kubernetes</div>
+      <div class="dtag dkf">Kafka</div>
+      <div class="dtag dlx">Linux</div>
+      <div class="dtag daw">AWS / Cloud</div>
+      <div class="dtag dar">Architecture</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ KUBERNETES ════════════════════════════════════════ -->
+<div class="k8s-s sh"><div class="sh-label">Kubernetes</div><div class="sh-count">17 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-k8s trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-01</span>Does the Deployment controller create Pods?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — Deployment manages Pods directly.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Deployment ctrl creates ReplicaSets. ReplicaSet ctrl creates Pods.</b> Two-step chain. Deployment ctrl never touches a Pod object.</span></div>
+    </div>
+    <div class="tnote">This is the #1 trap. The chain: <code>Deployment → RS → Pod</code>. Each step is a separate controller watching its own objects.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-02</span>Do different controllers in kube-controller-manager elect different leaders?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, each controller has its own leader election.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. The entire binary has ONE Lease object.</b> All 30+ controllers start and stop as a unit. Per-controller leader election doesn't exist here.</span></div>
+    </div>
+    <div class="tnote">cloud-controller-manager has its own separate Lease — because it's a separate binary.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-03</span>Does a controller read object state from etcd?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, via the etcd client library for freshest data.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Controllers only read from the informer's in-memory cache via Lister.</b> Cache = O(1). Direct API calls inside reconcile saturate apiserver.</span></div>
+    </div>
+    <div class="tnote">Only apiserver writes to etcd. Controllers → apiserver → (apiserver caches + etcd). Controllers never touch etcd directly.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-04</span>Does the scheduler start containers on the node?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it schedules pods to nodes = starts them.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Scheduler only writes <code>nodeName</code> to the Pod spec.</b> kubelet watches for pods with <code>nodeName=thisNode</code> and calls CRI to start containers.</span></div>
+    </div>
+    <div class="tnote">Schedule = assignment only. Container lifecycle = kubelet's job via <code>CRI gRPC → containerd → runc</code>.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-05</span>Can you configure a shorter CrashLoopBackOff delay?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, via restartDelay or pod spec settings.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Backoff is hardcoded: 10s → 20s → 40s → 80s → 160s → 300s max.</b> Resets after 10 min stable. Use <code>startupProbe</code> for slow-start apps instead.</span></div>
+    </div>
+    <div class="tnote">The backoff protects nodes from tight crash loops consuming CPU. No override. Design your app to fail fast or use startupProbe.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-06</span>Does <code>kubectl apply</code> replace the full object?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it PUTs the full manifest, overwriting everything.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>apply</code> uses Strategic Merge Patch (SMP) by default.</b> Merges lists by strategic key (containers by <code>name</code>). SSA sends full desired state; apiserver manages field ownership.</span></div>
+    </div>
+    <div class="tnote"><code>kubectl replace</code> = full PUT. <code>kubectl apply</code> = SMP patch. <code>kubectl apply --server-side</code> = SSA. Mixing them causes field manager conflicts.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-07</span>Does deleting a pod automatically delete its PVC in a StatefulSet?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, PVC is bound to the pod lifecycle.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. PVC persists. StatefulSet ctrl creates a new pod with the same name that reattaches the same PVC.</b> Data survives pod deletion/reschedule.</span></div>
+    </div>
+    <div class="tnote">PVCs are only deleted if you delete the StatefulSet with <code>--cascade=foreground</code> AND the storageClass reclaimPolicy=Delete. Or delete them manually.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-08</span>A Service with <code>selector: {}</code> (empty) matches all pods?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Empty selector = select everything in namespace.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Empty <code>{}</code> matches no pods.</b> EndpointSlice will be empty. Absent <code>selector</code> field = headless/manual endpoints. A single typo kills all traffic.</span></div>
+    </div>
+    <div class="tnote">This is a silent failure. Service exists, pods exist, no traffic flows. Always check <code>kubectl get endpoints &lt;svc&gt;</code> after creating a Service.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-09</span>Does a ClusterIP exist on a real network interface?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it's assigned to a virtual network interface on each node.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. ClusterIP only exists in iptables/IPVS rules.</b> <code>ip addr show</code> won't show it. Packets destined for ClusterIP are rewritten by netfilter to a real pod IP before routing.</span></div>
+    </div>
+    <div class="tnote">kube-proxy programs iptables DNAT rules: <code>ClusterIP:port → PodIP:port</code>. The VIP is a fiction enforced by the kernel.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-10</span>A pod is Running but gets no Service traffic. What's likely wrong?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">The pod IP isn't registered. Check DNS.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>readinessProbe is failing.</b> Pods not Ready are removed from EndpointSlices → no traffic. Also check label selector mismatch with <code>kubectl get endpoints</code>.</span></div>
+    </div>
+    <div class="tnote"><code>Running ≠ Ready</code>. Running = container is alive. Ready = readinessProbe passing + included in Endpoints. They're independent.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-11</span>Node goes NotReady — pods are evicted immediately?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, immediately to protect workloads.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. 40s grace (node-monitor-grace-period) → Unknown → 300s taint toleration → eviction.</b> Rate-limited. Evictions stop if &lt;55% of cluster nodes are healthy.</span></div>
+    </div>
+    <div class="tnote">Total worst-case: 340 seconds before pods move. Tune with <code>--pod-eviction-timeout</code> and tolerations on your pods.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-12</span>An object with a <code>deletionTimestamp</code> set is being deleted?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, the object is in the process of being deleted.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>It is frozen, not yet deleted.</b> If <code>finalizers</code> list is non-empty, the object stays in etcd until a controller removes all finalizers. It can stay this way forever if the controller is dead.</span></div>
+    </div>
+    <div class="tnote">Force clear: <code>kubectl patch &lt;obj&gt; -p '{"metadata":{"finalizers":[]}}' --type=merge</code>. Only do this if the owning controller is confirmed gone.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-13</span>DaemonSet pods are always scheduled by kube-scheduler?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, scheduler places all pods including DaemonSet pods.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>DaemonSet ctrl sets <code>nodeName</code> directly, bypassing Filter+Score phases.</b> It can place pods on unschedulable nodes (e.g., CNI needs to run before anything else can schedule).</span></div>
+    </div>
+    <div class="tnote">DaemonSet pods on control-plane nodes blocked by <code>node-role.kubernetes.io/control-plane:NoSchedule</code> taint unless you add explicit toleration.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-14</span>Job with <code>restartPolicy: Always</code> — will it ever complete?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it restarts failed pods until success.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Job controller and kubelet fight forever.</b> Pod crashes → kubelet restarts (Always) → Job ctrl sees running pod, never increments success count. Job never completes. Use <code>Never</code> or <code>OnFailure</code>.</span></div>
+    </div>
+    <div class="tnote">This is a silent infinite loop. The pod appears healthy (always restarting), the Job never fails or succeeds. Resource leak.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-15</span>Does a Deployment rollback create a new ReplicaSet?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it creates a new RS with the old template.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Old RSes are preserved with their pod templates.</b> Rollback just scales up the old RS and scales down the current one. No new RS created. Revision history kept up to <code>revisionHistoryLimit</code>.</span></div>
+    </div>
+    <div class="tnote"><code>kubectl rollout undo deploy/myapp --to-revision=3</code> scales RS with revision annotation 3. This is why old RSes with 0 replicas must be kept.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-16</span>Does progressDeadlineSeconds trigger an automatic rollback?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, Deployment auto-rolls back after the deadline.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. It only sets condition <code>Progressing=False</code> on the Deployment.</b> You must manually <code>kubectl rollout undo</code> or detect the condition in your CD pipeline and act.</span></div>
+    </div>
+    <div class="tnote">K8s has no built-in auto-rollback. Argo Rollouts, Flagger, or your own operator can implement it. Native Deployment does not.</div>
+  </div>
+
+  <div class="trap t-k8s">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">K8S-17</span>Does updating a Deployment's <code>status</code> via regular <code>Update()</code> persist to etcd?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, Update() writes the full object including status.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Status is a separate subresource.</b> <code>Update()</code> ignores status changes. Use <code>client.Status().Update()</code>. Mixing them causes resourceVersion conflicts and silent status loss.</span></div>
+    </div>
+    <div class="tnote">The spec/status split is enforced by apiserver. It's intentional: spec = what you want, status = what the controller observed. They have separate access controls too.</div>
+  </div>
+
+</div><!-- end k8s grid -->
+
+<!-- ════════════════════════════════════════ KAFKA ════════════════════════════════════════ -->
+<div class="kfk-s sh"><div class="sh-label">Kafka</div><div class="sh-count">11 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-kfk trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-01</span>Is message ordering guaranteed across all partitions in a topic?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, Kafka guarantees ordering within a topic.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Ordering guaranteed within a partition only.</b> Across partitions: zero ordering guarantee. To order events per entity (device, user), use a consistent partition key — same key always hits same partition.</span></div>
+    </div>
+    <div class="tnote">For attribution events: partition by <code>device_id</code>. All events for the same device → same partition → ordered. Different devices can be on different partitions.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-02</span>More consumers than partitions in a group — do extra consumers help throughput?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, more consumers = more parallel processing.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Extra consumers sit idle.</b> Each partition is assigned to exactly one consumer per group. Consumer count beyond partition count = wasted resources. Partition count = max parallelism ceiling.</span></div>
+    </div>
+    <div class="tnote">Before scaling consumers past partition count, increase partitions first. Partition count can be increased but not decreased without recreating the topic.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-03</span>Should you commit offset before processing the message?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, commit first = at-most-once, prevents reprocessing.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Commit AFTER processing = at-least-once (safe). Commit BEFORE = at-most-once (lose messages on crash).</b> At-least-once requires idempotent consumers to handle duplicates.</span></div>
+    </div>
+    <div class="tnote">For attribution data: always at-least-once. Deduplicate by event ID in the consumer or downstream store. A missing install event is worse than a duplicate.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-04</span>Is <code>unclean.leader.election.enable=true</code> safe for an attribution pipeline?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it ensures availability when ISR is small.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. An out-of-sync replica becoming leader = guaranteed message loss.</b> For financial/attribution data: always <code>false</code>. Accept unavailability over data loss.</span></div>
+    </div>
+    <div class="tnote">Pair with: <code>min.insync.replicas=2</code>, <code>acks=all</code>, <code>RF=3</code>. The trio that prevents message loss at the cost of higher latency.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-05</span>Do compacted topics retain full message history?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, compacted = compressed but all messages kept.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Compaction keeps only the latest value per key.</b> Old values for the same key are deleted during compaction. Used for changelog/CDC patterns — current state, not event history.</span></div>
+    </div>
+    <div class="tnote">A tombstone message (null value) for a key eventually removes that key entirely after compaction. Use <code>delete</code> policy for event history, <code>compact</code> for current-state snapshots.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-06</span>Does Kafka provide exactly-once semantics by default?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, Kafka is exactly-once from the start.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Default is at-least-once.</b> Exactly-once requires: <code>enable.idempotence=true</code> on producer + Kafka Transactions API. More complex, higher latency. Most systems use at-least-once + idempotent consumers.</span></div>
+    </div>
+    <div class="tnote">Idempotent producer prevents duplicates from retries. Transactions extend this across multiple partitions/topics. Both are opt-in.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-07</span>In KEDA: is <code>lagThreshold</code> the total lag before scaling triggers?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, trigger when total consumer group lag exceeds threshold.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>It's per-replica.</b> Formula: <code>desired = ceil(totalLag / lagThreshold)</code>. threshold=50k with 3 replicas tolerates 150k total lag before scaling. Easy to miscalculate.</span></div>
+    </div>
+    <div class="tnote">Also: <code>maxReplicaCount</code> should equal partition count. More consumer pods than partitions = idle pods. Scale up partitions before scaling past the ceiling.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-08</span>Can you decrease the number of partitions in a Kafka topic?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, same as adding — just specify fewer in the config.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Partition count can only increase.</b> Decreasing requires deleting and recreating the topic. Data in the removed partitions is lost. Plan partition count carefully upfront.</span></div>
+    </div>
+    <div class="tnote">Rule of thumb: overprovision partitions. They're cheap. Consumer parallelism is bounded by partition count, and you can never reduce it later.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-09</span>Consumer lag of 0 means your consumers are healthy?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, lag=0 = fully caught up = healthy.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Lag=0 means caught up, but consumers could be dead.</b> If producers stop AND consumers stop, lag stays 0. Alert on both lag growth rate AND consumer heartbeat absence (ISR changes, missing group commits).</span></div>
+    </div>
+    <div class="tnote">Use Burrow for trend-based lag alerting, not raw threshold. A dead consumer group looks identical to a caught-up consumer group from the lag metric alone.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-10</span>Rolling restart of Kafka consumer pods triggers a rebalance — is there a way to avoid it?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No, every pod restart always triggers a full rebalance.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Use <code>group.instance.id</code> (static membership).</b> Consumer retains partition assignment across restarts without rebalance if it reconnects within <code>session.timeout.ms</code>.</span></div>
+    </div>
+    <div class="tnote">Critical for K8s rolling updates. Without static membership: every pod restart causes 2 rebalances (leave + rejoin). With static membership: zero rebalances during rolling update.</div>
+  </div>
+
+  <div class="trap t-kfk">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">KFK-11</span>Does KEDA work alongside a manually created HPA on the same deployment?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, they can both manage the same deployment simultaneously.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. They fight over <code>spec.replicas</code> and produce chaotic scaling.</b> KEDA creates and owns its own HPA internally. Never add a separate HPA to a KEDA-managed deployment.</span></div>
+    </div>
+    <div class="tnote">Delete any manual HPA before applying a ScaledObject. <code>kubectl get hpa</code> — if one exists for your target, KEDA and it will conflict.</div>
+  </div>
+
+</div><!-- end kafka grid -->
+
+<!-- ════════════════════════════════════════ LINUX ════════════════════════════════════════ -->
+<div class="lnx-s sh"><div class="sh-label">Linux</div><div class="sh-count">10 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-lnx trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-01</span>Can a process catch or ignore <code>SIGKILL</code> (kill -9)?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, a process can set a signal handler for any signal.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. SIGKILL is handled exclusively by the kernel.</b> Process is not notified, cannot catch it, cannot block it, cannot ignore it. Immediate termination. No cleanup possible.</span></div>
+    </div>
+    <div class="tnote">SIGTERM (15) = graceful — process can catch and clean up. SIGKILL (9) = unconditional. K8s sends SIGTERM first, waits <code>terminationGracePeriodSeconds</code>, then SIGKILL.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-02</span>Can you kill a zombie process with <code>kill -9</code>?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, -9 kills anything.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. A zombie is already dead — it has no running code to kill.</b> It's an entry in the process table waiting for its parent to <code>wait()</code>. Kill the parent, or fix the parent's code to reap children.</span></div>
+    </div>
+    <div class="tnote">Zombie processes consume only a PID slot, not CPU/memory. Dangerous only at scale — if you fill the PID table (default 32768), new processes can't start.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-03</span>Does the OOM killer pick the process using the most memory to kill?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, it kills the biggest memory consumer first.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>OOM killer uses an <code>oom_score</code> (0-1000).</b> Score based on memory usage, nice value, child processes, and <code>oom_score_adj</code>. Highest score is killed. Processes can set <code>oom_score_adj=-1000</code> to be protected.</span></div>
+    </div>
+    <div class="tnote">K8s sets <code>oom_score_adj</code> based on QoS class: BestEffort=1000 (first to die), Burstable=2-999, Guaranteed=-997 (protected). This is why resource limits matter.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-04</span>Disk shows free space but processes fail to create files — what's wrong?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">File system corruption — run fsck.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Inode exhaustion.</b> Each file consumes one inode regardless of size. A million tiny files (logs, temp files) exhausts inodes while blocks remain free. Check with <code>df -i</code>.</span></div>
+    </div>
+    <div class="tnote"><code>df -h</code> shows block usage. <code>df -i</code> shows inode usage. Find directories with many small files: <code>find / -xdev -printf '%h\n' | sort | uniq -c | sort -k 1 -n | tail -10</code></div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-05</span>Does <code>ulimit -n 65536</code> in your shell apply to all processes?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, ulimit sets a system-wide limit.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>ulimit is per-process and inherited by children of that shell.</b> System-wide limits are in <code>/proc/sys/fs/file-max</code>. Services need limits set in systemd unit (<code>LimitNOFILE=</code>) or Docker/K8s resource limits.</span></div>
+    </div>
+    <div class="tnote">Common trap: you increase shell ulimit, but your Kafka broker (started by systemd) still has the old limit. Always check the process's actual limits: <code>cat /proc/&lt;pid&gt;/limits</code>.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-06</span>Is a high number of TCP TIME_WAIT sockets a problem?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, TIME_WAIT sockets waste resources and should be eliminated.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>TIME_WAIT is normal and protective — prevents old packets from corrupting new connections.</b> High count means high throughput, not a bug. Only a problem if you exhaust ephemeral ports (check <code>ss -s</code>).</span></div>
+    </div>
+    <div class="tnote"><code>net.ipv4.tcp_tw_reuse=1</code> allows reuse for outbound connections. <code>net.ipv4.ip_local_port_range=1024 65535</code> widens ephemeral port range. Don't blindly enable tw_recycle (removed in Linux 4.12).</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-07</span>Does <code>fork()</code> immediately copy the parent's entire memory?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, fork creates a full copy of all memory pages.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Copy-on-Write (CoW).</b> Pages are shared read-only between parent and child. Physical copy only happens when either process writes to a page. Fork of a 4GB Redis is fast and cheap — until you start writing.</span></div>
+    </div>
+    <div class="tnote">Redis BGSAVE uses fork() + CoW. The concern: if Redis is under heavy write load during BGSAVE, CoW copies can cause memory to double temporarily. Monitor <code>used_memory</code> during saves.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-08</span>Are cgroups v1 and v2 interchangeable in modern systems?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, v2 is just a newer version of the same thing.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>v2 is a complete redesign.</b> Unified hierarchy (one mount point vs many). <b>Memory QoS requires v2.</b> K8s requires v2 for MemoryQoS feature gate. containerd and runc both require v2 for full feature set.</span></div>
+    </div>
+    <div class="tnote">Check: <code>cat /sys/fs/cgroup/cgroup.controllers</code> exists = v2. <code>ls /sys/fs/cgroup/</code> shows cpu, memory, blkio separately = v1. Modern distros (Ubuntu 22+, RHEL 9) default to v2.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-09</span>High <code>iowait</code> means your disks are the bottleneck?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, iowait% directly indicates disk saturation.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>iowait is idle time where at least one I/O is pending — not a direct disk metric.</b> It's unreliable on multi-core systems. Check <code>iostat -x</code> for <code>%util</code> and <code>await</code> per device for real disk pressure.</span></div>
+    </div>
+    <div class="tnote">High iowait on a 32-core machine with 1 pending I/O is meaningless. Use <code>iostat -x 1</code>, <code>iotop</code>, <code>blktrace</code> for real disk analysis.</div>
+  </div>
+
+  <div class="trap t-lnx">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">LNX-10</span>Does <code>nice</code> value affect I/O scheduling priority?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, nice controls all resource scheduling.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>nice/renice affects CPU scheduling only.</b> For I/O priority use <code>ionice</code>. <code>ionice -c 3 &lt;pid&gt;</code> = idle class (lowest I/O priority). Different schedulers for CPU vs I/O.</span></div>
+    </div>
+    <div class="tnote"><code>ionice -c 1 -n 0 &lt;pid&gt;</code> = real-time I/O (highest). <code>-c 2 -n 0</code> = best-effort high. <code>-c 3</code> = idle (only gets I/O when nothing else needs it). Used for backup processes.</div>
+  </div>
+
+</div><!-- end linux grid -->
+
+<!-- ════════════════════════════════════════ AWS / CLOUD ════════════════════════════════════════ -->
+<div class="aws-s sh"><div class="sh-label">AWS / Cloud</div><div class="sh-count">10 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-aws trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-01</span>Is AWS S3 eventually consistent for new object writes since always?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, S3 is always eventually consistent — that's the trade-off.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Since December 2020, S3 is strongly consistent for all operations.</b> Read-after-write consistency for PUTs and DELETEs. No more "wait 1s after PUT before reading" hacks needed.</span></div>
+    </div>
+    <div class="tnote">Old S3 consistency logic baked into your codebase is now unnecessary. Still need eventual consistency thinking for S3 replication to other regions.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-02</span>What's the Spot instance termination notice window?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Instant — Spot can be terminated with no warning.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>2-minute warning via instance metadata + EventBridge event.</b> Poll <code>http://169.254.169.254/latest/meta-data/spot/termination-time</code> or use Spot interruption handler (e.g., aws-node-termination-handler) to drain gracefully.</span></div>
+    </div>
+    <div class="tnote">For EMR: core nodes = On-Demand (data). Task nodes = Spot (compute only). Task node termination = Spark task fails + retries. Core node termination = data loss risk.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-03</span>Does RDS Multi-AZ improve read performance?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, standby can serve read traffic to reduce primary load.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Multi-AZ standby is for failover only — it's not readable.</b> For read scaling use Read Replicas. Multi-AZ = HA. Read Replicas = read scale-out. Completely different purposes.</span></div>
+    </div>
+    <div class="tnote">Multi-AZ: synchronous replication, automatic failover (&lt;60s), same region. Read Replicas: async replication, manual failover, can be cross-region. You can combine both.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-04</span>Are Security Groups stateless like NACLs?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Both SGs and NACLs are stateless packet filters.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Security Groups are stateful. NACLs are stateless.</b> SG: allow inbound → return traffic automatic. NACL: must explicitly allow both inbound AND outbound for the same connection. Most NACL bugs are missing outbound rules.</span></div>
+    </div>
+    <div class="tnote">NACLs apply at subnet level, evaluated in rule number order, first match wins. SGs apply at instance level, all rules evaluated, most permissive wins.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-05</span>Does a NAT Gateway in one AZ serve all AZs cost-efficiently?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, one NAT Gateway per VPC is sufficient and cheapest.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Cross-AZ data transfer costs $0.01/GB each way.</b> With high egress, one NAT GW creates massive cross-AZ charges. Best practice: one NAT GW per AZ. Also: if that AZ fails, all AZs lose internet egress.</span></div>
+    </div>
+    <div class="tnote">For Singular-scale (billions of events): cross-AZ data costs add up fast. Keep Kafka consumers in same AZ as brokers. Use VPC endpoints for S3/DynamoDB (free, no NAT needed).</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-06</span>Does attaching an IAM role to an EC2 instance give pods in EKS the same permissions?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, the node role covers all workloads on the node.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Node IAM role = node-level permissions only. Use IRSA for pod-level permissions.</b> IRSA: annotate ServiceAccount with IAM role ARN → pods get scoped STS credentials via projected token mount. Not the node role.</span></div>
+    </div>
+    <div class="tnote">Node role with S3 access = every pod on every node gets S3 access. IRSA = only pods using the annotated SA get specific S3 access. Least privilege requires IRSA.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-07</span>Does ALB preserve the original client IP in the request?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, the client IP appears in the connection's source address.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>ALB terminates TCP — source IP is ALB's IP. Client IP in <code>X-Forwarded-For</code> header.</b> NLB passes through — source IP is real client (unless using private link). Choose based on whether you need real-IP logging.</span></div>
+    </div>
+    <div class="tnote">ALB: L7, HTTP-aware, WebSocket, gRPC, path/host routing. NLB: L4, ultra-low latency, preserves source IP, static IP, millions of req/sec. Pick based on protocol, not just IP preservation.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-08</span>Savings Plans and Reserved Instances are the same commitment model?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, both are 1-3 year commitments for a discount.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Compute Savings Plans</b> apply to any instance family/region/OS automatically. <b>RIs</b> are tied to a specific instance type + AZ + OS. Savings Plans are more flexible; RIs give slightly higher discounts for exact match.</span></div>
+    </div>
+    <div class="tnote">Best practice: Compute Savings Plans for baseline (covers EC2, Lambda, Fargate). Spot for variable/fault-tolerant. On-Demand for truly unpredictable bursts.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-09</span>CloudWatch custom metrics are retained indefinitely?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, AWS stores all metrics forever.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Retention depends on resolution.</b> 1-second: 3 hours. 60-second: 15 days. 5-minute: 63 days. 1-hour: 15 months. High-resolution metrics are auto-rolled up. Plan your dashboards around retention limits.</span></div>
+    </div>
+    <div class="tnote">For long-term metric storage: export to S3 via Metric Streams → Kinesis Firehose → S3. Or use a managed observability platform that handles retention separately.</div>
+  </div>
+
+  <div class="trap t-aws">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AWS-10</span>Can EBS volumes be attached to multiple EC2 instances simultaneously?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — EBS is always single-attach only.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>io1/io2 volumes support Multi-Attach (up to 16 instances in same AZ).</b> But: your application must handle concurrent writes — kernel-level file system locking is required. <code>ext4</code> is not safe; use cluster-aware FS like GFS2.</span></div>
+    </div>
+    <div class="tnote">Multi-Attach is not a substitute for shared file systems like EFS. It's for applications with their own distributed locking (Oracle RAC, etc.). Wrong use → data corruption.</div>
+  </div>
+
+</div><!-- end aws grid -->
+
+<!-- ════════════════════════════════════════ ARCHITECTURE ════════════════════════════════════════ -->
+<div class="arc-s sh"><div class="sh-label">Architecture</div><div class="sh-count">7 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-arc trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-01</span>CAP theorem: can you achieve Consistency, Availability, and Partition tolerance simultaneously?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, modern databases achieve all three with clever engineering.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. During a network partition, you must choose: serve stale data (AP) or reject requests (CP).</b> "CA" systems don't exist in distributed environments — partitions always eventually happen.</span></div>
+    </div>
+    <div class="tnote">Kafka = CP (ISR/acks=all prioritizes consistency). Cassandra = AP (tunable, defaults to availability). etcd = CP (Raft consensus). Know where your systems fall on this spectrum.</div>
+  </div>
+
+  <div class="trap t-arc">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-02</span>Is idempotency optional when using at-least-once delivery?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">At-least-once just means events arrive, duplicates are rare.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>At-least-once = idempotency is mandatory, not optional.</b> Duplicates are guaranteed to happen (retries, consumer restarts). Idempotent consumer = processing same event twice produces same result.</span></div>
+    </div>
+    <div class="tnote">Idempotency patterns: natural idempotency (SET vs INCREMENT), deduplication ID stored in DB, upsert semantics, conditional writes with version checks.</div>
+  </div>
+
+  <div class="trap t-arc">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-03</span>Are Event Sourcing and CQRS the same pattern?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, they're used together and mean the same thing.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Different patterns that complement each other.</b> Event Sourcing = state derived from ordered event log (no mutable current state). CQRS = separate read model from write model. You can use either without the other.</span></div>
+    </div>
+    <div class="tnote">Often combined: ES provides the write side (immutable event log), CQRS builds read-optimized projections (materialized views) from those events. Kafka + Druid = a form of this.</div>
+  </div>
+
+  <div class="trap t-arc">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-04</span>Does a circuit breaker prevent all downstream failures from affecting your service?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, open circuit = no downstream calls = you're isolated.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Open circuit prevents cascading failure but you must handle the fallback.</b> States: Closed (normal) → Open (failing, reject immediately) → Half-Open (probe with one call). You need a fallback: cached value, default, queue for later.</span></div>
+    </div>
+    <div class="tnote">Circuit breaker without fallback = fast fail with an error. That's still an error for your user. Define fallback behavior: serve stale cache, return 503, queue request, return partial data.</div>
+  </div>
+
+  <div class="trap t-arc">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-05</span>Blue-green, canary, and rolling deployments all minimize downtime equally?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, they're all zero-downtime strategies.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Different tradeoffs.</b> Blue-green = instant cutover, <b>2× resource cost</b>, easy rollback. Canary = gradual traffic shift, real user validation, complex routing. Rolling = low resource overhead, <b>mixed versions run simultaneously</b>.</span></div>
+    </div>
+    <div class="tnote">Mixed-version risk: rolling update means v1 and v2 pods handle traffic simultaneously. Your API and data schemas must be backward-compatible. Blue-green avoids this but doubles infra cost during deploy.</div>
+  </div>
+
+  <div class="trap t-arc">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-06</span>In a Saga pattern, does the orchestrator model require a message bus?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, both choreography and orchestration use event buses.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Orchestrator pattern uses direct calls (sync or async) to services via a central coordinator.</b> Choreography uses events — services react to each other's events. No central coordinator. Each has different failure and observability tradeoffs.</span></div>
+    </div>
+    <div class="tnote">Orchestration: easier to reason about flow, single point of failure. Choreography: decoupled, hard to trace end-to-end flow. Complex Sagas are almost always orchestrated for debuggability.</div>
+  </div>
+
+  <div class="trap t-arc">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ARC-07</span>Does database connection pooling always improve performance?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, pooling is always better than per-request connections.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Pool size must match DB capacity.</b> Pool too large = DB overwhelmed (PostgreSQL: each connection = process, 1000 conns = 1000 processes). Rule: <code>pool_size = (core_count × 2) + effective_spindle_count</code>. PgBouncer for large K8s deployments.</span></div>
+    </div>
+    <div class="tnote">K8s with 500 pods each holding a pool of 10 = 5000 DB connections. PostgreSQL max_connections default is 100. This is why PgBouncer (or RDS Proxy) is mandatory at scale.</div>
+  </div>
+
+</div><!-- end arc grid -->
+
+<!-- SUMMARY BANNER -->
+<div class="banner">
+  <div class="bitem"><b>55 TRAPS</b></div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--k8s);">17 K8s</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--kfk);">11 Kafka</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--lnx);">10 Linux</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--aws);">10 AWS</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--arc);">7 Architecture</div>
+  <span class="bsep">·</span>
+  <div class="bitem"><span style="color:var(--wrong)">CRITICAL</span> = instant disqualifier in a senior interview</div>
+  <span class="bsep">·</span>
+  <div class="bitem"><span style="color:var(--kfk)">HIGH</span> = expected at senior level</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--arc);">MED = differentiates strong candidates</div>
+</div>
+
+<div class="footer">
+  <div class="ft">The Trap Sheet · Senior DevOps · Singular Interview</div>
+  <div><span class="ft-count">55</span> <span class="ft" style="display:inline;">traps</span></div>
+  <div class="ft">K8s · Kafka · Linux · AWS · Architecture</div>
+</div>
+
+</div>
+</body>
+</html>

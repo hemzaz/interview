@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Lifecycle — fork, exec, exit &amp; threads</title>
+<link href="../assets/fonts/font-set-7.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#050709; --s1:#080b10; --s2:#0b0f16; --bd:#131d2a;
+  --fork:#60a5fa; --exec:#a78bfa; --run:#4ade80; --exit:#f59e0b; --zomb:#f87171; --thr:#34d399;
+  --text:#c8d8e8; --dim:#1a2a3a; --mid:#405060;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%,rgba(96,165,250,.07) 0%,transparent 50%),
+    radial-gradient(ellipse 30% 20% at 8% 55%,rgba(167,139,250,.04) 0%,transparent 45%),
+    radial-gradient(ellipse 25% 20% at 92% 65%,rgba(248,113,113,.04) 0%,transparent 45%),
+    repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(96,165,250,.016) 40px),
+    repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(96,165,250,.016) 40px);}
+.page{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 20px 60px;}
+.header{display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:20px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.hl h1{font-family:'Barlow Condensed',sans-serif;font-size:64px;font-weight:900;letter-spacing:-3px;line-height:.88;text-transform:uppercase;}
+.t1{background:linear-gradient(90deg,var(--fork) 0%,var(--exec) 35%,var(--run) 65%,var(--exit) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
+.pills{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.pill{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 14px;border-radius:4px;border:1px solid;font-weight:700;text-transform:uppercase;}
+.pill-f{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.4);color:var(--fork);}
+.pill-x{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.4);color:var(--exec);}
+.pill-z{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.4);color:var(--zomb);}
+.sh{display:flex;align-items:center;gap:12px;margin:22px 0 11px;}
+.sh-icon{font-size:18px;}
+.sh-label{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh::after{content:'';flex:1;height:1px;}
+.sf .sh-label{color:var(--fork);} .sf .sh::after{background:linear-gradient(90deg,rgba(96,165,250,.3),transparent);}
+.se .sh-label{color:var(--exec);} .se .sh::after{background:linear-gradient(90deg,rgba(167,139,250,.3),transparent);}
+.st_ .sh-label{color:var(--thr);} .st_ .sh::after{background:linear-gradient(90deg,rgba(52,211,153,.3),transparent);}
+.sz .sh-label{color:var(--zomb);} .sz .sh::after{background:linear-gradient(90deg,rgba(248,113,113,.3),transparent);}
+.sx .sh-label{color:var(--mid);} .sx .sh::after{background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cf::before{background:linear-gradient(90deg,var(--fork),transparent);}
+.ce::before{background:linear-gradient(90deg,var(--exec),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--run),transparent);}
+.cz::before{background:linear-gradient(90deg,var(--zomb),transparent);}
+.ct::before{background:linear-gradient(90deg,var(--thr),transparent);}
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.5;}
+.fv b{color:var(--text);}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--exit);}
+.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
+.kw{color:#a78bfa;} .ky{color:var(--run);} .stt{color:var(--exit);} .nu{color:var(--fork);} .cm{color:#1a2a3a;} .re{color:var(--zomb);} .fn{color:var(--thr);}
+.tp{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
+.tp::before{content:'⚡ ';color:var(--zomb);}
+.tp b{color:var(--text);}
+.tp code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--exit);}
+.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.note b{color:var(--text);}
+.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--exit);}
+.tb{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+.tb th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.tb td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
+.tb td:first-child{color:var(--text);font-weight:600;}
+.tb tr:last-child td{border-bottom:none;}
+.tb td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--exit);}
+
+/* lifecycle flow — signature */
+.life{display:flex;align-items:stretch;gap:0;margin-top:6px;flex-wrap:wrap;}
+.lnode{flex:1;min-width:96px;border-radius:10px;border:1.5px solid;padding:12px 8px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;}
+.ln-f{background:rgba(96,165,250,.07);border-color:rgba(96,165,250,.4);}
+.ln-x{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.4);}
+.ln-r{background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.4);}
+.ln-e{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.4);}
+.ln-z{background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.4);}
+.ln-call{font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;}
+.ln-f .ln-call{color:var(--fork);} .ln-x .ln-call{color:var(--exec);} .ln-r .ln-call{color:var(--run);} .ln-e .ln-call{color:var(--exit);} .ln-z .ln-call{color:var(--zomb);}
+.ln-desc{font-size:9px;color:var(--mid);line-height:1.4;}
+.larrow{display:flex;align-items:center;justify-content:center;min-width:26px;color:var(--dim);font-size:16px;}
+
+.footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+@media (max-width:900px){.g2,.g3,.g23{grid-template-columns:1fr;}.hl h1{font-size:42px;}.life{flex-direction:column;}.larrow{transform:rotate(90deg);min-height:20px;}}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+  <div class="header">
+    <div class="hl">
+      <h1><span class="t1">Process Lifecycle</span></h1>
+      <div class="sub">Birth to reaping — fork, exec, exit, and threads</div>
+    </div>
+    <div class="pills">
+      <span class="pill pill-f">fork · clone</span>
+      <span class="pill pill-x">execve</span>
+      <span class="pill pill-z">exit · wait · reap</span>
+    </div>
+  </div>
+
+  <!-- LIFECYCLE FLOW — signature -->
+  <div class="sh sf"><span class="sh-icon">🌱</span><span class="sh-label">The Journey</span><span class="sh-sub">from your linux_process_journey diagram</span></div>
+  <div class="card cf">
+    <div class="ctitle">A child's path from creation to cleanup</div>
+    <div class="life">
+      <div class="lnode ln-f"><div class="ln-call">fork()</div><div class="ln-desc">Parent duplicates itself; child gets a copy-on-write address space</div></div>
+      <div class="larrow">→</div>
+      <div class="lnode ln-x"><div class="ln-call">execve()</div><div class="ln-desc">Child replaces its image with a new program</div></div>
+      <div class="larrow">→</div>
+      <div class="lnode ln-r"><div class="ln-call">run / sleep</div><div class="ln-desc">Enters scheduler; runs, blocks on I/O, wakes, repeats</div></div>
+      <div class="larrow">→</div>
+      <div class="lnode ln-e"><div class="ln-call">exit()</div><div class="ln-desc">Finishes; becomes a zombie holding its exit status</div></div>
+      <div class="larrow">→</div>
+      <div class="lnode ln-z"><div class="ln-call">wait() → reap</div><div class="ln-desc">Parent collects status; kernel frees the last of the child</div></div>
+    </div>
+    <div class="note"><b>The fork+exec pattern</b> is deliberate: <code>fork()</code> gives you a new process that's a clone of the parent, then <code>execve()</code> swaps in the program you actually want to run. Splitting them lets the child tweak its environment (redirect fds, set up pipes) <i>between</i> the two calls — which is exactly how a shell launches commands.</div>
+  </div>
+
+  <!-- THE CALLS -->
+  <div class="sh se"><span class="sh-icon">🔧</span><span class="sh-label">The Core Calls</span><span class="sh-sub">what each one actually does</span></div>
+  <div class="g23">
+    <div class="card cf">
+      <div class="ctitle">🍴 fork() — the twin</div>
+      <div class="fr"><span class="fk">Returns twice</span><span class="fv"><b>0</b> in the child, the <b>child's PID</b> in the parent, <b>-1</b> on error.</span></div>
+      <div class="fr"><span class="fk">Copy-on-write</span><span class="fv">Address space isn't really copied — pages are shared read-only and duplicated only when written. Fork is cheap.</span></div>
+      <div class="fr"><span class="fk">Inherits</span><span class="fv">Open fds, cwd, env, signal dispositions. Not: pending signals, locks, timers.</span></div>
+      <div class="fr"><span class="fk">Under the hood</span><span class="fv">Really <code>clone()</code> with flags controlling what's shared.</span></div>
+    </div>
+    <div class="card ce">
+      <div class="ctitle">🔄 execve() — the transplant</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.6;">Replaces the current process image — code, data, heap, stack — with a new program loaded from disk. <b>Same PID</b>, brand-new contents. On success it <b>never returns</b> (there's nothing to return to); the old program is gone. Open fds survive unless marked close-on-exec.</div>
+      <div class="code"><span class="fn">pid_t</span> pid = <span class="fn">fork</span>();
+<span class="kw">if</span> (pid == <span class="nu">0</span>) {          <span class="cm">// child</span>
+    <span class="fn">execve</span>(<span class="stt">"/bin/ls"</span>, argv, envp);
+    <span class="fn">_exit</span>(<span class="nu">127</span>);         <span class="cm">// only if exec failed</span>
+} <span class="kw">else</span> {                  <span class="cm">// parent</span>
+    <span class="fn">waitpid</span>(pid, &amp;status, <span class="nu">0</span>);
+}</div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card cr">
+      <div class="ctitle">🚪 exit() — leaving</div>
+      <div class="fr"><span class="fk">Flushes</span><span class="fv"><code>exit()</code> runs atexit handlers &amp; flushes stdio; <code>_exit()</code> skips them.</span></div>
+      <div class="fr"><span class="fk">Frees</span><span class="fv">Kernel releases memory, closes fds — but keeps a tiny stub (exit status) until reaped.</span></div>
+      <div class="fr"><span class="fk">Status</span><span class="fv">Low 8 bits available to parent via wait; convention: 0 = success.</span></div>
+    </div>
+    <div class="card cz">
+      <div class="ctitle">🧹 wait() — reaping</div>
+      <div class="fr"><span class="fk">Parent's duty</span><span class="fv"><code>wait()</code>/<code>waitpid()</code> retrieves the child's status and lets the kernel drop the stub.</span></div>
+      <div class="fr"><span class="fk">SIGCHLD</span><span class="fv">Kernel signals the parent when a child dies; handlers often reap there.</span></div>
+      <div class="fr"><span class="fk">Blocking</span><span class="fv"><code>wait</code> blocks; <code>WNOHANG</code> polls without blocking.</span></div>
+    </div>
+  </div>
+
+  <!-- ZOMBIES & ORPHANS -->
+  <div class="sh sz"><span class="sh-icon">🧟</span><span class="sh-label">Zombies &amp; Orphans</span><span class="sh-sub">the two failure modes everyone gets asked</span></div>
+  <div class="g2">
+    <div class="card cz">
+      <div class="ctitle">🧟 Zombie — child died, parent didn't reap</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.6;">A finished child stays as a <b>zombie</b> (<code>Z</code> / defunct) until the parent calls <code>wait()</code>. It holds no memory — just its exit status in the process table. <b>Harmless one-off; dangerous in bulk:</b> a parent that never reaps leaks PT entries until the table fills and no new process can start.</div>
+      <div class="tp"><b>Fix:</b> parent must <code>wait()</code>, or handle <code>SIGCHLD</code>, or ignore it (<code>signal(SIGCHLD, SIG_IGN)</code>) so the kernel auto-reaps.</div>
+    </div>
+    <div class="card cf">
+      <div class="ctitle">👻 Orphan — parent died first</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.6;">If the parent exits while the child still runs, the child is <b>orphaned</b> and <b>re-parented to init/systemd (PID 1)</b>. That new parent reaps it when it finishes — so orphans, unlike zombies, get cleaned up automatically. Intentional orphaning is how <b>daemons</b> detach from their launching shell.</div>
+      <div class="note"><b>Containers:</b> PID 1 inside a container must reap orphans too. A shell as PID 1 usually won't → use an init like <code>tini</code>, or <code>docker run --init</code>, to avoid zombie pile-up.</div>
+    </div>
+  </div>
+
+  <!-- THREADS -->
+  <div class="sh st_"><span class="sh-icon">🧵</span><span class="sh-label">Threads</span><span class="sh-sub">from your threaded-process diagram</span></div>
+  <div class="g23">
+    <div class="card ct">
+      <div class="ctitle">🧵 Process vs Thread</div>
+      <table class="tb">
+        <tr><th>Aspect</th><th>Process</th></tr>
+        <tr><td>Address space</td><td>Own, isolated (threads: shared)</td></tr>
+        <tr><td>Created by</td><td><code>fork</code> (threads: <code>pthread_create</code>→<code>clone</code>)</td></tr>
+        <tr><td>Shares</td><td>Nothing by default (threads: heap, globals, fds)</td></tr>
+        <tr><td>Own per-unit</td><td>Everything (threads: stack, registers, TID)</td></tr>
+        <tr><td>Switch cost</td><td>Higher — swaps page tables (threads: cheaper)</td></tr>
+      </table>
+    </div>
+    <div class="card ct">
+      <div class="ctitle">🔗 Shared memory → needs sync</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.6;margin-bottom:6px;">Because threads share the heap and globals, concurrent access must be coordinated or you get <b>data races</b>:</div>
+      <table class="tb">
+        <tr><th>Primitive</th><th>Guards</th></tr>
+        <tr><td>Mutex</td><td>Exclusive access to a critical section</td></tr>
+        <tr><td>Semaphore</td><td>Counted access to N resources</td></tr>
+        <tr><td>Cond var</td><td>Wait/signal on a condition</td></tr>
+        <tr><td>Atomics</td><td>Lock-free single-word updates</td></tr>
+      </table>
+      <div class="note">In Linux, threads are just tasks that share more via <code>clone()</code> flags. The scheduler treats a thread and a process as the same unit — a <b>schedulable task</b>. <code>pthread_exit()</code> ends one thread; the process ends when the last thread (or an <code>exit()</code>) does.</div>
+    </div>
+  </div>
+  <div class="tp"><b>Interview trap:</b> "What does <code>fork()</code> do in a multithreaded program?" Only the <b>calling thread</b> survives in the child — all other threads vanish. Any mutex they held is now locked forever in the child. That's why post-fork you should only <code>exec()</code> or call async-signal-safe functions.</div>
+
+  <!-- OBSERVE -->
+  <div class="sh sx"><span class="sh-icon">🔍</span><span class="sh-label">Observe</span><span class="sh-sub">inspect the tree</span></div>
+  <div class="card">
+    <div class="code"><span class="cm"># process tree with threads</span>
+ps -eLf              <span class="cm"># -L shows threads (LWP/NLWP)</span>
+pstree -p            <span class="cm"># visual parent→child tree</span>
+
+<span class="cm"># find zombies</span>
+ps aux | awk <span class="stt">'$8=="Z"'</span>
+
+<span class="cm"># a process's threads &amp; state</span>
+cat /proc/<span class="nu">PID</span>/status | grep -E <span class="stt">'Threads|State|PPid'</span></div>
+  </div>
+
+  <div class="footer">
+    <span>OS Internals · Process Lifecycle</span>
+    <span>fork · exec · exit · threads · zombies</span>
+  </div>
+
+</div>
+</body>
+</html>

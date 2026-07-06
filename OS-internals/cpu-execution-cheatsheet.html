@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPU Execution — Cycles, Pipeline &amp; Cache</title>
+<link href="../assets/fonts/font-set-7.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#050709; --s1:#080b10; --s2:#0b0f16; --bd:#131d2a;
+  --fetch:#60a5fa;  --decode:#a78bfa; --exec:#34d399; --mem:#f59e0b; --wb:#4ade80;
+  --hot:#f87171; --cold:#60a5fa;
+  --text:#c8d8e8; --dim:#1a2a3a; --mid:#405060;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%,rgba(52,211,153,.07) 0%,transparent 50%),
+    radial-gradient(ellipse 30% 20% at 8% 55%,rgba(167,139,250,.04) 0%,transparent 45%),
+    radial-gradient(ellipse 25% 20% at 92% 65%,rgba(245,158,11,.04) 0%,transparent 45%),
+    repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(52,211,153,.016) 40px),
+    repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(52,211,153,.016) 40px);}
+.page{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 20px 60px;}
+.header{display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:20px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.hl h1{font-family:'Barlow Condensed',sans-serif;font-size:70px;font-weight:900;letter-spacing:-3px;line-height:.88;text-transform:uppercase;}
+.t1{background:linear-gradient(90deg,var(--fetch) 0%,var(--decode) 35%,var(--exec) 65%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
+.pills{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.pill{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 14px;border-radius:4px;border:1px solid;font-weight:700;text-transform:uppercase;}
+.pill-f{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.4);color:var(--fetch);}
+.pill-e{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.4);color:var(--exec);}
+.pill-c{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.4);color:var(--hot);}
+.sh{display:flex;align-items:center;gap:12px;margin:22px 0 11px;}
+.sh-icon{font-size:18px;}
+.sh-label{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh::after{content:'';flex:1;height:1px;}
+.sf .sh-label{color:var(--fetch);} .sf .sh::after{background:linear-gradient(90deg,rgba(96,165,250,.3),transparent);}
+.se .sh-label{color:var(--exec);} .se .sh::after{background:linear-gradient(90deg,rgba(52,211,153,.3),transparent);}
+.sc .sh-label{color:var(--hot);}  .sc .sh::after{background:linear-gradient(90deg,rgba(248,113,113,.3),transparent);}
+.sd .sh-label{color:var(--decode);} .sd .sh::after{background:linear-gradient(90deg,rgba(167,139,250,.3),transparent);}
+.sx .sh-label{color:var(--mid);}  .sx .sh::after{background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cf::before{background:linear-gradient(90deg,var(--fetch),transparent);}
+.ce::before{background:linear-gradient(90deg,var(--exec),transparent);}
+.cc::before{background:linear-gradient(90deg,var(--hot),transparent);}
+.cd::before{background:linear-gradient(90deg,var(--decode),transparent);}
+.cm::before{background:linear-gradient(90deg,var(--mem),transparent);}
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.fr{display:grid;grid-template-columns:110px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.5;}
+.fv b{color:var(--text);}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--mem);}
+.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
+.kw{color:#a78bfa;} .ky{color:var(--exec);} .stt{color:var(--mem);} .nu{color:var(--fetch);} .cm{color:#1a2a3a;} .re{color:var(--hot);}
+.tp{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
+.tp::before{content:'⚡ ';color:var(--hot);}
+.tp b{color:var(--text);}
+.tp code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--mem);}
+.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.note b{color:var(--text);}
+.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--mem);}
+.tb{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+.tb th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.tb td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
+.tb td:first-child{color:var(--text);font-weight:600;}
+.tb tr:last-child td{border-bottom:none;}
+.tb td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--mem);}
+
+/* pipeline stages */
+.pipe{display:flex;gap:6px;margin-top:8px;}
+.pstage{flex:1;border-radius:6px;padding:10px 8px;text-align:center;border:1px solid;position:relative;}
+.ps-f{background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.35);}
+.ps-d{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.35);}
+.ps-e{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.35);}
+.ps-m{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.35);}
+.ps-w{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.35);}
+.ps-abbr{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:1px;}
+.ps-f .ps-abbr{color:var(--fetch);} .ps-d .ps-abbr{color:var(--decode);} .ps-e .ps-abbr{color:var(--exec);} .ps-m .ps-abbr{color:var(--mem);} .ps-w .ps-abbr{color:var(--wb);}
+.ps-name{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--mid);margin-top:3px;}
+.ps-arrow{position:absolute;right:-6px;top:50%;transform:translateY(-50%);color:var(--dim);z-index:2;font-size:10px;}
+
+/* cache ladder — signature element */
+.ladder{display:flex;flex-direction:column;gap:5px;margin-top:8px;}
+.rung{display:grid;grid-template-columns:88px 1fr 96px;gap:10px;align-items:center;}
+.rung-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;text-align:right;}
+.rung-bar{height:22px;border-radius:4px;position:relative;overflow:hidden;border:1px solid var(--bd);}
+.rung-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;}
+.rung-time{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--mid);white-space:nowrap;}
+.rung-time b{color:var(--text);}
+.r1 .rung-name{color:#4ade80;} .r1 .rung-fill{background:linear-gradient(90deg,#4ade80,rgba(74,222,128,.3));}
+.r2 .rung-name{color:#34d399;} .r2 .rung-fill{background:linear-gradient(90deg,#34d399,rgba(52,211,153,.3));}
+.r3 .rung-name{color:#60a5fa;} .r3 .rung-fill{background:linear-gradient(90deg,#60a5fa,rgba(96,165,250,.3));}
+.r4 .rung-name{color:#a78bfa;} .r4 .rung-fill{background:linear-gradient(90deg,#a78bfa,rgba(167,139,250,.3));}
+.r5 .rung-name{color:#f59e0b;} .r5 .rung-fill{background:linear-gradient(90deg,#f59e0b,rgba(245,158,11,.3));}
+.r6 .rung-name{color:#f87171;} .r6 .rung-fill{background:linear-gradient(90deg,#f87171,rgba(248,113,113,.3));}
+
+.footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+@media (max-width:900px){.g2,.g3,.g23{grid-template-columns:1fr;}.hl h1{font-size:46px;}.pipe{flex-wrap:wrap;}}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+  <div class="header">
+    <div class="hl">
+      <h1><span class="t1">CPU Execution</span></h1>
+      <div class="sub">How a core turns instructions into work — cycle, pipeline, cache</div>
+    </div>
+    <div class="pills">
+      <span class="pill pill-f">Fetch → Decode</span>
+      <span class="pill pill-e">Execute → Writeback</span>
+      <span class="pill pill-c">Cache = King</span>
+    </div>
+  </div>
+
+  <!-- THE CYCLE -->
+  <div class="sh sf"><span class="sh-icon">🔄</span><span class="sh-label">The Instruction Cycle</span><span class="sh-sub">what one clock tick's worth of work looks like</span></div>
+  <div class="g23">
+    <div class="card cf">
+      <div class="ctitle">⏱️ Clock &amp; Cycle Basics</div>
+      <div class="fr"><span class="fk">Clock</span><span class="fv">A <b>cycle</b> is one tick of the clock. 3 GHz = 3 billion cycles/sec ≈ <b>0.33 ns</b> each.</span></div>
+      <div class="fr"><span class="fk">IPC</span><span class="fv">Modern cores retire <b>several instructions per cycle</b> (superscalar) — IPC &gt; 1.</span></div>
+      <div class="fr"><span class="fk">CPI</span><span class="fv">Cycles-per-instruction. A cache miss can push effective CPI way up while the core stalls.</span></div>
+      <div class="fr"><span class="fk">Registers</span><span class="fv">The fastest storage — 0 cycles, on-core. Everything below is the memory hierarchy.</span></div>
+    </div>
+    <div class="card ce">
+      <div class="ctitle">🧬 Fetch · Decode · Execute · Mem · Writeback</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.6;margin-bottom:8px;">Every instruction flows through the same classic stages. On real cores these run <b>overlapped</b> (see pipeline below), but the logical order holds:</div>
+      <table class="tb">
+        <tr><th>Stage</th><th>What happens</th></tr>
+        <tr><td>Fetch</td><td>Read next instruction from I-cache at the program counter</td></tr>
+        <tr><td>Decode</td><td>Translate bytes into micro-ops; read source registers</td></tr>
+        <tr><td>Execute</td><td>ALU does the math / branch / address calc</td></tr>
+        <tr><td>Memory</td><td>Load or store to D-cache if the op touches memory</td></tr>
+        <tr><td>Writeback</td><td>Write the result back into the register file</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="sh sd"><span class="sh-icon">🏭</span><span class="sh-label">Pipelining</span><span class="sh-sub">overlap stages like an assembly line</span></div>
+  <div class="card cd">
+    <div class="ctitle">Five instructions in flight at once</div>
+    <div class="pipe">
+      <div class="pstage ps-f"><div class="ps-abbr">IF</div><div class="ps-name">Fetch</div><div class="ps-arrow">▶</div></div>
+      <div class="pstage ps-d"><div class="ps-abbr">ID</div><div class="ps-name">Decode</div><div class="ps-arrow">▶</div></div>
+      <div class="pstage ps-e"><div class="ps-abbr">EX</div><div class="ps-name">Execute</div><div class="ps-arrow">▶</div></div>
+      <div class="pstage ps-m"><div class="ps-abbr">MEM</div><div class="ps-name">Memory</div><div class="ps-arrow">▶</div></div>
+      <div class="pstage ps-w"><div class="ps-abbr">WB</div><div class="ps-name">Writeback</div></div>
+    </div>
+    <div class="note"><b>The win:</b> while instruction 1 is in Execute, instruction 2 is Decoding and instruction 3 is being Fetched. Throughput approaches <b>one instruction finished per cycle</b> even though each takes 5 cycles end-to-end.</div>
+  </div>
+  <div class="g3">
+    <div class="card cc">
+      <div class="ctitle">🌿 Branch Hazard</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.55;">The CPU doesn't know which way an <code>if</code> goes until Execute — but it's already fetched the next instructions. <b>Branch prediction</b> guesses; a <b>mispredict</b> flushes the pipeline (~15–20 cycles lost).</div>
+    </div>
+    <div class="card cc">
+      <div class="ctitle">🔗 Data Hazard</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.55;">Instruction 2 needs a result instruction 1 hasn't written yet. Fixed by <b>forwarding</b> (bypass the result early) or, failing that, a <b>stall</b> (bubble).</div>
+    </div>
+    <div class="card cc">
+      <div class="ctitle">🎲 Out-of-Order</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.55;">Big cores execute ready instructions <b>out of program order</b> and retire them in order — hiding latency by finding independent work while one op waits on memory.</div>
+    </div>
+  </div>
+
+  <!-- CACHE — signature -->
+  <div class="sh sc"><span class="sh-icon">📊</span><span class="sh-label">The Memory Hierarchy</span><span class="sh-sub">why cache decides real-world speed</span></div>
+  <div class="card cc">
+    <div class="ctitle">⏳ Latency ladder — relative cost of one access</div>
+    <div class="ladder">
+      <div class="rung r1"><div class="rung-name">L1</div><div class="rung-bar"><div class="rung-fill" style="width:3%"></div></div><div class="rung-time"><b>~1 ns</b> · ~4 cyc</div></div>
+      <div class="rung r2"><div class="rung-name">L2</div><div class="rung-bar"><div class="rung-fill" style="width:8%"></div></div><div class="rung-time"><b>~4 ns</b> · ~12 cyc</div></div>
+      <div class="rung r3"><div class="rung-name">L3</div><div class="rung-bar"><div class="rung-fill" style="width:20%"></div></div><div class="rung-time"><b>~12 ns</b> · ~40 cyc</div></div>
+      <div class="rung r4"><div class="rung-name">RAM</div><div class="rung-bar"><div class="rung-fill" style="width:42%"></div></div><div class="rung-time"><b>~100 ns</b> · ~300 cyc</div></div>
+      <div class="rung r5"><div class="rung-name">SSD</div><div class="rung-bar"><div class="rung-fill" style="width:70%"></div></div><div class="rung-time"><b>~100 µs</b></div></div>
+      <div class="rung r6"><div class="rung-name">Disk</div><div class="rung-bar"><div class="rung-fill" style="width:100%"></div></div><div class="rung-time"><b>~10 ms</b></div></div>
+    </div>
+    <div class="note"><b>Read the gap:</b> RAM is ~100× slower than L1. If your data isn't in cache, the core <b>stalls for hundreds of cycles</b> doing nothing. This is why data layout and access patterns often beat clever algorithms.</div>
+  </div>
+  <div class="g2">
+    <div class="card cf">
+      <div class="ctitle">🎯 Locality — why cache works</div>
+      <div class="fr"><span class="fk">Temporal</span><span class="fv">Recently used data is likely reused soon → keep it close.</span></div>
+      <div class="fr"><span class="fk">Spatial</span><span class="fv">Nearby addresses are likely accessed together → fetch a whole <b>cache line</b> (64 B), not one byte.</span></div>
+      <div class="fr"><span class="fk">Prefetch</span><span class="fv">Hardware spots stride patterns and pulls lines in <i>before</i> you ask.</span></div>
+    </div>
+    <div class="card ce">
+      <div class="ctitle">⚡ Practical consequences</div>
+      <div class="fv" style="font-size:10.5px;line-height:1.6;">
+        • Sequential array walk ≫ linked-list chase (pointer chasing thrashes cache).<br>
+        • <b>Struct-of-arrays</b> can beat array-of-structs for hot loops.<br>
+        • <b>False sharing:</b> two threads writing different vars in the <i>same</i> 64 B line ping-pong the line between cores — a silent killer.
+      </div>
+    </div>
+  </div>
+  <div class="tp"><b>Interview trap:</b> "Your loop is slow but the CPU is at 100%." High utilization doesn't mean useful work — the core may be <b>stalled on memory</b>, burning cycles waiting on RAM. Check cache-miss counters (<code>perf stat</code>), not just CPU %.</div>
+
+  <!-- MEASURE -->
+  <div class="sh sx"><span class="sh-icon">🔬</span><span class="sh-label">Measure It</span><span class="sh-sub">counters don't lie</span></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ctitle">🛠️ perf</div>
+      <div class="code"><span class="cm"># IPC, cache misses, branch mispredicts</span>
+perf stat -d ./app
+
+<span class="cm"># where the misses happen</span>
+perf record -e cache-misses ./app
+perf report</div>
+    </div>
+    <div class="card">
+      <div class="ctitle">📎 Rules of thumb</div>
+      <table class="tb">
+        <tr><th>Metric</th><th>Healthy-ish</th></tr>
+        <tr><td>IPC</td><td>&gt; 1.0 good, &gt; 2 great</td></tr>
+        <tr><td>L1 miss rate</td><td>low single digits %</td></tr>
+        <tr><td>Branch mispredict</td><td>&lt; a few %</td></tr>
+        <tr><td>Cache line</td><td>64 bytes (assume it)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>OS Internals · CPU Execution</span>
+    <span>Cycle · Pipeline · Cache Hierarchy</span>
+  </div>
+
+</div>
+</body>
+</html>

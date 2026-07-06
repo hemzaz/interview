@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker &amp; Container Images — Interview Cheatsheet</title>
+<style>
+:root{
+  --bg:#0a0c10; --s1:#111318; --s2:#161a22; --bd:#1e2530;
+  --accent:#22d3ee;   /* cyan    - images / build */
+  --accent2:#a78bfa;  /* violet  - security */
+  --accent3:#34d399;  /* emerald - runtime / registry */
+  --accent4:#f59e0b;  /* amber   - traps / warnings */
+  --accent5:#f87171;  /* red     - danger / secrets */
+  --text:#e6edf3; --muted:#8b98a9; --dim:#526072;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.55;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%,rgba(34,211,238,.06) 0%,transparent 50%),
+    radial-gradient(ellipse 30% 20% at 5% 60%,rgba(167,139,250,.04) 0%,transparent 45%),
+    radial-gradient(ellipse 25% 20% at 95% 70%,rgba(52,211,153,.04) 0%,transparent 45%);}
+.page{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px 60px;}
+
+/* HEADER */
+.header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.header h1{font-size:30px;font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header .sub{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-top:6px;}
+.pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.5px;padding:5px 11px;border-radius:5px;border:1px solid;font-weight:700;text-transform:uppercase;white-space:nowrap;}
+.pill-c{background:rgba(34,211,238,.1);border-color:rgba(34,211,238,.35);color:var(--accent);}
+.pill-v{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.35);color:var(--accent2);}
+.pill-e{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);color:var(--accent3);}
+
+/* SECTION HEADS */
+.sh{display:flex;align-items:center;gap:10px;margin:26px 0 12px;}
+.sh-icon{font-size:16px;}
+.sh-label{font-size:17px;font-weight:800;letter-spacing:.3px;}
+.sh-sub{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.5px;}
+.sh::after{content:'';flex:1;height:1px;}
+.sc .sh-label{color:var(--accent);} .sc .sh::after{background:linear-gradient(90deg,rgba(34,211,238,.35),transparent);}
+.sv .sh-label{color:var(--accent2);} .sv .sh::after{background:linear-gradient(90deg,rgba(167,139,250,.35),transparent);}
+.se .sh-label{color:var(--accent3);} .se .sh::after{background:linear-gradient(90deg,rgba(52,211,153,.35),transparent);}
+.sa .sh-label{color:var(--accent4);} .sa .sh::after{background:linear-gradient(90deg,rgba(245,158,11,.35),transparent);}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:1.1fr 1.4fr;gap:12px;margin-bottom:12px;}
+.gfull{margin-bottom:12px;}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:15px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cc::before{background:linear-gradient(90deg,var(--accent),transparent);}
+.cv::before{background:linear-gradient(90deg,var(--accent2),transparent);}
+.ce::before{background:linear-gradient(90deg,var(--accent3),transparent);}
+.ca::before{background:linear-gradient(90deg,var(--accent4),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--accent5),transparent);}
+.ctitle{font-size:13px;font-weight:700;letter-spacing:.2px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.03);align-items:baseline;font-size:11.5px;}
+.fr:first-of-type{border-top:none;}
+.fk{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);}
+.fv{color:var(--muted);line-height:1.55;}
+.fv b{color:var(--text);}
+.fv code, td code, .note code, .tp code{font-family:var(--mono);font-size:10.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--accent4);}
+
+/* code blocks */
+.code{background:#04060a;border:1px solid var(--bd);border-radius:6px;padding:11px 14px;font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--muted);margin-top:8px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--accent2);} .st{color:var(--accent3);} .nu{color:var(--accent);}
+.cm{color:var(--dim);} .fl{color:var(--accent4);} .er{color:var(--accent5);}
+
+/* callouts */
+.tp{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:9px 12px;font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6;}
+.tp::before{content:'⚠ TRAP  ';color:var(--accent5);font-weight:800;letter-spacing:.5px;font-size:10px;}
+.tp b{color:var(--text);}
+.qa{background:rgba(34,211,238,.04);border:1px solid rgba(34,211,238,.18);border-radius:6px;padding:9px 12px;font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.6;}
+.qa .q{color:var(--accent);font-weight:700;}
+.qa .a{color:var(--muted);}
+.note{background:rgba(255,255,255,.02);border-left:2px solid var(--bd);padding:7px 11px;font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;}
+.note b{color:var(--text);}
+
+/* table */
+.tb{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px;}
+.tb th{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);padding:6px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.tb td{padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--muted);vertical-align:top;line-height:1.5;}
+.tb td:first-child{color:var(--text);font-weight:600;white-space:nowrap;}
+.tb tr:last-child td{border-bottom:none;}
+.good{color:var(--accent3)!important;} .warn{color:var(--accent4)!important;} .bad{color:var(--accent5)!important;}
+.tblwrap{overflow-x:auto;}
+
+/* flow */
+.flow{display:flex;flex-direction:column;gap:0;margin-top:6px;}
+.fstep{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;padding:5px 0;position:relative;}
+.fnum{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9.5px;font-weight:700;flex-shrink:0;}
+.fn1{background:rgba(34,211,238,.12);color:var(--accent);border:1px solid rgba(34,211,238,.35);}
+.fn2{background:rgba(245,158,11,.12);color:var(--accent4);border:1px solid rgba(245,158,11,.35);}
+.fn3{background:rgba(167,139,250,.12);color:var(--accent2);border:1px solid rgba(167,139,250,.35);}
+.fn4{background:rgba(52,211,153,.12);color:var(--accent3);border:1px solid rgba(52,211,153,.35);}
+.ftxt{font-size:11.5px;color:var(--muted);line-height:1.55;padding-top:2px;}
+.ftxt b{color:var(--text);}
+
+/* stack diagram */
+.stack{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:0;margin-bottom:12px;overflow:hidden;}
+.slayer{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;gap:12px;align-items:center;}
+.slayer:last-child{border-bottom:none;}
+.slayer .name{font-size:11.5px;font-weight:700;color:var(--text);}
+.slayer .desc{font-size:10.5px;color:var(--muted);text-align:right;}
+.slayer.rw{background:linear-gradient(90deg,rgba(245,158,11,.08),transparent);}
+.slayer.ro{background:transparent;}
+
+.footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--bd);display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+
+@media (max-width:820px){.g2,.g3,.g23{grid-template-columns:1fr;}.header{flex-direction:column;align-items:flex-start;}}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h1>Docker &amp; Container Images</h1>
+      <div class="sub">Layers, Dockerfiles, multi-stage builds, and the OCI runtime landscape</div>
+    </div>
+    <div class="pills">
+      <span class="pill pill-c">OCI Image + Runtime Spec</span>
+      <span class="pill pill-v">BuildKit</span>
+      <span class="pill pill-e">containerd · runc</span>
+    </div>
+  </div>
+
+  <!-- ══════════ IMAGES VS CONTAINERS ══════════ -->
+  <div class="sh sc"><span class="sh-icon">🧱</span><span class="sh-label">Images vs Containers</span><span class="sh-sub">union filesystem &amp; copy-on-write</span></div>
+
+  <div class="stack">
+    <div class="slayer rw"><div class="name">Container writable layer (upperdir)</div><div class="desc">Created per-container at <code>docker run</code>. All writes land here. Deleted with the container.</div></div>
+    <div class="slayer ro"><div class="name">Image layer N — e.g. <code>COPY . /app</code></div><div class="desc">Read-only. Content-addressed by digest.</div></div>
+    <div class="slayer ro"><div class="name">Image layer 2 — e.g. <code>RUN npm install</code></div><div class="desc">Read-only. Shared across every container from this image.</div></div>
+    <div class="slayer ro"><div class="name">Image layer 1 — <code>FROM node:22-slim</code></div><div class="desc">Read-only base. Shared across every image built FROM it.</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card cc">
+      <div class="ctitle">📦 Image vs Container</div>
+      <div class="fr"><span class="fk">Image</span><span class="fv">An immutable, ordered stack of read-only <b>layers</b> plus a JSON config (env, entrypoint, exposed ports). It's a template — never runs by itself.</span></div>
+      <div class="fr"><span class="fk">Container</span><span class="fv">A running (or stopped) instance = the image's layers mounted read-only <b>plus one thin writable layer</b> on top, plus isolated namespaces/cgroups.</span></div>
+      <div class="fr"><span class="fk">Many→one</span><span class="fv">N containers can run from the same image simultaneously, each with its own independent writable layer — the read-only layers are shared, not copied.</span></div>
+    </div>
+    <div class="card cv">
+      <div class="ctitle">🔀 OverlayFS &amp; Copy-on-Write</div>
+      <div class="fr"><span class="fk">lowerdir</span><span class="fv">The stacked read-only image layers (can be many, merged in order).</span></div>
+      <div class="fr"><span class="fk">upperdir</span><span class="fv">The container's writable layer — new/changed files land here.</span></div>
+      <div class="fr"><span class="fk">merged</span><span class="fv">The unified view the container's process actually sees as its root filesystem.</span></div>
+      <div class="fr"><span class="fk">copy_up</span><span class="fv">Editing a file that only exists in a lower (read-only) layer triggers OverlayFS to <b>copy it up</b> to upperdir first, then apply the write there. The original layer is never touched.</span></div>
+    </div>
+  </div>
+  <div class="note"><b>Deletion in an overlay:</b> "deleting" a file that lives in a lower layer doesn't remove it from that layer — OverlayFS writes a <b>whiteout</b> marker in upperdir that hides it in the merged view. The bytes still physically exist in the lower, read-only layer.</div>
+
+  <div class="gfull">
+    <div class="card ca">
+      <div class="ctitle">🎯 Layer Caching &amp; Cache Invalidation</div>
+      <div class="fr"><span class="fk">Per instruction</span><span class="fv">Each <code>RUN</code>/<code>COPY</code>/<code>ADD</code> instruction produces (or reuses) one layer. <code>FROM</code>, <code>ENV</code>, <code>WORKDIR</code>, <code>ARG</code> etc. only touch metadata — cheap.</span></div>
+      <div class="fr"><span class="fk">Cache key</span><span class="fv">For <code>RUN</code>: the instruction text itself. For <code>COPY</code>/<code>ADD</code>: a checksum of the copied file(s) content and metadata — not just the instruction string.</span></div>
+      <div class="fr"><span class="fk">Cascade</span><span class="fv">The moment one layer misses cache, <b>every layer after it also rebuilds</b> — even if their own instructions and inputs are unchanged. Cache reuse is strictly a prefix match down the instruction list.</span></div>
+      <div class="fr"><span class="fk">Ordering rule</span><span class="fv">Put what changes <b>least often</b> first (base image, OS packages), what changes <b>most often</b> last (application source). Copy dependency manifests (<code>package.json</code>, <code>go.mod</code>, <code>requirements.txt</code>) and install <i>before</i> copying the rest of the source.</span></div>
+      <div class="code"><span class="cm"># good ordering — app code churn doesn't bust the dependency-install cache</span>
+<span class="kw">FROM</span> node:22-slim
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package.json package-lock.json ./
+<span class="kw">RUN</span> npm ci --omit=dev        <span class="cm"># cached until package*.json changes</span>
+<span class="kw">COPY</span> . .                     <span class="cm"># app source — changes every commit</span>
+<span class="kw">CMD</span> [<span class="st">"node"</span>, <span class="st">"server.js"</span>]</div>
+    </div>
+  </div>
+  <div class="tp"><b>Interview trap — cache busting:</b> <code>COPY . .</code> placed <i>before</i> the dependency install means any source file edit invalidates the install layer too, forcing a full <code>npm ci</code>/<code>pip install</code> on every rebuild. This is the single most common Dockerfile performance mistake.</div>
+
+  <!-- ══════════ DOCKERFILE MASTERY ══════════ -->
+  <div class="sh sv"><span class="sh-icon">📝</span><span class="sh-label">Dockerfile Mastery</span><span class="sh-sub">instructions and their semantics</span></div>
+
+  <div class="tblwrap">
+  <table class="tb">
+    <tr><th>Instruction</th><th>Purpose &amp; key semantics</th></tr>
+    <tr><td>FROM</td><td>Base image for the stage; may appear multiple times to start new build stages (multi-stage builds).</td></tr>
+    <tr><td>RUN</td><td>Executes a command and commits the filesystem result as a new layer. <b>Shell form</b> <code>RUN cmd</code> runs via <code>/bin/sh -c</code>. <b>Exec form</b> <code>RUN ["cmd","arg"]</code> runs the binary directly, no shell.</td></tr>
+    <tr><td>COPY</td><td>Copies files/dirs from the build context (or another stage via <code>--from</code>) into the image. Simple, explicit, cacheable by content checksum.</td></tr>
+    <tr><td>ADD</td><td>Superset of COPY: can also fetch a remote URL and auto-extracts local <code>.tar</code>/<code>.tar.gz</code> archives into the destination. <b>Prefer COPY</b> — ADD's implicit extraction and remote-fetch behavior is a common source of surprises and (historically) unverified downloads.</td></tr>
+    <tr><td>WORKDIR</td><td>Sets (and creates if missing) the working directory for all following instructions and for the container's default process.</td></tr>
+    <tr><td>ENV</td><td>Sets an environment variable that is <b>baked into the image</b> and visible at runtime (<code>docker inspect</code>, the running process's env). Persists.</td></tr>
+    <tr><td>ARG</td><td>Build-time-only variable, supplied via <code>--build-arg</code>. Not present in the final image's runtime environment. Scope: an <code>ARG</code> declared before the first <code>FROM</code> only applies to the <code>FROM</code> line unless re-declared after it.</td></tr>
+    <tr><td>ENTRYPOINT</td><td>The fixed executable for the container. Exec form recommended (see callout below).</td></tr>
+    <tr><td>CMD</td><td>Default arguments (if ENTRYPOINT is set, exec form) or the default command (if no ENTRYPOINT). Overridden wholesale by args passed to <code>docker run</code>.</td></tr>
+    <tr><td>EXPOSE</td><td>Documentation only — declares which port(s) the app listens on. Does <b>not</b> publish anything; you still need <code>-p</code>/<code>-P</code> at runtime.</td></tr>
+    <tr><td>USER</td><td>Sets the UID/GID (or username) subsequent instructions and the container's process run as. Use a non-root numeric UID for production images.</td></tr>
+    <tr><td>HEALTHCHECK</td><td>Defines a command Docker runs periodically to mark the container <code>healthy</code>/<code>unhealthy</code>/<code>starting</code>. Flags: <code>--interval</code>, <code>--timeout</code>, <code>--start-period</code>, <code>--retries</code>. <code>HEALTHCHECK NONE</code> disables an inherited one.</td></tr>
+    <tr><td>ONBUILD</td><td>Registers a trigger instruction that fires only when <b>another</b> Dockerfile uses this image in its own <code>FROM</code>. Convenient for base/framework images, but hides build steps from whoever reads the downstream Dockerfile — used sparingly.</td></tr>
+    <tr><td>.dockerignore</td><td>Excludes paths from the build context sent to the daemon/BuildKit — smaller/faster builds and prevents accidentally <code>COPY</code>-ing <code>.git</code>, <code>node_modules</code>, or secret files.</td></tr>
+  </table>
+  </div>
+
+  <div class="g23">
+    <div class="card cv">
+      <div class="ctitle">⚔️ ENTRYPOINT vs CMD — how they combine</div>
+      <table class="tb">
+        <tr><th>ENTRYPOINT</th><th>CMD</th><th>Effective command</th></tr>
+        <tr><td>none</td><td><code>["nginx","-g","daemon off;"]</code></td><td>CMD runs as-is: <code>nginx -g "daemon off;"</code></td></tr>
+        <tr><td><code>["nginx"]</code> (exec)</td><td><code>["-g","daemon off;"]</code></td><td>CMD elements become <b>args</b> to ENTRYPOINT</td></tr>
+        <tr><td><code>nginx</code> (shell)</td><td>anything</td><td>CMD is <b>ignored entirely</b> — shell form ENTRYPOINT takes no CMD args</td></tr>
+        <tr><td><code>["nginx"]</code> (exec)</td><td>none</td><td>Runs <code>nginx</code> with no args</td></tr>
+      </table>
+      <div class="note"><code>docker run img foo bar</code> replaces <b>CMD</b> with <code>foo bar</code>, it never touches ENTRYPOINT — that's what <code>--entrypoint</code> is for.</div>
+    </div>
+    <div class="card ca">
+      <div class="ctitle">🧨 Exec form vs shell form — why it matters</div>
+      <div class="fr"><span class="fk">Shell form</span><span class="fv"><code>CMD myapp</code> → really <code>/bin/sh -c "myapp"</code>. The shell becomes <b>PID 1</b>, your app is a child. Signals sent to the container (e.g. <code>SIGTERM</code> from <code>docker stop</code>) go to the shell, which often does <b>not</b> forward them.</span></div>
+      <div class="fr"><span class="fk">Exec form</span><span class="fv"><code>CMD ["myapp"]</code> runs the binary directly as PID 1 — signals reach it immediately, no shell in between. No shell also means no env-var expansion/globbing/pipes unless you invoke a shell explicitly.</span></div>
+      <div class="fr"><span class="fk">Fix for scripts</span><span class="fv">If you must use a shell entrypoint script, end it with <code>exec "$@"</code> so the shell process is <b>replaced</b> by your app instead of staying as its parent.</span></div>
+    </div>
+  </div>
+  <div class="tp"><b>Interview trap — PID 1 &amp; zombie reaping:</b> your app is PID 1 inside the container's PID namespace. Most language runtimes don't install default handlers for <code>SIGTERM</code>/<code>SIGINT</code> when running as PID 1, so <code>docker stop</code> waits out the full grace period then <code>SIGKILL</code>s. PID 1 is also responsible for <b>reaping zombie processes</b> — if your app spawns children and doesn't wait() on them, they pile up as zombies. Fix: run with <code>docker run --init</code> (injects <code>tini</code> as a tiny real PID 1 that forwards signals and reaps zombies), or use an exec-form entrypoint / <code>exec "$@"</code> in shell scripts.</div>
+
+  <!-- ══════════ MULTI-STAGE BUILDS ══════════ -->
+  <div class="sh se"><span class="sh-icon">🏗️</span><span class="sh-label">Multi-Stage Builds</span><span class="sh-sub">build tools stay out of the final image</span></div>
+
+  <div class="g23">
+    <div class="card ce">
+      <div class="ctitle">🧩 The pattern</div>
+      <div class="code"><span class="kw">FROM</span> golang:1.23 <span class="kw">AS</span> build
+<span class="kw">WORKDIR</span> /src
+<span class="kw">COPY</span> go.mod go.sum ./
+<span class="kw">RUN</span> go mod download
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> CGO_ENABLED=0 go build -o /out/app .
+
+<span class="kw">FROM</span> gcr.io/distroless/static <span class="kw">AS</span> runtime
+<span class="kw">COPY</span> --from=build /out/app /app
+<span class="kw">USER</span> nonroot:nonroot
+<span class="kw">ENTRYPOINT</span> [<span class="st">"/app"</span>]</div>
+      <div class="fr"><span class="fk">--target</span><span class="fv"><code>docker build --target build -t app:debug .</code> stops the build at a named stage — handy for a debug image with the full toolchain, or CI test stages.</span></div>
+      <div class="fr"><span class="fk">--from</span><span class="fv"><code>COPY --from=</code> can name a previous stage, a stage index, <b>or any external image</b>: <code>COPY --from=nginx:1.27 /etc/nginx/nginx.conf ./nginx.conf</code>.</span></div>
+      <div class="fr"><span class="fk">Result</span><span class="fv">The final image contains only what's explicitly <code>COPY --from</code>'d in — no compiler, no source, no package manager, drastically smaller and smaller attack surface.</span></div>
+    </div>
+    <div class="card cr">
+      <div class="ctitle">⚖️ Base image tradeoffs</div>
+      <table class="tb">
+        <tr><th>Base</th><th>Tradeoff</th></tr>
+        <tr><td>scratch</td><td>Truly empty — no shell, no libc, no CA certs. Only works for statically-linked binaries. Smallest possible, zero debuggability.</td></tr>
+        <tr><td>distroless</td><td>Language runtime + libc + CA certs/tzdata, <b>no shell, no package manager</b>. Small attack surface, still runnable/debuggable via <code>:debug</code> tag variants (adds busybox).</td></tr>
+        <tr><td>alpine</td><td>~5MB, full package manager (<code>apk</code>) and busybox shell. Uses <b>musl libc</b>, not glibc — see trap below.</td></tr>
+        <tr><td>-slim / debian</td><td>glibc-based, small-ish, has a real shell + apt. Best compatibility with prebuilt binaries/wheels, larger than alpine.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="tp"><b>Interview trap — musl vs glibc:</b> Alpine's musl libc is <b>not binary-compatible</b> with glibc. Pre-compiled Python wheels (manylinux), Node native addons, and other binaries built against glibc can silently fail, hang, or behave differently (DNS resolution, locale, threading) under Alpine. "It works on debian-slim but breaks on alpine" is almost always this.</div>
+
+  <!-- ══════════ SIZE & SECURITY ══════════ -->
+  <div class="sh sa"><span class="sh-icon">🔒</span><span class="sh-label">Image Size &amp; Security</span><span class="sh-sub">the classic secrets-in-layers trap</span></div>
+
+  <div class="g23">
+    <div class="card cr">
+      <div class="ctitle">🚨 Secrets baked into layers</div>
+      <div class="code"><span class="cm"># WRONG — secret is recoverable from the image</span>
+<span class="kw">COPY</span> id_rsa /root/.ssh/id_rsa
+<span class="kw">RUN</span> git clone git@repo &amp;&amp; \
+    <span class="er">rm /root/.ssh/id_rsa</span>   <span class="cm"># too late!</span></div>
+      <div class="fv" style="margin-top:8px;">Layers are immutable diffs. The <code>COPY</code> layer still contains <code>id_rsa</code> in its own diff — deleting it in a <b>later</b> layer only hides it in the merged view via a whiteout. Anyone with the image can extract it: <code>docker save img | tar -xO ...</code> or simply <code>docker history --no-trunc</code>.</div>
+      <div class="code" style="margin-top:8px;"><span class="cm"># RIGHT — BuildKit secret mount, never touches any layer</span>
+<span class="kw">RUN</span> --mount=type=secret,id=ssh_key \
+    GIT_SSH_COMMAND=<span class="st">"ssh -i /run/secrets/ssh_key"</span> \
+    git clone git@repo
+
+<span class="cm"># build with:</span>
+docker build --secret id=ssh_key,src=$HOME/.ssh/id_rsa .</div>
+    </div>
+    <div class="card cv">
+      <div class="ctitle">🛡️ Hardening checklist</div>
+      <div class="fr"><span class="fk">Fewer layers</span><span class="fv">Chain related steps in <b>one</b> <code>RUN</code> with <code>&amp;&amp;</code> so cleanup (<code>rm -rf /var/lib/apt/lists/*</code>) happens in the same layer as the install — cleaning in a later layer doesn't shrink the image.</span></div>
+      <div class="fr"><span class="fk">Pin versions</span><span class="fv">Pin the base image tag (ideally by digest) and package versions. Avoid floating tags in anything that ships.</span></div>
+      <div class="fr"><span class="fk">Drop root</span><span class="fv"><code>USER 10001:10001</code> or a named non-root user; pairs with Kubernetes <code>runAsNonRoot</code>.</span></div>
+      <div class="fr"><span class="fk">Cache mounts</span><span class="fv"><code>RUN --mount=type=cache,target=/root/.cache/pip</code> persists package-manager caches <b>across builds</b> without ever landing in an image layer.</span></div>
+      <div class="fr"><span class="fk">Multi-arch</span><span class="fv"><code>docker buildx build --platform linux/amd64,linux/arm64 -t repo:tag --push .</code> — produces one manifest list tag resolving per-CPU-arch.</span></div>
+    </div>
+  </div>
+  <div class="note"><b>BuildKit</b> has been the default builder since Docker 23.0 (previously opt-in via <code>DOCKER_BUILDKIT=1</code>). It parallelizes independent stages, understands <code>--mount=type=secret</code> / <code>type=ssh</code> / <code>type=cache</code>, and can emit build provenance and SBOM attestations.</div>
+
+  <!-- ══════════ REGISTRIES ══════════ -->
+  <div class="sh sc"><span class="sh-icon">🗂️</span><span class="sh-label">Registries: Tags, Digests &amp; Sharing</span><span class="sh-sub">the mutable-tag trap</span></div>
+
+  <div class="g3">
+    <div class="card cc">
+      <div class="ctitle">🏷️ Tags</div>
+      <div class="fv">A tag (<code>myapp:1.4</code>) is a mutable pointer, like a git branch — it can be reassigned to a different image digest at any time by anyone who can push. Pulling by tag today may not give you the same bits tomorrow.</div>
+    </div>
+    <div class="card cc">
+      <div class="ctitle">🔑 Digests</div>
+      <div class="fv"><code>myapp@sha256:abc123...</code> is content-addressed and immutable — the digest <i>is</i> a hash of the manifest. Pin production deployments by digest for true reproducibility.</div>
+    </div>
+    <div class="card cc">
+      <div class="ctitle">♻️ Layer sharing</div>
+      <div class="fv">Layers are stored and transferred by digest. If two images share an identical base layer, the registry and the local daemon store/pull it <b>once</b>.</div>
+    </div>
+  </div>
+  <div class="tp"><b>Interview trap — <code>:latest</code>:</b> it is <b>not</b> "the newest version" — it's simply the tag Docker applies by default when none is specified. It's just as mutable as any other tag, gives you no reproducibility guarantee, and is generally avoided in production manifests/Dockerfiles in favor of an explicit version (and ideally a pinned digest).</div>
+
+  <!-- ══════════ RUNTIME LANDSCAPE ══════════ -->
+  <div class="sh se"><span class="sh-icon">⚙️</span><span class="sh-label">Container Runtime Landscape</span><span class="sh-sub">Docker Engine · containerd · CRI-O · runc</span></div>
+
+  <div class="g23">
+    <div class="card ce">
+      <div class="ctitle">🔽 The stack, top to bottom</div>
+      <div class="flow">
+        <div class="fstep"><div class="fnum fn1">1</div><div class="ftxt"><b>Docker Engine</b> — CLI + <code>dockerd</code> daemon + build (BuildKit), the full developer-facing platform. Internally delegates to containerd.</div></div>
+        <div class="fstep"><div class="fnum fn2">2</div><div class="ftxt"><b>containerd</b> — CNCF-graduated, CRI-compliant high-level runtime. Manages image pull/storage, container lifecycle, snapshots. Used directly by many Kubernetes nodes (no Docker Engine needed).</div></div>
+        <div class="fstep"><div class="fnum fn3">3</div><div class="ftxt"><b>CRI-O</b> — a lightweight, Kubernetes-only alternative to containerd: implements just enough CRI to run pods, nothing Docker-specific.</div></div>
+        <div class="fstep"><div class="fnum fn4">4</div><div class="ftxt"><b>runc</b> — the low-level OCI Runtime Spec reference implementation. Actually creates the namespaces/cgroups and execs the container process. (Alternatives: <code>crun</code>, gVisor/<code>runsc</code>, Kata Containers for VM-level isolation.)</div></div>
+      </div>
+    </div>
+    <div class="card cv">
+      <div class="ctitle">📜 The specs that make this interoperable</div>
+      <div class="fr"><span class="fk">OCI Image Spec</span><span class="fv">Defines the image manifest, layer (tarball diff) format, and config JSON — any OCI-compliant tool can build/read images any other one produced.</span></div>
+      <div class="fr"><span class="fk">OCI Runtime Spec</span><span class="fv">Defines how to run a "filesystem bundle" (rootfs + <code>config.json</code>) as a container — what <code>runc</code>/<code>crun</code>/etc. implement.</span></div>
+      <div class="fr"><span class="fk">CRI</span><span class="fv">Kubernetes' gRPC <b>Container Runtime Interface</b> — lets <code>kubelet</code> talk to any compliant runtime (containerd, CRI-O) without Docker-specific glue code.</span></div>
+      <div class="fr"><span class="fk">dockershim removed</span><span class="fv">Kubernetes <b>v1.24</b> removed the in-tree <code>dockershim</code> that translated CRI calls into Docker Engine API calls. Docker Engine itself doesn't speak CRI. Images built by Docker are unaffected (still OCI-compliant) — what broke was <code>kubelet</code> talking directly to <code>dockerd</code>; the community-maintained <code>cri-dockerd</code> adapter restores that path if needed.</span></div>
+    </div>
+  </div>
+  <div class="qa"><span class="q">Q: If Kubernetes dropped Docker support, do Docker-built images stop working on Kubernetes?</span> <span class="a">A: No. Docker images are OCI images; containerd/CRI-O run them directly. Only the direct kubelet↔dockerd integration path was removed, not compatibility with Docker-produced images.</span></div>
+
+  <!-- ══════════ NETWORKING & STORAGE ══════════ -->
+  <div class="sh sa"><span class="sh-icon">🌐</span><span class="sh-label">Networking &amp; Storage</span><span class="sh-sub">bridge/host/none · volumes/binds/tmpfs</span></div>
+
+  <div class="g2">
+    <div class="card ca">
+      <div class="ctitle">🔌 Network drivers</div>
+      <table class="tb">
+        <tr><th>Driver</th><th>Behavior</th></tr>
+        <tr><td>bridge (default)</td><td>Private virtual network (<code>docker0</code>); container gets its own IP; outbound via NAT; needs <code>-p host:container</code> to be reachable from outside.</td></tr>
+        <tr><td>host</td><td>Shares the host's network namespace directly — no isolation, no port mapping, best raw performance. Avoid for untrusted workloads.</td></tr>
+        <tr><td>none</td><td>No networking beyond loopback.</td></tr>
+      </table>
+    </div>
+    <div class="card ca">
+      <div class="ctitle">💾 Persistence options</div>
+      <table class="tb">
+        <tr><th>Type</th><th>Behavior</th></tr>
+        <tr><td>volume</td><td>Docker-managed storage (under <code>/var/lib/docker/volumes</code>), lifecycle independent of any single container, portable, best practice for real persistent data.</td></tr>
+        <tr><td>bind mount</td><td>Maps an arbitrary host path into the container. Host-dependent, great for local dev live-reload, riskier if the path is too broad.</td></tr>
+        <tr><td>tmpfs</td><td>In-memory only (Linux); never touches disk; wiped when the container stops — good for short-lived secrets.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ SCANNING, SBOM, SIGNING ══════════ -->
+  <div class="sh sv"><span class="sh-icon">🔍</span><span class="sh-label">Scanning, SBOM &amp; Signing</span><span class="sh-sub">supply-chain concepts</span></div>
+
+  <div class="g3">
+    <div class="card cv">
+      <div class="ctitle">🩺 Vulnerability scanning</div>
+      <div class="fv"><b>Trivy</b> / <b>Grype</b> scan every layer's OS packages and language dependencies against CVE databases, typically gating CI on high/critical findings before an image can be pushed or deployed.</div>
+    </div>
+    <div class="card cv">
+      <div class="ctitle">📋 SBOM</div>
+      <div class="fv">A <b>Software Bill of Materials</b> lists exactly what's inside an image — packages, versions, licenses — in formats like SPDX or CycloneDX. BuildKit can emit an SBOM as a build attestation alongside the image.</div>
+    </div>
+    <div class="card cv">
+      <div class="ctitle">✍️ Signing</div>
+      <div class="fv"><b>cosign</b> (Sigstore) signs an image's <b>digest</b> (not its mutable tag) and stores the signature as an OCI artifact next to the image, enabling admission-time verification that an image came from a trusted build and wasn't tampered with.</div>
+    </div>
+  </div>
+
+  <!-- ══════════ RAPID FIRE Q&A ══════════ -->
+  <div class="sh sc"><span class="sh-icon">💬</span><span class="sh-label">Rapid-Fire Q&amp;A</span><span class="sh-sub">common follow-ups</span></div>
+
+  <div class="qa"><span class="q">Q: Container vs VM, in one sentence?</span> <span class="a">A: A container shares the host kernel and is isolated by namespaces + cgroups; a VM virtualizes hardware and runs its own full guest kernel — heavier, stronger isolation boundary.</span></div>
+  <div class="qa"><span class="q">Q: Does `docker exec` work on a `scratch`-based image?</span> <span class="a">A: Only if there's a shell in the image to exec into — `scratch` has none, so `docker exec sh` fails; you'd need a debug-variant image or a sidecar/ephemeral debug container instead.</span></div>
+  <div class="qa"><span class="q">Q: Why prefer distroless/minimal images over a full OS base, security-wise?</span> <span class="a">A: Fewer installed packages means fewer CVEs to track, and no shell/package manager for an attacker to pivot with after a compromise.</span></div>
+  <div class="qa"><span class="q">Q: What does `docker commit` actually create?</span> <span class="a">A: It snapshots a running container's current writable layer into a new read-only image layer on top of its original image — useful for debugging, not a build practice (no Dockerfile provenance).</span></div>
+  <div class="qa"><span class="q">Q: Why does ADD's URL-fetch feature get flagged in reviews?</span> <span class="a">A: It downloads arbitrary remote content into the image at build time with no built-in integrity check (unless using newer `--checksum` syntax) — note a fetched URL is <i>not</i> auto-extracted, only local tar archives are — and isn't cached the same predictable way as COPY.</span></div>
+
+  <div class="footer">
+    <span>Containers · Docker &amp; Container Images</span>
+    <span>Layers · OCI · Runtime Landscape</span>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FluxCD — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-12.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #04080e;
+  --s1:    #070d18;
+  --s2:    #0a1220;
+  --bd:    #122038;
+  --b2:    #1a3050;
+
+  --flux:  #5468FF;   /* FluxCD blue */
+  --fl2:   #7f8fff;
+  --teal:  #00E5CC;
+  --grn:   #39D98A;
+  --yel:   #FFB627;
+  --red:   #FF4560;
+  --vio:   #B06DFF;
+  --orn:   #FF7043;
+  --pink:  #F06292;
+  --sky:   #40C4FF;
+  --lime:  #AEEA00;
+
+  --text:  #cfe0f8;
+  --dim:   #0e1e35;
+  --mid:   #2c4870;
+
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Plus Jakarta Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -10%,rgba(84,104,255,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 28% at 0%   60%,rgba(0,229,204,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 22% at 100% 75%,rgba(176,109,255,.05) 0%,transparent 45%);}
+
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(84,104,255,.022) 60px),
+             repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(84,104,255,.018) 60px);}
+
+.page{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:28px 22px 80px;}
+
+/* ── HERO ── */
+.hero{position:relative;border:1px solid rgba(84,104,255,.25);border-radius:14px;padding:32px 36px;margin-bottom:22px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(84,104,255,.08) 0%,rgba(0,229,204,.04) 60%,rgba(176,109,255,.04) 100%);}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--flux),var(--teal),var(--grn),var(--vio));}
+.hero-bg{position:absolute;right:30px;bottom:-10px;font-size:130px;font-weight:800;color:rgba(84,104,255,.04);line-height:1;letter-spacing:-4px;pointer-events:none;font-family:var(--mono);}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
+.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--teal);}
+.hero h1{font-size:72px;font-weight:800;line-height:.88;letter-spacing:-3px;}
+.h1a{background:linear-gradient(135deg,var(--flux) 0%,var(--sky) 50%,#fff 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h1b{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(84,104,255,.2);}
+.hero-sub{font-size:11px;color:var(--mid);margin-top:10px;line-height:1.9;font-weight:400;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
+.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
+.hp-f{background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.35);color:var(--fl2);}
+.hp-t{background:rgba(0,229,204,.07);border-color:rgba(0,229,204,.3);color:var(--teal);}
+.hp-g{background:rgba(57,217,138,.07);border-color:rgba(57,217,138,.3);color:var(--grn);}
+.hp-v{background:rgba(176,109,255,.08);border-color:rgba(176,109,255,.3);color:var(--vio);}
+.hp-y{background:rgba(255,182,39,.07);border-color:rgba(255,182,39,.3);color:var(--yel);}
+.hp-s{background:rgba(64,196,255,.07);border-color:rgba(64,196,255,.3);color:var(--sky);}
+.hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
+.hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
+.hcard-n{font-size:22px;font-weight:800;color:var(--flux);line-height:1;font-family:var(--mono);}
+.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nb.on{background:rgba(84,104,255,.12);color:var(--flux);box-shadow:0 0 0 1px rgba(84,104,255,.3);}
+
+/* ── SECTIONS ── */
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-i{font-size:18px;flex-shrink:0;}
+.sh-l{font-size:20px;font-weight:800;letter-spacing:-.3px;}
+.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cf::before{background:linear-gradient(90deg,var(--flux),transparent);}
+.ct::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.cv::before{background:linear-gradient(90deg,var(--vio),transparent);}
+.cy::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.co::before{background:linear-gradient(90deg,var(--orn),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.cs::before{background:linear-gradient(90deg,var(--sky),transparent);}
+.cl::before{background:linear-gradient(90deg,var(--lime),transparent);}
+.cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
+
+.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+
+/* code */
+.code{background:#030912;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--yel);}
+.nu{color:var(--teal);} .cm{color:#122038;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+
+/* trap / note */
+.trap{background:rgba(255,69,96,.04);border:1px solid rgba(255,69,96,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(0,229,204,.35);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(0,229,204,.03);}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── CONTROLLER CARDS ── */
+.ctrl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.ctrl-card{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:14px;cursor:pointer;transition:.2s;position:relative;}
+.ctrl-card:hover,.ctrl-card.open{border-color:rgba(84,104,255,.35);}
+.cc-head{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;}
+.cc-icon{font-size:20px;}
+.cc-name{font-size:11.5px;font-weight:700;}
+.cc-role{font-family:var(--mono);font-size:8px;color:var(--mid);margin-top:2px;}
+.cc-arrow{color:var(--mid);transition:.2s;font-size:12px;}
+.ctrl-card.open .cc-arrow{transform:rotate(90deg);color:var(--flux);}
+.cc-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);}
+.ctrl-card.open .cc-body{display:block;}
+.cc-body code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── TRAP GRID ── */
+.trap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.trap-card{background:var(--s1);border:1px solid rgba(255,69,96,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
+.trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,96,.45),transparent);}
+.tc-n{position:absolute;top:7px;right:11px;font-family:var(--mono);font-size:28px;color:rgba(255,69,96,.06);line-height:1;}
+.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-q code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.tc-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.tc-a b{color:var(--text);}
+.tc-a code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
+.quiz-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.quiz-title{font-size:14px;font-weight:700;color:var(--flux);}
+.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score span{color:var(--grn);font-weight:700;}
+.q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
+.q-item.revealed{border-color:rgba(57,217,138,.2);}
+.q-item.revealed-bad{border-color:rgba(255,69,96,.2);}
+.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-opts{display:flex;flex-direction:column;gap:5px;}
+.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt:hover:not(:disabled){background:rgba(84,104,255,.07);border-color:rgba(84,104,255,.3);color:var(--text);}
+.q-opt.correct{background:rgba(57,217,138,.08);border-color:rgba(57,217,138,.35);color:var(--grn);}
+.q-opt.wrong{background:rgba(255,69,96,.07);border-color:rgba(255,69,96,.3);color:var(--red);}
+.q-opt:disabled{cursor:default;}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain.show{display:block;}
+.q-explain b{color:var(--text);}
+.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.quiz-btns{display:flex;gap:8px;margin-top:12px;}
+.qbtn{font-family:var(--mono);font-size:8.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
+.qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.qb-f{background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.3);color:var(--flux);}
+.qb-f:hover{background:rgba(84,104,255,.18);}
+
+/* ── BADGES ── */
+.new-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(57,217,138,.08);border:1px solid rgba(57,217,138,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.v28-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(84,104,255,.09);border:1px solid rgba(84,104,255,.3);color:var(--fl2);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.breaking-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(255,69,96,.08);border:1px solid rgba(255,69,96,.3);color:var(--red);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+
+/* ── DEPENDENCY TREE ── */
+.dep-tree{background:#030912;border:1px solid var(--bd);border-radius:6px;padding:14px;font-family:var(--mono);font-size:10px;line-height:2.2;}
+.dt-r{color:var(--flux);font-weight:600;}
+.dt-l1{color:var(--teal);padding-left:16px;}
+.dt-l2{color:var(--grn);padding-left:32px;}
+.dt-l3{color:var(--mid);padding-left:48px;}
+.dt-ann{color:#0e1e35;font-size:9px;}
+.dt-wait{color:rgba(84,104,255,.4);font-size:9px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec.on>*{animation:fi .3s ease both;}
+.sec.on>*:nth-child(1){animation-delay:.02s}.sec.on>*:nth-child(2){animation-delay:.05s}
+.sec.on>*:nth-child(3){animation-delay:.08s}.sec.on>*:nth-child(4){animation-delay:.11s}
+.sec.on>*:nth-child(5){animation-delay:.14s}.sec.on>*:nth-child(6){animation-delay:.17s}
+.sec.on>*:nth-child(7){animation-delay:.20s}
+
+.footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-bg">flux</div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Field Guide · 2026</div>
+      <h1><span class="h1a">FluxCD</span><br><span class="h1b">v2 Guide</span></h1>
+      <div class="hero-sub">
+        Current stable: v2.8 · Helm v4 support · Flux Operator Web UI · OCI GA<br>
+        GitOps Toolkit · modular controllers · pull-based · SOPS native · CLI-first
+      </div>
+      <div class="hero-pills">
+        <div class="hp hp-f">🔀 v2.8 Current Stable</div>
+        <div class="hp hp-t">7 modular controllers</div>
+        <div class="hp hp-g">SOPS native decryption</div>
+        <div class="hp hp-v">Image automation built-in</div>
+        <div class="hp hp-y">Helm v4 support (v2.8)</div>
+        <div class="hp hp-s">OCI artifacts GA (v2.6)</div>
+        <div class="hp hp-f">flux bootstrap · Flux Operator</div>
+        <div class="hp hp-t">dependsOn DAG ordering</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hcard"><div class="hcard-n">v2.8</div><div class="hcard-l">Current stable</div></div>
+      <div class="hcard"><div class="hcard-n">7</div><div class="hcard-l">controllers</div></div>
+      <div class="hcard"><div class="hcard-n">CNCF</div><div class="hcard-l">Graduated</div></div>
+      <div class="hcard"><div class="hcard-n">Pull</div><div class="hcard-l">per-cluster agent</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nb on" onclick="show('arch')">🏗️ Architecture</button>
+  <button class="nb" onclick="show('sources')">📡 Sources</button>
+  <button class="nb" onclick="show('kust')">🗂️ Kustomize Ctrl</button>
+  <button class="nb" onclick="show('helm')">⎈ Helm Controller</button>
+  <button class="nb" onclick="show('image')">🖼️ Image Automation</button>
+  <button class="nb" onclick="show('tenant')">🏢 Multi-tenancy</button>
+  <button class="nb" onclick="show('bootstrap')">🚀 Bootstrap & Ops</button>
+  <button class="nb" onclick="show('notify')">🔔 Notifications</button>
+  <button class="nb" onclick="show('traps')">⚡ Traps & Quiz</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--              ARCHITECTURE              -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec on" id="sec-arch">
+
+<div class="sh"><div class="sh-i">🏗️</div><div class="sh-l" style="color:var(--flux);">Architecture — GitOps Toolkit</div><div class="sh-s">// 7 modular controllers · each owns a concern · composes via CRDs</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(84,104,255,.3),transparent);"></div></div>
+
+<div class="card cf" style="margin-bottom:12px;padding:20px;">
+<svg viewBox="0 0 1380 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+  <defs>
+    <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(84,104,255,.8)"/></marker>
+    <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(57,217,138,.7)"/></marker>
+    <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(0,229,204,.7)"/></marker>
+    <marker id="a4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(255,182,39,.6)"/></marker>
+    <filter id="gw"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- External sources top row -->
+  <g transform="translate(20,15)">
+    <rect width="120" height="45" rx="6" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5"/>
+    <text x="60" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#F05033" font-weight="600">Git Repo</text>
+    <text x="60" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,80,51,.5)">GitHub/GitLab/Gitea</text>
+  </g>
+  <g transform="translate(160,15)">
+    <rect width="110" height="45" rx="6" fill="rgba(84,104,255,.07)" stroke="rgba(84,104,255,.25)" stroke-width="1"/>
+    <text x="55" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5468FF" font-weight="600">OCI Registry</text>
+    <text x="55" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(84,104,255,.45)">ECR/GHCR/Docker</text>
+  </g>
+  <g transform="translate(285,15)">
+    <rect width="100" height="45" rx="6" fill="rgba(84,104,255,.05)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
+    <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f8fff" font-weight="600">Helm Repo</text>
+    <text x="50" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(127,143,255,.4)">charts.bitnami.com</text>
+  </g>
+  <g transform="translate(400,15)">
+    <rect width="90" height="45" rx="6" fill="rgba(255,182,39,.05)" stroke="rgba(255,182,39,.2)" stroke-width="1"/>
+    <text x="45" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#FFB627" font-weight="600">S3 Bucket</text>
+    <text x="45" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(255,182,39,.4)">MinIO/GCS/R2</text>
+  </g>
+
+  <!-- Source Controller -->
+  <g transform="translate(20,90)">
+    <rect width="480" height="80" rx="8" fill="rgba(84,104,255,.07)" stroke="rgba(84,104,255,.35)" stroke-width="1.5" filter="url(#gw)"/>
+    <text x="240" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5468FF" font-weight="700">source-controller</text>
+    <text x="240" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" fill="rgba(84,104,255,.5)">fetches + caches all sources → produces Artifacts (tarballs)</text>
+    <!-- Source CRDs -->
+    <rect x="12" y="50" width="100" height="20" rx="3" fill="rgba(84,104,255,.1)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
+    <text x="62" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7f8fff">GitRepository</text>
+    <rect x="120" y="50" width="100" height="20" rx="3" fill="rgba(84,104,255,.08)" stroke="rgba(84,104,255,.16)" stroke-width="1"/>
+    <text x="170" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7f8fff">OCIRepository</text>
+    <rect x="228" y="50" width="100" height="20" rx="3" fill="rgba(84,104,255,.06)" stroke="rgba(84,104,255,.14)" stroke-width="1"/>
+    <text x="278" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7f8fff">HelmRepository</text>
+    <rect x="336" y="50" width="70" height="20" rx="3" fill="rgba(84,104,255,.05)" stroke="rgba(84,104,255,.12)" stroke-width="1"/>
+    <text x="371" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7f8fff">Bucket</text>
+    <rect x="414" y="50" width="54" height="20" rx="3" fill="rgba(84,104,255,.04)" stroke="rgba(84,104,255,.1)" stroke-width="1"/>
+    <text x="441" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7f8fff">HelmChart</text>
+  </g>
+
+  <!-- Arrows: external → source -->
+  <line x1="80"  y1="60" x2="80"  y2="90" stroke="rgba(84,104,255,.45)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <line x1="215" y1="60" x2="185" y2="90" stroke="rgba(84,104,255,.35)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <line x1="335" y1="60" x2="285" y2="90" stroke="rgba(84,104,255,.3)"  stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <line x1="445" y1="60" x2="380" y2="90" stroke="rgba(255,182,39,.3)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a4)"/>
+
+  <!-- Artifact (output of source-controller) -->
+  <text x="255" y="190" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="rgba(84,104,255,.5)">↓ Artifact (tarball URL) ↓</text>
+
+  <!-- Consumer controllers row -->
+  <g transform="translate(20,200)">
+    <rect width="220" height="80" rx="8" fill="rgba(57,217,138,.06)" stroke="rgba(57,217,138,.3)" stroke-width="1.5"/>
+    <text x="110" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#39D98A" font-weight="600">kustomize-controller</text>
+    <text x="110" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(57,217,138,.5)">reconciles Kustomizations</text>
+    <text x="110" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.4)">kustomize build → apply</text>
+    <text x="110" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.35)">SOPS decryption · prune</text>
+  </g>
+  <g transform="translate(255,200)">
+    <rect width="220" height="80" rx="8" fill="rgba(176,109,255,.06)" stroke="rgba(176,109,255,.3)" stroke-width="1.5"/>
+    <text x="110" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#B06DFF" font-weight="600">helm-controller</text>
+    <text x="110" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(176,109,255,.5)">reconciles HelmReleases</text>
+    <text x="110" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(176,109,255,.4)">helm install/upgrade/test</text>
+    <text x="110" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(176,109,255,.35)">Helm v4 SSA (v2.8)</text>
+  </g>
+
+  <!-- Notification + Image controllers (right side) -->
+  <g transform="translate(540,90)">
+    <rect width="200" height="80" rx="8" fill="rgba(255,112,67,.06)" stroke="rgba(255,112,67,.25)" stroke-width="1"/>
+    <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#FF7043" font-weight="600">notification-controller</text>
+    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(255,112,67,.45)">alerts + webhooks</text>
+    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,112,67,.35)">Provider · Alert · Receiver</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,112,67,.3)">PR comments (v2.8)</text>
+  </g>
+  <g transform="translate(755,90)">
+    <rect width="200" height="80" rx="8" fill="rgba(240,98,146,.06)" stroke="rgba(240,98,146,.25)" stroke-width="1"/>
+    <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#F06292" font-weight="600">image-reflector-ctrl</text>
+    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,.45)">scans registry</text>
+    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.35)">ImageRepository</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.3)">ImagePolicy → latest tag</text>
+  </g>
+  <g transform="translate(970,90)">
+    <rect width="200" height="80" rx="8" fill="rgba(174,234,0,.04)" stroke="rgba(174,234,0,.2)" stroke-width="1"/>
+    <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#AEEA00" font-weight="600">image-automation-ctrl</text>
+    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,.4)">commits image tag to Git</text>
+    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.3)">ImageUpdateAutomation</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.25)">closes the GitOps loop</text>
+  </g>
+
+  <!-- K8s Cluster (output) -->
+  <g transform="translate(20,310)">
+    <rect width="455" height="28" rx="6" fill="rgba(57,217,138,.04)" stroke="rgba(57,217,138,.2)" stroke-width="1"/>
+    <text x="227" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(57,217,138,.5)" letter-spacing="2">KUBERNETES CLUSTER → kubectl apply</text>
+  </g>
+
+  <!-- Source → consumers -->
+  <line x1="130" y1="170" x2="130" y2="200" stroke="rgba(57,217,138,.4)" stroke-width="1.5" marker-end="url(#a2)"/>
+  <line x1="370" y1="170" x2="365" y2="200" stroke="rgba(176,109,255,.4)" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- consumers → K8s -->
+  <line x1="130" y1="280" x2="130" y2="310" stroke="rgba(57,217,138,.4)" stroke-width="1.5" marker-end="url(#a2)"/>
+  <line x1="365" y1="280" x2="330" y2="310" stroke="rgba(176,109,255,.4)" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- image-automation → Git (commit back) -->
+  <path d="M 1070 90 L 1070 50 L 80 50 L 80 60" fill="none" stroke="rgba(174,234,0,.35)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a2)"/>
+  <text x="580" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.4)">commit updated image tag to Git → triggers reconcile</text>
+
+  <!-- image-reflector → image-automation -->
+  <line x1="955" y1="130" x2="970" y2="130" stroke="rgba(174,234,0,.4)" stroke-width="1.2" marker-end="url(#a2)"/>
+
+  <!-- Legend -->
+  <text x="540" y="215" font-family="JetBrains Mono" font-size="8" fill="rgba(84,104,255,.45)">── pull (source-controller fetches from external)</text>
+  <text x="540" y="233" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.45)">── apply (kustomize/helm controller → K8s)</text>
+  <text x="540" y="251" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.4)">·· commit (image-automation → Git → new reconcile cycle)</text>
+</svg>
+</div>
+
+<div class="ctrl-grid">
+  <div class="ctrl-card" onclick="toggleCtrl(this)">
+    <div class="cc-head">
+      <div class="cc-icon">📡</div>
+      <div><div class="cc-name" style="color:var(--flux);">source-controller</div><div class="cc-role">fetches and caches all sources</div></div>
+      <div class="cc-arrow">▶</div>
+    </div>
+    <div class="cc-body">
+      <div class="fr" style="border-top:none;"><span class="fk">What it does</span><span class="fv">Fetches Git repos, OCI artifacts, Helm chart repos, S3 buckets. Stores downloaded content as <b>Artifacts</b> — tarballs with checksums. All other controllers consume Artifacts, never fetching sources themselves.</span></div>
+      <div class="fr"><span class="fk">Artifacts</span><span class="fv">Stored in source-controller's pod storage. Referenced via <code>status.artifact.url</code>. Controllers get the artifact tarball, not a live connection to Git. Decouples fetch from apply.</span></div>
+      <div class="fr"><span class="fk">Reconcile trigger</span><span class="fv">Poll interval (e.g., <code>interval: 1m</code>) + Git webhook for immediate trigger. Webhook receiver creates an Artifact immediately on push — no polling delay.</span></div>
+    </div>
+  </div>
+  <div class="ctrl-card" onclick="toggleCtrl(this)">
+    <div class="cc-head">
+      <div class="cc-icon">🗂️</div>
+      <div><div class="cc-name" style="color:var(--grn);">kustomize-controller</div><div class="cc-role">applies Kustomizations</div></div>
+      <div class="cc-arrow">▶</div>
+    </div>
+    <div class="cc-body">
+      <div class="fr" style="border-top:none;"><span class="fk">What it does</span><span class="fv">Watches Kustomization CRDs. Fetches Artifact from source-controller, runs <code>kustomize build</code> (or plain kubectl apply), applies to cluster. Health checks resources after apply.</span></div>
+      <div class="fr"><span class="fk">SOPS</span><span class="fv">Native SOPS decryption built in. Set <code>decryption.provider: sops</code> with a Secret containing the age/PGP/KMS key. Decrypts secrets in-memory before apply — never writes plaintext to disk.</span></div>
+      <div class="fr"><span class="fk">Prune</span><span class="fv"><code>prune: true</code> deletes resources removed from Git. Uses <code>toolkit.fluxcd.io/prune: true</code> label to track ownership. Only prunes resources it created — won't touch unrelated resources.</span></div>
+    </div>
+  </div>
+  <div class="ctrl-card" onclick="toggleCtrl(this)">
+    <div class="cc-head">
+      <div class="cc-icon">⎈</div>
+      <div><div class="cc-name" style="color:var(--vio);">helm-controller</div><div class="cc-role">reconciles HelmReleases</div></div>
+      <div class="cc-arrow">▶</div>
+    </div>
+    <div class="cc-body">
+      <div class="fr" style="border-top:none;"><span class="fk">What it does</span><span class="fv">Manages Helm releases declaratively. Runs <code>helm install/upgrade</code>. On chart version change or values change: auto-upgrades. Configurable auto-rollback on upgrade failure.</span></div>
+      <div class="fr"><span class="fk">Helm v4 <span class="v28-badge">v2.8</span></span><span class="fv">Flux v2.8 adds Helm v4 support: server-side apply for Helm-managed resources (proper field ownership), enhanced health checking. Use <code>install.crds: CreateReplace</code> with Helm v4 for CRD management.</span></div>
+      <div class="fr"><span class="fk">Rollback</span><span class="fv">Set <code>upgrade.remediation.remediateLastFailure: true</code> — helm-controller rolls back automatically if upgrade fails. Configurable retries, strategy, and cleanup of failed releases.</span></div>
+    </div>
+  </div>
+  <div class="ctrl-card" onclick="toggleCtrl(this)">
+    <div class="cc-head">
+      <div class="cc-icon">🔔</div>
+      <div><div class="cc-name" style="color:var(--orn);">notification-controller</div><div class="cc-role">alerts, webhooks, receivers</div></div>
+      <div class="cc-arrow">▶</div>
+    </div>
+    <div class="cc-body">
+      <div class="fr" style="border-top:none;"><span class="fk">Three CRDs</span><span class="fv"><code>Provider</code> (where to send: Slack/PagerDuty/GitHub), <code>Alert</code> (what triggers a notification: Kustomization failed/reconciled), <code>Receiver</code> (what receives webhooks: GitHub push → trigger reconcile).</span></div>
+      <div class="fr"><span class="fk">PR comments <span class="v28-badge">v2.8</span></span><span class="fv">New provider types: <code>githubpullrequestcomment</code>, <code>gitlabmergerequestcomment</code>, <code>giteacomment</code>. Post reconcile status directly on the PR that triggered the change. Closes the feedback loop.</span></div>
+    </div>
+  </div>
+  <div class="ctrl-card" onclick="toggleCtrl(this)">
+    <div class="cc-head">
+      <div class="cc-icon">🖼️</div>
+      <div><div class="cc-name" style="color:var(--pink);">image-reflector-controller</div><div class="cc-role">scans registries for new tags</div></div>
+      <div class="cc-arrow">▶</div>
+    </div>
+    <div class="cc-body">
+      <div class="fr" style="border-top:none;"><span class="fk">ImageRepository</span><span class="fv">Polls a container registry at <code>interval</code>. Stores the list of available tags in a <code>status.lastScanResult</code>. Requires <code>imagePullSecret</code> for private registries.</span></div>
+      <div class="fr"><span class="fk">ImagePolicy</span><span class="fv">Selects the "latest" tag from an ImageRepository based on a policy: semver range, alphabetical, numerical. Writes the selected tag to <code>status.latestImage</code>. image-automation-controller reads this.</span></div>
+    </div>
+  </div>
+  <div class="ctrl-card" onclick="toggleCtrl(this)">
+    <div class="cc-head">
+      <div class="cc-icon">🤖</div>
+      <div><div class="cc-name" style="color:var(--lime);">image-automation-controller</div><div class="cc-role">commits image tags back to Git</div></div>
+      <div class="cc-arrow">▶</div>
+    </div>
+    <div class="cc-body">
+      <div class="fr" style="border-top:none;"><span class="fk">What it does</span><span class="fv">Watches ImageUpdateAutomation CRDs. When ImagePolicy detects a new tag, automation-controller finds files in Git annotated with <code>{"$imagepolicy": "..."}</code> markers, updates the image reference, and commits back to Git.</span></div>
+      <div class="fr"><span class="fk">Full loop</span><span class="fv">CI builds + pushes image → image-reflector detects new tag → image-automation commits updated tag to Git → source-controller detects new commit → kustomize/helm controller applies → new pods running. Zero human intervention.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="card cf">
+    <div class="ctit" style="color:var(--flux);">🆚 Flux vs ArgoCD — Architecture Philosophy</div>
+    <table class="st">
+      <tr><th></th><th style="color:var(--flux);">FluxCD</th><th style="color:rgba(249,94,98,.8);">ArgoCD</th></tr>
+      <tr><td>Architecture</td><td class="good">Modular: one controller per concern</td><td>Monolithic: all-in-one system</td></tr>
+      <tr><td>Multi-cluster</td><td>Each cluster runs its own Flux agents</td><td class="good">Hub-and-spoke: one instance → many clusters</td></tr>
+      <tr><td>UI</td><td class="warn">Flux Operator Web UI (external tool)</td><td class="good">Built-in rich UI</td></tr>
+      <tr><td>Secrets</td><td class="good">SOPS native in kustomize-controller</td><td class="warn">External plugin (argocd-vault-plugin)</td></tr>
+      <tr><td>Image automation</td><td class="good">Built-in (2 controllers)</td><td class="warn">External (Argo Image Updater)</td></tr>
+      <tr><td>Bootstrap</td><td class="good">One command: <code>flux bootstrap</code></td><td class="warn">Multi-step manual install</td></tr>
+      <tr><td>CRD complexity</td><td class="warn">Many CRDs (one per concern)</td><td>Fewer (Application, AppProject, AppSet)</td></tr>
+      <tr><td>Helm support</td><td class="good">HelmRelease with auto-rollback + v4</td><td>Source-based, less Helm-native</td></tr>
+      <tr><td>RBAC</td><td>Relies on K8s RBAC + SA per tenant</td><td class="good">Fine-grained AppProject + Casbin</td></tr>
+    </table>
+  </div>
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🌊 Flux Operator <span class="new-badge">Recommended</span></div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">A Kubernetes operator that manages Flux installations declaratively. Instead of <code>flux bootstrap</code>, define a <code>FluxInstance</code> CRD — Flux Operator installs and manages Flux for you, including upgrades.</span></div>
+    <div class="fr"><span class="fk">FluxInstance CRD</span><span class="fv">Declarative Flux config: which controllers to install, Flux version, storage settings, kustomize patches on Flux manifests. Operator handles upgrades when you change the version.</span></div>
+    <div class="fr"><span class="fk">Web UI</span><span class="fv">Flux Operator includes a Web UI (announced at KubeCon Atlanta 2025). Cluster dashboard, deep-dive for Kustomizations/HelmReleases, workload monitoring. Not as feature-rich as ArgoCD UI but substantially better than CLI-only.</span></div>
+    <div class="fr"><span class="fk">ResourceSet</span><span class="fv">New Flux Operator CRD: deploy ephemeral preview environments from GitHub PRs / GitLab MRs. Similar to ArgoCD's Pull Request generator. Pair with the <code>githubpullrequestcomment</code> notification provider.</span></div>
+    <div class="code"><span class="ky">apiVersion</span>: fluxcd.controlplane.io/v1
+<span class="kw">kind</span>: FluxInstance
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">flux</span>
+  <span class="ky">namespace</span>: <span class="st">flux-system</span>
+<span class="ky">spec</span>:
+  <span class="ky">distribution</span>:
+    <span class="ky">version</span>: <span class="st">"2.x"</span>   <span class="cm"># auto-patch within 2.x</span>
+    <span class="ky">registry</span>: <span class="st">ghcr.io/fluxcd</span>
+  <span class="ky">components</span>:
+  - <span class="st">source-controller</span>
+  - <span class="st">kustomize-controller</span>
+  - <span class="st">helm-controller</span>
+  - <span class="st">notification-controller</span>
+  - <span class="st">image-reflector-controller</span>
+  - <span class="st">image-automation-controller</span>
+  <span class="ky">cluster</span>:
+    <span class="ky">type</span>: <span class="st">kubernetes</span>   <span class="cm"># or: k3s, openshift</span></div>
+    <div class="note"><b>Flux Operator is the recommended installation method</b> for production clusters. It manages Flux upgrades without re-running <code>flux bootstrap</code>. The FluxInstance manifest is stored in Git → GitOps managing GitOps itself.</div>
+  </div>
+</div>
+</div><!-- /arch -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--                SOURCES                 -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-sources">
+
+<div class="sh"><div class="sh-i">📡</div><div class="sh-l" style="color:var(--sky);">Source CRDs</div><div class="sh-s">// GitRepository · OCIRepository · HelmRepository · Bucket · ExternalArtifact</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(64,196,255,.3),transparent);"></div></div>
+
+<div class="g2">
+  <div class="card cs">
+    <div class="ctit" style="color:var(--sky);">📁 GitRepository</div>
+    <div class="code"><span class="kw">apiVersion</span>: source.toolkit.fluxcd.io/v1
+<span class="kw">kind</span>: GitRepository
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">fleet-infra</span>
+  <span class="ky">namespace</span>: <span class="st">flux-system</span>
+<span class="ky">spec</span>:
+  <span class="ky">url</span>: <span class="st">https://github.com/myorg/fleet-infra</span>
+  <span class="ky">interval</span>: <span class="st">1m</span>       <span class="cm"># poll interval</span>
+  <span class="ky">ref</span>:
+    <span class="ky">branch</span>: <span class="st">main</span>     <span class="cm"># or: tag, commit, semver</span>
+    <span class="cm"># tag: v1.0.0</span>
+    <span class="cm"># commit: abc1234</span>
+    <span class="cm"># semver: ">=1.0.0 <2.0.0"</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">github-credentials</span>   <span class="cm"># basic-auth or SSH</span>
+  <span class="ky">verify</span>:                      <span class="cm"># commit signature verification</span>
+    <span class="ky">provider</span>: <span class="st">openpgp</span>
+    <span class="ky">secretRef</span>:
+      <span class="ky">name</span>: <span class="st">gpg-public-keys</span>
+  <span class="ky">ignore</span>: |                    <span class="cm"># exclude from artifact</span>
+    /*.md
+    /docs/</div>
+    <div class="fr"><span class="fk">SSH auth</span><span class="fv">Create Secret with <code>identity</code> (private key), <code>identity.pub</code> (public key), <code>known_hosts</code>. Or use <code>flux create secret git</code> command.</span></div>
+    <div class="fr"><span class="fk">Webhook trigger</span><span class="fv">Create a Receiver pointing to source-controller. Get the webhook URL and configure it in GitHub/GitLab. New commit → immediate reconcile, no polling wait.</span></div>
+    <div class="trap"><b>GitRepository interval is per-source, not per-Kustomization.</b> A Kustomization with <code>interval: 10m</code> still re-renders every 10m, even if the GitRepository was last fetched 30 seconds ago. The Kustomization interval controls reconcile frequency; the GitRepository interval controls how often new commits are fetched.</div>
+  </div>
+
+  <div class="card cf">
+    <div class="ctit" style="color:var(--flux);">🐳 OCIRepository <span class="new-badge">GA v2.6</span></div>
+    <div class="code"><span class="kw">apiVersion</span>: source.toolkit.fluxcd.io/v1beta2
+<span class="kw">kind</span>: OCIRepository
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">my-oci-configs</span>
+<span class="ky">spec</span>:
+  <span class="ky">url</span>: <span class="st">oci://ghcr.io/myorg/k8s-configs</span>
+  <span class="ky">ref</span>:
+    <span class="ky">tag</span>: <span class="st">latest</span>        <span class="cm"># or: digest, semver</span>
+    <span class="cm"># semver: ">=1.0.0"</span>
+    <span class="cm"># digest: sha256:abc...</span>
+  <span class="ky">interval</span>: <span class="st">5m</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">ghcr-credentials</span>   <span class="cm"># imagePullSecret</span>
+  <span class="ky">verify</span>:                    <span class="cm"># Cosign signature verification</span>
+    <span class="ky">provider</span>: <span class="st">cosign</span>
+    <span class="ky">secretRef</span>:
+      <span class="ky">name</span>: <span class="st">cosign-public-key</span></div>
+    <div class="fr"><span class="fk">Use case</span><span class="fv">Package Kustomize configs or Helm charts as OCI artifacts. Distribute configs via a container registry instead of Git. Enables "gitless" deployment for config distribution. Sign with Cosign for supply chain security.</span></div>
+    <div class="fr"><span class="fk">Build with flux CLI</span><span class="fv"><code>flux push artifact oci://ghcr.io/myorg/configs:v1 --path ./k8s</code> packages a directory as an OCI artifact. Pair with <code>flux tag artifact</code> to tag for environment promotion.</span></div>
+    <div class="note"><b>OCI artifacts for Helm charts:</b> HelmRepository with type <code>oci</code> fetches charts from OCI registries — same CRD, different URL scheme: <code>url: oci://registry.example.com/charts</code>.</div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card cs">
+    <div class="ctit" style="color:var(--sky);">⎈ HelmRepository</div>
+    <div class="code"><span class="cm"># HTTP Helm repo</span>
+<span class="kw">kind</span>: HelmRepository
+<span class="ky">spec</span>:
+  <span class="ky">url</span>: <span class="st">https://charts.bitnami.com/bitnami</span>
+  <span class="ky">interval</span>: <span class="st">1h</span>
+
+<span class="cm"># OCI Helm repo</span>
+<span class="kw">kind</span>: HelmRepository
+<span class="ky">spec</span>:
+  <span class="ky">url</span>: <span class="st">oci://ghcr.io/myorg/charts</span>
+  <span class="ky">type</span>: <span class="st">oci</span>            <span class="cm"># required for OCI</span>
+  <span class="ky">interval</span>: <span class="st">5m</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">ghcr-creds</span></div>
+    <div class="fr"><span class="fk">interval</span><span class="fv">How often to re-fetch the Helm repo index. 1h is fine for stable external repos. For your own internal charts where you push frequently: 5m.</span></div>
+  </div>
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🪣 Bucket</div>
+    <div class="code"><span class="kw">kind</span>: Bucket
+<span class="ky">spec</span>:
+  <span class="ky">endpoint</span>: <span class="st">s3.amazonaws.com</span>
+  <span class="ky">bucketName</span>: <span class="st">my-configs</span>
+  <span class="ky">region</span>: <span class="st">us-east-1</span>
+  <span class="ky">provider</span>: <span class="st">aws</span>        <span class="cm"># aws, gcp, azure, generic</span>
+  <span class="ky">interval</span>: <span class="st">5m</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">s3-credentials</span>
+  <span class="ky">ignore</span>: |
+    /*.txt</div>
+    <div class="fr"><span class="fk">Use case</span><span class="fv">Teams storing config in S3, GCS, or Azure Blob. Useful for CI-generated configs that aren't committed to Git. Also: air-gapped clusters with an internal MinIO.</span></div>
+  </div>
+  <div class="card cf">
+    <div class="ctit" style="color:var(--flux);">🔗 ExternalArtifact <span class="new-badge">v2.7</span></div>
+    <div class="code"><span class="kw">kind</span>: ExternalArtifact
+<span class="ky">spec</span>:
+  <span class="ky">url</span>: <span class="st">https://example.com/configs.tar.gz</span>
+  <span class="ky">interval</span>: <span class="st">1h</span>
+  <span class="ky">certSecretRef</span>:
+    <span class="ky">name</span>: <span class="st">tls-certs</span></div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Fetch a tarball from any HTTPS URL. Useful for configs provided by vendors or external teams as direct downloads. Supports TLS client certificates and digest pinning.</span></div>
+    <div class="note"><b>ExternalArtifact is for static, versioned downloads.</b> Not for frequently changing sources — use GitRepository or OCIRepository for those. Good for: vendor config bundles, release tarballs, compliance config packs.</div>
+  </div>
+</div>
+</div><!-- /sources -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--           KUSTOMIZE CONTROLLER         -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-kust">
+
+<div class="sh"><div class="sh-i">🗂️</div><div class="sh-l" style="color:var(--grn);">Kustomize Controller</div><div class="sh-s">// Kustomization CRD · dependsOn · SOPS · post-build substitution · health checks</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(57,217,138,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cg" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--grn);">📄 Kustomization CRD — Full Anatomy</div>
+    <div class="code"><span class="kw">apiVersion</span>: kustomize.toolkit.fluxcd.io/v1
+<span class="kw">kind</span>: Kustomization
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">apps</span>
+  <span class="ky">namespace</span>: <span class="st">flux-system</span>
+<span class="ky">spec</span>:
+  <span class="cm"># ── SOURCE ──────────────────────────────</span>
+  <span class="ky">interval</span>: <span class="st">10m</span>          <span class="cm"># reconcile every 10m</span>
+  <span class="ky">retryInterval</span>: <span class="st">2m</span>      <span class="cm"># retry faster on failure</span>
+  <span class="ky">timeout</span>: <span class="st">5m</span>            <span class="cm"># max time for apply</span>
+  <span class="ky">sourceRef</span>:
+    <span class="ky">kind</span>: <span class="st">GitRepository</span>
+    <span class="ky">name</span>: <span class="st">fleet-infra</span>
+  <span class="ky">path</span>: <span class="st">./clusters/prod/apps</span>
+
+  <span class="cm"># ── DEPENDENCY ORDERING ──────────────────</span>
+  <span class="ky">dependsOn</span>:
+  - <span class="ky">name</span>: <span class="st">infra-configs</span>    <span class="cm"># must be Ready first</span>
+
+  <span class="cm"># ── APPLY BEHAVIOR ───────────────────────</span>
+  <span class="ky">prune</span>: <span class="kw">true</span>             <span class="cm"># delete resources removed from Git</span>
+  <span class="ky">force</span>: <span class="kw">false</span>            <span class="cm"># true: replace (destructive)</span>
+  <span class="ky">wait</span>: <span class="kw">true</span>              <span class="cm"># wait for resources to be healthy</span>
+
+  <span class="cm"># ── SOPS DECRYPTION ──────────────────────</span>
+  <span class="ky">decryption</span>:
+    <span class="ky">provider</span>: <span class="st">sops</span>
+    <span class="ky">secretRef</span>:
+      <span class="ky">name</span>: <span class="st">sops-age</span>      <span class="cm"># contains age private key</span>
+
+  <span class="cm"># ── POST-BUILD SUBSTITUTION ──────────────</span>
+  <span class="ky">postBuild</span>:
+    <span class="ky">substitute</span>:
+      <span class="ky">cluster_name</span>: <span class="st">prod-eu</span>
+      <span class="ky">domain</span>: <span class="st">mycompany.com</span>
+    <span class="ky">substituteFrom</span>:
+    - <span class="ky">kind</span>: <span class="st">ConfigMap</span>
+      <span class="ky">name</span>: <span class="st">cluster-config</span>   <span class="cm"># vars from ConfigMap</span>
+    - <span class="ky">kind</span>: <span class="st">Secret</span>
+      <span class="ky">name</span>: <span class="st">cluster-secrets</span>
+
+  <span class="cm"># ── HEALTH CHECKS (custom) ───────────────</span>
+  <span class="ky">healthChecks</span>:
+  - <span class="ky">apiVersion</span>: <span class="st">apps/v1</span>
+    <span class="ky">kind</span>: <span class="st">Deployment</span>
+    <span class="ky">name</span>: <span class="st">myapp</span>
+    <span class="ky">namespace</span>: <span class="st">myapp</span>
+
+  <span class="cm"># ── TARGET NAMESPACE ─────────────────────</span>
+  <span class="ky">targetNamespace</span>: <span class="st">myapp</span>   <span class="cm"># override namespace in manifests</span>
+
+  <span class="cm"># ── SERVICE ACCOUNT (tenancy) ────────────</span>
+  <span class="ky">serviceAccountName</span>: <span class="st">team-a-reconciler</span>  <span class="cm"># run as this SA</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🔗 dependsOn — DAG Ordering</div>
+    <div class="fr"><span class="fk">What it does</span><span class="fv"><code>dependsOn</code> creates a dependency DAG. A Kustomization won't start reconciling until all its dependencies are <b>Ready</b>. This prevents applying CRD instances before CRD definitions exist.</span></div>
+    <div class="fr"><span class="fk">Ready condition</span><span class="fv">A Kustomization is Ready when all its resources pass health checks and the reconcile completes without error. Until Ready: dependent Kustomizations block.</span></div>
+    <div class="dep-tree" style="margin-top:10px;">
+      <div class="dt-r">infra-crds            <span class="dt-ann"># CRD definitions (wave 0)</span></div>
+      <div class="dt-l1">↓ <span class="dt-wait">(waits for Ready)</span></div>
+      <div class="dt-l1">infra-controllers     <span class="dt-ann"># cert-manager, ingress-nginx CRD instances</span></div>
+      <div class="dt-l2">↓ <span class="dt-wait">(waits for Ready)</span></div>
+      <div class="dt-l2">infra-configs         <span class="dt-ann"># ClusterIssuers, IngressClass etc.</span></div>
+      <div class="dt-l3">↓ <span class="dt-wait">(waits for Ready)</span></div>
+      <div class="dt-l3">apps                  <span class="dt-ann"># actual workloads</span></div>
+    </div>
+    <div class="trap"><b>Circular dependsOn deadlocks both Kustomizations forever.</b> If A depends on B and B depends on A, neither will ever become Ready. Flux doesn't detect cycles — it just hangs. Design your dependency graph as a strict DAG.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🔐 SOPS — Native Secrets</div>
+    <div class="fr"><span class="fk">How it works</span><span class="fv">SOPS encrypts specific values in YAML/JSON files, leaving keys readable. Flux's kustomize-controller decrypts in-memory using a key from a Kubernetes Secret — never writes plaintext to disk or Git.</span></div>
+    <div class="fr"><span class="fk">age (recommended)</span><span class="fv">Fastest setup. Generate a keypair: <code>age-keygen -o age.agekey</code>. Store public key in <code>.sops.yaml</code>. Store private key in a K8s Secret. Encrypt: <code>sops --age=pubkey -e secrets.yaml > secrets.enc.yaml</code>.</span></div>
+    <div class="fr"><span class="fk">KMS (cloud)</span><span class="fv">AWS KMS, GCP KMS, Azure Key Vault. SOPS calls the KMS API to encrypt/decrypt. No private key to store in cluster — uses IAM/IRSA. Best for production. More complex setup.</span></div>
+    <div class="code"><span class="cm"># .sops.yaml (in repo root)</span>
+creation_rules:
+  - path_regex: .*/secrets/.*\.yaml
+    age: age1xxxxxx...          <span class="cm"># public key</span>
+  - path_regex: .*/prod/.*\.yaml
+    kms: arn:aws:kms:...:key/xx  <span class="cm"># KMS for prod</span>
+
+<span class="cm"># Create the age Secret in flux-system</span>
+cat age.agekey | kubectl create secret generic sops-age \
+  -n flux-system \
+  --from-file=age.agekey=/dev/stdin
+
+<span class="cm"># encrypted secrets.enc.yaml (committed to Git)</span>
+<span class="ky">apiVersion</span>: v1
+<span class="ky">kind</span>: Secret
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">myapp-secrets</span>
+<span class="ky">data</span>:
+    <span class="ky">password</span>: ENC[AES256_GCM,data:abc...,type:str]
+<span class="ky">sops</span>:
+    <span class="ky">age</span>: [...]                <span class="cm"># sops metadata, not sensitive</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">✏️ Post-Build Variable Substitution</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Replace <code>${variable}</code> placeholders in rendered manifests at reconcile time. Lightweight parameterization without Helm. Use for cluster-specific values (cluster name, domain, region) across environments.</span></div>
+    <div class="code"><span class="cm"># In your manifest:</span>
+<span class="ky">name</span>: <span class="st">myapp-${cluster_name}</span>
+<span class="ky">namespace</span>: <span class="st">myapp-${environment}</span>
+host: <span class="st">api.${domain}</span>
+
+<span class="cm"># In Kustomization:</span>
+<span class="ky">postBuild</span>:
+  <span class="ky">substitute</span>:
+    <span class="ky">cluster_name</span>: <span class="st">eu-prod</span>
+    <span class="ky">environment</span>: <span class="st">prod</span>
+    <span class="ky">domain</span>: <span class="st">mycompany.com</span></div>
+    <div class="trap"><b>Post-build substitution happens AFTER kustomize build.</b> Variables in <code>kustomization.yaml</code> (Kustomize's own vars) are different from Flux's post-build substitution. Don't mix them — use <code>postBuild.substitute</code> for Flux variables, Kustomize overlays for Kustomize-level changes. Also: <code>${var}</code> format — missing variable raises error unless you use <code>substituteFrom.optional: true</code>.</div>
+  </div>
+</div>
+</div>
+</div><!-- /kust -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--            HELM CONTROLLER             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-helm">
+
+<div class="sh"><div class="sh-i">⎈</div><div class="sh-l" style="color:var(--vio);">Helm Controller</div><div class="sh-s">// HelmRelease · upgrade remediation · post-renderers · values sources · Helm v4</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(176,109,255,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cv" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--vio);">📄 HelmRelease — Full Anatomy</div>
+    <div class="code"><span class="kw">apiVersion</span>: helm.toolkit.fluxcd.io/v2
+<span class="kw">kind</span>: HelmRelease
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">nginx-ingress</span>
+  <span class="ky">namespace</span>: <span class="st">ingress-nginx</span>
+<span class="ky">spec</span>:
+  <span class="cm"># ── CHART SOURCE ────────────────────────</span>
+  <span class="ky">chart</span>:
+    <span class="ky">spec</span>:
+      <span class="ky">chart</span>: <span class="st">ingress-nginx</span>
+      <span class="ky">version</span>: <span class="st">">=4.0.0 <5.0.0"</span>  <span class="cm"># semver range</span>
+      <span class="ky">sourceRef</span>:
+        <span class="ky">kind</span>: <span class="st">HelmRepository</span>
+        <span class="ky">name</span>: <span class="st">ingress-nginx</span>
+        <span class="ky">namespace</span>: <span class="st">flux-system</span>
+      <span class="ky">interval</span>: <span class="st">1h</span>    <span class="cm"># check for new chart versions</span>
+
+  <span class="cm"># ── RELEASE CONFIG ───────────────────────</span>
+  <span class="ky">releaseName</span>: <span class="st">ingress-nginx</span>    <span class="cm"># default: HelmRelease name</span>
+  <span class="ky">targetNamespace</span>: <span class="st">ingress-nginx</span>
+  <span class="ky">storageNamespace</span>: <span class="st">ingress-nginx</span>  <span class="cm"># where Helm stores release secret</span>
+  <span class="ky">interval</span>: <span class="st">1h</span>     <span class="cm"># reconcile interval</span>
+  <span class="ky">timeout</span>: <span class="st">10m</span>    <span class="cm"># max upgrade time</span>
+
+  <span class="cm"># ── VALUES ───────────────────────────────</span>
+  <span class="ky">values</span>:                    <span class="cm"># inline values</span>
+    <span class="ky">controller</span>:
+      <span class="ky">replicaCount</span>: <span class="nu">3</span>
+      <span class="ky">resources</span>:
+        <span class="ky">requests</span>: { <span class="ky">cpu</span>: <span class="st">100m</span>, <span class="ky">memory</span>: <span class="st">128Mi</span> }
+  <span class="ky">valuesFrom</span>:               <span class="cm"># values from ConfigMap/Secret</span>
+  - <span class="ky">kind</span>: <span class="st">ConfigMap</span>
+    <span class="ky">name</span>: <span class="st">nginx-values</span>
+    <span class="ky">valuesKey</span>: <span class="st">values.yaml</span>  <span class="cm"># key in ConfigMap</span>
+    <span class="ky">optional</span>: <span class="kw">false</span>
+  - <span class="ky">kind</span>: <span class="st">Secret</span>
+    <span class="ky">name</span>: <span class="st">nginx-secrets</span>
+    <span class="ky">targetPath</span>: <span class="st">controller.extraEnvs[0].value</span>
+
+  <span class="cm"># ── INSTALL ──────────────────────────────</span>
+  <span class="ky">install</span>:
+    <span class="ky">remediation</span>:
+      <span class="ky">retries</span>: <span class="nu">3</span>           <span class="cm"># retry failed installs</span>
+    <span class="ky">createNamespace</span>: <span class="kw">true</span>
+    <span class="ky">crds</span>: <span class="st">CreateReplace</span>   <span class="cm"># manage CRDs on install</span>
+
+  <span class="cm"># ── UPGRADE ──────────────────────────────</span>
+  <span class="ky">upgrade</span>:
+    <span class="ky">remediation</span>:
+      <span class="ky">remediateLastFailure</span>: <span class="kw">true</span>  <span class="cm"># auto-rollback on failure</span>
+      <span class="ky">retries</span>: <span class="nu">3</span>
+      <span class="ky">strategy</span>: <span class="st">rollback</span>    <span class="cm"># or: uninstall</span>
+    <span class="ky">crds</span>: <span class="st">Skip</span>             <span class="cm"># don't upgrade CRDs (safer)</span>
+    <span class="ky">cleanupOnFail</span>: <span class="kw">true</span>   <span class="cm"># delete new resources on failure</span>
+    <span class="ky">force</span>: <span class="kw">false</span>           <span class="cm"># true: force-upgrade (destructive)</span>
+
+  <span class="cm"># ── ROLLBACK ─────────────────────────────</span>
+  <span class="ky">rollback</span>:
+    <span class="ky">timeout</span>: <span class="st">5m</span>
+    <span class="ky">cleanupOnFail</span>: <span class="kw">true</span>
+    <span class="ky">recreate</span>: <span class="kw">false</span>
+
+  <span class="cm"># ── TEST ─────────────────────────────────</span>
+  <span class="ky">test</span>:
+    <span class="ky">enable</span>: <span class="kw">true</span>           <span class="cm"># run helm test after install/upgrade</span>
+    <span class="ky">ignoreFailures</span>: <span class="kw">false</span>
+
+  <span class="cm"># ── UNINSTALL ────────────────────────────</span>
+  <span class="ky">uninstall</span>:
+    <span class="ky">keepHistory</span>: <span class="kw">false</span>
+    <span class="ky">deletionPropagation</span>: <span class="st">background</span>
+
+  <span class="cm"># ── POST-RENDERER (Kustomize patch) ──────</span>
+  <span class="ky">postRenderers</span>:
+  - <span class="ky">kustomize</span>:
+      <span class="ky">patches</span>:
+      - <span class="ky">target</span>:
+          <span class="ky">kind</span>: <span class="st">Deployment</span>
+          <span class="ky">name</span>: <span class="st">ingress-nginx-controller</span>
+        <span class="ky">patch</span>: |
+          - op: add
+            path: /metadata/labels/team
+            value: platform</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">⚡ Helm v4 Support <span class="v28-badge">v2.8</span></div>
+    <div class="fr"><span class="fk">Server-side apply</span><span class="fv">Helm v4 uses K8s server-side apply for releases. Proper field ownership tracking. No more "last-applied-configuration" annotation conflicts. Resources owned by Helm are clearly marked.</span></div>
+    <div class="fr"><span class="fk">Enhanced health</span><span class="fv">Helm v4 waits for resources to be healthy (not just applied). HelmRelease health status more accurately reflects actual workload health, not just "helm install succeeded".</span></div>
+    <div class="fr"><span class="fk">CRD behavior</span><span class="fv">With Helm v4 and <code>install.crds: CreateReplace</code>: CRDs are created on first install and replaced (not skipped) on upgrades. More predictable CRD lifecycle management than Helm v3.</span></div>
+    <div class="trap"><b>Helm v4 is opt-in per HelmRelease.</b> Existing HelmReleases continue to use Helm v3. To use v4, set <code>chart.spec.helmVersion: v4</code>. Test in non-prod first — field ownership changes can cause transient diffs during initial upgrade from v3 to v4.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🎨 Post-Renderers — Patching Helm Output</div>
+    <div class="fr"><span class="fk">Why needed</span><span class="fv">Helm chart almost fits but you need to add a label, change a container image, or patch a field the chart doesn't expose. Post-renderer applies Kustomize patches on top of the Helm-rendered manifests without forking the chart.</span></div>
+    <div class="code" style="font-size:9px;"><span class="cm"># Add tolerations to all Deployments in chart</span>
+<span class="ky">postRenderers</span>:
+- <span class="ky">kustomize</span>:
+    <span class="ky">patches</span>:
+    - <span class="ky">target</span>: { <span class="ky">kind</span>: <span class="st">Deployment</span> }
+      <span class="ky">patch</span>: |
+        - op: add
+          path: /spec/template/spec/tolerations
+          value:
+          - { key: <span class="st">dedicated</span>, operator: <span class="st">Equal</span>,
+              value: <span class="st">infra</span>, effect: <span class="st">NoSchedule</span> }
+
+<span class="cm"># Override a value not exposed via chart values</span>
+    <span class="ky">images</span>:
+    - <span class="ky">name</span>: <span class="st">docker.io/library/nginx</span>
+      <span class="ky">newName</span>: <span class="st">my-mirror.registry.com/nginx</span>
+      <span class="ky">newTag</span>: <span class="st">1.25-alpine</span></div>
+    <div class="note"><b>Post-renderers run after Helm renders but before Flux applies.</b> The output is validated as standard K8s manifests. Multiple post-renderers chain: each receives the output of the previous. Use for: cross-cutting concerns (security contexts, labels, node selectors) that shouldn't live in every chart's values.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">⚙️ HelmRelease Operations</div>
+    <div class="code" style="font-size:9px;"><span class="cm"># Suspend HelmRelease (stop reconciling)</span>
+flux suspend helmrelease nginx-ingress -n ingress-nginx
+<span class="cm"># Resume</span>
+flux resume helmrelease nginx-ingress -n ingress-nginx
+
+<span class="cm"># Force immediate reconcile</span>
+flux reconcile helmrelease nginx-ingress -n ingress-nginx
+
+<span class="cm"># Force upgrade even if spec unchanged</span>
+flux reconcile helmrelease nginx-ingress \
+  -n ingress-nginx --force
+
+<span class="cm"># Check status</span>
+flux get helmreleases -A
+flux get helmreleases -n ingress-nginx nginx-ingress
+
+<span class="cm"># See Helm release history (via helm)</span>
+helm history nginx-ingress -n ingress-nginx
+
+<span class="cm"># Export rendered Helm values (what Flux actually used)</span>
+kubectl get helmrelease nginx-ingress \
+  -n ingress-nginx -o jsonpath='{.status.history[0]}'</div>
+    <div class="trap"><b>HelmRelease reconcile interval vs chart interval.</b> Two separate intervals: <code>spec.interval</code> (how often HelmRelease reconciles — checks if values/config changed) and <code>spec.chart.spec.interval</code> (how often to check for new chart versions in HelmRepository). Both can trigger upgrades independently.</div>
+  </div>
+</div>
+</div>
+</div><!-- /helm -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--           IMAGE AUTOMATION             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-image">
+
+<div class="sh"><div class="sh-i">🖼️</div><div class="sh-l" style="color:var(--pink);">Image Automation</div><div class="sh-s">// ImageRepository · ImagePolicy · ImageUpdateAutomation · the closed loop</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(240,98,146,.3),transparent);"></div></div>
+
+<div class="card cp" style="margin-bottom:12px;padding:20px;">
+  <div class="ctit" style="color:var(--pink);">🔁 The Image Automation Closed Loop</div>
+  <svg viewBox="0 0 1320 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+    <defs>
+      <marker id="ia1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(240,98,146,.8)"/></marker>
+      <marker id="ia2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(84,104,255,.7)"/></marker>
+      <marker id="ia3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(57,217,138,.7)"/></marker>
+    </defs>
+
+    <!-- CI -->
+    <g transform="translate(10,45)">
+      <rect width="130" height="60" rx="7" fill="rgba(84,104,255,.07)" stroke="rgba(84,104,255,.3)" stroke-width="1.5"/>
+      <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5468FF" font-weight="600">CI Pipeline</text>
+      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(84,104,255,.5)">build + push image</text>
+      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(84,104,255,.35)">myapp:v1.2.4</text>
+    </g>
+
+    <!-- Image Registry -->
+    <g transform="translate(200,45)">
+      <rect width="140" height="60" rx="7" fill="rgba(240,98,146,.07)" stroke="rgba(240,98,146,.3)" stroke-width="1.5"/>
+      <text x="70" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#F06292" font-weight="600">Container Registry</text>
+      <text x="70" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,.5)">ghcr.io / ECR / Docker</text>
+      <text x="70" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.35)">stores all image tags</text>
+    </g>
+
+    <!-- ImageRepository -->
+    <g transform="translate(400,45)">
+      <rect width="130" height="60" rx="7" fill="rgba(240,98,146,.06)" stroke="rgba(240,98,146,.25)" stroke-width="1"/>
+      <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#F06292" font-weight="600">ImageRepository</text>
+      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,.45)">polls registry</text>
+      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.3)">lists available tags</text>
+    </g>
+
+    <!-- ImagePolicy -->
+    <g transform="translate(590,45)">
+      <rect width="130" height="60" rx="7" fill="rgba(174,234,0,.05)" stroke="rgba(174,234,0,.25)" stroke-width="1"/>
+      <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#AEEA00" font-weight="600">ImagePolicy</text>
+      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,.45)">selects latest</text>
+      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.3)">semver / alpha / num</text>
+    </g>
+
+    <!-- ImageUpdateAutomation -->
+    <g transform="translate(785,45)">
+      <rect width="160" height="60" rx="7" fill="rgba(174,234,0,.04)" stroke="rgba(174,234,0,.2)" stroke-width="1"/>
+      <text x="80" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#AEEA00" font-weight="600">ImageUpdateAutomation</text>
+      <text x="80" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,.4)">commits new tag to Git</text>
+      <text x="80" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.3)">v1.2.3 → v1.2.4</text>
+    </g>
+
+    <!-- Git Repo -->
+    <g transform="translate(1010,45)">
+      <rect width="120" height="60" rx="7" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5"/>
+      <text x="60" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#F05033" font-weight="600">Git Repo</text>
+      <text x="60" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,80,51,.5)">image: v1.2.4</text>
+      <text x="60" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,80,51,.35)">new commit pushed</text>
+    </g>
+
+    <!-- K8s -->
+    <g transform="translate(1195,45)">
+      <rect width="110" height="60" rx="7" fill="rgba(57,217,138,.06)" stroke="rgba(57,217,138,.25)" stroke-width="1.5"/>
+      <text x="55" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#39D98A" font-weight="600">Cluster</text>
+      <text x="55" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(57,217,138,.5)">new pods running</text>
+      <text x="55" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.3)">v1.2.4 deployed</text>
+    </g>
+
+    <!-- Arrows -->
+    <line x1="140" y1="75" x2="200" y2="75" stroke="rgba(84,104,255,.6)" stroke-width="1.8" marker-end="url(#ia2)"/>
+    <line x1="340" y1="75" x2="400" y2="75" stroke="rgba(240,98,146,.5)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ia1)"/>
+    <text x="370" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(240,98,146,.4)">polls</text>
+    <line x1="530" y1="75" x2="590" y2="75" stroke="rgba(174,234,0,.5)" stroke-width="1.5" marker-end="url(#ia3)"/>
+    <line x1="720" y1="75" x2="785" y2="75" stroke="rgba(174,234,0,.5)" stroke-width="1.5" marker-end="url(#ia3)"/>
+    <line x1="945" y1="75" x2="1010" y2="75" stroke="rgba(174,234,0,.6)" stroke-width="1.8" marker-end="url(#ia3)"/>
+    <text x="977" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(174,234,0,.4)">git commit</text>
+    <line x1="1130" y1="75" x2="1195" y2="75" stroke="rgba(57,217,138,.6)" stroke-width="1.8" marker-end="url(#ia3)"/>
+    <text x="1162" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(57,217,138,.4)">flux reconcile</text>
+
+    <!-- Labels -->
+    <text x="280" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.4)">① registry scan</text>
+    <text x="655" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.4)">② policy selects v1.2.4 as latest</text>
+    <text x="1000" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.4)">③ commit triggers Flux → apply</text>
+  </svg>
+</div>
+
+<div class="g3">
+  <div class="card cp">
+    <div class="ctit" style="color:var(--pink);">📸 ImageRepository + ImagePolicy</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># 1. ImageRepository: scan the registry</span>
+<span class="kw">kind</span>: ImageRepository
+<span class="ky">spec</span>:
+  <span class="ky">image</span>: <span class="st">ghcr.io/myorg/myapp</span>
+  <span class="ky">interval</span>: <span class="st">5m</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">ghcr-credentials</span>
+
+<span class="cm"># 2. ImagePolicy: select latest by semver</span>
+<span class="kw">kind</span>: ImagePolicy
+<span class="ky">spec</span>:
+  <span class="ky">imageRepositoryRef</span>:
+    <span class="ky">name</span>: <span class="st">myapp</span>
+  <span class="ky">policy</span>:
+    <span class="ky">semver</span>:
+      <span class="ky">range</span>: <span class="st">>=1.0.0</span>      <span class="cm"># latest stable</span>
+
+<span class="cm"># Alphabetical (last alphabetically):</span>
+    <span class="ky">alphabetical</span>:
+      <span class="ky">order</span>: <span class="st">asc</span>
+
+<span class="cm"># Numerical (largest number):</span>
+    <span class="ky">numerical</span>:
+      <span class="ky">order</span>: <span class="st">asc</span>
+
+<span class="cm"># Filter before applying policy:</span>
+  <span class="ky">filterTags</span>:
+    <span class="ky">pattern</span>: <span class="st">'^main-[a-f0-9]+-(?P<ts>.*)$'</span>
+    <span class="ky">extract</span>: <span class="st">'$ts'</span>        <span class="cm"># extract timestamp for sort</span>
+  <span class="ky">policy</span>:
+    <span class="ky">numerical</span>:
+      <span class="ky">order</span>: <span class="st">asc</span>          <span class="cm"># latest timestamp</span></div>
+  </div>
+
+  <div class="card cl">
+    <div class="ctit" style="color:var(--lime);">🤖 ImageUpdateAutomation</div>
+    <div class="code" style="font-size:9.5px;"><span class="kw">kind</span>: ImageUpdateAutomation
+<span class="ky">spec</span>:
+  <span class="ky">interval</span>: <span class="st">1m</span>
+  <span class="ky">sourceRef</span>:
+    <span class="ky">kind</span>: <span class="st">GitRepository</span>
+    <span class="ky">name</span>: <span class="st">fleet-infra</span>
+  <span class="ky">git</span>:
+    <span class="ky">checkout</span>:
+      <span class="ky">ref</span>:
+        <span class="ky">branch</span>: <span class="st">main</span>
+    <span class="ky">commit</span>:
+      <span class="ky">author</span>:
+        <span class="ky">email</span>: <span class="st">fluxbot@myorg.com</span>
+        <span class="ky">name</span>: <span class="st">Flux Bot</span>
+      <span class="ky">messageTemplate</span>: |
+        Update {{range .Updated.Images}}
+        {{.Reflected.Name}}:{{.NewTag}}
+        {{end}} [ci skip]
+    <span class="ky">push</span>:
+      <span class="ky">branch</span>: <span class="st">main</span>     <span class="cm"># or: a feature branch + PR</span>
+  <span class="ky">update</span>:
+    <span class="ky">strategy</span>: <span class="st">Setters</span>   <span class="cm"># find marker annotations</span>
+    <span class="ky">path</span>: <span class="st">./clusters/prod</span></div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">push to branch</span><span class="fv">Instead of pushing directly to main, push to a new branch and open a PR. Combine with <code>githubpullrequestcomment</code> notification provider (v2.8) for full PR workflow: bot opens PR, CI validates, human approves, Flux deploys.</span></div>
+  </div>
+
+  <div class="card cp">
+    <div class="ctit" style="color:var(--pink);">🏷️ Marker Annotations</div>
+    <div class="fr"><span class="fk">How Flux finds image refs</span><span class="fv">Add a comment marker next to the image field in your manifests. automation-controller scans for these markers and updates the tagged line when the policy selects a new image.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># deployment.yaml — mark for auto-update</span>
+<span class="ky">spec</span>:
+  <span class="ky">template</span>:
+    <span class="ky">spec</span>:
+      <span class="ky">containers</span>:
+      - <span class="ky">name</span>: <span class="st">myapp</span>
+        <span class="cm"># {"$imagepolicy": "flux-system:myapp"}</span>
+        <span class="ky">image</span>: <span class="st">ghcr.io/myorg/myapp:v1.2.3</span>
+        <span class="cm"># ↑ Flux will update v1.2.3 to latest tag</span>
+
+<span class="cm"># Tag only (not full image):</span>
+<span class="cm"># {"$imagepolicy": "flux-system:myapp:tag"}</span>
+<span class="ky">image</span>: <span class="st">ghcr.io/myorg/myapp:v1.2.3</span>
+
+<span class="cm"># Name only (not tag):</span>
+<span class="cm"># {"$imagepolicy": "flux-system:myapp:name"}</span>
+<span class="ky">image</span>: <span class="st">ghcr.io/myorg/myapp:v1.2.3</span>
+
+<span class="cm"># Kustomization image override:</span>
+<span class="ky">images</span>:
+- <span class="ky">name</span>: <span class="st">ghcr.io/myorg/myapp</span> <span class="cm"># {"$imagepolicy": "flux-system:myapp:tag"}</span>
+  <span class="ky">newTag</span>: <span class="st">v1.2.3</span></div>
+    <div class="trap"><b>Marker format is JSON in a YAML comment — exact format matters.</b> <code># {"$imagepolicy": "namespace:policyname"}</code> — the comment must be on the line immediately above (or same line as) the image field. Wrong spacing, wrong quotes, or wrong namespace breaks image automation silently — check <code>flux get imageupdateautomations</code> status for errors.</div>
+  </div>
+</div>
+</div><!-- /image -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--             MULTI-TENANCY              -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-tenant">
+
+<div class="sh"><div class="sh-i">🏢</div><div class="sh-l" style="color:var(--yel);">Multi-Tenancy</div><div class="sh-s">// platform team · app teams · ServiceAccount per Kustomization · namespace isolation</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,182,39,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cy" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--yel);">🏗️ Tenancy Model</div>
+    <div class="fr"><span class="fk">The model</span><span class="fv"><b>Platform team</b> owns <code>flux-system</code> namespace. They configure source-controller, manage tenant onboarding Kustomizations, and set resource quotas. <b>App teams</b> own their namespaces and their Kustomizations — but only within the permissions of their ServiceAccount.</span></div>
+    <div class="fr"><span class="fk">ServiceAccount key</span><span class="fv">Each tenant's Kustomization runs as a dedicated ServiceAccount with limited RBAC. The kustomize-controller impersonates this SA when applying resources. Tenant can't deploy to other namespaces or create cluster-scoped resources without explicit RBAC.</span></div>
+    <div class="code"><span class="cm"># Platform team: create tenant ServiceAccount</span>
+<span class="ky">apiVersion</span>: v1
+<span class="kw">kind</span>: ServiceAccount
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">team-a-reconciler</span>
+  <span class="ky">namespace</span>: <span class="st">team-a</span>
+---
+<span class="ky">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span class="kw">kind</span>: RoleBinding
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">team-a-reconciler</span>
+  <span class="ky">namespace</span>: <span class="st">team-a</span>
+<span class="ky">subjects</span>:
+- <span class="ky">kind</span>: <span class="st">ServiceAccount</span>
+  <span class="ky">name</span>: <span class="st">team-a-reconciler</span>
+  <span class="ky">namespace</span>: <span class="st">team-a</span>
+<span class="ky">roleRef</span>:
+  <span class="ky">kind</span>: <span class="st">ClusterRole</span>
+  <span class="ky">name</span>: <span class="st">cluster-admin</span>    <span class="cm"># or a more restricted Role</span>
+  <span class="ky">apiGroup</span>: rbac.authorization.k8s.io
+---
+<span class="cm"># Platform team creates tenant's root Kustomization</span>
+<span class="kw">kind</span>: Kustomization
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">team-a</span>
+  <span class="ky">namespace</span>: <span class="st">flux-system</span>   <span class="cm"># platform team owns this</span>
+<span class="ky">spec</span>:
+  <span class="ky">sourceRef</span>:
+    <span class="ky">kind</span>: <span class="st">GitRepository</span>
+    <span class="ky">name</span>: <span class="st">team-a-configs</span>    <span class="cm"># team A's own Git repo</span>
+  <span class="ky">path</span>: <span class="st">./clusters/prod</span>
+  <span class="ky">serviceAccountName</span>: <span class="st">team-a-reconciler</span>  <span class="cm"># ← THE ISOLATION KEY</span>
+  <span class="ky">targetNamespace</span>: <span class="st">team-a</span></div>
+    <div class="trap"><b>Without <code>serviceAccountName</code>, Kustomization runs as the flux-system service account — which typically has cluster-admin.</b> Any team whose Kustomization runs as flux-system SA has effectively cluster-admin access. Always set per-tenant SAs in production multi-tenant clusters.</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">📁 Multi-Tenancy Git Structure</div>
+    <div class="code" style="font-size:9px;"><span class="cm"># Platform team: one repo (fleet-infra)</span>
+fleet-infra/
+├── clusters/prod/
+│   ├── flux-system/      <span class="cm"># Flux itself</span>
+│   │   └── kustomization.yaml
+│   ├── tenants/          <span class="cm"># platform-managed tenant onboarding</span>
+│   │   ├── team-a.yaml   <span class="cm"># Kustomization for team A (platform creates)</span>
+│   │   ├── team-b.yaml
+│   │   └── rbac/         <span class="cm"># SA + RoleBindings per tenant</span>
+│   └── infra/            <span class="cm"># platform-managed infra</span>
+│       ├── cert-manager.yaml
+│       └── nginx-ingress.yaml
+
+<span class="cm"># Team A: their own repo (team-a-configs)</span>
+team-a-configs/
+└── clusters/prod/
+    ├── kustomization.yaml  <span class="cm"># applies to team-a namespace only</span>
+    ├── deployments/
+    ├── services/
+    └── secrets/            <span class="cm"># SOPS encrypted</span>
+
+<span class="cm"># Platform team GitRepository for fleet-infra</span>
+<span class="cm"># Team A GitRepository for team-a-configs</span>
+<span class="cm"># Both in flux-system namespace (platform team creates both)</span></div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">⚠️ Tenancy Security Checklist</div>
+    <div class="fr"><span class="fk">SA per tenant</span><span class="fv"><b>Each Kustomization must have its own ServiceAccount.</b> The SA's RoleBinding should only grant access to the tenant's namespaces — not the whole cluster.</span></div>
+    <div class="fr"><span class="fk">targetNamespace</span><span class="fv">Set <code>targetNamespace</code> to override any namespace in the tenant's manifests. Prevents tenant from deploying to <code>kube-system</code> or <code>flux-system</code> by accident.</span></div>
+    <div class="fr"><span class="fk">No cluster-scoped</span><span class="fv">Restrict tenant SA so it cannot create ClusterRoles, ClusterRoleBindings, PodSecurityPolicies, or other cluster-scoped resources. Only namespace-scoped resource access.</span></div>
+    <div class="fr"><span class="fk">sourceRef cross-ns</span><span class="fv">Kustomizations in tenant namespaces can only reference sources in their own namespace (by default). Platform creates GitRepositories in flux-system. Tenants reference platform sources via cross-namespace access (must be explicitly enabled in Flux).</span></div>
+    <div class="note"><b>flux-system cross-namespace access:</b> Set <code>allow-cross-namespace-refs: true</code> in flux-system to allow tenants to reference platform-managed GitRepositories. Or create a GitRepository in each tenant's namespace for their own repo (simpler but more SA credential management).</div>
+  </div>
+</div>
+</div>
+</div><!-- /tenant -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--          BOOTSTRAP & OPS               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-bootstrap">
+
+<div class="sh"><div class="sh-i">🚀</div><div class="sh-l" style="color:var(--teal);">Bootstrap & Operations</div><div class="sh-s">// flux bootstrap · Flux Operator · CLI reference · debugging</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,229,204,.3),transparent);"></div></div>
+
+<div class="g3">
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🚀 flux bootstrap</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Bootstrap to GitHub</span>
+flux bootstrap github \
+  --owner=myorg \
+  --repository=fleet-infra \
+  --branch=main \
+  --path=clusters/prod \
+  --personal               <span class="cm"># personal token (or use App)</span>
+
+<span class="cm"># Bootstrap to GitLab</span>
+flux bootstrap gitlab \
+  --owner=mygroup \
+  --repository=fleet-infra \
+  --branch=main \
+  --path=clusters/prod \
+  --token-auth
+
+<span class="cm"># Bootstrap to Gitea (self-hosted)</span>
+flux bootstrap gitea \
+  --hostname=git.myco.com \
+  --owner=myorg \
+  --repository=fleet-infra \
+  --path=clusters/prod
+
+<span class="cm"># What it does:</span>
+<span class="cm"># 1. Installs Flux CRDs and controllers</span>
+<span class="cm"># 2. Creates flux-system namespace</span>
+<span class="cm"># 3. Creates SSH deploy key on GitHub repo</span>
+<span class="cm"># 4. Creates GitRepository + Kustomization in cluster</span>
+<span class="cm"># 5. Pushes Flux manifests to Git repo</span>
+<span class="cm"># 6. Cluster now manages itself from Git ✓</span>
+
+<span class="cm"># Check bootstrap status</span>
+flux check
+flux get kustomizations</div>
+    <div class="note"><b>Re-running <code>flux bootstrap</code> is safe — it's idempotent.</b> Run it to upgrade Flux: change the <code>--version</code> flag or update the Flux version in your cluster's Git path. Better: use Flux Operator to manage upgrades declaratively.</div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">💻 Essential CLI Reference</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm">## Get status of all resources</span>
+flux get all -A
+flux get kustomizations -A
+flux get helmreleases -A
+flux get sources git -A
+flux get sources helm -A
+flux get imagepolicies -A
+
+<span class="cm">## Reconcile (force immediate)</span>
+flux reconcile kustomization apps
+flux reconcile helmrelease nginx-ingress -n ingress
+flux reconcile source git fleet-infra    <span class="cm"># re-fetch Git</span>
+flux reconcile image repository myapp    <span class="cm"># re-scan registry</span>
+
+<span class="cm">## Suspend / Resume (stop reconciling)</span>
+flux suspend kustomization apps
+flux resume  kustomization apps
+flux suspend helmrelease nginx-ingress -n ingress
+flux resume  helmrelease nginx-ingress -n ingress
+
+<span class="cm">## Trace (which Kustomization owns a resource)</span>
+flux trace deployment myapp -n myapp
+
+<span class="cm">## Diff (what would change)</span>
+flux diff kustomization apps --path ./clusters/prod
+
+<span class="cm">## Export (render what Flux would apply)</span>
+flux export source git fleet-infra
+flux export kustomization apps
+
+<span class="cm">## Secrets</span>
+flux create secret git github-credentials \
+  --url=https://github.com/org/repo \
+  --username=git \
+  --password=${GITHUB_TOKEN}
+
+flux create secret oci my-oci-creds \
+  --url=ghcr.io \
+  --username=myuser \
+  --password=${GHCR_TOKEN}
+
+<span class="cm">## Version + health</span>
+flux version
+flux check
+flux check --pre    <span class="cm"># pre-install check</span></div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🔍 Debugging</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm">## Check resource status with conditions</span>
+kubectl describe kustomization apps -n flux-system
+kubectl describe helmrelease nginx -n ingress
+
+<span class="cm">## Common Kustomization status messages:</span>
+<span class="cm"># "Applied revision: main/abc123" → OK</span>
+<span class="cm"># "dependency not ready" → dependsOn blocked</span>
+<span class="cm"># "decryption failed" → SOPS key issue</span>
+<span class="cm"># "timeout waiting for" → resource not healthy</span>
+
+<span class="cm">## Watch controller logs</span>
+kubectl logs -n flux-system \
+  deploy/kustomize-controller -f | jq .
+
+kubectl logs -n flux-system \
+  deploy/helm-controller -f | jq .
+
+kubectl logs -n flux-system \
+  deploy/source-controller -f | jq .
+
+<span class="cm">## Events</span>
+kubectl get events -n flux-system \
+  --sort-by='.lastTimestamp' | tail -20
+
+<span class="cm">## Force re-render source cache</span>
+kubectl delete gitrepository fleet-infra -n flux-system
+<span class="cm"># Flux recreates it from the Kustomization spec</span>
+
+<span class="cm">## Test SOPS decryption locally</span>
+sops --decrypt clusters/prod/secrets/myapp.enc.yaml
+
+<span class="cm">## Check what ImageUpdateAutomation committed</span>
+flux get imageupdateautomations -A
+kubectl describe imageupdateautomation main -n flux-system</div>
+    <div class="trap"><b>Kustomization <code>Not Ready</code> blocks all dependents.</b> If <code>infra-controllers</code> is stuck, <code>apps</code> (which depends on it) will never reconcile. Always debug the root of the dependency chain first — find the most upstream failing Kustomization. Use <code>flux trace</code> to map which Kustomization owns a failing resource.</div>
+  </div>
+</div>
+</div><!-- /bootstrap -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--            NOTIFICATIONS               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-notify">
+
+<div class="sh"><div class="sh-i">🔔</div><div class="sh-l" style="color:var(--orn);">Notifications & Receivers</div><div class="sh-s">// Provider · Alert · Receiver · PR comments (v2.8) · webhook triggers</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,112,67,.3),transparent);"></div></div>
+
+<div class="g2">
+  <div class="card co">
+    <div class="ctit" style="color:var(--orn);">🔔 Provider + Alert</div>
+    <div class="code"><span class="cm"># Provider: where to send notifications</span>
+<span class="kw">apiVersion</span>: notification.toolkit.fluxcd.io/v1beta3
+<span class="kw">kind</span>: Provider
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">slack-platform</span>
+  <span class="ky">namespace</span>: <span class="st">flux-system</span>
+<span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">slack</span>            <span class="cm"># slack, teams, pagerduty,</span>
+                         <span class="cm"># github, gitlab, discord,</span>
+                         <span class="cm"># googlechat, opsgenie, telegram</span>
+  <span class="ky">channel</span>: <span class="st">platform-alerts</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">slack-webhook</span>   <span class="cm"># contains: address (webhook URL)</span>
+
+<span class="cm"># GitHub commit status provider</span>
+<span class="kw">kind</span>: Provider
+<span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">github</span>
+  <span class="ky">address</span>: <span class="st">https://github.com/myorg/myapp</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">github-token</span>    <span class="cm"># contains: token</span>
+
+<span class="cm"># PR comment provider (v2.8 NEW!)</span>
+<span class="kw">kind</span>: Provider
+<span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">githubpullrequestcomment</span>  <span class="cm"># NEW in v2.8</span>
+  <span class="ky">address</span>: <span class="st">https://github.com/myorg/myapp</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">github-token</span>
+---
+<span class="cm"># Alert: what triggers a notification</span>
+<span class="kw">kind</span>: Alert
+<span class="ky">spec</span>:
+  <span class="ky">providerRef</span>:
+    <span class="ky">name</span>: <span class="st">slack-platform</span>
+  <span class="ky">eventSeverity</span>: <span class="st">error</span>   <span class="cm"># info | error</span>
+  <span class="ky">eventSources</span>:
+  - <span class="ky">kind</span>: <span class="st">Kustomization</span>
+    <span class="ky">name</span>: <span class="st">'*'</span>             <span class="cm"># all Kustomizations</span>
+  - <span class="ky">kind</span>: <span class="st">HelmRelease</span>
+    <span class="ky">name</span>: <span class="st">'*'</span>
+    <span class="ky">namespace</span>: <span class="st">ingress-nginx</span>  <span class="cm"># filter by ns</span>
+  <span class="ky">exclusionList</span>: [<span class="st">.*no-alert.*</span>]  <span class="cm"># regex to skip</span>
+  <span class="ky">summary</span>: <span class="st">"Cluster: prod-eu"</span>    <span class="cm"># prepend to message</span></div>
+  </div>
+
+  <div class="card co">
+    <div class="ctit" style="color:var(--orn);">📨 Receiver — Webhook Triggers</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Receiver listens for incoming webhooks (GitHub push events, Harbor notifications, etc.) and triggers an immediate reconcile of target Kustomizations/HelmReleases. Eliminates polling delay.</span></div>
+    <div class="code"><span class="kw">kind</span>: Receiver
+<span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">github</span>       <span class="cm"># github | gitlab | bitbucket</span>
+                     <span class="cm"># harbor | generic | gcr</span>
+  <span class="ky">interval</span>: <span class="st">1h</span>      <span class="cm"># token rotation interval</span>
+  <span class="ky">events</span>: [<span class="st">ping</span>, <span class="st">push</span>]
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">webhook-token</span>   <span class="cm"># HMAC signature secret</span>
+  <span class="ky">resources</span>:         <span class="cm"># what to reconcile on event</span>
+  - <span class="ky">apiVersion</span>: <span class="st">source.toolkit.fluxcd.io/v1</span>
+    <span class="ky">kind</span>: <span class="st">GitRepository</span>
+    <span class="ky">name</span>: <span class="st">fleet-infra</span>
+    <span class="ky">namespace</span>: <span class="st">flux-system</span>
+
+<span class="cm"># Get the receiver webhook URL</span>
+kubectl get receiver my-receiver -n flux-system \
+  -o jsonpath='{.status.webhookPath}'
+<span class="cm"># → /hook/sha256hash...</span>
+<span class="cm"># Configure this URL in GitHub → Settings → Webhooks</span>
+<span class="cm"># Prefix with your notification-controller ingress URL</span></div>
+    <div class="note"><b>Receiver URL format:</b> <code>https://flux.mycompany.com/hook/sha256:...</code>. The path includes the HMAC of the secret, so it's safe to expose publicly. notification-controller verifies the GitHub webhook signature using the same secret.</div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">PR Comments (v2.8)</span><span class="fv">With <code>githubpullrequestcomment</code> provider: Flux posts a comment on the PR that triggered a reconcile, showing the result. Combined with <code>ResourceSet</code> (Flux Operator) for preview environments: PR open → environment created → Flux comments status on the PR → PR merge → environment destroyed.</span></div>
+  </div>
+</div>
+</div><!-- /notify -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--            TRAPS & QUIZ                -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-traps">
+
+<div class="sh"><div class="sh-i">⚡</div><div class="sh-l" style="color:var(--red);">Traps & Interview Quiz</div><div class="sh-s">// 15 operational gotchas · interactive quiz</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,69,96,.3),transparent);"></div></div>
+
+<div class="trap-grid">
+  <div class="trap-card"><div class="tc-n">01</div>
+    <div class="tc-tag">Kustomization interval</div>
+    <div class="tc-q"><code>spec.interval: 1m</code> on Kustomization, <code>spec.interval: 1h</code> on GitRepository. How fast does a new commit apply?</div>
+    <div class="tc-a"><b>Up to 1 hour without a webhook.</b> The Kustomization reconciles every minute, but it can only detect a new commit when GitRepository re-fetches — which is every hour. Solution: configure a GitHub webhook → Receiver → triggers GitRepository reconcile on every push.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">02</div>
+    <div class="tc-tag">dependsOn cycle</div>
+    <div class="tc-q">Kustomization A depends on B, B depends on A. What happens?</div>
+    <div class="tc-a"><b>Both Kustomizations block forever — silent deadlock.</b> Flux doesn't detect cycles and doesn't error — it just never makes either Kustomization Ready. Design your dependency graph as a strict DAG. Detect via <code>flux get kustomizations</code>: both stuck in "dependency not ready".</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">03</div>
+    <div class="tc-tag">Multi-tenancy</div>
+    <div class="tc-q">A tenant's Kustomization has no <code>serviceAccountName</code>. What access does it run with?</div>
+    <div class="tc-a"><b>It runs as the kustomize-controller's ServiceAccount — which typically has cluster-admin.</b> Any tenant without a dedicated SA has effectively unrestricted cluster access. Always set <code>serviceAccountName</code> to a tenant-scoped SA in every tenant Kustomization.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">04</div>
+    <div class="tc-tag">SOPS</div>
+    <div class="tc-q">You rotated the age key — stored the new private key in the K8s Secret, but forgot to re-encrypt secrets in Git. What happens?</div>
+    <div class="tc-a"><b>Kustomization fails with "decryption failed" on next reconcile.</b> The secrets in Git are still encrypted with the old public key. SOPS can't decrypt them with the new private key. Re-encrypt all affected secrets: <code>sops --rotate --in-place secrets.enc.yaml</code>. Then commit the re-encrypted files.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">05</div>
+    <div class="tc-tag">HelmRelease</div>
+    <div class="tc-q">HelmRelease <code>spec.interval: 1h</code> and <code>spec.chart.spec.interval: 5m</code>. A new chart version published. When does it deploy?</div>
+    <div class="tc-a"><b>Within 5 minutes — the chart interval controls version discovery.</b> When source-controller finds a new chart version matching the semver range within 5 minutes, helm-controller reconciles immediately on that new version — it doesn't wait for the 1h HelmRelease interval. The 1h interval is for re-checking unchanged configuration.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">06</div>
+    <div class="tc-tag">Post-build substitution</div>
+    <div class="tc-q">Manifest has <code>${undefined_var}</code> and <code>postBuild.substitute</code> doesn't define it. What happens?</div>
+    <div class="tc-a"><b>Kustomization fails with a substitution error.</b> Missing variables are fatal by default. Set <code>substituteFrom[].optional: true</code> to skip missing ConfigMap/Secret references, or ensure all referenced variables are defined. Check with <code>kubectl describe kustomization</code> for the exact missing variable name.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">07</div>
+    <div class="tc-tag">Image automation</div>
+    <div class="tc-q">Image automation commits to Git, but Flux doesn't pick up the new image immediately. Why?</div>
+    <div class="tc-a"><b>GitRepository hasn't re-fetched yet.</b> image-automation-controller commits to Git. source-controller only sees it on the next poll interval (or webhook). Without a Receiver configured for push webhooks, there's an interval delay between commit and apply. Configure a GitHub webhook → Receiver for zero-delay image deployments.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">08</div>
+    <div class="tc-tag">Prune</div>
+    <div class="tc-q">You rename a Deployment in Git (old name → new name). What does Flux do with the old Deployment?</div>
+    <div class="tc-a"><b>With <code>prune: true</code>: old Deployment is deleted, new one created.</b> Flux tracks resources it applied using labels (<code>kustomize.toolkit.fluxcd.io/name</code>). The old Deployment no longer appears in the rendered output → Flux prunes it. Without prune: both old and new coexist. Brief downtime possible if old is deleted before new is healthy.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">09</div>
+    <div class="tc-tag">HelmRelease remediation</div>
+    <div class="tc-q">HelmRelease upgrade fails 3 times. <code>remediateLastFailure: true</code>. What is the HelmRelease status after?</div>
+    <div class="tc-a"><b>HelmRelease is rolled back to previous version and marked Failed.</b> Flux stops retrying after exhausting the retry count. The cluster runs the previously healthy version. The HelmRelease shows a remediation message. Fix the chart/values and run <code>flux reconcile helmrelease --reset</code> to reset the failure count and retry.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">10</div>
+    <div class="tc-tag">Beta API removal</div>
+    <div class="tc-q">You upgrade Flux from v2.6 to v2.7. Some Kustomizations stop working. What happened?</div>
+    <div class="tc-a"><b>Flux v2.7 began removing deprecated beta API versions.</b> If you're using <code>kustomize.toolkit.fluxcd.io/v1beta2</code> Kustomization CRDs, they're removed in v2.7. Update all your Kustomization manifests to <code>/v1</code> and HelmRelease to <code>/v2</code> before upgrading. Use Flux Operator to automate CRD migration.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">11</div>
+    <div class="tc-tag">OCIRepository</div>
+    <div class="tc-q">You use <code>ref.tag: latest</code> on OCIRepository. Is this production-safe?</div>
+    <div class="tc-a"><b>No — "latest" is mutable and not GitOps-compatible.</b> The same way you shouldn't use <code>:latest</code> for container images in deployments, don't use <code>latest</code> as an OCI artifact tag. Use digest pinning (<code>ref.digest: sha256:abc...</code>) or semver tags (<code>ref.semver: ">=1.0.0"</code>) for reproducible deployments. Digest pinning is the most secure option.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">12</div>
+    <div class="tc-tag">Suspend</div>
+    <div class="tc-q">You run <code>flux suspend kustomization apps</code> during an incident, fix the issue manually, and forget to resume. What happens?</div>
+    <div class="tc-a"><b>Kustomization never reconciles again — manual changes persist indefinitely.</b> Flux doesn't auto-resume. The cluster drifts from Git silently. Alert on <code>gotk_suspend_status</code> Prometheus metric — set an alert for any resource suspended for > 1 hour. Always resume explicitly: <code>flux resume kustomization apps</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">13</div>
+    <div class="tc-tag">Image policy</div>
+    <div class="tc-q">ImagePolicy semver range <code>>=1.0.0</code> — new tag <code>2.0.0</code> pushed with breaking changes. Flux deploys it automatically. How to prevent?</div>
+    <div class="tc-a"><b>Narrow the semver range.</b> <code>>=1.0.0 <2.0.0</code> would reject 2.0.0. Or use <code>>=1.0.0 <=1.9.9</code>. Better: push to a staging-specific image tag (e.g., <code>1.x-staging</code>) and use <code>filterTags.pattern</code>. Production should use tight semver ranges or require explicit version bump in Git.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">14</div>
+    <div class="tc-tag">Post-renderer</div>
+    <div class="tc-q">Post-renderer Kustomize patch fails — what does Flux do to the HelmRelease?</div>
+    <div class="tc-a"><b>HelmRelease upgrade fails — Flux applies remediation strategy.</b> Post-renderer failure is treated as an upgrade failure. If <code>remediateLastFailure: true</code>: Flux rolls back to the previous chart version. The post-renderer error appears in <code>kubectl describe helmrelease</code>. Validate post-renderer patches locally with <code>helm template | kubectl kustomize</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">15</div>
+    <div class="tc-tag">Cross-namespace</div>
+    <div class="tc-q">Tenant Kustomization in <code>team-a</code> namespace references a GitRepository in <code>flux-system</code>. Does it work by default?</div>
+    <div class="tc-a"><b>No — cross-namespace source references are blocked by default.</b> Flux restricts Kustomizations from referencing sources in other namespaces. Enable with <code>allow-cross-namespace-refs: true</code> on the kustomize-controller args. Alternatively, create a GitRepository in each tenant namespace for their own repo, managed by the platform team.</div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap">
+  <div class="quiz-hdr">
+    <div class="quiz-title">🎯 FluxCD Interview Quiz</div>
+    <div class="quiz-score">Score: <span id="qScore">0</span> / <span id="qTotal">0</span></div>
+  </div>
+  <div id="qContainer"></div>
+  <div class="quiz-btns">
+    <button class="qbtn qb-r" onclick="resetQuiz()">↺ Reset</button>
+    <button class="qbtn qb-f" onclick="revealAll()">Show All Answers</button>
+  </div>
+</div>
+
+</div><!-- /traps -->
+
+<div class="footer">
+  <div class="ft">FluxCD v2 Field Guide · 2026 · v2.8 · 7 Controllers · SOPS · dependsOn · Image Automation · Helm v4</div>
+  <div class="ft" style="color:rgba(84,104,255,.25);">serviceAccountName per tenant · dependsOn DAG not cycle · configure Receiver for instant reconcile · semver range in production</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ── NAV ──
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── CONTROLLER CARDS ──
+function toggleCtrl(el) {
+  const was = el.classList.contains('open');
+  document.querySelectorAll('.ctrl-card').forEach(c => c.classList.remove('open'));
+  if (!was) el.classList.add('open');
+}
+
+// ── QUIZ ──
+const QS = [
+  {
+    q: "A GitRepository has <code>interval: 1h</code> and a Kustomization referencing it has <code>interval: 1m</code>. A developer pushes a commit. When does it apply?",
+    opts: ["Within 1 minute — Kustomization polls every minute","Within 1 hour — GitRepository controls when new commits are fetched","Immediately — Flux watches Git API in real-time","Within 10 minutes — Flux batches reconciles"],
+    ans: 1,
+    ex: "<b>GitRepository controls fetch frequency.</b> Kustomization reconciles every minute but can only see new commits when GitRepository re-fetches. Set up a Receiver + GitHub webhook to trigger immediate GitRepository reconcile on push → near-zero latency between commit and apply."
+  },
+  {
+    q: "What is the role of the <code>serviceAccountName</code> field in a Flux Kustomization?",
+    opts: ["It specifies which SA the deployed pods run as","It controls which SA kustomize-controller impersonates when applying resources","It grants Flux access to the Git repository","It determines which namespace Flux creates resources in"],
+    ans: 1,
+    ex: "<b>kustomize-controller impersonates this SA when applying resources.</b> This is the core tenancy mechanism: each tenant gets a SA with limited RBAC. Without it, the controller's own SA (typically cluster-admin) is used — giving tenants unrestricted cluster access."
+  },
+  {
+    q: "You have Kustomization A and B where A depends on B. B fails to reconcile. What happens to A?",
+    opts: ["A reconciles normally — dependencies are advisory only","A immediately marks itself as Failed","A blocks — it will not reconcile until B is Ready","A reconciles but skips resources that need B"],
+    ans: 2,
+    ex: "<b>A blocks until B is Ready.</b> dependsOn creates a hard dependency. kustomize-controller checks all dependencies are Ready before reconciling the dependent Kustomization. This is intentional — it prevents applying CRD instances before CRD definitions are installed."
+  },
+  {
+    q: "How does Flux's SOPS decryption work? Where does decryption happen?",
+    opts: ["In the Git repository before Flux fetches files","On the developer's machine before committing","In-memory inside kustomize-controller — never writes plaintext to disk","In a dedicated decryption sidecar container"],
+    ans: 2,
+    ex: "<b>In-memory inside kustomize-controller.</b> The controller fetches the encrypted artifact from source-controller, decrypts it in memory using the key from a K8s Secret, runs kustomize build on the decrypted content, and applies. Plaintext never touches disk or Git. The encryption key Secret itself should be bootstrapped out-of-band."
+  },
+  {
+    q: "Flux v2.7 started removing beta API versions. Which migration is required if upgrading from v2.6?",
+    opts: ["GitRepository must be updated from v1beta1 to v1","Kustomization must be updated from v1beta2 to v1, HelmRelease from v2beta1 to v2","All CRDs must be deleted and recreated","No migration needed — v2.7 is backward compatible"],
+    ans: 1,
+    ex: "<b>Kustomization /v1beta2 → /v1 and HelmRelease /v2beta1 → /v2.</b> Update all your manifests and Flux bootstrap manifests before upgrading. Flux Operator automates this migration. Check: <code>flux check</code> reports deprecated API usage before upgrading."
+  },
+  {
+    q: "What does <code>prune: true</code> on a Kustomization do when you rename a Deployment in Git?",
+    opts: ["Creates the new Deployment, keeps the old one","Creates the new Deployment, deletes the old one (it's no longer in the rendered output)","Fails with a conflict error until you manually delete the old one","Renames the existing Deployment in-place"],
+    ans: 1,
+    ex: "<b>Old Deployment deleted, new one created.</b> Flux labels resources it applies with <code>kustomize.toolkit.fluxcd.io/name</code>. When the old Deployment is no longer in the rendered output, Flux identifies it as orphaned and prunes it. Brief disruption possible — use rolling updates or blue-green to avoid downtime during renames."
+  },
+  {
+    q: "What is the purpose of post-renderers in a HelmRelease?",
+    opts: ["Render Helm templates before committing to Git","Apply Kustomize patches on top of Helm-rendered manifests before applying to cluster","Validate rendered Helm output against K8s schemas","Post-process rendered manifests to generate reports"],
+    ans: 1,
+    ex: "<b>Apply Kustomize patches on Helm output before apply.</b> This lets you modify Helm chart output (add labels, tolerations, change fields not exposed by chart values) without forking the chart. Post-renderers chain: each receives the output of the previous. Use for cross-cutting concerns that apply to many charts."
+  },
+  {
+    q: "The image automation loop: CI pushes <code>myapp:v1.2.4</code>. Walk through what happens, in order.",
+    opts: [
+      "Git commit → Flux reconcile → image-reflector scans registry → policy selects new tag → automation commits",
+      "image-reflector scans registry → ImagePolicy selects v1.2.4 → image-automation commits to Git → GitRepository detects commit → kustomize-controller deploys",
+      "ImagePolicy detects new tag → automation deploys directly to cluster → Git is updated afterward",
+      "CI webhooks Flux directly → Flux fetches new image → commits to Git → deploys"
+    ],
+    ans: 1,
+    ex: "<b>image-reflector polls registry → ImagePolicy selects → image-automation commits to Git → source-controller detects → kustomize-controller applies.</b> Key insight: image-automation commits to Git first, then Flux reconciles from Git. Git remains the single source of truth. Every deployed image version is recorded as a Git commit."
+  }
+];
+
+let score = 0, answered = 0;
+function buildQuiz() {
+  const c = document.getElementById('qContainer');
+  c.innerHTML = '';
+  score = 0; answered = 0;
+  updateScore();
+  QS.forEach((q, qi) => {
+    const d = document.createElement('div');
+    d.className = 'q-item'; d.id = 'qi-'+qi;
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+      <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
+      <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
+    c.appendChild(d);
+  });
+}
+function answer(qi, chosen) {
+  const qEl = document.getElementById('qi-'+qi);
+  if (qEl.dataset.done) return;
+  qEl.dataset.done = '1';
+  const q = QS[qi];
+  q.opts.forEach((_,oi) => {
+    const b = document.getElementById(`qo-${qi}-${oi}`);
+    b.disabled = true;
+    if (oi === q.ans) b.classList.add('correct');
+    else if (oi === chosen && chosen !== q.ans) b.classList.add('wrong');
+  });
+  qEl.classList.add(chosen === q.ans ? 'revealed' : 'revealed-bad');
+  document.getElementById('qe-'+qi).classList.add('show');
+  if (chosen === q.ans) score++;
+  answered++;
+  updateScore();
+}
+function updateScore() {
+  document.getElementById('qScore').textContent = score;
+  document.getElementById('qTotal').textContent = answered;
+}
+function resetQuiz() { buildQuiz(); }
+function revealAll() {
+  QS.forEach((q,qi) => {
+    const qEl = document.getElementById('qi-'+qi);
+    if (qEl.dataset.done) return;
+    qEl.dataset.done = '1';
+    q.opts.forEach((_,oi) => {
+      const b = document.getElementById(`qo-${qi}-${oi}`);
+      b.disabled = true;
+      if (oi === q.ans) b.classList.add('correct');
+    });
+    qEl.classList.add('revealed');
+    document.getElementById('qe-'+qi).classList.add('show');
+    answered++;
+  });
+  updateScore();
+}
+buildQuiz();
+</script>
+</body>
+</html>

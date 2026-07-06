@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K8s Engine Deep Dive</title>
+<link href="../assets/fonts/font-set-9.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #060810;
+  --s1: #0b0f18;
+  --s2: #101520;
+  --border: #1a2232;
+  --b2: #243044;
+  --c1: #00e5ff;   /* apiserver / cyan */
+  --c2: #7c3aed;   /* etcd / purple */
+  --c3: #22c55e;   /* scheduler / green */
+  --c4: #f59e0b;   /* controllers / amber */
+  --c5: #ef4444;   /* kubelet / red */
+  --c6: #e879f9;   /* admission / pink */
+  --c7: #38bdf8;   /* informer / sky */
+  --c8: #fb923c;   /* reconcile / orange */
+  --text: #e2e8f0;
+  --dim: #64748b;
+  --mid: #94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.5;}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 50% 30% at 10% 15%, rgba(0,229,255,0.055) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 90% 85%, rgba(124,58,237,0.05) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 20% at 55% 50%, rgba(34,197,94,0.03) 0%,transparent 50%),
+    linear-gradient(rgba(0,229,255,0.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,0.018) 1px,transparent 1px);
+  background-size:100%,100%,100%,50px 50px,50px 50px;
+  pointer-events:none;z-index:0;
+}
+.page{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:36px 24px 60px;}
+
+/* ── HEADER ── */
+.header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:38px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.hl h1{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:4px;line-height:1;background:linear-gradient(135deg,var(--c1) 0%,#fff 45%,var(--c3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hl p{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:5px;}
+.hbadges{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.hb{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1px solid;}
+.hb1{border-color:var(--c1);color:var(--c1);background:rgba(0,229,255,0.05);}
+.hb2{border-color:var(--c3);color:var(--c3);background:rgba(34,197,94,0.05);}
+.hb3{border-color:var(--c4);color:var(--c4);background:rgba(245,158,11,0.05);}
+
+/* ── SECTION LABEL ── */
+.sl{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;margin:0 0 14px;display:flex;align-items:center;gap:12px;}
+.sl::after{content:'';flex:1;height:1px;}
+.sl span{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.s1{color:var(--c1);} .s1::after{background:linear-gradient(90deg,rgba(0,229,255,.3),transparent);}
+.s2{color:var(--c2);} .s2::after{background:linear-gradient(90deg,rgba(124,58,237,.3),transparent);}
+.s3{color:var(--c3);} .s3::after{background:linear-gradient(90deg,rgba(34,197,94,.3),transparent);}
+.s4{color:var(--c4);} .s4::after{background:linear-gradient(90deg,rgba(245,158,11,.3),transparent);}
+.s5{color:var(--c5);} .s5::after{background:linear-gradient(90deg,rgba(239,68,68,.3),transparent);}
+.s7{color:var(--c7);} .s7::after{background:linear-gradient(90deg,rgba(56,189,248,.3),transparent);}
+.s8{color:var(--c8);} .s8::after{background:linear-gradient(90deg,rgba(251,146,60,.3),transparent);}
+.mb{margin-bottom:20px;}
+
+/* ── GRIDS ── */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:14px;margin-bottom:14px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:18px;position:relative;overflow:hidden;transition:border-color .2s;}
+.card:hover{border-color:var(--b2);}
+.card .glow{position:absolute;top:-24px;left:-24px;width:90px;height:90px;border-radius:50%;opacity:.1;filter:blur(28px);pointer-events:none;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.k1::before{background:linear-gradient(90deg,var(--c1),transparent);}
+.k2::before{background:linear-gradient(90deg,var(--c2),transparent);}
+.k3::before{background:linear-gradient(90deg,var(--c3),transparent);}
+.k4::before{background:linear-gradient(90deg,var(--c4),transparent);}
+.k5::before{background:linear-gradient(90deg,var(--c5),transparent);}
+.k6::before{background:linear-gradient(90deg,var(--c6),transparent);}
+.k7::before{background:linear-gradient(90deg,var(--c7),transparent);}
+.k8::before{background:linear-gradient(90deg,var(--c8),transparent);}
+.km::before{background:linear-gradient(90deg,var(--c1),var(--c3));}
+
+/* card header */
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.ci{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.k1 .ci{background:rgba(0,229,255,0.1);}
+.k2 .ci{background:rgba(124,58,237,0.1);}
+.k3 .ci{background:rgba(34,197,94,0.1);}
+.k4 .ci{background:rgba(245,158,11,0.1);}
+.k5 .ci{background:rgba(239,68,68,0.1);}
+.k6 .ci{background:rgba(232,121,249,0.1);}
+.k7 .ci{background:rgba(56,189,248,0.1);}
+.k8 .ci{background:rgba(251,146,60,0.1);}
+.km .ci{background:linear-gradient(135deg,rgba(0,229,255,0.08),rgba(34,197,94,0.08));}
+.ct{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;}
+.k1 .ct{color:var(--c1);} .k2 .ct{color:var(--c2);} .k3 .ct{color:var(--c3);}
+.k4 .ct{color:var(--c4);} .k5 .ct{color:var(--c5);} .k6 .ct{color:var(--c6);}
+.k7 .ct{color:var(--c7);} .k8 .ct{color:var(--c8);}
+.km .ct{background:linear-gradient(90deg,var(--c1),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.csub{font-size:9px;color:var(--dim);margin-top:2px;}
+
+/* fact rows */
+.fr{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);align-items:baseline;font-size:11px;}
+.fk{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.k1 .fk{color:rgba(0,229,255,.7);} .k2 .fk{color:rgba(124,58,237,.7);}
+.k3 .fk{color:rgba(34,197,94,.7);} .k4 .fk{color:rgba(245,158,11,.7);}
+.k5 .fk{color:rgba(239,68,68,.7);} .k6 .fk{color:rgba(232,121,249,.7);}
+.k7 .fk{color:rgba(56,189,248,.7);} .k8 .fk{color:rgba(251,146,60,.7);}
+.km .fk{color:rgba(0,229,255,.6);}
+.fv{color:var(--mid);line-height:1.55;}
+.fv b,.fv strong{color:var(--text);font-weight:500;}
+.fv code{font-family:'Space Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--c1);}
+
+/* callout */
+.cal{padding:8px 11px;font-size:10.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 4px 4px 0;line-height:1.6;}
+.cal b,.cal strong{color:var(--text);}
+.k1 .cal{background:rgba(0,229,255,0.05);border-color:var(--c1);}
+.k2 .cal{background:rgba(124,58,237,0.05);border-color:var(--c2);}
+.k3 .cal{background:rgba(34,197,94,0.05);border-color:var(--c3);}
+.k4 .cal{background:rgba(245,158,11,0.05);border-color:var(--c4);}
+.k5 .cal{background:rgba(239,68,68,0.05);border-color:var(--c5);}
+.k6 .cal{background:rgba(232,121,249,0.05);border-color:var(--c6);}
+.k7 .cal{background:rgba(56,189,248,0.05);border-color:var(--c7);}
+.k8 .cal{background:rgba(251,146,60,0.05);border-color:var(--c8);}
+.km .cal{background:rgba(0,229,255,0.04);border-color:var(--c3);}
+
+/* code block */
+.code{background:#050810;border:1px solid var(--border);border-radius:6px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:10px;line-height:1.8;color:var(--dim);margin-top:8px;overflow-x:auto;}
+.code .kw{color:#c084fc;} .code .fn{color:var(--c3);} .code .str{color:var(--c4);}
+.code .cm{color:#2a3a4a;} .code .ky{color:var(--c1);} .code .va{color:var(--c8);}
+.code .re{color:var(--c5);}
+
+/* trap */
+.trap{background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:9px 11px;font-size:10.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ GOTCHA — ';font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;color:var(--c5);letter-spacing:1px;}
+.trap b{color:var(--text);}
+
+/* pills */
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.pill{padding:3px 9px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid;font-family:'Space Mono',monospace;}
+.p1{border-color:rgba(0,229,255,.4);color:var(--c1);background:rgba(0,229,255,.07);}
+.p2{border-color:rgba(124,58,237,.4);color:var(--c2);background:rgba(124,58,237,.07);}
+.p3{border-color:rgba(34,197,94,.4);color:var(--c3);background:rgba(34,197,94,.07);}
+.p4{border-color:rgba(245,158,11,.4);color:var(--c4);background:rgba(245,158,11,.07);}
+.p5{border-color:rgba(239,68,68,.4);color:var(--c5);background:rgba(239,68,68,.07);}
+.p6{border-color:rgba(232,121,249,.4);color:var(--c6);background:rgba(232,121,249,.07);}
+.p7{border-color:rgba(56,189,248,.4);color:var(--c7);background:rgba(56,189,248,.07);}
+.p8{border-color:rgba(251,146,60,.4);color:var(--c8);background:rgba(251,146,60,.07);}
+
+/* flow wrap */
+.flow-wrap{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:24px 24px 20px;margin-bottom:20px;position:relative;overflow:hidden;}
+.flow-wrap .ftag{position:absolute;top:14px;right:16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;}
+.tls{display:grid;grid-template-columns:20px 1fr;gap:10px;position:relative;}
+.tls:not(:last-child) .tlline::after{content:'';position:absolute;left:9px;top:22px;bottom:-4px;width:1px;background:linear-gradient(180deg,var(--border),transparent);}
+.tlline{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
+.tlnum{width:18px;height:18px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'Space Mono',monospace;font-weight:700;flex-shrink:0;}
+.tlbody{padding:2px 0 12px;}
+.tltit{font-weight:600;font-size:11px;margin-bottom:2px;}
+.tldes{font-size:10.5px;color:var(--mid);line-height:1.5;}
+.tldes b{color:var(--text);}
+.tldes code{font-family:'Space Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--c1);}
+
+/* table */
+.stable{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+.stable th{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.stable td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--mid);vertical-align:top;line-height:1.5;}
+.stable td:first-child{color:var(--text);font-weight:500;}
+.stable tr:last-child td{border-bottom:none;}
+.good{color:var(--c3) !important;} .warn{color:var(--c4) !important;} .bad{color:var(--c5) !important;}
+.stable td code{font-family:'Space Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--c1);}
+
+/* formula */
+.formula{background:#060c14;border:1px solid var(--b2);border-radius:6px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:11px;text-align:center;margin-top:8px;}
+.formula .hl{color:var(--c1);font-weight:700;}
+.formula .op{color:var(--dim);}
+.formula .lbl{font-size:9px;color:var(--dim);display:block;margin-top:4px;letter-spacing:1px;}
+
+/* debug command */
+.dbcmd{background:#050b12;border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:10px;line-height:1.9;color:var(--mid);margin-top:6px;}
+.dbcmd .cmd{color:var(--c3);} .dbcmd .arg{color:var(--c1);} .dbcmd .cmt{color:#2a3a4a;} .dbcmd .out{color:var(--c4);}
+
+/* animations */
+@keyframes fadein{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fadein .4s ease both;}
+.page>*:nth-child(1){animation-delay:.00s} .page>*:nth-child(2){animation-delay:.04s}
+.page>*:nth-child(3){animation-delay:.08s} .page>*:nth-child(4){animation-delay:.12s}
+.page>*:nth-child(5){animation-delay:.16s} .page>*:nth-child(6){animation-delay:.20s}
+.page>*:nth-child(7){animation-delay:.24s} .page>*:nth-child(8){animation-delay:.28s}
+.page>*:nth-child(9){animation-delay:.32s} .page>*:nth-child(10){animation-delay:.36s}
+.page>*:nth-child(11){animation-delay:.40s} .page>*:nth-child(12){animation-delay:.44s}
+
+.footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;}
+.ft{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hl">
+    <h1>K8s Engine</h1>
+    <p>Scheduling · Manifest Parsing · Controllers · Informers · Reconciliation · Debug</p>
+  </div>
+  <div class="hbadges">
+    <div class="hb hb1">apiserver · etcd · scheduler</div>
+    <div class="hb hb2">controllers · informers · work queues</div>
+    <div class="hb hb3">desired state · reconcile loops · debug</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 1: MANIFEST → POD RUNNING (MASTER FLOW) ═══════════════ -->
+<div class="sl s1 mb">Manifest Apply → Pod Running <span>// complete event chain with every actor</span></div>
+
+<div class="flow-wrap">
+  <div class="ftag">FULL APPLY CHAIN</div>
+  <svg viewBox="0 0 1300 540" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;">
+    <defs>
+      <marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(0,229,255,0.7)"/></marker>
+      <marker id="a2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(124,58,237,0.7)"/></marker>
+      <marker id="a3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(34,197,94,0.7)"/></marker>
+      <marker id="a4" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(245,158,11,0.7)"/></marker>
+      <marker id="a5" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(239,68,68,0.7)"/></marker>
+      <marker id="a6" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(232,121,249,0.7)"/></marker>
+      <filter id="fg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <!-- Node gradients -->
+      <linearGradient id="gk" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e879f9" stop-opacity=".2"/><stop offset="100%" stop-color="#e879f9" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".2"/><stop offset="100%" stop-color="#00e5ff" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed" stop-opacity=".22"/><stop offset="100%" stop-color="#7c3aed" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#22c55e" stop-opacity=".18"/><stop offset="100%" stop-color="#22c55e" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b" stop-opacity=".18"/><stop offset="100%" stop-color="#f59e0b" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ef4444" stop-opacity=".18"/><stop offset="100%" stop-color="#ef4444" stop-opacity=".04"/></linearGradient>
+    </defs>
+
+    <!-- ── ROW 1: kubectl → apiserver → admission → etcd ── -->
+
+    <!-- kubectl -->
+    <g transform="translate(10,30)">
+      <rect width="140" height="80" rx="7" fill="url(#gk)" stroke="#e879f9" stroke-width="1.2"/>
+      <text x="70" y="22" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#e879f9" font-weight="700">kubectl</text>
+      <text x="70" y="38" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.45)">reads YAML</text>
+      <text x="70" y="52" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.45)">decodes + validates</text>
+      <text x="70" y="66" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.45)">computes SMP diff</text>
+    </g>
+
+    <!-- arrow kubectl → apiserver -->
+    <line x1="150" y1="70" x2="178" y2="70" stroke="rgba(0,229,255,0.6)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a1)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
+    <text x="155" y="63" font-family="Space Mono" font-size="8" fill="rgba(0,229,255,0.5)">PATCH / POST</text>
+
+    <!-- apiserver big box -->
+    <g transform="translate(178,10)">
+      <rect width="360" height="120" rx="8" fill="url(#g1)" stroke="#00e5ff" stroke-width="1.5" filter="url(#fg)"/>
+      <text x="180" y="22" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#00e5ff" font-weight="700" letter-spacing="1">kube-apiserver</text>
+      <!-- Admission pipeline inline -->
+      <g transform="translate(10,32)">
+        <!-- stage boxes -->
+        <rect x="0"   y="0" width="66" height="30" rx="4" fill="rgba(0,229,255,0.06)" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+        <text x="33" y="14" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5ff">Authn</text>
+        <text x="33" y="25" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">cert/token/OIDC</text>
+
+        <rect x="76"  y="0" width="66" height="30" rx="4" fill="rgba(0,229,255,0.06)" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+        <text x="109" y="14" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5ff">Authz</text>
+        <text x="109" y="25" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">RBAC/Webhook</text>
+
+        <rect x="152" y="0" width="72" height="30" rx="4" fill="rgba(232,121,249,0.08)" stroke="rgba(232,121,249,0.3)" stroke-width="1"/>
+        <text x="188" y="14" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#e879f9">Mutating</text>
+        <text x="188" y="25" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">webhooks → modify</text>
+
+        <rect x="234" y="0" width="66" height="30" rx="4" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+        <text x="267" y="14" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#f59e0b">Schema</text>
+        <text x="267" y="25" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">OpenAPI valid.</text>
+
+        <!-- arrows between stages -->
+        <line x1="66" y1="15" x2="76" y2="15" stroke="rgba(255,255,255,0.2)" stroke-width="1" marker-end="url(#a1)"/>
+        <line x1="142" y1="15" x2="152" y2="15" stroke="rgba(255,255,255,0.2)" stroke-width="1" marker-end="url(#a1)"/>
+        <line x1="224" y1="15" x2="234" y2="15" stroke="rgba(255,255,255,0.2)" stroke-width="1" marker-end="url(#a1)"/>
+      </g>
+      <!-- Validating webhooks row -->
+      <g transform="translate(10,72)">
+        <rect x="0" y="0" width="82" height="28" rx="4" fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.25)" stroke-width="1"/>
+        <text x="41" y="12" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ef4444">Validating</text>
+        <text x="41" y="23" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">reject only</text>
+
+        <line x1="82" y1="14" x2="98" y2="14" stroke="rgba(255,255,255,0.2)" stroke-width="1" marker-end="url(#a1)"/>
+
+        <rect x="98" y="0" width="100" height="28" rx="4" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.3)" stroke-width="1"/>
+        <text x="148" y="12" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#a78bfa">etcd WRITE</text>
+        <text x="148" y="23" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">201 Created + resourceVersion</text>
+
+        <text x="220" y="14" font-family="DM Sans" font-size="9" fill="rgba(0,229,255,0.5)">→ Watch events fan out</text>
+      </g>
+    </g>
+
+    <!-- arrow apiserver → etcd label on side -->
+
+    <!-- ── WATCH EVENT FAN-OUT (row 2) ── -->
+    <!-- Vertical lines from apiserver down -->
+    <line x1="358" y1="130" x2="358" y2="200" stroke="rgba(0,229,255,0.25)" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <!-- Fan-out label -->
+    <text x="358" y="195" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(0,229,255,0.4)" letter-spacing="2">WATCH EVENT BROADCAST</text>
+
+    <!-- Horizontal fan line -->
+    <line x1="140" y1="215" x2="1280" y2="215" stroke="rgba(0,229,255,0.12)" stroke-width="1" stroke-dasharray="3 4"/>
+    <!-- Drops to each component -->
+    <line x1="230" y1="215" x2="230" y2="260" stroke="rgba(245,158,11,0.4)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a4)"/>
+    <line x1="480" y1="215" x2="480" y2="260" stroke="rgba(34,197,94,0.4)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a3)"/>
+    <line x1="730" y1="215" x2="730" y2="260" stroke="rgba(56,189,248,0.4)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+    <line x1="980" y1="215" x2="980" y2="260" stroke="rgba(239,68,68,0.4)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a5)"/>
+
+    <!-- ── ROW 2: Controllers / Scheduler / Informer cache / kubelet ── -->
+
+    <!-- Controller Manager -->
+    <g transform="translate(140,260)">
+      <rect width="185" height="180" rx="8" fill="url(#g4)" stroke="#f59e0b" stroke-width="1.3"/>
+      <text x="92" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#f59e0b" font-weight="700">controller-manager</text>
+      <text x="92" y="34" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.35)">informer cache updated</text>
+      <!-- Controller list -->
+      <rect x="10" y="42" width="165" height="22" rx="3" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+      <text x="92" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#f59e0b">Deployment ctrl</text>
+      <rect x="10" y="70" width="165" height="22" rx="3" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.18)" stroke-width="1"/>
+      <text x="92" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(245,158,11,0.7)">ReplicaSet ctrl</text>
+      <rect x="10" y="98" width="165" height="22" rx="3" fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.18)" stroke-width="1"/>
+      <text x="92" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(245,158,11,0.7)">Node / Endpoints ctrl</text>
+      <text x="92" y="138" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">each: enqueue key</text>
+      <text x="92" y="152" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">→ work queue</text>
+      <text x="92" y="166" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">→ reconcile()</text>
+    </g>
+
+    <!-- arrow ctrl → apiserver (write new objects) -->
+    <path d="M 232 260 C 232 230, 320 150, 360 140" fill="none" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4 3" opacity=".5" marker-end="url(#a4)"><animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.4s" repeatCount="indefinite"/></path>
+    <text x="270" y="220" font-family="Space Mono" font-size="8" fill="rgba(245,158,11,0.5)">create RS/Pod objects</text>
+
+    <!-- Scheduler -->
+    <g transform="translate(390,260)">
+      <rect width="185" height="180" rx="8" fill="url(#g3)" stroke="#22c55e" stroke-width="1.3"/>
+      <text x="92" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#22c55e" font-weight="700">kube-scheduler</text>
+      <text x="92" y="34" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.35)">sees Pod: nodeName=""</text>
+      <rect x="10" y="42" width="165" height="22" rx="3" fill="rgba(34,197,94,0.1)" stroke="rgba(34,197,94,0.3)" stroke-width="1"/>
+      <text x="92" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#22c55e">① Filter phase</text>
+      <rect x="10" y="70" width="165" height="22" rx="3" fill="rgba(34,197,94,0.07)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+      <text x="92" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(34,197,94,0.8)">② Score phase</text>
+      <rect x="10" y="98" width="165" height="22" rx="3" fill="rgba(34,197,94,0.07)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+      <text x="92" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(34,197,94,0.8)">③ Bind → nodeName</text>
+      <text x="92" y="138" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">writes Binding subresource</text>
+      <text x="92" y="152" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">does NOT start containers</text>
+      <text x="92" y="166" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">leader-elected via Lease</text>
+    </g>
+
+    <!-- arrow scheduler → apiserver (write binding) -->
+    <path d="M 480 260 C 480 230, 430 150, 400 140" fill="none" stroke="#22c55e" stroke-width="1.2" stroke-dasharray="4 3" opacity=".5" marker-end="url(#a3)"><animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.2s" repeatCount="indefinite"/></path>
+    <text x="485" y="220" font-family="Space Mono" font-size="8" fill="rgba(34,197,94,0.5)">write nodeName</text>
+
+    <!-- Informer cache box -->
+    <g transform="translate(640,260)">
+      <rect width="185" height="180" rx="8" fill="rgba(56,189,248,0.06)" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="none"/>
+      <text x="92" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#38bdf8" font-weight="700">Informer Cache</text>
+      <text x="92" y="34" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.35)">shared across all controllers</text>
+      <!-- Cache lines -->
+      <rect x="10" y="42" width="165" height="19" rx="3" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.2)" stroke-width="1"/>
+      <text x="92" y="55" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#38bdf8">pods: {ns/name → obj}</text>
+      <rect x="10" y="66" width="165" height="19" rx="3" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
+      <text x="92" y="79" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="rgba(56,189,248,0.7)">deployments: {...}</text>
+      <rect x="10" y="90" width="165" height="19" rx="3" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
+      <text x="92" y="103" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="rgba(56,189,248,0.7)">replicasets: {...}</text>
+      <rect x="10" y="114" width="165" height="19" rx="3" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
+      <text x="92" y="127" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="rgba(56,189,248,0.7)">nodes: {...}</text>
+      <text x="92" y="150" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">synced via List+Watch</text>
+      <text x="92" y="164" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">controllers READ from cache</text>
+    </g>
+
+    <!-- kubelet -->
+    <g transform="translate(900,260)">
+      <rect width="185" height="180" rx="8" fill="url(#g5)" stroke="#ef4444" stroke-width="1.3"/>
+      <text x="92" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ef4444" font-weight="700">kubelet</text>
+      <text x="92" y="34" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.35)">sees Pod: nodeName=thisNode</text>
+      <rect x="10" y="42" width="165" height="22" rx="3" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+      <text x="92" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ef4444">CRI gRPC → containerd</text>
+      <rect x="10" y="70" width="165" height="22" rx="3" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.18)" stroke-width="1"/>
+      <text x="92" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(239,68,68,0.8)">pull image → runc</text>
+      <rect x="10" y="98" width="165" height="22" rx="3" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.18)" stroke-width="1"/>
+      <text x="92" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(239,68,68,0.8)">CNI → Pod IP</text>
+      <rect x="10" y="126" width="165" height="22" rx="3" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.18)" stroke-width="1"/>
+      <text x="92" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(239,68,68,0.8)">run probes</text>
+      <text x="92" y="166" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.4)">reports status → apiserver</text>
+    </g>
+
+    <!-- arrow kubelet → apiserver status update -->
+    <path d="M 980 260 C 980 220, 800 160, 600 140" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3" opacity=".45" marker-end="url(#a5)"><animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.6s" repeatCount="indefinite"/></path>
+    <text x="830" y="220" font-family="Space Mono" font-size="8" fill="rgba(239,68,68,0.45)">status update → etcd</text>
+
+    <!-- ── ROW 3: Reconcile loop detail ── -->
+    <rect x="10" y="470" width="1280" height="56" rx="6" fill="rgba(251,146,60,0.04)" stroke="rgba(251,146,60,0.12)" stroke-width="1" stroke-dasharray="3 4"/>
+    <text x="640" y="491" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(251,146,60,0.5)" letter-spacing="2">RECONCILE LOOP PATTERN  (every controller)</text>
+    <!-- Flow steps inline -->
+    <text x="80"  y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#38bdf8">Watch event</text>
+    <text x="80"  y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">informer fires</text>
+    <text x="180" y="521" text-anchor="middle" font-family="Space Mono" font-size="11" fill="rgba(255,255,255,0.15)">→</text>
+    <text x="280" y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#f59e0b">Enqueue</text>
+    <text x="280" y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">ns/name key</text>
+    <text x="380" y="521" text-anchor="middle" font-family="Space Mono" font-size="11" fill="rgba(255,255,255,0.15)">→</text>
+    <text x="480" y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#f59e0b">Dequeue</text>
+    <text x="480" y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">worker goroutine</text>
+    <text x="580" y="521" text-anchor="middle" font-family="Space Mono" font-size="11" fill="rgba(255,255,255,0.15)">→</text>
+    <text x="680" y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#fb923c">Read cache</text>
+    <text x="680" y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">fresh obj state</text>
+    <text x="780" y="521" text-anchor="middle" font-family="Space Mono" font-size="11" fill="rgba(255,255,255,0.15)">→</text>
+    <text x="880" y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#fb923c">Reconcile()</text>
+    <text x="880" y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">desired vs actual</text>
+    <text x="980" y="521" text-anchor="middle" font-family="Space Mono" font-size="11" fill="rgba(255,255,255,0.15)">→</text>
+    <text x="1080" y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#22c55e">API write</text>
+    <text x="1080" y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">patch / create</text>
+    <text x="1180" y="521" text-anchor="middle" font-family="Space Mono" font-size="11" fill="rgba(255,255,255,0.15)">→</text>
+    <text x="1255" y="515" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#38bdf8">Repeat</text>
+    <text x="1255" y="526" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">∞</text>
+  </svg>
+</div>
+
+<!-- ═══════════════ SECTION 2: MANIFEST PARSING ═══════════════ -->
+<div class="sl s2 mb">Manifest Parsing + API Mechanics <span>// what happens to your YAML</span></div>
+
+<div class="g3">
+  <div class="card k6">
+    <div class="glow" style="background:var(--c6)"></div>
+    <div class="ch"><div class="ci">📄</div><div><div class="ct">YAML → Object lifecycle</div><div class="csub">How kubectl turns YAML into an API call</div></div></div>
+    <div class="fr"><span class="fk">Decode</span><span class="fv">kubectl parses YAML to JSON, deserializes into a typed Go struct (e.g., <code>v1.Pod</code>) using the API machinery decoder.</span></div>
+    <div class="fr"><span class="fk">GVR / GVK</span><span class="fv"><b>Group/Version/Resource</b> determines the REST path. <code>apps/v1/Deployment</code> → <code>/apis/apps/v1/namespaces/{ns}/deployments</code>.</span></div>
+    <div class="fr"><span class="fk">Patch type</span><span class="fv"><code>kubectl apply</code> uses <b>Strategic Merge Patch</b>. Computes diff vs last-applied annotation. Server-Side Apply (SSA) sends full desired state; apiserver owns field management.</span></div>
+    <div class="fr"><span class="fk">Dry run modes</span><span class="fv"><code>--dry-run=client</code> validates locally. <code>--dry-run=server</code> runs full admission pipeline (mutating+validating webhooks) without etcd write.</span></div>
+    <div class="fr"><span class="fk">Diff</span><span class="fv"><code>kubectl diff -f</code> does a server-side dry run and shows diff. Uses <code>kubectl.kubernetes.io/last-applied-configuration</code> annotation to track your intent.</span></div>
+    <div class="cal"><strong>SMP vs JSON Merge Patch:</strong> SMP merges lists by a strategic key (containers by <code>name</code>). Plain JSON merge replaces entire list. Always use SMP or SSA for K8s resources.</div>
+  </div>
+
+  <div class="card k2">
+    <div class="glow" style="background:var(--c2)"></div>
+    <div class="ch"><div class="ci">🗝️</div><div><div class="ct">API Versioning + GVK</div><div class="csub">Why apiVersion matters</div></div></div>
+    <table class="stable">
+      <tr><th>apiVersion</th><th>REST path prefix</th><th>Examples</th></tr>
+      <tr><td><code>v1</code></td><td>/api/v1/...</td><td>Pod, Service, ConfigMap, Secret</td></tr>
+      <tr><td><code>apps/v1</code></td><td>/apis/apps/v1/...</td><td>Deployment, ReplicaSet, DaemonSet</td></tr>
+      <tr><td><code>batch/v1</code></td><td>/apis/batch/v1/...</td><td>Job, CronJob</td></tr>
+      <tr><td><code>rbac.authorization.k8s.io/v1</code></td><td>/apis/rbac.../...</td><td>Role, ClusterRole, Binding</td></tr>
+      <tr><td><code>custom.io/v1alpha1</code></td><td>/apis/custom.io/v1alpha1/...</td><td>CRDs</td></tr>
+    </table>
+    <div class="cal"><strong>API discovery:</strong> <code>kubectl api-resources</code> shows all GVRs. <code>kubectl explain Pod.spec.containers</code> shows schema. Apiserver serves discovery via <code>/apis</code> endpoint.</div>
+  </div>
+
+  <div class="card k1">
+    <div class="glow" style="background:var(--c1)"></div>
+    <div class="ch"><div class="ci">🔒</div><div><div class="ct">Admission Pipeline Detail</div><div class="csub">Mutation first, then validation</div></div></div>
+    <div class="tl">
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c1);color:var(--c1);">1</div></div>
+        <div class="tlbody"><div class="tltit" style="color:var(--c1);">Mutating Admission Webhooks</div><div class="tldes">Run <b>in parallel</b>. Each can modify the object. Results merged back. Built-ins: <code>DefaultStorageClass</code>, <code>MutatingAdmissionWebhook</code>. Sidecar injectors live here.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c4);color:var(--c4);">2</div></div>
+        <div class="tlbody"><div class="tltit" style="color:var(--c4);">Schema Validation + Defaulting</div><div class="tldes"><b>OpenAPI schema</b> check. Built-in plugins: <code>LimitRanger</code> (injects CPU/mem defaults), <code>ResourceQuota</code> (checks namespace quota), <code>PodSecurity</code> (policy enforcement).</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c5);color:var(--c5);">3</div></div>
+        <div class="tlbody"><div class="tltit" style="color:var(--c5);">Validating Admission Webhooks</div><div class="tldes">Run in parallel. <b>Cannot modify</b> — only approve or reject. OPA/Gatekeeper, Kyverno, custom policy engines hook here. Any rejection aborts entire request.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c2);color:var(--c2);">4</div></div>
+        <div class="tlbody"><div class="tltit" style="color:var(--c2);">etcd Write</div><div class="tldes">Serialized as protobuf under <code>/registry/{resource}/{ns}/{name}</code>. Returns <b>resourceVersion</b>. Triggers watch events to all subscribers.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 3: SCHEDULER ═══════════════ -->
+<div class="sl s3 mb">Scheduling Deep Dive <span>// how a pod gets a node</span></div>
+
+<div class="g32">
+  <div class="card k3">
+    <div class="glow" style="background:var(--c3)"></div>
+    <div class="ch"><div class="ci">🎯</div><div><div class="ct">Scheduling Framework — Extension Points</div><div class="csub">Plugins at each phase → full extensibility</div></div></div>
+    <svg viewBox="0 0 700 280" style="width:100%;margin-top:4px;">
+      <defs>
+        <marker id="sf" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(34,197,94,0.6)"/></marker>
+      </defs>
+      <!-- scheduling cycle row -->
+      <text x="0" y="16" font-family="Space Mono" font-size="9" fill="rgba(34,197,94,0.6)" letter-spacing="2">SCHEDULING CYCLE</text>
+      <!-- boxes -->
+      <g>
+        <rect x="0"   y="24" width="76" height="36" rx="5" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="1"/>
+        <text x="38"  y="38" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e">PreFilter</text>
+        <text x="38"  y="52" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">compute state</text>
+
+        <line x1="76" y1="42" x2="86" y2="42" stroke="rgba(34,197,94,0.5)" stroke-width="1" marker-end="url(#sf)"/>
+
+        <rect x="86"  y="24" width="76" height="36" rx="5" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="124" y="38" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e" font-weight="700">Filter</text>
+        <text x="124" y="52" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">remove nodes</text>
+
+        <line x1="162" y1="42" x2="172" y2="42" stroke="rgba(34,197,94,0.5)" stroke-width="1" marker-end="url(#sf)"/>
+
+        <rect x="172" y="24" width="76" height="36" rx="5" fill="rgba(34,197,94,0.08)" stroke="#22c55e" stroke-width="1"/>
+        <text x="210" y="38" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e">PostFilter</text>
+        <text x="210" y="52" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">preemption</text>
+
+        <line x1="248" y1="42" x2="258" y2="42" stroke="rgba(34,197,94,0.5)" stroke-width="1" marker-end="url(#sf)"/>
+
+        <rect x="258" y="24" width="76" height="36" rx="5" fill="rgba(34,197,94,0.08)" stroke="#22c55e" stroke-width="1"/>
+        <text x="296" y="38" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e">PreScore</text>
+        <text x="296" y="52" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">prepare scores</text>
+
+        <line x1="334" y1="42" x2="344" y2="42" stroke="rgba(34,197,94,0.5)" stroke-width="1" marker-end="url(#sf)"/>
+
+        <rect x="344" y="24" width="76" height="36" rx="5" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="382" y="38" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e" font-weight="700">Score</text>
+        <text x="382" y="52" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">rank feasible</text>
+
+        <line x1="420" y1="42" x2="430" y2="42" stroke="rgba(34,197,94,0.5)" stroke-width="1" marker-end="url(#sf)"/>
+
+        <rect x="430" y="24" width="76" height="36" rx="5" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="468" y="38" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e" font-weight="700">Bind</text>
+        <text x="468" y="52" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">write nodeName</text>
+      </g>
+
+      <!-- Filter plugins detail -->
+      <text x="0" y="90" font-family="Space Mono" font-size="8.5" fill="rgba(34,197,94,0.5)" letter-spacing="2">FILTER PLUGINS (remove node if any fails)</text>
+      <g transform="translate(0,100)">
+        <rect x="0"   y="0" width="105" height="24" rx="3" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="52"  y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.5)">NodeResourcesFit</text>
+        <rect x="112" y="0" width="90" height="24" rx="3" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="157" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.5)">NodeAffinity</text>
+        <rect x="210" y="0" width="95" height="24" rx="3" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="257" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.5)">TaintToleration</text>
+        <rect x="313" y="0" width="100" height="24" rx="3" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="363" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.5)">PodTopologySpread</text>
+        <rect x="421" y="0" width="105" height="24" rx="3" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="473" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.5)">VolumeBinding</text>
+        <rect x="534" y="0" width="80" height="24" rx="3" fill="rgba(34,197,94,0.06)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="574" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.5)">InterPodAff.</text>
+      </g>
+
+      <!-- Score plugins detail -->
+      <text x="0" y="148" font-family="Space Mono" font-size="8.5" fill="rgba(34,197,94,0.5)" letter-spacing="2">SCORE PLUGINS (higher = preferred, 0–100)</text>
+      <g transform="translate(0,158)">
+        <rect x="0"   y="0" width="115" height="24" rx="3" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+        <text x="57"  y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.4)">LeastAllocated</text>
+        <rect x="122" y="0" width="105" height="24" rx="3" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+        <text x="174" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.4)">NodeAffinityScore</text>
+        <rect x="234" y="0" width="115" height="24" rx="3" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+        <text x="291" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.4)">ImageLocality</text>
+        <rect x="356" y="0" width="95" height="24" rx="3" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+        <text x="403" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.4)">PodTopology</text>
+        <rect x="458" y="0" width="95" height="24" rx="3" fill="rgba(34,197,94,0.04)" stroke="rgba(34,197,94,0.15)" stroke-width="1"/>
+        <text x="505" y="15" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.4)">InterPodAff.</text>
+      </g>
+
+      <!-- binding cycle -->
+      <text x="0" y="207" font-family="Space Mono" font-size="9" fill="rgba(34,197,94,0.6)" letter-spacing="2">BINDING CYCLE (async)</text>
+      <g transform="translate(0,216)">
+        <rect x="0"  y="0" width="76" height="32" rx="4" fill="rgba(34,197,94,0.06)" stroke="#22c55e" stroke-width="1"/>
+        <text x="38" y="14" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e">WaitOnPermit</text>
+        <text x="38" y="26" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">gang scheduling</text>
+        <line x1="76" y1="16" x2="86" y2="16" stroke="rgba(34,197,94,0.4)" stroke-width="1" marker-end="url(#sf)"/>
+        <rect x="86"  y="0" width="76" height="32" rx="4" fill="rgba(34,197,94,0.06)" stroke="#22c55e" stroke-width="1"/>
+        <text x="124" y="14" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e">PreBind</text>
+        <text x="124" y="26" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">volume binding</text>
+        <line x1="162" y1="16" x2="172" y2="16" stroke="rgba(34,197,94,0.4)" stroke-width="1" marker-end="url(#sf)"/>
+        <rect x="172" y="0" width="76" height="32" rx="4" fill="rgba(34,197,94,0.12)" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="210" y="14" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e" font-weight="700">Bind</text>
+        <text x="210" y="26" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">writes nodeName</text>
+        <line x1="248" y1="16" x2="258" y2="16" stroke="rgba(34,197,94,0.4)" stroke-width="1" marker-end="url(#sf)"/>
+        <rect x="258" y="0" width="76" height="32" rx="4" fill="rgba(34,197,94,0.06)" stroke="#22c55e" stroke-width="1"/>
+        <text x="296" y="14" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e">PostBind</text>
+        <text x="296" y="26" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">cleanup</text>
+      </g>
+    </svg>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card k3">
+      <div class="glow" style="background:var(--c3)"></div>
+      <div class="ch"><div class="ci">📌</div><div><div class="ct">Scheduling Constraints</div><div class="csub">How pods pick their nodes</div></div></div>
+      <div class="fr"><span class="fk">nodeSelector</span><span class="fv">Simple equality match on node labels. Hardcoded. <b>Fails scheduling</b> if no node matches.</span></div>
+      <div class="fr"><span class="fk">Node Affinity</span><span class="fv"><code>requiredDuringScheduling</code> = hard (like nodeSelector but richer). <code>preferredDuringScheduling</code> = soft scored preference.</span></div>
+      <div class="fr"><span class="fk">Taints / Tolerations</span><span class="fv">Taint on <b>node</b> repels pods. Toleration on <b>pod</b> allows it. Effects: <code>NoSchedule</code>, <code>PreferNoSchedule</code>, <code>NoExecute</code> (evicts).</span></div>
+      <div class="fr"><span class="fk">Pod Affinity</span><span class="fv">Co-locate with pods matching a label selector. <code>topologyKey: topology.kubernetes.io/zone</code> = same zone.</span></div>
+      <div class="fr"><span class="fk">TopologySpread</span><span class="fv"><code>maxSkew: 1</code> — keep replicas evenly spread across zones. Replaces manual anti-affinity. Preferred modern approach.</span></div>
+      <div class="fr"><span class="fk">Priority / Preemption</span><span class="fv">Higher priority pod can evict lower priority pods from nodes when cluster is full. Configured via <code>PriorityClass</code>.</span></div>
+      <div class="trap">Pod stuck <code>Pending</code>? Either <b>no node passed Filter</b> (check <code>kubectl describe pod</code> events) or <b>cluster at capacity</b> (check node allocatable vs requested).</div>
+    </div>
+    <div class="card k4">
+      <div class="glow" style="background:var(--c4)"></div>
+      <div class="ch"><div class="ci">⏱️</div><div><div class="ct">Scheduler Internals</div><div class="csub">Queue and cache model</div></div></div>
+      <div class="fr"><span class="fk">Scheduling queue</span><span class="fv">Three queues: <b>activeQ</b> (ready to schedule), <b>backoffQ</b> (failed, waiting backoff), <b>unschedulableQ</b> (blocked by policy).</span></div>
+      <div class="fr"><span class="fk">Snapshot</span><span class="fv">Scheduler takes a <b>read-only snapshot</b> of node state at scheduling start. Prevents race conditions during the scheduling cycle.</span></div>
+      <div class="fr"><span class="fk">Parallel scoring</span><span class="fv">Score phase runs plugins in parallel across all feasible nodes. Results normalized to 0–100 and weighted.</span></div>
+      <div class="fr"><span class="fk">Assume + Bind</span><span class="fv">Scheduler <b>assumes</b> the pod is bound (optimistic) before the API write completes — keeps the cycle fast. Async bind is later confirmed.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 4: INFORMERS ═══════════════ -->
+<div class="sl s7 mb">Informers — The Watch Plumbing <span>// how controllers see the world</span></div>
+
+<div class="g3">
+  <div class="card k7">
+    <div class="glow" style="background:var(--c7)"></div>
+    <div class="ch"><div class="ci">📡</div><div><div class="ct">Informer Internals</div><div class="csub">List → Watch → Cache → Event handlers</div></div></div>
+    <svg viewBox="0 0 390 220" style="width:100%;margin-top:6px;">
+      <defs><marker id="ai" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(56,189,248,0.7)"/></marker></defs>
+
+      <!-- apiserver -->
+      <rect x="0" y="0" width="100" height="220" rx="6" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+      <text x="50" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00e5ff" font-weight="700">apiserver</text>
+
+      <!-- 1. List call -->
+      <rect x="4" y="28" width="92" height="24" rx="3" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
+      <text x="50" y="44" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5ff">LIST all pods</text>
+
+      <!-- 2. Watch stream -->
+      <rect x="4" y="60" width="92" height="24" rx="3" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+      <text x="50" y="74" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5ff">WATCH stream</text>
+      <text x="50" y="100" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">ADDED</text>
+      <text x="50" y="115" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">MODIFIED</text>
+      <text x="50" y="130" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">DELETED</text>
+
+      <text x="50" y="160" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.2)">bookmark events</text>
+      <text x="50" y="174" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.2)">for resumption</text>
+
+      <!-- reflector -->
+      <rect x="118" y="0" width="90" height="220" rx="6" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.2)" stroke-width="1"/>
+      <text x="163" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#38bdf8" font-weight="700">Reflector</text>
+      <text x="163" y="38" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">calls ListWatch</text>
+      <text x="163" y="58" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">handles reconnect</text>
+      <text x="163" y="78" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">resumes from</text>
+      <text x="163" y="92" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">resourceVersion</text>
+      <rect x="126" y="106" width="74" height="22" rx="3" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.25)" stroke-width="1"/>
+      <text x="163" y="120" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#38bdf8">DeltaFIFO</text>
+      <text x="163" y="144" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.25)">dedup + queue</text>
+
+      <!-- arrows left to right -->
+      <line x1="100" y1="40" x2="118" y2="40" stroke="rgba(56,189,248,0.5)" stroke-width="1" marker-end="url(#ai)"/>
+      <line x1="100" y1="110" x2="118" y2="115" stroke="rgba(56,189,248,0.4)" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#ai)"><animate attributeName="stroke-dashoffset" from="10" to="0" dur="0.8s" repeatCount="indefinite"/></line>
+      <line x1="100" y1="125" x2="118" y2="118" stroke="rgba(56,189,248,0.3)" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#ai)"><animate attributeName="stroke-dashoffset" from="10" to="0" dur="1s" repeatCount="indefinite"/></line>
+
+      <!-- Store / Cache -->
+      <rect x="226" y="0" width="82" height="220" rx="6" fill="rgba(56,189,248,0.04)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
+      <text x="267" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#38bdf8" font-weight="700">Store</text>
+      <text x="267" y="34" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">thread-safe</text>
+      <text x="267" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">in-memory cache</text>
+      <text x="267" y="66" text-anchor="middle" font-family="Space Mono" font-size="7.5" fill="#38bdf8">Get(key)</text>
+      <text x="267" y="80" text-anchor="middle" font-family="Space Mono" font-size="7.5" fill="#38bdf8">List()</text>
+      <text x="267" y="94" text-anchor="middle" font-family="Space Mono" font-size="7.5" fill="#38bdf8">GetByIndex()</text>
+      <text x="267" y="118" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.25)">Indexers for</text>
+      <text x="267" y="132" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.25)">fast lookups</text>
+      <line x1="208" y1="110" x2="226" y2="110" stroke="rgba(56,189,248,0.5)" stroke-width="1" marker-end="url(#ai)"/>
+
+      <!-- Event handlers -->
+      <rect x="322" y="0" width="68" height="220" rx="6" fill="rgba(251,146,60,0.04)" stroke="rgba(251,146,60,0.15)" stroke-width="1"/>
+      <text x="356" y="18" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#fb923c" font-weight="700">Handlers</text>
+      <text x="356" y="40" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(251,146,60,0.7)">OnAdd</text>
+      <text x="356" y="60" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(251,146,60,0.7)">OnUpdate</text>
+      <text x="356" y="80" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(251,146,60,0.7)">OnDelete</text>
+      <text x="356" y="106" text-anchor="middle" font-family="DM Sans" font-size="7.5" fill="rgba(255,255,255,0.25)">enqueue key</text>
+      <text x="356" y="120" text-anchor="middle" font-family="DM Sans" font-size="7.5" fill="rgba(255,255,255,0.25)">to work queue</text>
+      <line x1="308" y1="80" x2="322" y2="80" stroke="rgba(251,146,60,0.5)" stroke-width="1" marker-end="url(#ai)"/>
+
+      <text x="195" y="200" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.15)">process() loop — pop delta → update cache → call handler</text>
+    </svg>
+    <div class="cal"><strong>Shared informer factory:</strong> all controllers watching the same resource type share one informer instance. <strong>One</strong> List+Watch to apiserver per resource, no matter how many controllers need it.</div>
+  </div>
+
+  <div class="card k7">
+    <div class="glow" style="background:var(--c7)"></div>
+    <div class="ch"><div class="ci">🔢</div><div><div class="ct">Work Queue</div><div class="csub">Dedup, rate-limit, retry</div></div></div>
+    <div class="fr"><span class="fk">Key format</span><span class="fv">Item enqueued is just <code>namespace/name</code> string. Not the object itself. Controller fetches fresh from cache when dequeuing.</span></div>
+    <div class="fr"><span class="fk">Deduplication</span><span class="fv">If object changes 10× before worker picks it up — only <b>one reconcile runs</b>. The queue deduplicates by key. Prevents thundering herd.</span></div>
+    <div class="fr"><span class="fk">Rate limiting</span><span class="fv">Built-in exponential backoff on failures. <code>ItemExponentialFailureRateLimiter</code> — default 5ms base, 1000s max. Prevents hot loop on repeated errors.</span></div>
+    <div class="fr"><span class="fk">Forget</span><span class="fv">On success, call <code>queue.Forget(key)</code> to reset failure count. If you don't, backoff accumulates forever even on success.</span></div>
+    <div class="fr"><span class="fk">Done()</span><span class="fv">Must call <code>queue.Done(key)</code> when finished processing — even on error. Otherwise item is permanently blocked from re-enqueueing.</span></div>
+    <div class="code">
+<span class="cm">// Canonical work queue pattern</span>
+<span class="kw">func</span> <span class="fn">runWorker</span>() {
+  <span class="kw">for</span> <span class="fn">processNextItem</span>() {}
+}
+<span class="kw">func</span> <span class="fn">processNextItem</span>() bool {
+  key, quit := queue.<span class="fn">Get</span>()
+  <span class="kw">if</span> quit { <span class="kw">return</span> <span class="re">false</span> }
+  <span class="kw">defer</span> queue.<span class="fn">Done</span>(key)           <span class="cm">// ALWAYS call Done</span>
+
+  err := <span class="fn">reconcile</span>(key)
+  <span class="kw">if</span> err != <span class="re">nil</span> {
+    queue.<span class="fn">AddRateLimited</span>(key)    <span class="cm">// retry with backoff</span>
+    <span class="kw">return</span> <span class="re">true</span>
+  }
+  queue.<span class="fn">Forget</span>(key)              <span class="cm">// reset failure count</span>
+  <span class="kw">return</span> <span class="re">true</span>
+}
+    </div>
+    <div class="trap">Forgetting to call <code>queue.Done(key)</code> causes the item to be stuck in "processing" state forever — the queue won't allow it to be re-added.</div>
+  </div>
+
+  <div class="card k8">
+    <div class="glow" style="background:var(--c8)"></div>
+    <div class="ch"><div class="ci">🔄</div><div><div class="ct">Reconcile Loop Pattern</div><div class="csub">The heart of every controller</div></div></div>
+    <div class="code">
+<span class="cm">// Universal reconcile pattern (controller-runtime)</span>
+<span class="kw">func</span> (r *Reconciler) <span class="fn">Reconcile</span>(ctx, req) {
+
+  <span class="cm">// ① READ from local cache — NOT the API server</span>
+  obj := &amp;v1.Deployment{}
+  <span class="kw">if</span> err := r.Get(ctx, req.NamespacedName, obj); err != <span class="re">nil</span> {
+    <span class="kw">return</span> <span class="fn">ignoreNotFound</span>(err)  <span class="cm">// object deleted — OK</span>
+  }
+
+  <span class="cm">// ② Check if we should act (deletion in progress?)</span>
+  <span class="kw">if</span> !obj.DeletionTimestamp.IsZero() {
+    <span class="kw">return</span> <span class="fn">handleDeletion</span>(ctx, obj)
+  }
+
+  <span class="cm">// ③ Ensure finalizer registered</span>
+  <span class="kw">if</span> !<span class="fn">containsFinalizer</span>(obj, myFinalizer) {
+    <span class="fn">addFinalizer</span>(obj); r.<span class="fn">Update</span>(ctx, obj); <span class="kw">return</span>
+  }
+
+  <span class="cm">// ④ COMPUTE desired state (pure logic, no side effects)</span>
+  desired := <span class="fn">buildDesiredState</span>(obj)
+
+  <span class="cm">// ⑤ GET actual state of owned objects</span>
+  actual := <span class="fn">getOwnedObjects</span>(ctx, obj)
+
+  <span class="cm">// ⑥ DIFF and apply only what changed</span>
+  <span class="kw">if</span> diff := <span class="fn">compare</span>(actual, desired); diff != <span class="re">nil</span> {
+    r.<span class="fn">Patch</span>(ctx, desired, patch)  <span class="cm">// ← re-triggers watch</span>
+  }
+
+  <span class="cm">// ⑦ Update STATUS subresource</span>
+  obj.Status = <span class="fn">buildStatus</span>(actual)
+  r.<span class="fn">Status</span>().<span class="fn">Update</span>(ctx, obj)
+
+  <span class="cm">// ⑧ Requeue after interval (drift correction)</span>
+  <span class="kw">return</span> ctrl.Result{RequeueAfter: 30 * time.Second}, <span class="re">nil</span>
+}
+    </div>
+    <div class="cal"><strong>Idempotency is non-negotiable.</strong> Reconcile must produce the same result whether it runs once or 100 times for the same input. Never assume state from a previous run.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 5: DESIRED STATE MODEL ═══════════════ -->
+<div class="sl s8 mb">Desired State vs Actual State <span>// the core K8s mental model</span></div>
+
+<div class="g2">
+  <div class="card k8">
+    <div class="glow" style="background:var(--c8)"></div>
+    <div class="ch"><div class="ci">⚖️</div><div><div class="ct">The State Triangle</div><div class="csub">spec vs status vs actual world</div></div></div>
+    <svg viewBox="0 0 520 200" style="width:100%;margin-top:4px;">
+      <!-- Desired (spec in etcd) -->
+      <rect x="10" y="10" width="145" height="80" rx="7" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1.5"/>
+      <text x="82" y="30" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00e5ff" font-weight="700">Desired State</text>
+      <text x="82" y="46" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">spec in etcd</text>
+      <text x="82" y="60" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">replicas: 3</text>
+      <text x="82" y="74" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">image: nginx:1.25</text>
+
+      <!-- Observed (status in etcd) -->
+      <rect x="188" y="10" width="145" height="80" rx="7" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="260" y="30" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#f59e0b" font-weight="700">Observed State</text>
+      <text x="260" y="46" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">status in etcd</text>
+      <text x="260" y="60" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">readyReplicas: 2</text>
+      <text x="260" y="74" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">written by controller</text>
+
+      <!-- Actual (real world) -->
+      <rect x="366" y="10" width="145" height="80" rx="7" fill="rgba(34,197,94,0.08)" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="438" y="30" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#22c55e" font-weight="700">Actual World</text>
+      <text x="438" y="46" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">running containers</text>
+      <text x="438" y="60" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">on Linux node</text>
+      <text x="438" y="74" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">reported by kubelet</text>
+
+      <!-- Controller reconciles desired → actual -->
+      <path d="M 82 90 L 82 130 L 438 130 L 438 90" fill="none" stroke="rgba(251,146,60,0.3)" stroke-width="1.5" stroke-dasharray="5 3"/>
+      <text x="260" y="126" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="rgba(251,146,60,0.6)">controller drives actual → desired</text>
+
+      <!-- Kubelet updates observed -->
+      <path d="M 438 170 C 438 185, 260 185, 260 170" fill="none" stroke="rgba(239,68,68,0.3)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a5)"/>
+      <text x="350" y="192" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(239,68,68,0.45)">kubelet reports actual → observed (status update)</text>
+
+      <!-- spec drives desired -->
+      <path d="M 82 170 C 82 185, 260 185, 260 165" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+      <text x="100" y="192" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(0,229,255,0.4)">user writes spec</text>
+    </svg>
+
+    <div class="fr"><span class="fk">spec</span><span class="fv">What <b>you want</b>. Immutable intent. You write it, controller reads it.</span></div>
+    <div class="fr"><span class="fk">status</span><span class="fv">What the <b>controller observed</b>. Written by controllers and kubelet. Never write status in your own code via regular Update — use <b>Status().Update()</b> subresource.</span></div>
+    <div class="fr"><span class="fk">Drift</span><span class="fv">Controller periodically requeues even without events (via <code>RequeueAfter</code>) to catch drift — e.g., someone manually deleted a Pod the controller owns.</span></div>
+    <div class="trap"><b>Status subresource is separate from spec.</b> A PATCH on the main object doesn't touch status. A PATCH on /status doesn't touch spec. Keeps concern separation clean.</div>
+  </div>
+
+  <div class="card km">
+    <div class="glow" style="background:var(--c1)"></div>
+    <div class="ch"><div class="ci">🔗</div><div><div class="ct">Owner References + Garbage Collection</div><div class="csub">How cascading deletes work</div></div></div>
+    <div class="fr"><span class="fk">OwnerReference</span><span class="fv">Every owned object has an <code>ownerReferences</code> array pointing to its parent. GC controller traverses this graph to determine cascade.</span></div>
+    <div class="fr"><span class="fk">Foreground GC</span><span class="fv">Owner gets <code>foregroundDeletion</code> finalizer. GC deletes dependents first, then removes finalizer. <b>Blocking</b> — owner stays until dependents gone.</span></div>
+    <div class="fr"><span class="fk">Background GC</span><span class="fv">Owner deleted immediately. GC orphan-adopts and deletes dependents asynchronously. Default for <code>kubectl delete</code>.</span></div>
+    <div class="fr"><span class="fk">Orphan policy</span><span class="fv"><code>--cascade=orphan</code>: owner deleted, dependents become orphaned. No GC. Useful for manual takeover.</span></div>
+    <div class="fr"><span class="fk">Finalizers</span><span class="fv">Object with finalizers gets <code>deletionTimestamp</code> set but <b>not deleted</b>. Controller sees deletionTimestamp → runs cleanup → removes finalizer → object disappears.</span></div>
+    <div class="code">
+<span class="cm"># Deployment → ReplicaSet → Pod owner chain</span>
+<span class="cm"># Pod.ownerReferences:</span>
+- <span class="ky">apiVersion</span>: <span class="va">apps/v1</span>
+  <span class="ky">kind</span>: <span class="va">ReplicaSet</span>
+  <span class="ky">name</span>: <span class="va">my-rs-7d9f8c</span>
+  <span class="ky">uid</span>: <span class="va">abc-123</span>
+  <span class="ky">controller</span>: <span class="re">true</span>        <span class="cm"># this RS "owns" this pod</span>
+  <span class="ky">blockOwnerDeletion</span>: <span class="re">true</span>
+
+<span class="cm"># Force clear stuck namespace finalizers</span>
+kubectl <span class="fn">patch</span> namespace stuck-ns \
+  -p <span class="str">'{"metadata":{"finalizers":[]}}'</span> \
+  --type=merge
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 6: DEBUG ═══════════════ -->
+<div class="sl s5 mb">Debug Playbook <span>// every scenario you'll face</span></div>
+
+<div class="g3">
+  <div class="card k5">
+    <div class="glow" style="background:var(--c5)"></div>
+    <div class="ch"><div class="ci">🔍</div><div><div class="ct">Pod Pending / Not Scheduling</div><div class="csub">Scheduler can't place the pod</div></div></div>
+    <div class="tl">
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c5);color:var(--c5);">1</div></div>
+        <div class="tlbody"><div class="tldes"><code>kubectl describe pod &lt;name&gt;</code> → look at <b>Events</b> section. Scheduler writes reason there: <b>0/5 nodes available: 5 Insufficient cpu.</b></div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c5);color:var(--c5);">2</div></div>
+        <div class="tlbody"><div class="tldes"><code>kubectl describe node &lt;node&gt; | grep -A8 Allocated</code> → see actual vs allocatable. Is cluster full?</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c4);color:var(--c4);">3</div></div>
+        <div class="tlbody"><div class="tldes">Check <b>taints</b>: <code>kubectl get node -o json | jq '.items[].spec.taints'</code>. Missing toleration? Check <b>nodeSelector</b>: does any node have the required labels?</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c3);color:var(--c3);">4</div></div>
+        <div class="tlbody"><div class="tldes">Check <b>PVC binding</b>: if pod uses a PVC, <code>kubectl get pvc</code> — if <code>Pending</code>, storage class can't provision or zone mismatch with node affinity.</div></div>
+      </div>
+    </div>
+    <div class="dbcmd">
+<span class="cmd">kubectl</span> <span class="arg">describe pod</span> mypod <span class="cmt">| grep -A20 Events</span>
+<span class="out">→ 0/3 nodes available: 3 node(s) had untolerated taint</span>
+<span class="cmd">kubectl</span> <span class="arg">get events</span> --sort-by=.lastTimestamp -n mynamespace
+    </div>
+  </div>
+
+  <div class="card k5">
+    <div class="glow" style="background:var(--c5)"></div>
+    <div class="ch"><div class="ci">💥</div><div><div class="ct">Pod CrashLoopBackOff / OOMKilled</div><div class="csub">Container keeps dying</div></div></div>
+    <div class="tl">
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c5);color:var(--c5);">1</div></div>
+        <div class="tlbody"><div class="tldes"><code>kubectl logs &lt;pod&gt; --previous</code> — get logs from the <b>previous crashed container</b>. Most crashes are visible here.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c5);color:var(--c5);">2</div></div>
+        <div class="tlbody"><div class="tldes"><code>kubectl describe pod</code> → check <b>Last State</b>: <code>OOMKilled</code> = memory limit too low. <code>Error</code> = app crash. <code>ContainerCannotRun</code> = image entry point issue.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c4);color:var(--c4);">3</div></div>
+        <div class="tlbody"><div class="tldes">Backoff timing: 10s → 20s → 40s → 80s → 160s → <b>300s max</b>. Resets after 10m stable. Can't override — design for fast startup or use <b>startupProbe</b> for slow apps.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c3);color:var(--c3);">4</div></div>
+        <div class="tlbody"><div class="tldes">Check <b>liveness probe</b> config. Probe too aggressive + slow startup = kubelet kills before ready. Fix: increase <code>initialDelaySeconds</code> or add a <code>startupProbe</code>.</div></div>
+      </div>
+    </div>
+    <div class="dbcmd">
+<span class="cmd">kubectl</span> <span class="arg">logs</span> mypod --previous <span class="cmt">-c mycontainer</span>
+<span class="cmd">kubectl</span> <span class="arg">describe pod</span> mypod <span class="cmt">| grep -A5 "Last State"</span>
+<span class="out">Last State: OOMKilled  exitCode: 137</span>
+    </div>
+  </div>
+
+  <div class="card k3">
+    <div class="glow" style="background:var(--c3)"></div>
+    <div class="ch"><div class="ci">🌐</div><div><div class="ct">Service / Networking Issues</div><div class="csub">Pod running but not reachable</div></div></div>
+    <div class="tl">
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c3);color:var(--c3);">1</div></div>
+        <div class="tlbody"><div class="tldes"><code>kubectl get endpoints &lt;svc&gt;</code> — are there any? Empty = no pods match selector. Check <code>svc.spec.selector</code> vs <code>pod.labels</code> — must be exact match.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c3);color:var(--c3);">2</div></div>
+        <div class="tlbody"><div class="tldes"><code>kubectl run tmp --image=busybox -it --rm -- wget -qO- http://&lt;svc&gt;:&lt;port&gt;</code> — test DNS resolution + connectivity from inside cluster.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c4);color:var(--c4);">3</div></div>
+        <div class="tlbody"><div class="tldes">Check <b>NetworkPolicy</b>: default-deny ingress + no matching allow rule = requests silently dropped. <code>kubectl get netpol -n &lt;ns&gt;</code> and trace selectors.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlline"><div class="tlnum" style="border-color:var(--c4);color:var(--c4);">4</div></div>
+        <div class="tlbody"><div class="tldes">Check <b>readinessProbe</b>: pod Running but not Ready = endpoint removed from Service. Pod receives no traffic. Check probe path + timeout.</div></div>
+      </div>
+    </div>
+    <div class="dbcmd">
+<span class="cmd">kubectl</span> <span class="arg">get endpoints</span> my-service
+<span class="out">→ ENDPOINTS: &lt;none&gt;  ← selector mismatch or pod not Ready</span>
+<span class="cmd">kubectl</span> <span class="arg">get pod</span> -l app=myapp <span class="cmt">--show-labels</span>
+    </div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card k4">
+    <div class="glow" style="background:var(--c4)"></div>
+    <div class="ch"><div class="ci">🗑️</div><div><div class="ct">Stuck Terminating / Namespace</div><div class="csub">Finalizer traps</div></div></div>
+    <div class="fr"><span class="fk">Root cause</span><span class="fv">Object has a <b>finalizer</b> that a controller never removed. <code>deletionTimestamp</code> is set, object is frozen.</span></div>
+    <div class="fr"><span class="fk">Find them</span><span class="fv"><code>kubectl get pod mypod -o json | jq .metadata.finalizers</code>. If non-empty and controller is gone — you need to patch.</span></div>
+    <div class="fr"><span class="fk">Force clear</span><span class="fv">Only do this if the owning controller is confirmed gone. Removes the finalizer, unblocks deletion.</span></div>
+    <div class="code">
+<span class="cm"># Remove finalizer to unblock deletion</span>
+kubectl <span class="fn">patch</span> pod mypod \
+  -p <span class="str">'{"metadata":{"finalizers":[]}}'</span> \
+  --type=merge
+
+<span class="cm"># Stuck namespace — more complex</span>
+kubectl <span class="fn">get</span> namespace stuck-ns -o json \
+  | jq <span class="str">'.spec.finalizers = []'</span> \
+  | kubectl <span class="fn">replace</span> --raw \
+    /api/v1/namespaces/stuck-ns/finalize -f -
+    </div>
+    <div class="trap">Clearing finalizers manually skips cleanup logic. Only do this when the owning controller is confirmed dead and you accept the risk of leaked resources.</div>
+  </div>
+
+  <div class="card k2">
+    <div class="glow" style="background:var(--c2)"></div>
+    <div class="ch"><div class="ci">⚡</div><div><div class="ct">resourceVersion Conflicts</div><div class="csub">409 Conflict — optimistic concurrency</div></div></div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Every write must include <code>resourceVersion</code>. If the object changed since you read it, apiserver returns <b>409 Conflict</b>. Prevents lost updates.</span></div>
+    <div class="fr"><span class="fk">Why it matters</span><span class="fv">Two controllers updating same object simultaneously — only one wins. The other gets 409 and must re-read + retry. This is <b>by design</b>, not a bug.</span></div>
+    <div class="fr"><span class="fk">Fix in code</span><span class="fv">Use <code>retry.RetryOnConflict</code> loop: re-Get the object (fresh resourceVersion), recompute patch, re-apply. Standard controller-runtime handles this automatically.</span></div>
+    <div class="fr"><span class="fk">Watch latency</span><span class="fv"><code>resourceVersion</code> also used in Watch: <code>WATCH /pods?resourceVersion=12345</code> resumes stream from that version. No List needed after a disconnect.</span></div>
+    <div class="code">
+<span class="cm">// Retry on conflict pattern</span>
+<span class="kw">import</span> <span class="str">"k8s.io/client-go/util/retry"</span>
+
+retry.<span class="fn">RetryOnConflict</span>(retry.DefaultRetry, <span class="kw">func</span>() error {
+  <span class="cm">// Always re-Get for fresh resourceVersion</span>
+  <span class="fn">client.Get</span>(ctx, key, obj)
+  obj.Spec.Replicas = &amp;newCount
+  <span class="kw">return</span> <span class="fn">client.Update</span>(ctx, obj)
+})
+    </div>
+  </div>
+
+  <div class="card k1">
+    <div class="glow" style="background:var(--c1)"></div>
+    <div class="ch"><div class="ci">📋</div><div><div class="ct">Essential Debug Commands</div><div class="csub">The commands that answer 90% of issues</div></div></div>
+    <div class="dbcmd">
+<span class="cmt"># ① First stop — events sorted by time</span>
+<span class="cmd">kubectl</span> <span class="arg">get events</span> -n ns --sort-by=.lastTimestamp
+
+<span class="cmt"># ② Full pod state dump</span>
+<span class="cmd">kubectl</span> <span class="arg">describe pod</span> mypod
+
+<span class="cmt"># ③ Previous crash logs</span>
+<span class="cmd">kubectl</span> <span class="arg">logs</span> mypod --previous -c container
+
+<span class="cmt"># ④ What controller sees for owned objects</span>
+<span class="cmd">kubectl</span> <span class="arg">get</span> deploy,rs,pods -l app=myapp -o wide
+
+<span class="cmt"># ⑤ Why is this node not selected?</span>
+<span class="cmd">kubectl</span> <span class="arg">describe node</span> nodeName | grep -A8 Conditions
+<span class="cmd">kubectl</span> <span class="arg">describe node</span> nodeName | grep -A8 Allocated
+
+<span class="cmt"># ⑥ Dry-run full admission pipeline</span>
+<span class="cmd">kubectl</span> <span class="arg">apply</span> -f manifest.yaml --dry-run=server
+
+<span class="cmt"># ⑦ Show field manager conflicts (SSA)</span>
+<span class="cmd">kubectl</span> <span class="arg">get</span> deploy myd -o json | jq .metadata.managedFields
+
+<span class="cmt"># ⑧ Debug running container interactively</span>
+<span class="cmd">kubectl</span> <span class="arg">debug</span> -it mypod --image=busybox --target=app
+
+<span class="cmt"># ⑨ Check scheduler decision log</span>
+<span class="cmd">kubectl</span> <span class="arg">logs</span> -n kube-system kube-scheduler-* | grep mypod
+
+<span class="cmt"># ⑩ Force re-trigger reconcile (touch annotation)</span>
+<span class="cmd">kubectl</span> <span class="arg">annotate</span> deploy myapp trigger=<span class="arg">$(date +%s)</span> --overwrite
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SECTION 7: COMMON CONTROLLER CHAIN ═══════════════ -->
+<div class="sl s4 mb">Controller Chain Reference <span>// who creates what</span></div>
+
+<div class="card k4" style="margin-bottom:20px;">
+  <div class="glow" style="background:var(--c4)"></div>
+  <div class="ch"><div class="ci">🔗</div><div><div class="ct">Object Creation Chain — Deployment to Running Pod</div><div class="csub">Each step triggers a watch event that triggers the next controller</div></div></div>
+  <table class="stable">
+    <tr><th>You write</th><th>Controller reads</th><th>Controller creates</th><th>Next trigger</th><th>Interview trap</th></tr>
+    <tr>
+      <td>Deployment</td>
+      <td class="warn">Deployment controller</td>
+      <td>ReplicaSet (with pod template hash)</td>
+      <td>ReplicaSet event</td>
+      <td>Deployment ctrl does NOT create Pods directly</td>
+    </tr>
+    <tr>
+      <td>ReplicaSet</td>
+      <td class="warn">ReplicaSet controller</td>
+      <td>Pods (with nodeName="")</td>
+      <td>Pod added event</td>
+      <td>RS ctrl creates pods, manages replica count</td>
+    </tr>
+    <tr>
+      <td>Pod (unbound)</td>
+      <td class="good">kube-scheduler</td>
+      <td>Binding (sets nodeName)</td>
+      <td>Pod modified event</td>
+      <td>Scheduler writes nodeName, does NOT start containers</td>
+    </tr>
+    <tr>
+      <td>Pod (bound)</td>
+      <td class="good">kubelet on target node</td>
+      <td>Container (via CRI → containerd)</td>
+      <td>kubelet status reports</td>
+      <td>kubelet does NOT talk to etcd — only apiserver</td>
+    </tr>
+    <tr>
+      <td>Service</td>
+      <td class="good">EndpointSlice controller</td>
+      <td>EndpointSlice objects</td>
+      <td>EndpointSlice event</td>
+      <td>kube-proxy watches EndpointSlices, programs iptables</td>
+    </tr>
+    <tr>
+      <td>Service (LoadBalancer)</td>
+      <td class="good">cloud-controller-manager</td>
+      <td>Cloud LB (AWS ALB/NLB)</td>
+      <td>Service status update</td>
+      <td>cloud-ctrl-mgr is separate binary from kube-ctrl-mgr</td>
+    </tr>
+    <tr>
+      <td>StatefulSet</td>
+      <td class="warn">StatefulSet controller</td>
+      <td>Pods + PVCs in order (0, 1, 2…)</td>
+      <td>Pod ready event</td>
+      <td>Creates pods sequentially — next pod waits for previous ready</td>
+    </tr>
+    <tr>
+      <td>DaemonSet</td>
+      <td class="warn">DaemonSet controller</td>
+      <td>One Pod per eligible node</td>
+      <td>Node added event</td>
+      <td>DaemonSet controller monitors node adds — adds pod automatically</td>
+    </tr>
+  </table>
+</div>
+
+<div class="footer">
+  <div class="ft">K8s Engine Deep Dive · Scheduling · Informers · Reconciliation · Debug</div>
+  <div class="ft" style="color:rgba(0,229,255,0.35);">apiserver · etcd · controllers · informers · work queues · desired state</div>
+</div>
+
+</div>
+</body>
+</html>

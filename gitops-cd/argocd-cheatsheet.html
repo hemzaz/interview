@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArgoCD — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-11.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #0a0b0f;
+  --s1:    #0e0f14;
+  --s2:    #13141a;
+  --bd:    #1e2030;
+  --b2:    #2a2d45;
+
+  --red:   #F95E62;   /* ArgoCD primary */
+  --red2:  #ff8a8d;
+  --coral: #FF6B6B;
+  --teal:  #00C9C8;
+  --cyan:  #4ECDC4;
+  --grn:   #45E994;
+  --yel:   #FFD93D;
+  --orn:   #FF9500;
+  --vio:   #9B6DFF;
+  --blue:  #4F8EF7;
+  --pink:  #F472B6;
+  --slate: #8696B0;
+
+  --text:  #d4e0f0;
+  --dim:   #131825;
+  --mid:   #3a4d6a;
+
+  --mono: 'Fira Code', monospace;
+  --sans: 'Inter', sans-serif;
+  --disp: 'Bebas Neue', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -10%,rgba(249,94,98,.1) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 28% at 0%   60%,rgba(78,205,196,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 22% at 100% 75%,rgba(155,109,255,.05) 0%,transparent 45%);}
+
+/* subtle hex grid */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(rgba(249,94,98,.04) 1px,transparent 1px);
+  background-size:30px 30px;}
+
+.page{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:28px 22px 80px;}
+
+/* ── HERO ── */
+.hero{position:relative;border:1px solid rgba(249,94,98,.2);border-radius:14px;padding:32px 36px;margin-bottom:22px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(249,94,98,.07) 0%,rgba(78,205,196,.04) 60%,rgba(155,109,255,.04) 100%);}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--coral),var(--teal),var(--vio));}
+.hero-logo{position:absolute;right:32px;top:50%;transform:translateY(-50%);font-family:var(--disp);font-size:140px;color:rgba(249,94,98,.04);line-height:1;letter-spacing:4px;pointer-events:none;}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
+.hero-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--red);}
+.hero h1{font-family:var(--disp);font-size:78px;letter-spacing:3px;line-height:.88;color:#fff;}
+.hero h1 span{background:linear-gradient(135deg,var(--red),var(--coral),var(--red2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:11.5px;color:var(--mid);margin-top:10px;line-height:1.8;font-weight:400;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
+.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;letter-spacing:.3px;}
+.hp-r{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
+.hp-t{background:rgba(78,205,196,.07);border-color:rgba(78,205,196,.3);color:var(--cyan);}
+.hp-g{background:rgba(69,233,148,.07);border-color:rgba(69,233,148,.3);color:var(--grn);}
+.hp-v{background:rgba(155,109,255,.08);border-color:rgba(155,109,255,.3);color:var(--vio);}
+.hp-y{background:rgba(255,217,61,.07);border-color:rgba(255,217,61,.3);color:var(--yel);}
+.hp-b{background:rgba(79,142,247,.07);border-color:rgba(79,142,247,.3);color:var(--blue);}
+.hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
+.hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
+.hcard-n{font-family:var(--disp);font-size:26px;letter-spacing:1px;line-height:1;color:var(--red);}
+.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);letter-spacing:.3px;}
+.nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nb.on{background:rgba(249,94,98,.12);color:var(--red);box-shadow:0 0 0 1px rgba(249,94,98,.3);}
+
+/* ── SECTIONS ── */
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-i{font-size:18px;flex-shrink:0;}
+.sh-l{font-size:20px;font-weight:700;letter-spacing:-.3px;}
+.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.ct::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.cv::before{background:linear-gradient(90deg,var(--vio),transparent);}
+.cy::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.co::before{background:linear-gradient(90deg,var(--orn),transparent);}
+.cb::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
+
+.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;letter-spacing:-.1px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:114px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+
+/* code */
+.code{background:#06070c;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.9;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--yel);}
+.nu{color:var(--teal);} .cm{color:#1a2040;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+
+/* trap / note */
+.trap{background:rgba(249,94,98,.04);border:1px solid rgba(249,94,98,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(78,205,196,.4);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(78,205,196,.03);}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── STATUS BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:8.5px;padding:3px 9px;border-radius:4px;border:1px solid;font-weight:600;white-space:nowrap;}
+.b-synced {background:rgba(69,233,148,.08);border-color:rgba(69,233,148,.3);color:var(--grn);}
+.b-outofsync{background:rgba(255,217,61,.08);border-color:rgba(255,217,61,.3);color:var(--yel);}
+.b-unknown{background:rgba(134,150,176,.08);border-color:rgba(134,150,176,.3);color:var(--slate);}
+.b-healthy{background:rgba(69,233,148,.08);border-color:rgba(69,233,148,.3);color:var(--grn);}
+.b-degraded{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
+.b-progress{background:rgba(79,142,247,.08);border-color:rgba(79,142,247,.3);color:var(--blue);}
+.b-missing{background:rgba(255,149,0,.08);border-color:rgba(255,149,0,.3);color:var(--orn);}
+.b-suspended{background:rgba(134,150,176,.08);border-color:rgba(134,150,176,.3);color:var(--slate);}
+
+/* ── GENERATOR CARDS ── */
+.gen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.gen-card{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:13px;cursor:pointer;transition:.2s;position:relative;}
+.gen-card:hover,.gen-card.open{border-color:rgba(249,94,98,.3);}
+.gen-icon{font-size:22px;margin-bottom:6px;}
+.gen-name{font-size:11.5px;font-weight:700;margin-bottom:3px;}
+.gen-desc{font-size:10px;color:var(--mid);line-height:1.5;}
+.gen-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);}
+.gen-card.open .gen-detail{display:block;}
+.gen-detail code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── COMPARISON ── */
+.vs-wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin-bottom:12px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
+.vs-col{padding:18px;}
+.vs-divider{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 10px;background:var(--s2);border-left:1px solid var(--bd);border-right:1px solid var(--bd);}
+.vs-vs{font-family:var(--disp);font-size:20px;color:var(--mid);letter-spacing:2px;}
+.vs-title{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.vs-item{display:flex;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);font-size:11px;align-items:baseline;}
+.vs-icon{flex-shrink:0;font-size:12px;width:16px;}
+.vs-text{color:var(--mid);line-height:1.5;}
+.vs-text b{color:var(--text);}
+.vs-text code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── SYNC LIFECYCLE ── */
+.lifecycle{display:flex;gap:0;margin-bottom:12px;overflow-x:auto;}
+.lc-step{flex:1;min-width:120px;position:relative;}
+.lc-step:not(:last-child)::after{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:14px solid var(--bd);z-index:2;}
+.lc-body{background:var(--s2);border:1px solid var(--bd);border-right-color:transparent;padding:12px 14px;}
+.lc-step:first-child .lc-body{border-radius:8px 0 0 8px;}
+.lc-step:last-child .lc-body{border-right-color:var(--bd);border-radius:0 8px 8px 0;}
+.lc-step:last-child::after{display:none;}
+.lc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+.lc-name{font-size:11px;font-weight:700;margin-bottom:4px;}
+.lc-desc{font-size:9.5px;color:var(--mid);line-height:1.5;}
+
+/* ── RBAC FLOW ── */
+.rbac-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
+.rbox{padding:5px 12px;border-radius:5px;border:1px solid;font-family:var(--mono);font-size:9px;font-weight:600;white-space:nowrap;}
+.rb-r{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
+.rb-v{background:rgba(155,109,255,.08);border-color:rgba(155,109,255,.3);color:var(--vio);}
+.rb-g{background:rgba(69,233,148,.07);border-color:rgba(69,233,148,.3);color:var(--grn);}
+.rb-t{background:rgba(78,205,196,.07);border-color:rgba(78,205,196,.3);color:var(--cyan);}
+.rarr{color:var(--mid);font-size:14px;}
+
+/* ── TRAP GRID ── */
+.trap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.trap-card{background:var(--s1);border:1px solid rgba(249,94,98,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
+.trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(249,94,98,.5),transparent);}
+.tc-n{position:absolute;top:7px;right:11px;font-family:var(--disp);font-size:30px;color:rgba(249,94,98,.06);line-height:1;letter-spacing:1px;}
+.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-q code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.tc-a{font-size:10.5px;color:var(--mid);line-height:1.6;}
+.tc-a b{color:var(--text);}
+.tc-a code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.quiz-title{font-size:14px;font-weight:700;color:var(--red);}
+.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score span{color:var(--grn);font-weight:700;}
+.q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
+.q-item.revealed{border-color:rgba(69,233,148,.2);}
+.q-item.revealed-bad{border-color:rgba(249,94,98,.2);}
+.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-opts{display:flex;flex-direction:column;gap:5px;}
+.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt:hover:not(:disabled){background:rgba(249,94,98,.07);border-color:rgba(249,94,98,.3);color:var(--text);}
+.q-opt.correct{background:rgba(69,233,148,.08);border-color:rgba(69,233,148,.35);color:var(--grn);}
+.q-opt.wrong{background:rgba(249,94,98,.07);border-color:rgba(249,94,98,.3);color:var(--red);}
+.q-opt:disabled{cursor:default;}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.025);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain.show{display:block;}
+.q-explain b{color:var(--text);}
+.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.quiz-btns{display:flex;gap:8px;margin-top:12px;}
+.qbtn{font-family:var(--mono);font-size:8.5px;letter-spacing:.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
+.qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.qb-s{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
+.qb-s:hover{background:rgba(249,94,98,.15);}
+
+/* ── v3 BADGE ── */
+.v3-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;background:rgba(69,233,148,.08);border:1px solid rgba(69,233,148,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.new-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.3);color:var(--blue);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.breaking-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;background:rgba(249,94,98,.08);border:1px solid rgba(249,94,98,.3);color:var(--red);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec.on>*{animation:fi .3s ease both;}
+.sec.on>*:nth-child(1){animation-delay:.02s}.sec.on>*:nth-child(2){animation-delay:.05s}
+.sec.on>*:nth-child(3){animation-delay:.08s}.sec.on>*:nth-child(4){animation-delay:.11s}
+.sec.on>*:nth-child(5){animation-delay:.14s}.sec.on>*:nth-child(6){animation-delay:.17s}
+.sec.on>*:nth-child(7){animation-delay:.20s}.sec.on>*:nth-child(8){animation-delay:.23s}
+
+.footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-logo">ARGO</div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Field Guide · 2026</div>
+      <h1>ARGO<span>CD</span></h1>
+      <div class="hero-sub">Current stable: v3.3 · v3.4 RC · ArgoCD 2.x reached EOL Nov 2025<br>GitOps continuous delivery for Kubernetes · declarative · pull-based · self-healing</div>
+      <div class="hero-pills">
+        <div class="hp hp-r">🐙 v3.3 Current Stable</div>
+        <div class="hp hp-g">Application CRD model</div>
+        <div class="hp hp-t">ApplicationSet generators</div>
+        <div class="hp hp-v">App-of-Apps pattern</div>
+        <div class="hp hp-y">Sync waves + hooks</div>
+        <div class="hp hp-b">SSO · RBAC · AppProject</div>
+        <div class="hp hp-r">Argo Rollouts · Canary · Blue-Green</div>
+        <div class="hp hp-t">Source Hydrator · OCI (v3.1)</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hcard"><div class="hcard-n">v3.3</div><div class="hcard-l">Current stable</div></div>
+      <div class="hcard"><div class="hcard-n">v3.4</div><div class="hcard-l">RC · in progress</div></div>
+      <div class="hcard"><div class="hcard-n">4×</div><div class="hcard-l">releases/year</div></div>
+      <div class="hcard"><div class="hcard-n">CNCF</div><div class="hcard-l">Graduated project</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nb on" onclick="show('arch')">🏗️ Architecture</button>
+  <button class="nb" onclick="show('app')">📦 Application</button>
+  <button class="nb" onclick="show('appset')">⚡ ApplicationSet</button>
+  <button class="nb" onclick="show('aoa')">🌳 App-of-Apps</button>
+  <button class="nb" onclick="show('sync')">🔄 Sync & Health</button>
+  <button class="nb" onclick="show('rbac')">🔐 RBAC & Projects</button>
+  <button class="nb" onclick="show('delivery')">🚀 Progressive Delivery</button>
+  <button class="nb" onclick="show('ops')">🔧 Operations</button>
+  <button class="nb" onclick="show('traps')">⚡ Traps & Quiz</button>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!--             ARCHITECTURE              -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec on" id="sec-arch">
+
+<div class="sh"><div class="sh-i">🏗️</div><div class="sh-l" style="color:var(--red);">Architecture (v3)</div><div class="sh-s">// components · v3 changes · deployment topology</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(249,94,98,.3),transparent);"></div></div>
+
+<div class="card cr" style="margin-bottom:12px;padding:20px;">
+<svg viewBox="0 0 1360 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+  <defs>
+    <marker id="aa" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(249,94,98,.8)"/></marker>
+    <marker id="ab" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(69,233,148,.7)"/></marker>
+    <marker id="ac" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(78,205,196,.7)"/></marker>
+    <marker id="ad" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(79,142,247,.6)"/></marker>
+    <filter id="gw"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- Git Repo -->
+  <g transform="translate(10,130)">
+    <rect width="130" height="90" rx="8" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5"/>
+    <text x="65" y="26" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F95E62" font-weight="600">Git Repo</text>
+    <text x="65" y="44" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.5)">source of truth</text>
+    <rect x="12" y="54" width="106" height="16" rx="3" fill="rgba(249,94,98,.1)" stroke="rgba(249,94,98,.2)" stroke-width="1"/>
+    <text x="65" y="66" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.7)">manifests · helm · kust</text>
+    <rect x="12" y="74" width="106" height="14" rx="3" fill="rgba(249,94,98,.06)" stroke="rgba(249,94,98,.15)" stroke-width="1"/>
+    <text x="65" y="85" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.5)">OCI artifacts (v3.1)</text>
+  </g>
+
+  <!-- Arrow Git → Repo Server -->
+  <line x1="140" y1="175" x2="215" y2="175" stroke="rgba(249,94,98,.5)" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#aa)"/>
+  <text x="177" y="165" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.4)">pull</text>
+
+  <!-- ArgoCD system box -->
+  <rect x="215" y="20" width="660" height="310" rx="10" fill="rgba(249,94,98,.03)" stroke="rgba(249,94,98,.18)" stroke-width="1.5"/>
+  <text x="545" y="42" text-anchor="middle" font-family="Fira Code" font-size="10" fill="rgba(249,94,98,.4)" letter-spacing="3">ARGOCD SYSTEM</text>
+
+  <!-- Repo Server -->
+  <g transform="translate(228,58)">
+    <rect width="160" height="100" rx="7" fill="rgba(249,94,98,.08)" stroke="rgba(249,94,98,.35)" stroke-width="1.5" filter="url(#gw)"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F95E62" font-weight="600">Repo Server</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(249,94,98,.5)">fetches + caches Git</text>
+    <text x="80" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.4)">renders templates</text>
+    <text x="80" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.35)">Helm · Kustomize · YAML</text>
+    <text x="80" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.3)">Jsonnet · CMP plugins</text>
+  </g>
+
+  <!-- API Server -->
+  <g transform="translate(430,58)">
+    <rect width="160" height="100" rx="7" fill="rgba(78,205,196,.07)" stroke="rgba(78,205,196,.3)" stroke-width="1.5"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#4ECDC4" font-weight="600">API Server</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(78,205,196,.5)">gRPC + REST</text>
+    <text x="80" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.4)">UI + CLI + API</text>
+    <text x="80" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.35)">auth · sync trigger</text>
+    <text x="80" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.3)">webhook receiver</text>
+  </g>
+
+  <!-- Application Controller -->
+  <g transform="translate(632,58)">
+    <rect width="180" height="100" rx="7" fill="rgba(155,109,255,.07)" stroke="rgba(155,109,255,.3)" stroke-width="1.5"/>
+    <text x="90" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#9B6DFF" font-weight="600">App Controller</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(155,109,255,.5)">the reconciler</text>
+    <text x="90" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.4)">watches Applications CRD</text>
+    <text x="90" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.35)">diff desired vs actual</text>
+    <text x="90" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.3)">triggers sync</text>
+  </g>
+
+  <!-- Redis -->
+  <g transform="translate(228,185)">
+    <rect width="120" height="70" rx="6" fill="rgba(255,217,61,.06)" stroke="rgba(255,217,61,.25)" stroke-width="1"/>
+    <text x="60" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#FFD93D" font-weight="600">Redis</text>
+    <text x="60" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(255,217,61,.45)">cluster state cache</text>
+    <text x="60" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,217,61,.3)">rendered manifest cache</text>
+  </g>
+
+  <!-- Dex -->
+  <g transform="translate(368,185)">
+    <rect width="100" height="70" rx="6" fill="rgba(79,142,247,.06)" stroke="rgba(79,142,247,.22)" stroke-width="1"/>
+    <text x="50" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#4F8EF7" font-weight="600">Dex</text>
+    <text x="50" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(79,142,247,.45)">OIDC/SSO proxy</text>
+    <text x="50" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(79,142,247,.3)">optional</text>
+  </g>
+
+  <!-- ApplicationSet Controller -->
+  <g transform="translate(488,185)">
+    <rect width="180" height="70" rx="6" fill="rgba(69,233,148,.06)" stroke="rgba(69,233,148,.25)" stroke-width="1"/>
+    <text x="90" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#45E994" font-weight="600">AppSet Controller</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(69,233,148,.45)">generates Applications</text>
+    <text x="90" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(69,233,148,.3)">from generators → templates</text>
+  </g>
+
+  <!-- Notification Controller -->
+  <g transform="translate(688,185)">
+    <rect width="160" height="70" rx="6" fill="rgba(255,149,0,.05)" stroke="rgba(255,149,0,.2)" stroke-width="1"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#FF9500" font-weight="600">Notification Ctrl</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(255,149,0,.45)">alerts · webhooks</text>
+    <text x="80" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,149,0,.3)">Slack/PD/email triggers</text>
+  </g>
+
+  <!-- Source Hydrator (v3.1) -->
+  <g transform="translate(228,280)">
+    <rect width="620" height="40" rx="6" fill="rgba(69,233,148,.04)" stroke="rgba(69,233,148,.15)" stroke-width="1" stroke-dasharray="5 3"/>
+    <text x="310" y="17" text-anchor="middle" font-family="Fira Code" font-size="8.5" fill="rgba(69,233,148,.5)" font-weight="600">Source Hydrator</text>
+    <text x="310" y="31" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(69,233,148,.35)">v3.1 · pre-renders manifests into a hydrated branch · decouples render from apply</text>
+  </g>
+
+  <!-- Internal arrows -->
+  <line x1="388" y1="108" x2="430" y2="108" stroke="rgba(249,94,98,.3)" stroke-width="1.2" marker-end="url(#aa)"/>
+  <line x1="590" y1="108" x2="632" y2="108" stroke="rgba(249,94,98,.3)" stroke-width="1.2" marker-end="url(#aa)"/>
+  <line x1="308" y1="158" x2="308" y2="185" stroke="rgba(255,217,61,.3)" stroke-width="1" marker-end="url(#aa)"/>
+  <line x1="418" y1="158" x2="418" y2="185" stroke="rgba(79,142,247,.3)" stroke-width="1" marker-end="url(#aa)"/>
+  <line x1="578" y1="158" x2="578" y2="185" stroke="rgba(69,233,148,.3)" stroke-width="1" marker-end="url(#ab)"/>
+  <line x1="722" y1="158" x2="740" y2="185" stroke="rgba(255,149,0,.3)" stroke-width="1" marker-end="url(#aa)"/>
+
+  <!-- Arrow: App Controller → managed clusters -->
+  <path d="M 875 108 L 960 108" fill="none" stroke="rgba(155,109,255,.6)" stroke-width="1.8" marker-end="url(#ad)"/>
+  <text x="917" y="98" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.5)">kubectl apply</text>
+
+  <!-- Managed Clusters box -->
+  <rect x="960" y="40" width="380" height="290" rx="8" fill="rgba(255,255,255,.01)" stroke="rgba(255,255,255,.07)" stroke-width="1" stroke-dasharray="6 4"/>
+  <text x="1150" y="62" text-anchor="middle" font-family="Fira Code" font-size="9" fill="rgba(255,255,255,.2)" letter-spacing="2">MANAGED CLUSTERS</text>
+
+  <!-- Local cluster -->
+  <g transform="translate(975,75)">
+    <rect width="160" height="100" rx="6" fill="rgba(78,205,196,.05)" stroke="rgba(78,205,196,.2)" stroke-width="1"/>
+    <text x="80" y="22" text-anchor="middle" font-family="Fira Code" font-size="9" fill="#4ECDC4" font-weight="600">in-cluster</text>
+    <text x="80" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(78,205,196,.4)">https://kubernetes.default.svc</text>
+    <rect x="12" y="48" width="136" height="18" rx="3" fill="rgba(78,205,196,.07)" stroke="rgba(78,205,196,.18)" stroke-width="1"/>
+    <text x="80" y="61" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.6)">Apps · Services · etc</text>
+    <rect x="12" y="70" width="136" height="18" rx="3" fill="rgba(78,205,196,.04)" stroke="rgba(78,205,196,.1)" stroke-width="1"/>
+    <text x="80" y="83" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.4)">ArgoCD itself</text>
+  </g>
+
+  <!-- Remote cluster 1 -->
+  <g transform="translate(1160,75)">
+    <rect width="155" height="60" rx="6" fill="rgba(155,109,255,.05)" stroke="rgba(155,109,255,.18)" stroke-width="1"/>
+    <text x="77" y="22" text-anchor="middle" font-family="Fira Code" font-size="9" fill="#9B6DFF" font-weight="600">remote cluster</text>
+    <text x="77" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(155,109,255,.4)">prod / staging</text>
+    <text x="77" y="52" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,109,255,.3)">kubeconfig registered</text>
+  </g>
+
+  <!-- Remote cluster 2 -->
+  <g transform="translate(1160,155)">
+    <rect width="155" height="60" rx="6" fill="rgba(155,109,255,.04)" stroke="rgba(155,109,255,.14)" stroke-width="1"/>
+    <text x="77" y="22" text-anchor="middle" font-family="Fira Code" font-size="9" fill="#9B6DFF" font-weight="600">remote cluster 2</text>
+    <text x="77" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(155,109,255,.4)">eu-west / ap-east</text>
+    <text x="77" y="52" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,109,255,.3)">managed via API</text>
+  </g>
+
+  <!-- Legend -->
+  <text x="970" y="290" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.4)">── App Controller pushes to clusters</text>
+  <text x="970" y="308" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.35)">   One ArgoCD instance → N clusters (hub model)</text>
+</svg>
+</div>
+
+<div class="g3">
+  <div class="card cr">
+    <div class="ctit" style="color:var(--red);">🔴 v3 Breaking Changes from v2</div>
+    <div class="fr"><span class="fk">Logs RBAC <span class="breaking-badge">BREAKING</span></span><span class="fv">Logs access is now enforced by default. In v2 it was opt-in. <b>Users need explicit <code>logs, get</code> permission</b> or they can't see pod logs in the UI. Role:admin and role:readonly still work fine.</span></div>
+    <div class="fr"><span class="fk">Legacy metrics <span class="breaking-badge">REMOVED</span></span><span class="fv"><code>argocd_app_sync_status</code>, <code>argocd_app_health_status</code>, <code>argocd_app_created_time</code> removed. Deprecated since v1.5. Use <code>argocd_app_info</code> labels instead. Update dashboards before upgrading.</span></div>
+    <div class="fr"><span class="fk">resource.exclusions</span><span class="fv">v3 adds sensible defaults to <code>resource.exclusions</code> in <code>argocd-cm</code>: high-churn objects (Endpoints, EndpointSlice, Lease, TokenReview, etc.) excluded by default. Reduces API server load dramatically.</span></div>
+    <div class="fr"><span class="fk">Health persistence <span class="breaking-badge">CHANGED</span></span><span class="fv">Health status no longer persisted in Application CR by default. <code>status.health</code> is now computed dynamically, not stored. Restore old behavior: <code>controller.resource.health.persist: true</code> in argocd-cmd-params-cm.</span></div>
+    <div class="fr"><span class="fk">RBAC inheritance</span><span class="fv"><code>server.rbac.disableApplicationFineGrainedRBACInheritance</code> defaults changed. Fine-grained RBAC inheritance is now on by default. Check your AppProject policies before upgrading.</span></div>
+    <div class="fr"><span class="fk">Dex sub claim</span><span class="fv">Dex OIDC subject claim changed to use <code>federated_claims.user_id</code> instead of <code>sub</code>. Existing RBAC policies keyed on the old <code>sub</code> value may stop matching. Test SSO login after upgrade.</span></div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">✨ v3.1 New Features</div>
+    <div class="fr"><span class="fk">Native OCI <span class="new-badge">NEW</span></span><span class="fv">ArgoCD can use OCI registries as config sources directly. <code>source.repoURL</code> can point to an OCI repo. No Git required for config distribution. Enables "gitless" GitOps with signed OCI artifacts.</span></div>
+    <div class="fr"><span class="fk">Source Hydrator <span class="new-badge">NEW</span></span><span class="fv">Pre-renders manifests into a "hydrated" Git branch before the Application Controller applies them. Decouples template rendering from apply, enables PR-based review of rendered output. New workflow for large teams.</span></div>
+    <div class="fr"><span class="fk">CLI Plugins <span class="new-badge">NEW</span></span><span class="fv">Extensible <code>argocd</code> CLI via plugins. Install as binaries or shell scripts in PATH. Follows the kubectl plugin model. Third-party tools can integrate as <code>argocd mycommand</code>.</span></div>
+    <div class="fr"><span class="fk">Config Mgmt</span><span class="fv">Continued improvements to Config Management Plugins (CMP). Sidecar-based CMP model (not init containers) is now the standard. Helm 3 and Kustomize versions independently configurable per-repo.</span></div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">📐 Deployment Topologies</div>
+    <div class="fr"><span class="fk">Single instance</span><span class="fv">One ArgoCD manages all clusters (hub-and-spoke). Simplest. All cluster credentials in one place. Blast radius: if ArgoCD is down, no deployments across all clusters.</span></div>
+    <div class="fr"><span class="fk">Per-cluster</span><span class="fv">Each cluster runs its own ArgoCD. Fully isolated. More maintenance overhead. Good for regulated environments where clusters must be fully independent.</span></div>
+    <div class="fr"><span class="fk">Hub + satellite</span><span class="fv">Central ArgoCD manages platform clusters. Each app cluster has its own ArgoCD for tenant workloads. Hybrid: platform team owns hub, app teams own their ArgoCD instance.</span></div>
+    <div class="fr"><span class="fk">HA mode</span><span class="fv">Multiple replicas of API Server + App Controller. Redis Sentinel or cluster mode. Required for production. Single-replica ArgoCD = maintenance window = no deployments.</span></div>
+    <div class="fr"><span class="fk">In-cluster risk</span><span class="fv"><b>ArgoCD managing its own cluster's resources (including itself).</b> A bad sync can break ArgoCD. Bootstrap it via external Terraform/Helm, then hand self-management to ArgoCD carefully.</span></div>
+    <div class="note"><b>Recommended production HA install:</b><br><code>kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/ha/install.yaml</code></div>
+  </div>
+</div>
+</div><!-- /arch -->
+
+<!-- ══════════════════════════════════════ -->
+<!--             APPLICATION               -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-app">
+
+<div class="sh"><div class="sh-i">📦</div><div class="sh-l" style="color:var(--coral);">The Application CRD</div><div class="sh-s">// the core unit · source · destination · sync policy · status</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,107,107,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cr" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--red);">📄 Full Application Anatomy</div>
+    <div class="code"><span class="kw">apiVersion</span>: argoproj.io/v1alpha1
+<span class="kw">kind</span>: Application
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">myapp-prod</span>
+  <span class="ky">namespace</span>: <span class="st">argocd</span>           <span class="cm"># always in argocd namespace</span>
+  <span class="ky">finalizers</span>:
+  - resources-finalizer.argocd.argoproj.io  <span class="cm"># cascade delete</span>
+<span class="ky">spec</span>:
+  <span class="ky">project</span>: <span class="st">myteam</span>              <span class="cm"># AppProject (default if omitted)</span>
+
+  <span class="cm"># ── SOURCE ──────────────────────────</span>
+  <span class="ky">source</span>:
+    <span class="ky">repoURL</span>: <span class="st">https://github.com/org/k8s-configs</span>
+    <span class="ky">targetRevision</span>: <span class="st">HEAD</span>       <span class="cm"># branch/tag/SHA/semver</span>
+    <span class="ky">path</span>: <span class="st">apps/myapp/prod</span>       <span class="cm"># directory in repo</span>
+
+    <span class="cm"># Helm source:</span>
+    <span class="ky">chart</span>: <span class="st">my-chart</span>
+    <span class="ky">helm</span>:
+      <span class="ky">releaseName</span>: <span class="st">myapp</span>
+      <span class="ky">valueFiles</span>: [<span class="st">values.yaml</span>, <span class="st">values-prod.yaml</span>]
+      <span class="ky">values</span>: |                  <span class="cm"># inline overrides</span>
+        image.tag: v1.2.3
+
+    <span class="cm"># Kustomize source:</span>
+    <span class="ky">kustomize</span>:
+      <span class="ky">images</span>: [<span class="st">myapp=registry/myapp:v1.2.3</span>]
+      <span class="ky">patches</span>: [...]
+
+  <span class="cm"># ── DESTINATION ─────────────────────</span>
+  <span class="ky">destination</span>:
+    <span class="ky">server</span>: <span class="st">https://kubernetes.default.svc</span>
+    <span class="ky">namespace</span>: <span class="st">myapp-prod</span>
+
+  <span class="cm"># ── SYNC POLICY ─────────────────────</span>
+  <span class="ky">syncPolicy</span>:
+    <span class="ky">automated</span>:
+      <span class="ky">prune</span>: <span class="kw">true</span>              <span class="cm"># delete resources removed from Git</span>
+      <span class="ky">selfHeal</span>: <span class="kw">true</span>           <span class="cm"># revert manual changes</span>
+      <span class="ky">allowEmpty</span>: <span class="kw">false</span>        <span class="cm"># block sync if rendered = empty</span>
+    <span class="ky">syncOptions</span>:
+    - <span class="st">CreateNamespace=true</span>
+    - <span class="st">ServerSideApply=true</span>     <span class="cm"># recommended: proper field ownership</span>
+    - <span class="st">ApplyOutOfSyncOnly=true</span>  <span class="cm"># skip already-synced resources</span>
+    - <span class="st">RespectIgnoreDifferences=true</span>
+    - <span class="st">PrunePropagationPolicy=foreground</span>
+    <span class="ky">retry</span>:
+      <span class="ky">limit</span>: <span class="nu">5</span>
+      <span class="ky">backoff</span>: { <span class="ky">duration</span>: <span class="st">5s</span>, <span class="ky">factor</span>: <span class="nu">2</span>, <span class="ky">maxDuration</span>: <span class="st">3m</span> }
+
+  <span class="cm"># ── IGNORE DIFFERENCES ──────────────</span>
+  <span class="ky">ignoreDifferences</span>:
+  - <span class="ky">group</span>: <span class="st">apps</span>
+    <span class="ky">kind</span>: <span class="st">Deployment</span>
+    <span class="ky">jsonPointers</span>: [<span class="st">/spec/replicas</span>]   <span class="cm"># HPA manages replicas</span>
+  - <span class="ky">group</span>: <span class="st">""</span>
+    <span class="ky">kind</span>: <span class="st">Secret</span>
+    <span class="ky">managedFieldsManagers</span>: [<span class="st">external-secrets</span>]  <span class="cm"># ESO owns</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cr">
+    <div class="ctit" style="color:var(--red);">🚦 Application Status States</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">SYNC STATUS</div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-synced">● Synced</div><div style="font-size:11px;color:var(--mid);flex:1;">Git desired state = cluster actual state</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-outofsync">● OutOfSync</div><div style="font-size:11px;color:var(--mid);flex:1;">Drift detected — cluster differs from Git</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-unknown">● Unknown</div><div style="font-size:11px;color:var(--mid);flex:1;">Cannot determine state (connectivity / render error)</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">HEALTH STATUS</div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-healthy">● Healthy</div><div style="font-size:11px;color:var(--mid);flex:1;">All resources pass health checks</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-progress">● Progressing</div><div style="font-size:11px;color:var(--mid);flex:1;">Deployment rolling out / pods starting</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-degraded">● Degraded</div><div style="font-size:11px;color:var(--mid);flex:1;">CrashLoopBackOff / pod failures</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-missing">● Missing</div><div style="font-size:11px;color:var(--mid);flex:1;">Expected resource absent from cluster</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-suspended">● Suspended</div><div style="font-size:11px;color:var(--mid);flex:1;">Intentionally paused (CronJob, Rollout)</div></div>
+    </div>
+    <div class="note"><b>Healthy ≠ Synced.</b> An app can be Synced + Degraded (Git applied but pods crashing) or OutOfSync + Healthy (manual change that happens to work). Watch both independently.</div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🔗 Multiple Sources (v2.6+)</div>
+    <div class="fr"><span class="fk">Why</span><span class="fv">One Application can reference multiple Git repos or Helm charts. Useful for: base chart from external Helm repo + values from your private Git repo.</span></div>
+    <div class="code"><span class="ky">spec</span>:
+  <span class="ky">sources</span>:               <span class="cm"># plural! (vs single source:)</span>
+  - <span class="ky">repoURL</span>: <span class="st">https://charts.bitnami.com/bitnami</span>
+    <span class="ky">chart</span>: <span class="st">postgresql</span>
+    <span class="ky">targetRevision</span>: <span class="st">12.x.x</span>
+    <span class="ky">helm</span>:
+      <span class="ky">valueFiles</span>: [<span class="st">$values/envs/prod/pg-values.yaml</span>]
+  - <span class="ky">repoURL</span>: <span class="st">https://github.com/org/configs</span>
+    <span class="ky">targetRevision</span>: <span class="st">HEAD</span>
+    <span class="ky">ref</span>: <span class="st">values</span>      <span class="cm"># $values refs this source</span></div>
+    <div class="trap"><b>Multi-source Applications are resolved atomically.</b> If any source fails to fetch/render, the whole Application fails. Pin both sources to specific revisions for prod — using HEAD for both means two separate things can change simultaneously and you can't reason about the diff.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🏷️ ignoreDifferences Patterns</div>
+    <div class="fr"><span class="fk">HPA replicas</span><span class="fv">Ignore <code>/spec/replicas</code> on Deployments — HPA manages this. Without this, ArgoCD keeps trying to set replicas back to what's in Git.</span></div>
+    <div class="fr"><span class="fk">Webhook CA</span><span class="fv">Ignore <code>/webhooks/*/clientConfig/caBundle</code> — cert-manager injects this. ArgoCD sees it as drift every reconcile.</span></div>
+    <div class="fr"><span class="fk">ESO-managed</span><span class="fv">Use <code>managedFieldsManagers: [external-secrets]</code> to ignore fields owned by ESO. The secret data field changes on rotation but ArgoCD shouldn't fight ESO.</span></div>
+    <div class="fr"><span class="fk">JQPath filter</span><span class="fv"><code>jqPathExpressions</code> for complex paths: <code>.metadata.annotations["last-applied"]</code>. More powerful than jsonPointers for nested/conditional ignores.</span></div>
+  </div>
+</div>
+</div>
+</div><!-- /app -->
+
+<!-- ══════════════════════════════════════ -->
+<!--            APPLICATIONSET             -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-appset">
+
+<div class="sh"><div class="sh-i">⚡</div><div class="sh-l" style="color:var(--grn);">ApplicationSet</div><div class="sh-s">// generators · templates · matrix · when to use · vs App-of-Apps</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(69,233,148,.3),transparent);"></div></div>
+
+<div class="card cg" style="margin-bottom:12px;">
+  <div class="ctit" style="color:var(--grn);">⚡ What ApplicationSet Does</div>
+  <div style="font-size:11.5px;color:var(--mid);line-height:1.8;margin-bottom:12px;">An ApplicationSet is a <b style="color:var(--text);">generator + template</b>. It iterates over a list (clusters, directories, files, PRs…) and stamps out one Application per item. One ApplicationSet CRD → N Application objects. Applications are created, updated, and deleted automatically as the generator inputs change.</div>
+  <div class="code"><span class="kw">apiVersion</span>: argoproj.io/v1alpha1
+<span class="kw">kind</span>: ApplicationSet
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">all-clusters-myapp</span>
+  <span class="ky">namespace</span>: <span class="st">argocd</span>
+<span class="ky">spec</span>:
+  <span class="ky">goTemplate</span>: <span class="kw">true</span>          <span class="cm"># use Go templates (recommended)</span>
+  <span class="ky">goTemplateOptions</span>: [<span class="st">missingkey=error</span>]
+
+  <span class="ky">generators</span>:              <span class="cm"># one or more generators</span>
+  - <span class="ky">clusters</span>:
+      <span class="ky">selector</span>:
+        <span class="ky">matchLabels</span>:
+          <span class="ky">env</span>: <span class="st">prod</span>          <span class="cm"># only prod-labelled clusters</span>
+
+  <span class="ky">template</span>:                <span class="cm"># Application template (with generator variables)</span>
+    <span class="ky">metadata</span>:
+      <span class="ky">name</span>: <span class="st">'{{.name}}-myapp'</span>   <span class="cm"># cluster name injected</span>
+    <span class="ky">spec</span>:
+      <span class="ky">project</span>: <span class="st">default</span>
+      <span class="ky">source</span>:
+        <span class="ky">repoURL</span>: <span class="st">https://github.com/org/configs</span>
+        <span class="ky">path</span>: <span class="st">'clusters/{{.name}}/myapp'</span>  <span class="cm"># per-cluster path</span>
+        <span class="ky">targetRevision</span>: <span class="st">HEAD</span>
+      <span class="ky">destination</span>:
+        <span class="ky">server</span>: <span class="st">'{{.server}}'</span>   <span class="cm"># cluster API server URL injected</span>
+        <span class="ky">namespace</span>: <span class="st">myapp</span>
+      <span class="ky">syncPolicy</span>:
+        <span class="ky">automated</span>: { <span class="ky">prune</span>: <span class="kw">true</span>, <span class="ky">selfHeal</span>: <span class="kw">true</span> }
+
+  <span class="ky">syncPolicy</span>:              <span class="cm"># AppSet-level: controls Application lifecycle</span>
+    <span class="ky">applicationsSync</span>: <span class="st">sync</span>  <span class="cm"># sync | create-only | create-update | create-delete</span>
+    <span class="ky">preserveResourcesOnDeletion</span>: <span class="kw">false</span></div>
+</div>
+
+<div style="font-family:var(--mono);font-size:10px;color:var(--mid);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Generators — click to expand</div>
+<div class="gen-grid">
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">🖥️</div>
+    <div class="gen-name" style="color:var(--teal);">Cluster</div>
+    <div class="gen-desc">Iterate registered ArgoCD clusters. Filter by labels.</div>
+    <div class="gen-detail">
+      One Application per registered cluster. Variables: <code>{{.name}}</code>, <code>{{.server}}</code>, <code>{{.metadata.labels.env}}</code>. Add new cluster to ArgoCD → Application auto-created. Remove cluster → Application auto-deleted.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">clusters</span>:
+  <span class="ky">selector</span>:
+    <span class="ky">matchLabels</span>:
+      <span class="ky">region</span>: <span class="st">us-east-1</span></div>
+      <div class="trap" style="margin-top:6px;">Adding a new cluster to ArgoCD automatically creates Applications for it. Ensure your cluster labels are precise — an accidentally labeled cluster gets all Applications.</div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">📁</div>
+    <div class="gen-name" style="color:var(--grn);">Git Directory</div>
+    <div class="gen-desc">One app per directory in a Git repo path.</div>
+    <div class="gen-detail">
+      Scans a Git path, creates one Application per directory found. Variables: <code>{{.path}}</code>, <code>{{.path.basename}}</code>, <code>{{.path.basenameNormalized}}</code>. Add a directory → Application appears. Delete directory → Application removed (with prune).
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">git</span>:
+  <span class="ky">repoURL</span>: <span class="st">https://github.com/org/apps</span>
+  <span class="ky">revision</span>: <span class="st">HEAD</span>
+  <span class="ky">directories</span>:
+  - <span class="ky">path</span>: <span class="st">apps/*</span>
+  - <span class="ky">path</span>: <span class="st">apps/excluded</span>
+    <span class="ky">exclude</span>: <span class="kw">true</span></div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">📄</div>
+    <div class="gen-name" style="color:var(--yel);">Git Files</div>
+    <div class="gen-desc">One app per JSON/YAML file matching a glob pattern.</div>
+    <div class="gen-detail">
+      Scan Git for files matching a glob. File contents are parsed as JSON/YAML and injected as template variables. Enables rich per-app config — each file can define name, namespace, values, etc.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">git</span>:
+  <span class="ky">repoURL</span>: <span class="st">https://github.com/org/configs</span>
+  <span class="ky">revision</span>: <span class="st">HEAD</span>
+  <span class="ky">files</span>:
+  - <span class="ky">path</span>: <span class="st">apps/**/config.json</span>
+
+<span class="cm"># config.json:</span>
+{ "app": "myapp", "env": "prod", "replicas": 5 }
+<span class="cm"># Template uses: {{.app}} {{.env}} {{.replicas}}</span></div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">📋</div>
+    <div class="gen-name" style="color:var(--vio);">List</div>
+    <div class="gen-desc">Explicit static list of key-value maps.</div>
+    <div class="gen-detail">
+      Simplest generator. Define a static list of parameter maps. Good for a fixed set of environments or tenants. Not dynamic — adding an entry requires a Git commit.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">list</span>:
+  <span class="ky">elements</span>:
+  - { <span class="ky">env</span>: <span class="st">dev</span>,   <span class="ky">ns</span>: <span class="st">myapp-dev</span>,   <span class="ky">replicas</span>: <span class="st">"1"</span> }
+  - { <span class="ky">env</span>: <span class="st">staging</span>, <span class="ky">ns</span>: <span class="st">myapp-stg</span>, <span class="ky">replicas</span>: <span class="st">"2"</span> }
+  - { <span class="ky">env</span>: <span class="st">prod</span>,  <span class="ky">ns</span>: <span class="st">myapp-prod</span>, <span class="ky">replicas</span>: <span class="st">"5"</span> }</div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">✖️</div>
+    <div class="gen-name" style="color:var(--red);">Matrix</div>
+    <div class="gen-desc">Cross-product of two generators. N×M = N×M Applications.</div>
+    <div class="gen-detail">
+      Combines two generators: every element from gen A × every element from gen B. Example: 3 clusters × 5 apps = 15 Applications. Powerful but can create an explosion of Applications if not scoped carefully.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">matrix</span>:
+  <span class="ky">generators</span>:
+  - <span class="ky">clusters</span>: {}         <span class="cm"># gen A: all clusters</span>
+  - <span class="ky">git</span>:               <span class="cm"># gen B: all apps in git</span>
+      <span class="ky">directories</span>: [{ <span class="ky">path</span>: <span class="st">apps/*</span> }]
+<span class="cm"># Result: one Application per cluster×app combo</span></div>
+      <div class="trap" style="margin-top:6px;">Matrix with Cluster (all) × Git directory (all apps) on a large fleet can create hundreds of Applications. Use cluster label selectors to scope.</div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">🔀</div>
+    <div class="gen-name" style="color:var(--orn);">Merge</div>
+    <div class="gen-desc">Combine generators with a merge key — override specific values.</div>
+    <div class="gen-detail">
+      Merges results from multiple generators on a key. Use case: default values from a List generator, override specific fields for specific clusters from a second generator.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">merge</span>:
+  <span class="ky">mergeKeys</span>: [<span class="st">server</span>]    <span class="cm"># merge on cluster server URL</span>
+  <span class="ky">generators</span>:
+  - <span class="ky">clusters</span>: {}         <span class="cm"># base: all clusters</span>
+  - <span class="ky">list</span>:               <span class="cm"># override: prod gets more replicas</span>
+      <span class="ky">elements</span>:
+      - { <span class="ky">server</span>: <span class="st">https://prod.k8s</span>, <span class="ky">replicas</span>: <span class="st">"10"</span> }</div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">🔁</div>
+    <div class="gen-name" style="color:var(--blue);">Pull Request</div>
+    <div class="gen-desc">One app per open PR. Auto-deletes when PR closes.</div>
+    <div class="gen-detail">
+      Scans GitHub/GitLab/Gitea for open pull requests. Creates one Application per PR — preview environments. Automatically deletes the Application when the PR is closed or merged.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">pullRequest</span>:
+  <span class="ky">github</span>:
+    <span class="ky">owner</span>: <span class="st">myorg</span>
+    <span class="ky">repo</span>: <span class="st">myapp</span>
+    <span class="ky">labels</span>: [<span class="st">preview</span>]    <span class="cm"># only PRs with this label</span>
+    <span class="ky">tokenRef</span>:
+      <span class="ky">secretName</span>: <span class="st">github-token</span>
+      <span class="ky">key</span>: <span class="st">token</span>
+<span class="cm"># Variables: {{.number}} {{.branch}} {{.head_sha}}</span></div>
+      <div class="note" style="margin-top:6px;"><b>PR generator = ephemeral preview environments.</b> Deploy every PR to its own namespace, run E2E tests, auto-cleanup on merge. Classic preview env pattern without Helm hook complexity.</div>
+    </div>
+  </div>
+
+  <div class="gen-card" onclick="toggleGen(this)">
+    <div class="gen-icon">🏢</div>
+    <div class="gen-name" style="color:var(--pink);">SCM Provider</div>
+    <div class="gen-desc">All repos in a GitHub Org / GitLab Group matching filters.</div>
+    <div class="gen-detail">
+      Scans a GitHub Org / GitLab Group / Gitea org for all repositories matching filters (label, topic, language). One Application per matching repo. Platform teams use this to auto-onboard new services.
+      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">scmProvider</span>:
+  <span class="ky">github</span>:
+    <span class="ky">organization</span>: <span class="st">myorg</span>
+    <span class="ky">tokenRef</span>:
+      <span class="ky">secretName</span>: <span class="st">github-token</span>
+      <span class="ky">key</span>: <span class="st">token</span>
+  <span class="ky">filters</span>:
+  - <span class="ky">repositoryMatch</span>: <span class="st">^svc-.*</span>  <span class="cm"># repos starting with svc-</span>
+    <span class="ky">labelMatch</span>: <span class="st">gitops-enabled</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">⚙️ ApplicationSet Sync Policy</div>
+    <div class="fr"><span class="fk">applicationsSync</span><span class="fv">Controls what the AppSet controller does to generated Applications:</span></div>
+    <table class="st" style="margin-top:6px;">
+      <tr><th>Value</th><th>Create</th><th>Update</th><th>Delete</th></tr>
+      <tr><td><code>sync</code> (default)</td><td class="good">✓</td><td class="good">✓</td><td class="good">✓</td></tr>
+      <tr><td><code>create-only</code></td><td class="good">✓</td><td class="bad">✗</td><td class="bad">✗</td></tr>
+      <tr><td><code>create-update</code></td><td class="good">✓</td><td class="good">✓</td><td class="bad">✗</td></tr>
+      <tr><td><code>create-delete</code></td><td class="good">✓</td><td class="bad">✗</td><td class="good">✓</td></tr>
+    </table>
+    <div class="note" style="margin-top:8px;"><b>Use <code>create-only</code> for tenant self-service.</b> Platform team creates the AppSet. Tenants create a config file to trigger Application creation, but the AppSet controller won't overwrite any manual changes they make to their Application afterward.</div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">preserveResourcesOnDeletion</span><span class="fv">If true: deleting the ApplicationSet or removing a generator element does NOT delete the Application's K8s resources. Useful for safety — don't cascade-delete production resources when a generator entry is accidentally removed.</span></div>
+    <div class="trap"><b>Default <code>sync</code> mode + prune in Application template = full cascade delete.</b> Remove a cluster from ArgoCD → AppSet removes Application → Application prunes K8s resources → all app resources deleted. Use <code>preserveResourcesOnDeletion: true</code> for production ApplicationSets until you're confident in your generator logic.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🎯 Progressive Sync (AppSet)</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Roll out a new Application template change progressively across clusters — like a canary deployment but for ApplicationSets. Syncs to a subset of clusters first, waits for healthy, then proceeds.</span></div>
+    <div class="code"><span class="ky">strategy</span>:
+  <span class="ky">type</span>: <span class="st">RollingSync</span>
+  <span class="ky">rollingSync</span>:
+    <span class="ky">steps</span>:
+    - <span class="ky">matchExpressions</span>:
+      - { <span class="ky">key</span>: <span class="st">env</span>, <span class="ky">operator</span>: <span class="st">In</span>, <span class="ky">values</span>: [<span class="st">dev</span>] }
+      <span class="ky">maxUpdate</span>: <span class="nu">100%</span>     <span class="cm"># all dev clusters first</span>
+    - <span class="ky">matchExpressions</span>:
+      - { <span class="ky">key</span>: <span class="st">env</span>, <span class="ky">operator</span>: <span class="st">In</span>, <span class="ky">values</span>: [<span class="st">staging</span>] }
+      <span class="ky">maxUpdate</span>: <span class="nu">1</span>        <span class="cm"># one staging at a time</span>
+    - <span class="ky">matchExpressions</span>:
+      - { <span class="ky">key</span>: <span class="st">env</span>, <span class="ky">operator</span>: <span class="st">In</span>, <span class="ky">values</span>: [<span class="st">prod</span>] }
+      <span class="ky">maxUpdate</span>: <span class="st">"10%"</span>    <span class="cm"># 10% of prod clusters</span></div>
+    <div class="note"><b>Progressive sync stops if any Application in a step becomes Degraded.</b> The remaining steps are blocked. Like a deployment rollout strategy — but for cluster-wide rollouts. Critical for multi-cluster fleet management.</div>
+  </div>
+</div>
+</div><!-- /appset -->
+
+<!-- ══════════════════════════════════════ -->
+<!--            APP OF APPS                -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-aoa">
+
+<div class="sh"><div class="sh-i">🌳</div><div class="sh-l" style="color:var(--vio);">App-of-Apps vs ApplicationSet</div><div class="sh-s">// pattern deep-dive · when to use each · tradeoffs · design</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(155,109,255,.3),transparent);"></div></div>
+
+<div class="vs-wrap" style="margin-bottom:12px;">
+  <div class="vs-col">
+    <div class="vs-title" style="color:var(--vio);">🌳 App-of-Apps</div>
+    <div class="vs-item"><div class="vs-icon">📁</div><div class="vs-text"><b>A root Application</b> syncs a Git path containing Application manifests. Those manifests create child Applications. Recursive hierarchy — ArgoCD syncs YAML that describes more Applications.</div></div>
+    <div class="vs-item"><div class="vs-icon">📝</div><div class="vs-text">Child Applications are <b>plain YAML files in Git</b>. Any valid Application manifest works. Full control over every field without templating constraints.</div></div>
+    <div class="vs-item"><div class="vs-icon">🔀</div><div class="vs-text">Adding a new app = <b>commit a new Application YAML</b> to the Git path. Remove it = delete the file. Explicit, auditable, and reviewable via PR.</div></div>
+    <div class="vs-item"><div class="vs-icon">⚙️</div><div class="vs-text">Each child Application is <b>independently configured</b> — different sources, policies, namespaces per Application. No template constraints.</div></div>
+    <div class="vs-item"><div class="vs-icon">🔐</div><div class="vs-text">RBAC: who can modify the root App controls the whole cluster. Who can merge to the root path controls deployment for all children.</div></div>
+    <div class="vs-item"><div class="vs-icon">🌍</div><div class="vs-text">Best for <b>static, well-known set of applications</b> where you want explicit control over each. One cluster, platform team manages everything.</div></div>
+    <div class="vs-item"><div class="vs-icon">⚡</div><div class="vs-text"><b>No CRD needed.</b> Uses only the standard Application CRD. Works with any ArgoCD version. No ApplicationSet controller required.</div></div>
+  </div>
+  <div class="vs-divider"><div class="vs-vs">VS</div></div>
+  <div class="vs-col">
+    <div class="vs-title" style="color:var(--grn);">⚡ ApplicationSet</div>
+    <div class="vs-item"><div class="vs-icon">🔄</div><div class="vs-text">A <b>CRD that generates Application objects</b> from a template + generator. Applications are machine-generated, not hand-written. Dynamic — generator input changes automatically produce new Applications.</div></div>
+    <div class="vs-item"><div class="vs-icon">🖥️</div><div class="vs-text"><b>Cluster generator:</b> register a new cluster → Application appears automatically. Deregister → Application auto-deleted. No manual file creation needed.</div></div>
+    <div class="vs-item"><div class="vs-icon">⚡</div><div class="vs-text">Adding a new cluster/environment = <b>change generator inputs</b> (register cluster, add Git directory, create config file). Template applies uniformly.</div></div>
+    <div class="vs-item"><div class="vs-icon">📋</div><div class="vs-text">All Applications share the <b>same template</b>. Per-app customization via generator parameters. Less flexibility per-app — if template doesn't support it, all apps can't have it.</div></div>
+    <div class="vs-item"><div class="vs-icon">⚠️</div><div class="vs-text">Template changes affect <b>all generated Applications simultaneously</b> (unless Progressive Sync is used). High leverage — one change, N applications updated.</div></div>
+    <div class="vs-item"><div class="vs-icon">🌍</div><div class="vs-text">Best for <b>dynamic, scaling fleets</b>: multiple clusters, many similar apps, PR preview environments, SCM provider scanning all repos in a GitHub org.</div></div>
+    <div class="vs-item"><div class="vs-icon">🏢</div><div class="vs-text"><b>Self-service tenancy pattern:</b> platform team controls the AppSet; dev teams add a config file to trigger onboarding. Zero platform team intervention per new service.</div></div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🌳 App-of-Apps — Full Pattern</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Git structure:</span>
+clusters/prod/
+├── root-app.yaml          <span class="cm"># bootstrapped by Terraform/Helm</span>
+└── applications/
+    ├── nginx-ingress.yaml  <span class="cm"># these ARE Application manifests</span>
+    ├── cert-manager.yaml
+    ├── myapp-api.yaml
+    └── myapp-frontend.yaml
+
+<span class="cm"># root-app.yaml — the root Application</span>
+<span class="kw">kind</span>: Application
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">root</span>
+<span class="ky">spec</span>:
+  <span class="ky">source</span>:
+    <span class="ky">path</span>: <span class="st">clusters/prod/applications</span>  <span class="cm"># points to child App manifests</span>
+  <span class="ky">syncPolicy</span>:
+    <span class="ky">automated</span>: { <span class="ky">prune</span>: <span class="kw">true</span> }
+    <span class="ky">syncOptions</span>: [<span class="st">ServerSideApply=true</span>]
+
+<span class="cm"># nginx-ingress.yaml — a child Application</span>
+<span class="kw">kind</span>: Application
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">nginx-ingress</span>
+<span class="ky">spec</span>:
+  <span class="ky">source</span>:
+    <span class="ky">repoURL</span>: <span class="st">https://kubernetes.github.io/ingress-nginx</span>
+    <span class="ky">chart</span>: <span class="st">ingress-nginx</span>
+    <span class="ky">targetRevision</span>: <span class="st">4.10.x</span>
+  <span class="ky">syncPolicy</span>:
+    <span class="ky">automated</span>: { <span class="ky">prune</span>: <span class="kw">true</span>, <span class="ky">selfHeal</span>: <span class="kw">true</span> }</div>
+    <div class="note" style="margin-top:8px;">With <code>prune: true</code> on root-app: deleting <code>nginx-ingress.yaml</code> from Git → root-app prunes the Application object → ArgoCD cascades: the Application is deleted and all its K8s resources are removed via the finalizer.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">⚡ ApplicationSet Equivalent</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Git structure:</span>
+apps/
+├── nginx-ingress/
+│   └── values.yaml
+├── cert-manager/
+│   └── values.yaml
+└── myapp/
+    └── values.yaml
+
+<span class="cm"># One ApplicationSet (not N Application files)</span>
+<span class="kw">kind</span>: ApplicationSet
+<span class="ky">spec</span>:
+  <span class="ky">generators</span>:
+  - <span class="ky">git</span>:
+      <span class="ky">repoURL</span>: <span class="st">https://github.com/org/configs</span>
+      <span class="ky">revision</span>: <span class="st">HEAD</span>
+      <span class="ky">directories</span>:
+      - <span class="ky">path</span>: <span class="st">apps/*</span>   <span class="cm"># scans for app directories</span>
+  <span class="ky">template</span>:
+    <span class="ky">metadata</span>:
+      <span class="ky">name</span>: <span class="st">'{{.path.basename}}'</span>
+    <span class="ky">spec</span>:
+      <span class="ky">source</span>:
+        <span class="ky">path</span>: <span class="st">'{{.path}}'</span>   <span class="cm"># helm chart in that directory</span>
+      <span class="ky">syncPolicy</span>:
+        <span class="ky">automated</span>: { <span class="ky">prune</span>: <span class="kw">true</span>, <span class="ky">selfHeal</span>: <span class="kw">true</span> }
+
+<span class="cm"># Adding an app = add a directory to apps/</span>
+<span class="cm"># Removing an app = delete the directory</span>
+<span class="cm"># No Application YAML files to manage</span></div>
+    <div class="note" style="margin-top:8px;">All Applications share the same template, so they all have the same sync policy, project, and cluster. If you need per-app differences, use Git Files generator with a <code>config.json</code> per app that provides per-app overrides.</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🎯 Decision Guide: Which to Use?</div>
+    <div style="background:#06070c;border-radius:6px;padding:12px;font-family:var(--mono);font-size:9.5px;line-height:2.1;color:var(--mid);">
+      <div style="color:var(--yel);">Apps all similar + scaling to many clusters?</div>
+      <div style="padding-left:14px;">→ YES: <span style="color:var(--grn);">ApplicationSet (Cluster generator)</span></div>
+      <div style="color:var(--yel);">PR preview environments?</div>
+      <div style="padding-left:14px;">→ YES: <span style="color:var(--grn);">ApplicationSet (PR generator)</span></div>
+      <div style="color:var(--yel);">Self-service: teams create config files?</div>
+      <div style="padding-left:14px;">→ YES: <span style="color:var(--grn);">ApplicationSet (Git Files/SCM)</span></div>
+      <div style="color:var(--yel);">Small fleet, apps are all different?</div>
+      <div style="padding-left:14px;">→ YES: <span style="color:var(--vio);">App-of-Apps</span></div>
+      <div style="color:var(--yel);">Platform infra bootstrap (cert-manager, nginx)?</div>
+      <div style="padding-left:14px;">→ YES: <span style="color:var(--vio);">App-of-Apps (explicit control)</span></div>
+    </div>
+    <div class="note" style="margin-top:10px;"><b>You can combine both.</b> App-of-Apps root manages: (1) an ApplicationSet for tenant workloads, (2) individual Applications for platform infra. The ApplicationSet handles the dynamic scaling; App-of-Apps handles the static platform layer.</div>
+    <div class="trap"><b>App-of-Apps with orphaned Applications.</b> If root-app prune is false, deleting a child Application YAML from Git leaves the Application object in ArgoCD — and it keeps running. Either enable prune on the root, or add the <code>resources-finalizer</code> to each child Application.</div>
+  </div>
+</div>
+</div><!-- /aoa -->
+
+<!-- ══════════════════════════════════════ -->
+<!--              SYNC & HEALTH            -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-sync">
+
+<div class="sh"><div class="sh-i">🔄</div><div class="sh-l" style="color:var(--teal);">Sync, Health & Hooks</div><div class="sh-s">// sync lifecycle · waves · hooks · sync windows · health checks</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(78,205,196,.3),transparent);"></div></div>
+
+<div class="card ct" style="margin-bottom:12px;">
+  <div class="ctit" style="color:var(--teal);">🔁 Sync Lifecycle with Hooks & Waves</div>
+  <div class="lifecycle">
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--blue);">PreSync</div>
+        <div class="lc-name" style="color:var(--blue);">PreSync Hooks</div>
+        <div class="lc-desc">Run Jobs/Workflows before any resources are applied. DB migrations, config validation, pre-checks. Must complete before sync starts.</div>
+      </div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--vio);">Wave -N</div>
+        <div class="lc-name" style="color:var(--vio);">Low Wave Numbers</div>
+        <div class="lc-desc">Negative waves first. Typically CRD definitions (wave -2), Namespaces (wave -1). Must be healthy before next wave.</div>
+      </div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--grn);">Wave 0</div>
+        <div class="lc-name" style="color:var(--grn);">Default Wave</div>
+        <div class="lc-desc">All resources without a wave annotation. The bulk of your application resources. Wait for health before wave 1.</div>
+      </div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--cyan);">Wave 1+</div>
+        <div class="lc-name" style="color:var(--cyan);">Higher Waves</div>
+        <div class="lc-desc">Resources that depend on wave 0. Example: HPA (depends on Deployment), Service Monitors (depend on Service being up).</div>
+      </div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--orn);">Sync</div>
+        <div class="lc-name" style="color:var(--orn);">Sync Hooks</div>
+        <div class="lc-desc">Run alongside the sync. Rare use case — most prefer PreSync or PostSync. Uses same wave ordering.</div>
+      </div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--grn);">PostSync</div>
+        <div class="lc-name" style="color:var(--grn);">PostSync Hooks</div>
+        <div class="lc-desc">Run after all resources are healthy. Smoke tests, notifications, cache warm-up, CDN invalidation. Runs only when full sync succeeds.</div>
+      </div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-body">
+        <div class="lc-tag" style="color:var(--red);">SyncFail</div>
+        <div class="lc-name" style="color:var(--red);">SyncFail Hook</div>
+        <div class="lc-desc">Runs if sync fails at any point. Alert team, trigger rollback, send to PagerDuty. Only runs on failure.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-top:10px;margin-bottom:0;">
+    <div>
+      <div class="code" style="font-size:9.5px;"><span class="cm"># Hook + wave annotation pattern</span>
+<span class="ky">metadata</span>:
+  <span class="ky">annotations</span>:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: <span class="st">"-1"</span>
+<span class="cm"># hook-delete-policy options:</span>
+<span class="cm">#   HookSucceeded (delete on success)</span>
+<span class="cm">#   HookFailed    (delete on failure)</span>
+<span class="cm">#   BeforeHookCreation (delete before next run)</span>
+
+<span class="cm"># Sync wave — lower runs first</span>
+argocd.argoproj.io/sync-wave: <span class="st">"-2"</span>  <span class="cm"># CRDs</span>
+argocd.argoproj.io/sync-wave: <span class="st">"-1"</span>  <span class="cm"># Namespaces</span>
+argocd.argoproj.io/sync-wave: <span class="st">"0"</span>   <span class="cm"># App resources (default)</span>
+argocd.argoproj.io/sync-wave: <span class="st">"1"</span>   <span class="cm"># HPAs, ServiceMonitors</span>
+argocd.argoproj.io/sync-wave: <span class="st">"5"</span>   <span class="cm"># PostSync validation job</span></div>
+    </div>
+    <div>
+      <div class="code" style="font-size:9.5px;"><span class="cm"># Sync Window — block or allow syncs at times</span>
+<span class="ky">apiVersion</span>: argoproj.io/v1alpha1
+<span class="kw">kind</span>: AppProject
+<span class="ky">spec</span>:
+  <span class="ky">syncWindows</span>:
+  - <span class="ky">kind</span>: <span class="st">deny</span>               <span class="cm"># or: allow</span>
+    <span class="ky">schedule</span>: <span class="st">"0 22 * * *"</span>   <span class="cm"># cron: 10pm every day</span>
+    <span class="ky">duration</span>: <span class="st">8h</span>              <span class="cm"># block for 8 hours</span>
+    <span class="ky">applications</span>: [<span class="st">"*"</span>]       <span class="cm"># all apps in project</span>
+    <span class="ky">manualSync</span>: <span class="kw">true</span>          <span class="cm"># allow manual even during window</span>
+  - <span class="ky">kind</span>: <span class="st">allow</span>
+    <span class="ky">schedule</span>: <span class="st">"0 10 * * 1-5"</span> <span class="cm"># 10am weekdays only</span>
+    <span class="ky">duration</span>: <span class="st">8h</span>
+    <span class="ky">applications</span>: [<span class="st">myapp-prod</span>]</div>
+    <div class="note" style="margin-top:6px;"><b>deny window overrides allow window.</b> If both apply at same time, deny wins. Use allow windows to restrict prod deploys to business hours. Sync windows only block automated syncs by default; <code>manualSync: true</code> still allows argocd app sync during the window.</div>
+    </div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🔍 Custom Health Checks (Lua)</div>
+    <div class="fr"><span class="fk">Why needed</span><span class="fv">ArgoCD has built-in health checks for standard K8s resources. For CRDs (cert-manager Certificate, Argo Rollout, etc.), you define custom Lua scripts to determine health.</span></div>
+    <div class="fr"><span class="fk">Built-in CRDs</span><span class="fv">ArgoCD includes health checks for: Deployment, StatefulSet, DaemonSet, ReplicaSet, Job, Ingress, PVC, cert-manager Certificate, Argo Rollout, and many others. Check the ArgoCD resource-customizations repo.</span></div>
+    <div class="code" style="font-size:9px;"><span class="cm"># argocd-cm ConfigMap: custom health check</span>
+resource.customizations.health.<span class="st">mygroup_MyCRD</span>: |
+  hs = {}
+  if obj.status == nil then
+    hs.status = "Progressing"
+    hs.message = "Waiting for status"
+    return hs
+  end
+  if obj.status.phase == "Ready" then
+    hs.status = "Healthy"
+  elseif obj.status.phase == "Failed" then
+    hs.status = "Degraded"
+    hs.message = obj.status.message
+  else
+    hs.status = "Progressing"
+  end
+  return hs</div>
+  </div>
+
+  <div class="card cr">
+    <div class="ctit" style="color:var(--red);">⚙️ ignoreDifferences Patterns</div>
+    <div class="code" style="font-size:9px;"><span class="cm"># ignoreDifferences: common patterns</span>
+<span class="ky">ignoreDifferences</span>:
+
+<span class="cm"># 1. HPA manages replicas</span>
+- <span class="ky">group</span>: <span class="st">apps</span>
+  <span class="ky">kind</span>: <span class="st">Deployment</span>
+  <span class="ky">jsonPointers</span>: [<span class="st">/spec/replicas</span>]
+
+<span class="cm"># 2. cert-manager injects caBundle</span>
+- <span class="ky">group</span>: <span class="st">admissionregistration.k8s.io</span>
+  <span class="ky">kind</span>: <span class="st">MutatingWebhookConfiguration</span>
+  <span class="ky">jqPathExpressions</span>:
+  - <span class="st">.webhooks[].clientConfig.caBundle</span>
+
+<span class="cm"># 3. ESO owns Secret data</span>
+- <span class="ky">kind</span>: <span class="st">Secret</span>
+  <span class="ky">managedFieldsManagers</span>: [<span class="st">external-secrets</span>]
+
+<span class="cm"># 4. Karpenter drift annotation</span>
+- <span class="ky">group</span>: <span class="st">karpenter.sh</span>
+  <span class="ky">kind</span>: <span class="st">NodePool</span>
+  <span class="ky">jqPathExpressions</span>:
+  - <span class="st">.metadata.annotations["karpenter.k8s.aws/ec2nodeclass-hash"]</span></div>
+    <div class="trap"><b>ignoreDifferences only suppresses OutOfSync status — it does not prevent ArgoCD from applying changes.</b> If you add <code>ignoreDifferences</code> for HPA-managed replicas but also have <code>selfHeal: true</code>, ArgoCD may still fight HPA by reapplying the replica count. Combine with <code>RespectIgnoreDifferences=true</code> sync option.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">⚙️ Refresh vs Hard Refresh vs Sync</div>
+    <div class="fr"><span class="fk">Refresh</span><span class="fv">Fetches latest from Git repo and re-computes diff. Uses cached repo if within poll interval. Shows you what changed but <b>doesn't apply</b>.</span></div>
+    <div class="fr"><span class="fk">Hard Refresh</span><span class="fv">Bypasses repo cache — forces a fresh Git fetch. Use when you just pushed to Git and want ArgoCD to pick it up immediately without waiting for the poll interval.</span></div>
+    <div class="fr"><span class="fk">Sync</span><span class="fv">Applies the diff to the cluster. Can be triggered manually or automatically (if syncPolicy.automated is set). Sync without refresh uses last cached state.</span></div>
+    <div class="fr"><span class="fk">Force sync</span><span class="fv"><code>argocd app sync --force</code>: replaces resources (uses <code>replace</code> instead of <code>apply</code>). Used when an apply is stuck due to immutable field change (e.g., Job selector). Destructive — deletes and recreates.</span></div>
+    <div class="code" style="font-size:9px;"><span class="cm"># CLI equivalents</span>
+argocd app get myapp --hard-refresh  <span class="cm"># force fetch from Git</span>
+argocd app diff myapp                <span class="cm"># show what would change</span>
+argocd app sync myapp                <span class="cm"># apply changes</span>
+argocd app sync myapp --force        <span class="cm"># replace (destructive)</span>
+argocd app sync myapp --dry-run      <span class="cm"># server-side dry run</span>
+argocd app sync myapp --resource-name deploy/myapp  <span class="cm"># specific resource</span></div>
+  </div>
+</div>
+</div><!-- /sync -->
+
+<!-- ══════════════════════════════════════ -->
+<!--            RBAC & PROJECTS            -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-rbac">
+
+<div class="sh"><div class="sh-i">🔐</div><div class="sh-l" style="color:var(--yel);">RBAC, Projects & SSO</div><div class="sh-s">// AppProject tenancy · Casbin policy · SSO · v3 RBAC changes</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,217,61,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cy" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--yel);">🏢 AppProject — Tenancy Model</div>
+    <div class="code"><span class="kw">apiVersion</span>: argoproj.io/v1alpha1
+<span class="kw">kind</span>: AppProject
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">team-payments</span>
+  <span class="ky">namespace</span>: <span class="st">argocd</span>
+<span class="ky">spec</span>:
+  <span class="ky">description</span>: <span class="st">Payments team project</span>
+
+  <span class="cm"># What Git repos this project can sync from</span>
+  <span class="ky">sourceRepos</span>:
+  - <span class="st">https://github.com/myorg/payments-configs</span>
+  - <span class="st">https://charts.bitnami.com/bitnami</span>  <span class="cm"># allow external charts</span>
+  <span class="cm"># - '*'  # allow any repo (not recommended)</span>
+
+  <span class="cm"># What clusters/namespaces this project can deploy to</span>
+  <span class="ky">destinations</span>:
+  - <span class="ky">namespace</span>: <span class="st">payments-*</span>        <span class="cm"># wildcard allowed</span>
+    <span class="ky">server</span>: <span class="st">https://prod.k8s.myco.com</span>
+  - <span class="ky">namespace</span>: <span class="st">payments-*</span>
+    <span class="ky">server</span>: <span class="st">https://staging.k8s.myco.com</span>
+
+  <span class="cm"># Cluster-scoped resources this project CAN manage</span>
+  <span class="ky">clusterResourceWhitelist</span>:
+  - { <span class="ky">group</span>: <span class="st">""</span>, <span class="ky">kind</span>: <span class="st">Namespace</span> }
+  - { <span class="ky">group</span>: <span class="st">networking.k8s.io</span>, <span class="ky">kind</span>: <span class="st">IngressClass</span> }
+
+  <span class="cm"># Namespace-scoped resources this project CANNOT manage</span>
+  <span class="ky">namespaceResourceBlacklist</span>:
+  - { <span class="ky">group</span>: <span class="st">""</span>, <span class="ky">kind</span>: <span class="st">ResourceQuota</span> }  <span class="cm"># platform team only</span>
+  - { <span class="ky">group</span>: <span class="st">policy</span>, <span class="ky">kind</span>: <span class="st">PodDisruptionBudget</span> }
+
+  <span class="cm"># RBAC roles within this project</span>
+  <span class="ky">roles</span>:
+  - <span class="ky">name</span>: <span class="st">read-only</span>
+    <span class="ky">description</span>: <span class="st">View applications only</span>
+    <span class="ky">policies</span>:
+    - <span class="st">p, proj:team-payments:read-only, applications, get, team-payments/*, allow</span>
+    <span class="ky">groups</span>: [<span class="st">github-org:payments-team</span>]
+
+  - <span class="ky">name</span>: <span class="st">deployer</span>
+    <span class="ky">description</span>: <span class="st">Can sync but not delete</span>
+    <span class="ky">policies</span>:
+    - <span class="st">p, proj:team-payments:deployer, applications, sync, team-payments/*, allow</span>
+    - <span class="st">p, proj:team-payments:deployer, applications, get, team-payments/*, allow</span>
+    <span class="ky">groups</span>: [<span class="st">github-org:payments-leads</span>]
+
+  <span class="cm"># Sync windows: no deploys on weekends</span>
+  <span class="ky">syncWindows</span>:
+  - <span class="ky">kind</span>: <span class="st">deny</span>
+    <span class="ky">schedule</span>: <span class="st">"0 0 * * 6"</span>
+    <span class="ky">duration</span>: <span class="st">48h</span>
+    <span class="ky">applications</span>: [<span class="st">*</span>]</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">📋 Casbin RBAC Policy Format</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># argocd-rbac-cm ConfigMap</span>
+<span class="cm"># Format: p, subject, resource, action, object, effect</span>
+
+<span class="cm"># Built-in roles</span>
+policy.default: role:readonly   <span class="cm"># default for all users</span>
+
+<span class="cm"># Built-in: role:readonly (get only)</span>
+<span class="cm"># Built-in: role:admin   (all)</span>
+
+<span class="cm"># Custom policy examples:</span>
+p, role:dev, applications, get,    */*, allow
+p, role:dev, applications, sync,   */*, allow
+p, role:dev, applications, create, */*, deny   <span class="cm"># no create</span>
+
+<span class="cm"># Resources: applications, applicationsets,</span>
+<span class="cm">#   clusters, repositories, projects, accounts,</span>
+<span class="cm">#   certificates, gpgkeys, logs, exec</span>
+
+<span class="cm"># Actions: get, create, update, delete,</span>
+<span class="cm">#   sync, override, action, invoke, terminate</span>
+
+<span class="cm"># Object format: project/application</span>
+<span class="cm"># Wildcard: */*, myproject/*, myproject/myapp</span>
+
+<span class="cm"># v3: logs now require explicit permission</span>
+p, role:dev, logs, get, */*, allow   <span class="cm"># NEW in v3</span>
+
+<span class="cm"># Group → role mapping</span>
+g, github-org:platform, role:admin
+g, alice@company.com, role:dev</div>
+    <div class="trap"><b>v3 breaking: <code>logs, get</code> must be explicitly granted.</b> In v2 with <code>server.rbac.log.enforce.enable: false</code> (old default), all users with <code>applications, get</code> could see logs. In v3, this flag is removed and logs RBAC is always enforced. Add <code>p, role:readonly, logs, get, */*, allow</code> to restore previous behavior.</div>
+  </div>
+
+  <div class="card cb">
+    <div class="ctit" style="color:var(--blue);">🔑 SSO Configuration (Dex)</div>
+    <div class="fr"><span class="fk">OIDC providers</span><span class="fv">Dex supports: GitHub OAuth, GitLab, Google, Microsoft, LDAP, SAML 2.0, Bitbucket. Configure in <code>argocd-cm</code> under <code>dex.config</code>.</span></div>
+    <div class="code" style="font-size:9px;"><span class="cm"># argocd-cm: GitHub SSO via Dex</span>
+dex.config: |
+  connectors:
+  - type: github
+    id: github
+    name: GitHub
+    config:
+      clientID: <span class="re">$GITHUB_CLIENT_ID</span>     <span class="cm"># from Secret ref</span>
+      clientSecret: <span class="re">$GITHUB_CLIENT_SECRET</span>
+      orgs:
+      - name: myorg                 <span class="cm"># restrict to org</span>
+        teams:                      <span class="cm"># optional: specific teams</span>
+        - platform-team
+        - dev-team
+
+<span class="cm"># argocd-rbac-cm: map GitHub teams to roles</span>
+g, myorg:platform-team, role:admin
+g, myorg:dev-team, role:readonly</div>
+    <div class="note"><b>Direct OIDC (without Dex):</b> Set <code>oidc.config</code> in argocd-cm for OIDC providers that don't need Dex (Okta, Auth0, Azure AD). Simpler for orgs with a central IdP. Use Dex for providers that need claim mapping or don't support OIDC natively (LDAP, SAML).</div>
+  </div>
+</div>
+</div>
+
+</div><!-- /rbac -->
+
+<!-- ══════════════════════════════════════ -->
+<!--         PROGRESSIVE DELIVERY          -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-delivery">
+
+<div class="sh"><div class="sh-i">🚀</div><div class="sh-l" style="color:var(--orn);">Progressive Delivery — Argo Rollouts</div><div class="sh-s">// canary · blue-green · analysis · traffic management · ArgoCD integration</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,149,0,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card co">
+    <div class="ctit" style="color:var(--orn);">🐤 Canary Deployment</div>
+    <div class="code"><span class="kw">apiVersion</span>: argoproj.io/v1alpha1
+<span class="kw">kind</span>: Rollout
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">myapp</span>
+<span class="ky">spec</span>:
+  <span class="ky">replicas</span>: <span class="nu">10</span>
+  <span class="ky">strategy</span>:
+    <span class="ky">canary</span>:
+      <span class="ky">canaryService</span>: <span class="st">myapp-canary</span>    <span class="cm"># traffic to new version</span>
+      <span class="ky">stableService</span>: <span class="st">myapp-stable</span>    <span class="cm"># traffic to old version</span>
+      <span class="ky">trafficRouting</span>:
+        <span class="ky">nginx</span>:                         <span class="cm"># or: istio, alb, apisix</span>
+          <span class="ky">stableIngress</span>: <span class="st">myapp-ingress</span>
+      <span class="ky">steps</span>:
+      - <span class="ky">setWeight</span>: <span class="nu">5</span>                  <span class="cm"># 5% traffic to canary</span>
+      - <span class="ky">pause</span>: { <span class="ky">duration</span>: <span class="st">5m</span> }      <span class="cm"># wait 5 min</span>
+      - <span class="ky">analysis</span>:                     <span class="cm"># run metric analysis</span>
+          <span class="ky">templates</span>:
+          - { <span class="ky">templateName</span>: <span class="st">success-rate</span> }
+          <span class="ky">args</span>:
+          - { <span class="ky">name</span>: <span class="st">service-name</span>, <span class="ky">value</span>: <span class="st">myapp-canary</span> }
+      - <span class="ky">setWeight</span>: <span class="nu">20</span>
+      - <span class="ky">pause</span>: { <span class="ky">duration</span>: <span class="st">10m</span> }
+      - <span class="ky">setWeight</span>: <span class="nu">50</span>
+      - <span class="ky">pause</span>: { <span class="ky">duration</span>: <span class="st">10m</span> }
+      - <span class="ky">setWeight</span>: <span class="nu">100</span>
+
+<span class="cm"># AnalysisTemplate: query Prometheus</span>
+<span class="kw">kind</span>: AnalysisTemplate
+<span class="ky">spec</span>:
+  <span class="ky">metrics</span>:
+  - <span class="ky">name</span>: <span class="st">success-rate</span>
+    <span class="ky">interval</span>: <span class="st">1m</span>
+    <span class="ky">successCondition</span>: <span class="st">result[0] >= 0.99</span>   <span class="cm"># 99% success</span>
+    <span class="ky">failureLimit</span>: <span class="nu">3</span>                         <span class="cm"># 3 failures → abort</span>
+    <span class="ky">provider</span>:
+      <span class="ky">prometheus</span>:
+        <span class="ky">address</span>: <span class="st">http://prometheus:9090</span>
+        <span class="ky">query</span>: |
+          sum(rate(http_requests_total{status!~"5.*",
+            job="{{args.service-name}}"}[5m]))
+          /
+          sum(rate(http_requests_total{
+            job="{{args.service-name}}"}[5m]))</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card co">
+      <div class="ctit" style="color:var(--orn);">🔵 Blue-Green Strategy</div>
+      <div class="code" style="font-size:9.5px;"><span class="ky">strategy</span>:
+  <span class="ky">blueGreen</span>:
+    <span class="ky">activeService</span>: <span class="st">myapp-active</span>    <span class="cm"># live traffic</span>
+    <span class="ky">previewService</span>: <span class="st">myapp-preview</span>  <span class="cm"># new version (no traffic)</span>
+    <span class="ky">autoPromotionEnabled</span>: <span class="kw">false</span>     <span class="cm"># manual promotion</span>
+    <span class="ky">previewReplicaCount</span>: <span class="nu">1</span>           <span class="cm"># scale before promoting</span>
+    <span class="ky">scaleDownDelaySeconds</span>: <span class="nu">30</span>        <span class="cm"># keep blue alive 30s after switch</span>
+    <span class="ky">prePromotionAnalysis</span>:            <span class="cm"># run tests before promote</span>
+      <span class="ky">templates</span>: [{ <span class="ky">templateName</span>: <span class="st">smoke-test</span> }]
+    <span class="ky">postPromotionAnalysis</span>:           <span class="cm"># run after promotion</span>
+      <span class="ky">templates</span>: [{ <span class="ky">templateName</span>: <span class="st">load-test</span> }]</div>
+      <div class="note"><b>Blue-Green with ArgoCD:</b> update the Rollout image tag via Git → ArgoCD syncs → Rollout creates green (preview) → manual promote triggers switch. ArgoCD sees the Rollout as Healthy only after active promotion completes.</div>
+    </div>
+    <div class="card co">
+      <div class="ctit" style="color:var(--orn);">🔧 Key Argo Rollouts CLI</div>
+      <div class="code" style="font-size:9.5px;"><span class="cm"># kubectl plugin</span>
+kubectl argo rollouts get rollout myapp -w
+kubectl argo rollouts promote myapp         <span class="cm"># promote to next step</span>
+kubectl argo rollouts promote myapp --full  <span class="cm"># skip all steps</span>
+kubectl argo rollouts abort myapp           <span class="cm"># abort + rollback</span>
+kubectl argo rollouts undo myapp            <span class="cm"># rollback to stable</span>
+kubectl argo rollouts restart myapp         <span class="cm"># restart all pods</span>
+kubectl argo rollouts pause myapp           <span class="cm"># pause at current step</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /delivery -->
+
+<!-- ══════════════════════════════════════ -->
+<!--             OPERATIONS                -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-ops">
+
+<div class="sh"><div class="sh-i">🔧</div><div class="sh-l" style="color:var(--cyan);">Operations & CLI</div><div class="sh-s">// daily commands · debugging · config management · notifications</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(78,205,196,.3),transparent);"></div></div>
+
+<div class="g3">
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">💻 Essential CLI Reference</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm">## App management</span>
+argocd app list                    <span class="cm"># all apps</span>
+argocd app list -o wide            <span class="cm"># with more detail</span>
+argocd app get myapp               <span class="cm"># status + resources</span>
+argocd app diff myapp              <span class="cm"># what would change</span>
+argocd app sync myapp              <span class="cm"># apply changes</span>
+argocd app sync myapp --prune      <span class="cm"># also prune</span>
+argocd app sync myapp --dry-run    <span class="cm"># dry run</span>
+argocd app wait myapp --sync --health  <span class="cm"># wait until healthy</span>
+argocd app rollback myapp 3        <span class="cm"># rollback to history ID 3</span>
+argocd app history myapp           <span class="cm"># list sync history</span>
+
+<span class="cm">## Cluster management</span>
+argocd cluster list                <span class="cm"># registered clusters</span>
+argocd cluster add <context>       <span class="cm"># add cluster from kubeconfig</span>
+argocd cluster rm https://k8s.url  <span class="cm"># remove cluster</span>
+
+<span class="cm">## Repo management</span>
+argocd repo list                   <span class="cm"># connected repos</span>
+argocd repo add https://github.com/org/repo \
+  --username git \
+  --password <token>
+
+<span class="cm">## Project management</span>
+argocd proj list
+argocd proj get myproject
+
+<span class="cm">## Account management</span>
+argocd account list
+argocd account get --account admin
+argocd account update-password
+
+<span class="cm">## Admin / debug</span>
+argocd admin export > backup.yaml  <span class="cm"># export all config</span>
+argocd admin import < backup.yaml  <span class="cm"># restore config</span>
+argocd app get myapp --refresh     <span class="cm"># force refresh</span>
+argocd app get myapp --hard-refresh  <span class="cm"># bypass cache</span>
+
+<span class="cm">## API server info</span>
+argocd version
+argocd admin settings validate     <span class="cm"># validate argocd-cm</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🔍 Debugging Unhealthy Apps</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm">## Step 1: identify the issue</span>
+argocd app get myapp
+<span class="cm"># Look at: Sync Status, Health Status, Resources list</span>
+<span class="cm"># Degraded resources show reason in the resources table</span>
+
+<span class="cm">## Step 2: check conditions</span>
+kubectl describe application myapp -n argocd
+<span class="cm"># Conditions section shows sync errors</span>
+
+<span class="cm">## Step 3: check events</span>
+kubectl get events -n myapp-namespace \
+  --sort-by='.lastTimestamp'
+
+<span class="cm">## Step 4: look at the repo server logs</span>
+kubectl logs -n argocd \
+  deploy/argocd-repo-server -c repo-server
+
+<span class="cm">## Step 5: application controller logs</span>
+kubectl logs -n argocd \
+  deploy/argocd-application-controller \
+  | grep "myapp"
+
+<span class="cm">## Common issues:</span>
+<span class="cm"># "rpc error: code = Unknown" → repo server can't clone repo</span>
+<span class="cm"># "ManagedResource not found" → resource in sync but not healthy</span>
+<span class="cm"># "Helm chart not found" → wrong chart name or repo</span>
+<span class="cm"># "ComparisonError" → Kustomize/Helm render error</span>
+<span class="cm"># "SyncError" → K8s apply rejected (immutable field, etc.)</span>
+
+<span class="cm">## Force re-render (clears render cache)</span>
+kubectl rollout restart -n argocd \
+  deploy/argocd-repo-server</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🔔 Notifications</div>
+    <div class="fr"><span class="fk">Install</span><span class="fv">Notifications controller ships with ArgoCD since v2.3. Manages itself — configure via <code>argocd-notifications-cm</code> (templates) and <code>argocd-notifications-secret</code> (credentials).</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># argocd-notifications-cm</span>
+<span class="ky">service.slack</span>: |
+  token: <span class="re">$slack-token</span>
+
+<span class="ky">template.app-deployed</span>: |
+  message: |
+    App {{.app.metadata.name}} deployed
+    to {{.app.spec.destination.namespace}}
+    revision: {{.app.status.sync.revision}}
+  slack:
+    attachments: |
+      [{
+        "color": "#18be52",
+        "title": "✅ Deployed"
+      }]
+
+<span class="ky">trigger.on-deployed</span>: |
+  - when: app.status.operationState.phase in ['Succeeded']
+      oncePer: app.status.sync.revision
+    send: [app-deployed]
+  - when: app.status.operationState.phase in ['Error','Failed']
+    send: [app-sync-failed]
+
+<span class="cm"># Subscribe an Application to notifications:</span>
+<span class="ky">metadata</span>:
+  <span class="ky">annotations</span>:
+    notifications.argoproj.io/subscribe.on-deployed.slack: <span class="st">deploys-channel</span>
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: <span class="st">alerts-channel</span></div>
+    <div class="note"><b>Notification triggers fire per-sync-revision by default (<code>oncePer</code>).</b> Without <code>oncePer</code>, every reconcile that finds the app deployed would fire a notification — potentially dozens per hour.</div>
+  </div>
+</div>
+
+</div><!-- /ops -->
+
+<!-- ══════════════════════════════════════ -->
+<!--             TRAPS & QUIZ              -->
+<!-- ══════════════════════════════════════ -->
+<div class="sec" id="sec-traps">
+
+<div class="sh"><div class="sh-i">⚡</div><div class="sh-l" style="color:var(--red);">Traps & Interview Quiz</div><div class="sh-s">// 15 operational gotchas · interactive quiz</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(249,94,98,.3),transparent);"></div></div>
+
+<div class="trap-grid">
+  <div class="trap-card"><div class="tc-n">01</div>
+    <div class="tc-tag">AutoSync</div>
+    <div class="tc-q">You delete a file from Git. 3 minutes later, 5 prod services vanish.</div>
+    <div class="tc-a"><b>prune: true + automated sync.</b> ArgoCD removed resources no longer in Git. Fix: set <code>prune: false</code> for prod, require manual prune. Or use an approval gate. Always test prune behavior in non-prod first. Restore from etcd snapshot or re-add the file to Git immediately.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">02</div>
+    <div class="tc-q">selfHeal: true — engineer's hotfix gets reverted within minutes</div>
+    <div class="tc-tag">selfHeal</div>
+    <div class="tc-a"><b>selfHeal reverts all manual changes.</b> This is correct GitOps behavior. Procedure: (1) disable AutoSync for that app, (2) apply hotfix, (3) commit fix to Git, (4) re-enable AutoSync. Never fight the reconciler. ArgoCD always wins.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">03</div>
+    <div class="tc-q">HPA keeps scaling pods down to what Git says (2 replicas), even though HPA set it to 10.</div>
+    <div class="tc-tag">ignoreDifferences</div>
+    <div class="tc-a"><b>Missing <code>ignoreDifferences</code> for <code>/spec/replicas</code>.</b> ArgoCD syncs the replica count from Git every reconcile, overwriting HPA. Add <code>ignoreDifferences: [{group: apps, kind: Deployment, jsonPointers: [/spec/replicas]}]</code> AND sync option <code>RespectIgnoreDifferences=true</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">04</div>
+    <div class="tc-q">App is Synced but Degraded. Sync doesn't fix it. What's happening?</div>
+    <div class="tc-tag">Status</div>
+    <div class="tc-a"><b>Synced + Degraded = resources applied but pods unhealthy.</b> Git state is applied correctly (Synced), but the running pods are crashing (Degraded). Check <code>kubectl get pods -n namespace</code> and <code>kubectl logs</code>. Sync success ≠ app works. Health checks are separate from sync status.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">05</div>
+    <div class="tc-q">ApplicationSet Cluster generator creates an Application for a cluster you didn't intend.</div>
+    <div class="tc-tag">AppSet</div>
+    <div class="tc-a"><b>Missing cluster label selector.</b> Cluster generator without a <code>selector</code> matches ALL registered clusters. Add <code>selector.matchLabels: {env: prod}</code>. Label your clusters carefully. Also: set <code>applicationsSync: create-only</code> so no auto-delete if you accidentally remove a cluster label.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">06</div>
+    <div class="tc-q">Users can no longer see pod logs in the UI after upgrading to ArgoCD v3.</div>
+    <div class="tc-tag">v3 Breaking</div>
+    <div class="tc-a"><b>v3 enforces logs RBAC by default.</b> In v2, <code>server.rbac.log.enforce.enable</code> defaulted to false. In v3, this flag is removed and log access requires explicit <code>p, role:yourole, logs, get, */*, allow</code> in argocd-rbac-cm. Add the permission for affected roles.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">07</div>
+    <div class="tc-q">PreSync hook succeeded, but sync fails with "hook is still running" forever.</div>
+    <div class="tc-tag">Hooks</div>
+    <div class="tc-a"><b>Missing <code>hook-delete-policy</code>.</b> Without cleanup policy, the hook Job stays in the cluster. Next sync finds it still there, thinks it's still running. Add <code>argocd.argoproj.io/hook-delete-policy: HookSucceeded</code>. For failed hooks: add <code>HookFailed</code> too, or set both with <code>BeforeHookCreation</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">08</div>
+    <div class="tc-q">App-of-Apps root app prune=false — deleted child Application YAML from Git but Application persists.</div>
+    <div class="tc-tag">App-of-Apps</div>
+    <div class="tc-a"><b>This is expected with prune=false.</b> The root app won't remove the child Application object. Either: (1) enable prune on root app, (2) manually delete the Application with <code>argocd app delete myapp</code>, or (3) delete via kubectl. Also: add the <code>resources-finalizer</code> to child Applications to ensure K8s resources cascade-delete when Application is deleted.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">09</div>
+    <div class="tc-q">Helm chart <code>targetRevision: *</code> and ArgoCD keeps upgrading to latest chart version automatically.</div>
+    <div class="tc-tag">Helm Source</div>
+    <div class="tc-a"><b>Wildcard <code>*</code> or missing version = always latest.</b> On every reconcile, ArgoCD fetches the latest chart matching <code>*</code>. If a new chart version is published, ArgoCD syncs it immediately. Always pin to a specific version or semver range in prod: <code>targetRevision: 4.10.3</code> or <code>4.10.x</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">10</div>
+    <div class="tc-q">Sync is stuck with "another operation is already in progress"</div>
+    <div class="tc-tag">Operations</div>
+    <div class="tc-a"><b>A previous sync operation is still pending/running.</b> This happens when ArgoCD loses contact with the cluster mid-sync or a hook is stuck. Fix: <code>argocd app terminate-op myapp</code> to cancel the in-progress operation, then retry. If it keeps happening: check cluster connectivity and hook health.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">11</div>
+    <div class="tc-q">Matrix generator: 5 clusters × 10 apps = 50 Applications. One cluster goes away. All 10 of its Applications delete their K8s resources.</div>
+    <div class="tc-tag">AppSet Safety</div>
+    <div class="tc-a"><b>Default AppSet <code>sync</code> mode + Application prune.</b> Cluster removed → AppSet deletes those 10 Applications → each Application's finalizer cascades to K8s resources. Set <code>preserveResourcesOnDeletion: true</code> in AppSet <code>syncPolicy</code> for production, and <code>applicationsSync: create-update</code> to prevent auto-delete of Applications.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">12</div>
+    <div class="tc-q">ArgoCD shows OutOfSync for <code>caBundle</code> on MutatingWebhookConfiguration every sync.</div>
+    <div class="tc-tag">Drift Noise</div>
+    <div class="tc-a"><b>cert-manager injects caBundle at runtime</b>, which doesn't exist in your Git manifest. ArgoCD constantly sees this as drift and marks OutOfSync. Add <code>ignoreDifferences: [{group: admissionregistration.k8s.io, kind: MutatingWebhookConfiguration, jqPathExpressions: [".webhooks[].clientConfig.caBundle"]}]</code>.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">13</div>
+    <div class="tc-q">Sync window blocks automated sync — deployments silently queue up.</div>
+    <div class="tc-tag">Sync Windows</div>
+    <div class="tc-a"><b>Deny windows block automated syncs without error.</b> GitOps operators don't notice because ArgoCD just shows OutOfSync without explaining why. Check: <code>argocd proj windows list myproject</code>. During deny window, automated syncs are queued — they'll apply when the window closes. For urgent deploys: use <code>--force</code> to override (if <code>manualSync: true</code> on the window).</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">14</div>
+    <div class="tc-q">Two teams both have a <code>role:admin</code> group binding — they can see and modify each other's Applications.</div>
+    <div class="tc-tag">Multi-tenancy</div>
+    <div class="tc-a"><b>Missing AppProject isolation.</b> Without AppProjects, all Applications are in the <code>default</code> project, accessible to any user with applications access. Create an AppProject per team. Restrict: <code>sourceRepos</code> to their repos, <code>destinations</code> to their namespaces, and use project-scoped roles (<code>proj:myproject:role</code>) not global roles.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">15</div>
+    <div class="tc-q">After SSO upgrade, existing users can't log in — "invalid RBAC policy"</div>
+    <div class="tc-tag">v3 Dex</div>
+    <div class="tc-a"><b>v3 changed Dex's sub claim behavior.</b> RBAC policies keyed on the old <code>sub</code> value (Dex internal) now don't match. The new value is from <code>federated_claims.user_id</code>. Check what value ArgoCD now receives for the user: look at the JWT in browser dev tools. Update <code>g, &lt;new-claim-value&gt;, role:admin</code> in argocd-rbac-cm.</div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap">
+  <div class="quiz-header">
+    <div class="quiz-title">🎯 ArgoCD Interview Quiz</div>
+    <div class="quiz-score">Score: <span id="qScore">0</span> / <span id="qTotal">0</span></div>
+  </div>
+  <div id="qContainer"></div>
+  <div class="quiz-btns">
+    <button class="qbtn qb-r" onclick="resetQuiz()">↺ Reset</button>
+    <button class="qbtn qb-s" onclick="revealAll()">Show All Answers</button>
+  </div>
+</div>
+
+</div><!-- /traps -->
+
+<div class="footer">
+  <div class="ft">ArgoCD Field Guide · 2026 · v3.3 Current · Architecture · ApplicationSet · App-of-Apps · Sync · RBAC · Rollouts</div>
+  <div class="ft" style="color:rgba(249,94,98,.25);">v3: logs RBAC enforced · legacy metrics removed · prune=true carefully · ignoreDifferences for HPA · AppProject per tenant</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ── NAV ──
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── GENERATOR CARDS ──
+function toggleGen(el) {
+  const was = el.classList.contains('open');
+  document.querySelectorAll('.gen-card').forEach(c => c.classList.remove('open'));
+  if (!was) el.classList.add('open');
+}
+
+// ── QUIZ DATA ──
+const QS = [
+  {
+    q: "An Application has <code>automated: {prune: true, selfHeal: true}</code>. An engineer manually scales a Deployment from 3 to 10 replicas via kubectl. What happens?",
+    opts: ["Nothing — selfHeal only reverts deletions","ArgoCD reverts it to 3 within minutes","ArgoCD alerts but doesn't revert","It depends on the sync interval"],
+    ans: 1,
+    ex: "<b>selfHeal reverts all manual changes</b> within the reconcile interval (default ~3 min). This is intentional GitOps behavior. To prevent this for HPA-managed replicas, add ignoreDifferences for /spec/replicas AND use RespectIgnoreDifferences=true sync option."
+  },
+  {
+    q: "What's the difference between ArgoCD's Sync Status and Health Status?",
+    opts: ["They're the same thing, just displayed differently","Sync = does cluster match Git? Health = are the resources actually working?","Health = does cluster match Git? Sync = are pods running?","Sync is for Helm apps, Health is for Kustomize apps"],
+    ans: 1,
+    ex: "<b>They're independent.</b> Synced+Degraded = Git applied but pods crashing. OutOfSync+Healthy = manual change that happens to work. Watch both. An app can be Synced but broken, or OutOfSync but still serving traffic fine."
+  },
+  {
+    q: "You're using ApplicationSet with the Cluster generator and no selector. What happens when you register a new cluster in ArgoCD?",
+    opts: ["Nothing — you must manually create an Application","An Application is automatically created for the new cluster","An ApplicationSet reconcile is triggered but nothing changes","The ApplicationSet shows an error until you specify the cluster"],
+    ans: 1,
+    ex: "<b>Cluster generator without selector matches ALL registered clusters.</b> Adding a new cluster → AppSet creates an Application for it automatically. This is the power of AppSet — also the risk. Always use label selectors to scope which clusters get which Applications."
+  },
+  {
+    q: "A PreSync hook Job is in Completed state but the sync never finishes — stuck at 'hook is still running'. Why?",
+    opts: ["The Job failed silently","Missing hook-delete-policy annotation — old Job is still present","ArgoCD has a bug with PreSync hooks","The Job needs to be in Running state, not Completed"],
+    ans: 1,
+    ex: "<b>Without hook-delete-policy, the hook resource stays in the cluster.</b> On next sync, ArgoCD finds the existing hook and thinks it's still running. Add: <code>argocd.argoproj.io/hook-delete-policy: HookSucceeded</code>. Or use BeforeHookCreation to always delete before recreating."
+  },
+  {
+    q: "What changed in ArgoCD v3 regarding logs access in the UI?",
+    opts: ["Logs were removed from the UI entirely","Logs now require explicit RBAC permission — breaking change from v2","Logs now require a Dex SSO connection","No change — backward compatible"],
+    ans: 1,
+    ex: "<b>Breaking change in v3.</b> The <code>server.rbac.log.enforce.enable</code> flag was removed. Logs RBAC is now always enforced. Any role that previously had implicit log access now needs an explicit <code>p, role:myrole, logs, get, */*, allow</code> in argocd-rbac-cm."
+  },
+  {
+    q: "App-of-Apps root application has prune: false. You remove a child Application YAML from Git. What happens to the Application object and its K8s resources?",
+    opts: ["Both the Application and K8s resources are immediately deleted","Application object remains in ArgoCD; K8s resources keep running","Application is deleted but K8s resources remain","Nothing changes until next full sync"],
+    ans: 1,
+    ex: "<b>prune: false prevents deletion of Application objects.</b> The child Application stays in ArgoCD and keeps reconciling/running. K8s resources stay alive. You must manually delete the Application via <code>argocd app delete myapp</code> or kubectl delete. Enable prune: true OR the resources-finalizer to get cascade behavior."
+  },
+  {
+    q: "When should you use ApplicationSet over App-of-Apps?",
+    opts: ["Always — AppSet is strictly better in every scenario","For dynamic fleets (multiple clusters, PR previews, self-service)","For static, explicitly-defined platform infra components","When you have fewer than 10 applications"],
+    ans: 1,
+    ex: "<b>AppSet excels at dynamic, scaling scenarios.</b> Cluster generator for multi-cluster fleets, PR generator for preview envs, Git directory for self-service onboarding. App-of-Apps wins for explicit, well-known sets of differently-configured apps where you want full per-app control in YAML."
+  },
+  {
+    q: "Your Rollout (Argo Rollouts) canary is at 50% weight and the AnalysisTemplate fails. What happens?",
+    opts: ["Rollout pauses and waits for manual intervention","Rollout aborts and traffic shifts 100% back to stable","Rollout continues to 100% anyway","AnalysisTemplate failure is ignored by default"],
+    ans: 1,
+    ex: "<b>Failed analysis aborts the rollout</b> and automatically shifts traffic back to the stable (old) version. The new version pods are scaled down. No manual intervention needed. This is the auto-rollback safety net — the whole point of progressive delivery with automated analysis."
+  }
+];
+
+let score = 0, answered = 0;
+
+function buildQuiz() {
+  const c = document.getElementById('qContainer');
+  c.innerHTML = '';
+  score = 0; answered = 0;
+  updateScore();
+  QS.forEach((q, qi) => {
+    const d = document.createElement('div');
+    d.className = 'q-item';
+    d.id = 'qi-'+qi;
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+      <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
+      <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
+    c.appendChild(d);
+  });
+}
+
+function answer(qi, chosen) {
+  const qEl = document.getElementById('qi-'+qi);
+  if (qEl.dataset.done) return;
+  qEl.dataset.done = '1';
+  const q = QS[qi];
+  q.opts.forEach((_,oi) => {
+    const b = document.getElementById(`qo-${qi}-${oi}`);
+    b.disabled = true;
+    if (oi === q.ans) b.classList.add('correct');
+    else if (oi === chosen && chosen !== q.ans) b.classList.add('wrong');
+  });
+  qEl.classList.add(chosen === q.ans ? 'revealed' : 'revealed-bad');
+  document.getElementById('qe-'+qi).classList.add('show');
+  if (chosen === q.ans) score++;
+  answered++;
+  updateScore();
+}
+
+function updateScore() {
+  document.getElementById('qScore').textContent = score;
+  document.getElementById('qTotal').textContent = answered;
+}
+
+function resetQuiz() { buildQuiz(); }
+function revealAll() {
+  QS.forEach((q,qi) => {
+    const qEl = document.getElementById('qi-'+qi);
+    if (qEl.dataset.done) return;
+    qEl.dataset.done = '1';
+    q.opts.forEach((_,oi) => {
+      const b = document.getElementById(`qo-${qi}-${oi}`);
+      b.disabled = true;
+      if (oi === q.ans) b.classList.add('correct');
+    });
+    qEl.classList.add('revealed');
+    document.getElementById('qe-'+qi).classList.add('show');
+    answered++;
+  });
+  updateScore();
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

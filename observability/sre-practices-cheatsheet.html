@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRE — SLO/SLI &amp; Error Budgets</title>
+<style>
+  :root{
+    --bg:#0a0c10;
+    --surface:#111318;
+    --surface2:#161a21;
+    --border:#232a34;
+    --text:#e6edf3;
+    --muted:#8b98a9;
+    --accent:#4c9ffe;
+    --accent-dim:#1c3a5e;
+    --green:#3fb950;
+    --amber:#d29922;
+    --red:#f85149;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.6;
+    font-size:16px;
+    padding:0 0 5rem;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 1.25rem;}
+  header.hero{
+    padding:4.5rem 1.25rem 2rem;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#0d1622 0%,var(--bg) 100%);
+  }
+  header.hero .wrap{padding:0;}
+  h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:0 0 .4rem;line-height:1.15;letter-spacing:-.02em;}
+  .subtitle{color:var(--muted);font-size:1.05rem;max-width:70ch;margin:0;}
+  .tagline{color:var(--accent);font-weight:600;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .8rem;}
+  h2{
+    font-size:1.5rem;margin:3rem 0 1rem;padding-top:1rem;
+    border-top:1px solid var(--border);letter-spacing:-.01em;
+  }
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:.5rem;font-size:1.1rem;}
+  h3{font-size:1.15rem;margin:1.8rem 0 .6rem;color:var(--text);}
+  h4{font-size:1rem;margin:1.2rem 0 .4rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700;}
+  p{margin:.6rem 0;}
+  a{color:var(--accent);}
+  strong{color:#fff;font-weight:650;}
+  code{
+    font-family:var(--mono);font-size:.86em;
+    background:var(--surface2);border:1px solid var(--border);
+    padding:.1em .4em;border-radius:5px;color:#cfe3ff;
+  }
+  ul,ol{padding-left:1.3rem;margin:.6rem 0;}
+  li{margin:.3rem 0;}
+  .lead{font-size:1.05rem;color:var(--muted);}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0;}
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:1.1rem 1.25rem;
+  }
+  .card h3{margin-top:0;}
+  /* tables */
+  .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0;border:1px solid var(--border);border-radius:12px;}
+  table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:520px;}
+  caption{text-align:left;color:var(--muted);font-size:.85rem;padding:.6rem .9rem;caption-side:top;}
+  th,td{padding:.6rem .9rem;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;}
+  thead th{background:var(--surface2);color:var(--text);font-weight:650;position:sticky;top:0;white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.015);}
+  td code{white-space:nowrap;}
+  .mono-col{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  /* callouts */
+  .callout{
+    border-radius:12px;padding:1rem 1.2rem;margin:1.2rem 0;
+    border:1px solid var(--border);background:var(--surface);
+  }
+  .callout .label{font-weight:700;font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;display:block;margin-bottom:.35rem;}
+  .trap{border-color:#5a2d2d;background:linear-gradient(180deg,#1c1113,#140f11);}
+  .trap .label{color:var(--red);}
+  .qa{border-color:#26456b;background:linear-gradient(180deg,#0f1826,#0d131c);}
+  .qa .label{color:var(--accent);}
+  .qa .q{font-weight:650;color:#fff;margin:.2rem 0 .4rem;}
+  .qa .a{color:var(--text);}
+  .tip{border-color:#2c4b2f;background:linear-gradient(180deg,#0f1a12,#0d130f);}
+  .tip .label{color:var(--green);}
+  /* code block */
+  pre{
+    background:#0d1117;border:1px solid var(--border);border-radius:10px;
+    padding:1rem 1.1rem;overflow-x:auto;margin:1rem 0;
+    font-family:var(--mono);font-size:.85rem;line-height:1.55;color:#c9d5e3;
+  }
+  pre code{background:none;border:none;padding:0;color:inherit;font-size:inherit;}
+  .cmt{color:#6a7887;}
+  .kw{color:#ff9b72;}
+  .num-lit{color:#a5d6ff;}
+  .ok{color:var(--green);}
+  .warn{color:var(--amber);}
+  .bad{color:var(--red);}
+  .pill{
+    display:inline-block;font-size:.72rem;font-weight:650;
+    padding:.15em .6em;border-radius:999px;border:1px solid var(--border);
+    background:var(--surface2);color:var(--muted);margin:.1em .2em .1em 0;white-space:nowrap;
+  }
+  .pill.acc{color:var(--accent);border-color:var(--accent-dim);background:rgba(76,159,254,.08);}
+  .toc{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:1.1rem 1.3rem;margin:1.5rem 0 0;
+  }
+  .toc ol{columns:2;column-gap:2rem;margin:.4rem 0 0;padding-left:1.2rem;}
+  .toc a{text-decoration:none;color:var(--text);}
+  .toc a:hover{color:var(--accent);}
+  .muted{color:var(--muted);}
+  .kpi-row{display:flex;flex-wrap:wrap;gap:.8rem;margin:1rem 0;}
+  .kpi{flex:1 1 150px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;}
+  .kpi .big{font-size:1.5rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .kpi .lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  hr{border:none;border-top:1px solid var(--border);margin:2rem 0;}
+  @media (max-width:640px){
+    .toc ol{columns:1;}
+    body{font-size:15px;}
+  }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="tagline">Senior SRE Interview Cheatsheet</p>
+    <h1>SRE Practices &amp; Reliability</h1>
+    <p class="subtitle">The Google SRE canon distilled for interviews: SLI/SLO/SLA, error budgets &amp; the math, multi-window burn-rate alerting, incident command, blameless postmortems, and the reliability patterns you will be asked to whiteboard. Precise definitions, exact numbers, and the traps interviewers set.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<nav class="toc" aria-label="Contents">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#slislo">SLI vs SLO vs SLA</a></li>
+    <li><a href="#choosing">Choosing good SLIs</a></li>
+    <li><a href="#budget">Error budgets &amp; the math</a></li>
+    <li><a href="#burn">Burn-rate alerting</a></li>
+    <li><a href="#signals">Four golden signals</a></li>
+    <li><a href="#toil">Toil</a></li>
+    <li><a href="#incident">Incident management</a></li>
+    <li><a href="#oncall">On-call &amp; alert fatigue</a></li>
+    <li><a href="#postmortem">Blameless postmortems</a></li>
+    <li><a href="#patterns">Reliability patterns</a></li>
+    <li><a href="#delivery">Capacity, chaos &amp; progressive delivery</a></li>
+    <li><a href="#release">Release &amp; change management</a></li>
+    <li><a href="#qbank">Rapid-fire Q&amp;A</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================= -->
+<h2 id="slislo"><span class="num">01</span>SLI vs SLO vs SLA</h2>
+<p class="lead">The single most-asked SRE concept. Nail the precise definitions and the relationship between the three.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h3>SLI — Indicator</h3>
+    <p>A <strong>quantitative measure of some aspect of the service</strong>, expressed as a ratio of good events to valid events.</p>
+    <pre><code>SLI = <span class="ok">good events</span> / <span class="warn">valid events</span> × 100%</code></pre>
+    <p class="muted">e.g. proportion of HTTP requests served in &lt; 300&nbsp;ms; proportion returning non-5xx.</p>
+  </div>
+  <div class="card">
+    <h3>SLO — Objective</h3>
+    <p>A <strong>target value or range for an SLI</strong> over a time window. The internal reliability goal you engineer toward.</p>
+    <pre><code><span class="kw">SLO:</span> 99.9% of requests
+     &lt; 300ms
+     over 28 days</code></pre>
+    <p class="muted">Set by the team; stricter than the SLA.</p>
+  </div>
+  <div class="card">
+    <h3>SLA — Agreement</h3>
+    <p>A <strong>contract with the customer</strong> that includes consequences (credits, penalties) if objectives are missed.</p>
+    <pre><code><span class="kw">SLA:</span> 99.5% monthly
+     uptime, else
+     10% bill credit</code></pre>
+    <p class="muted">A business/legal artifact, not an engineering one.</p>
+  </div>
+</div>
+
+<div class="callout tip">
+  <span class="label">Mental model</span>
+  <strong>SLI is the measurement, SLO is the goal, SLA is the promise.</strong> Set the internal <em>SLO tighter than the external SLA</em> so you get paged and fix things <em>before</em> you breach the contract and owe money. Rule of thumb: SLO ≥ SLA + one nine of headroom, or at least a comfortable margin.
+</div>
+
+<div class="tablewrap">
+<table>
+  <caption>The three at a glance</caption>
+  <thead>
+    <tr><th>Aspect</th><th>SLI</th><th>SLO</th><th>SLA</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>What it is</td><td>A metric</td><td>A target on that metric</td><td>A contract</td></tr>
+    <tr><td>Audience</td><td>Engineers</td><td>Engineers / product</td><td>Customers / legal</td></tr>
+    <tr><td>Consequence of miss</td><td>None (it's just data)</td><td>Spend error budget; freeze releases</td><td>Financial penalty / credits</td></tr>
+    <tr><td>Who sets it</td><td>SRE + dev</td><td>SRE + product</td><td>Sales / legal / business</td></tr>
+    <tr><td>Typical value</td><td>99.94% (measured)</td><td>99.9% (target)</td><td>99.5% (promised)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  "Do you always need an SLA?" — <strong>No.</strong> Not every service faces external customers. But every service worth running should have SLOs and SLIs. Also: <strong>100% is the wrong reliability target</strong> for basically everything — it is impossible, infinitely expensive, and the marginal nine is invisible to users behind their own ISP/device unreliability. The right target is "reliable enough" for the user, no more.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="choosing"><span class="num">02</span>Choosing good SLIs</h2>
+
+<p>An SLI should reflect <strong>what the user actually experiences</strong>, not internal implementation trivia. CPU utilization is not an SLI; "did the user's request succeed quickly" is. Google groups SLIs by request category:</p>
+
+<div class="tablewrap">
+<table>
+  <caption>SLI types by service category (Google SRE Workbook)</caption>
+  <thead>
+    <tr><th>Category</th><th>Relevant SLIs</th><th>Good-event definition</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Request/response (user-facing)</td><td>Availability, Latency, Quality</td><td>Non-5xx response, served under threshold</td></tr>
+    <tr><td>Data processing / pipelines</td><td>Freshness, Correctness, Coverage, Throughput</td><td>Records processed correctly &amp; recently</td></tr>
+    <tr><td>Storage</td><td>Durability, Latency, Availability</td><td>Data readable, not lost, returned fast</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Request-based vs window-based SLIs</h3>
+<div class="grid2">
+  <div class="card">
+    <h4>Request-based</h4>
+    <p>Ratio computed over <em>individual events</em>.</p>
+    <pre><code>good_requests / valid_requests</code></pre>
+    <p>Directly maps to the error budget. Preferred for burn-rate alerting. A single 10-min outage of a low-traffic hour dilutes into the whole month's request count.</p>
+  </div>
+  <div class="card">
+    <h4>Window-based</h4>
+    <p>Ratio of <em>good time-windows</em> to total windows (e.g. "was each 1-min bucket good?").</p>
+    <pre><code>good_minutes / total_minutes</code></pre>
+    <p>Closer to how SLAs word uptime ("99.9% of minutes"). A window is "bad" if its error rate exceeds a sub-threshold. Better when traffic is bursty/low.</p>
+  </div>
+</div>
+
+<div class="callout tip">
+  <span class="label">Good-SLI checklist</span>
+  <ul style="margin:.2rem 0;">
+    <li><strong>User-centric</strong> — measured as close to the user as feasible (at the load balancer, not deep inside a microservice).</li>
+    <li><strong>Predictive of happiness</strong> — moves in the same direction as user satisfaction.</li>
+    <li><strong>Few</strong> — pick a small number (availability + latency covers most services). Too many SLOs = none are respected.</li>
+    <li><strong>Has a clear "valid event" denominator</strong> — decide up front how health checks, bots, and 4xx client errors are counted.</li>
+  </ul>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  <strong>Averages hide pain.</strong> Never define a latency SLO on the <em>mean</em> — a p50 of 100&nbsp;ms can hide a p99 of 8&nbsp;s that furious users feel. Define latency SLIs on percentiles (p95/p99) <em>and</em> as a threshold count ("% of requests under 300&nbsp;ms"), which is what burn-rate math needs.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="budget"><span class="num">03</span>Error budgets &amp; the math</h2>
+
+<p class="lead">The error budget is the bridge between reliability and velocity. This is the section interviewers probe hardest — <strong>know the downtime numbers cold.</strong></p>
+
+<div class="callout">
+  <span class="label" style="color:var(--accent);">Definition</span>
+  <p style="margin:.2rem 0;">If your SLO is <code>X%</code>, your <strong>error budget = 100% − X%</strong> — the allowed amount of unreliability over the window. It is a <em>budget to be spent</em>, deliberately, on risky launches, experiments, and planned maintenance. As long as budget remains, developers ship freely; when it is exhausted, the policy kicks in.</p>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="big">99.9%</div><div class="lbl">SLO target</div></div>
+  <div class="kpi"><div class="big">0.1%</div><div class="lbl">Error budget</div></div>
+  <div class="kpi"><div class="big">43m 12s</div><div class="lbl">Allowed downtime / 30-day month</div></div>
+  <div class="kpi"><div class="big">8h 45m 36s</div><div class="lbl">Allowed downtime / year</div></div>
+</div>
+
+<h3>Availability → downtime reference table</h3>
+<p>Downtime = window × (1 − SLO). Using a <strong>30-day month</strong> (43,200&nbsp;min) and a <strong>365-day year</strong> (525,600&nbsp;min).</p>
+
+<div class="tablewrap">
+<table>
+  <caption>The table interviewers ask you to recite. Memorize the "three nines / four nines" rows.</caption>
+  <thead>
+    <tr>
+      <th>Availability</th>
+      <th>Error budget</th>
+      <th class="mono-col">Downtime / day</th>
+      <th class="mono-col">Downtime / week</th>
+      <th class="mono-col">Downtime / 30-day month</th>
+      <th class="mono-col">Downtime / year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>90%</strong> <span class="muted">(one nine)</span></td>
+      <td class="mono-col">10%</td>
+      <td class="mono-col">2h 24m</td>
+      <td class="mono-col">16h 48m</td>
+      <td class="mono-col">3d 0h</td>
+      <td class="mono-col">36d 12h</td>
+    </tr>
+    <tr>
+      <td><strong>99%</strong> <span class="muted">(two nines)</span></td>
+      <td class="mono-col">1%</td>
+      <td class="mono-col">14m 24s</td>
+      <td class="mono-col">1h 40m 48s</td>
+      <td class="mono-col">7h 12m</td>
+      <td class="mono-col">3d 15h 36m</td>
+    </tr>
+    <tr>
+      <td><strong>99.5%</strong></td>
+      <td class="mono-col">0.5%</td>
+      <td class="mono-col">7m 12s</td>
+      <td class="mono-col">50m 24s</td>
+      <td class="mono-col">3h 36m</td>
+      <td class="mono-col">1d 19h 48m</td>
+    </tr>
+    <tr>
+      <td><strong>99.9%</strong> <span class="muted">(three nines)</span></td>
+      <td class="mono-col">0.1%</td>
+      <td class="mono-col">1m 26.4s</td>
+      <td class="mono-col">10m 4.8s</td>
+      <td class="mono-col"><strong>43m 12s</strong></td>
+      <td class="mono-col">8h 45m 36s</td>
+    </tr>
+    <tr>
+      <td><strong>99.95%</strong></td>
+      <td class="mono-col">0.05%</td>
+      <td class="mono-col">43.2s</td>
+      <td class="mono-col">5m 2.4s</td>
+      <td class="mono-col"><strong>21m 36s</strong></td>
+      <td class="mono-col">4h 22m 48s</td>
+    </tr>
+    <tr>
+      <td><strong>99.99%</strong> <span class="muted">(four nines)</span></td>
+      <td class="mono-col">0.01%</td>
+      <td class="mono-col">8.64s</td>
+      <td class="mono-col">1m 0.5s</td>
+      <td class="mono-col"><strong>4m 19.2s</strong></td>
+      <td class="mono-col">52m 33.6s</td>
+    </tr>
+    <tr>
+      <td><strong>99.999%</strong> <span class="muted">(five nines)</span></td>
+      <td class="mono-col">0.001%</td>
+      <td class="mono-col">0.864s</td>
+      <td class="mono-col">6.05s</td>
+      <td class="mono-col">25.9s</td>
+      <td class="mono-col">5m 15.4s</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout tip">
+  <span class="label">How to derive it live</span>
+  <p style="margin:.2rem 0;">Interviewers love "compute 99.9% monthly downtime on the spot." Do it as:
+  <code>30 days = 43,200 min</code> → <code>0.1% = 43,200 × 0.001 = 43.2 min = 43m 12s</code>. Each extra nine divides downtime by 10. So 99.99% monthly ≈ <code>4.32 min</code>, 99.999% ≈ <code>25.9 s</code>.</p>
+</div>
+
+<h3>Error budget policy</h3>
+<p>The policy is a <strong>pre-agreed, written contract</strong> between SRE, dev, and product that says what happens as budget depletes. It must be signed off <em>before</em> an incident so it isn't renegotiated under pressure.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>A typical tiered error-budget policy</caption>
+  <thead>
+    <tr><th>Budget remaining</th><th>Posture</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="pill acc">&gt; 50%</span></td><td>Healthy</td><td>Ship freely; take reliability risks; run experiments &amp; chaos tests.</td></tr>
+    <tr><td><span class="pill">10–50%</span></td><td>Caution</td><td>Prioritize reliability work; slow risky launches; review recent regressions.</td></tr>
+    <tr><td><span class="pill" style="color:var(--red);border-color:#5a2d2d;">Exhausted (0%)</span></td><td>Freeze</td><td><strong>Feature freeze.</strong> Only reliability fixes and P0 security merge. Ships resume when budget recovers over the trailing window.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <span class="label" style="color:var(--accent);">Freeze-on-exhaustion — the core idea</span>
+  <p style="margin:.2rem 0;">When the budget is spent, <strong>the release valve closes automatically.</strong> This depersonalizes the "ship vs. stabilize" fight: it's not SRE blocking devs, it's the data. The freeze creates a self-correcting loop — teams that burn budget on bad launches lose their ability to launch until reliability is restored, which realigns incentives around quality. Escalation paths (e.g. VP sign-off) exist for genuine emergencies.</p>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  "We had zero incidents this quarter, isn't that great?" — <strong>Not necessarily.</strong> Consistently <em>not</em> spending the error budget means the SLO is too strict / you're over-investing in reliability at the cost of feature velocity. Unspent budget is a signal to <em>loosen the SLO or ship faster / take more risk</em>. The goal is to spend the budget, not hoard it.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="burn"><span class="num">04</span>Burn-rate alerting</h2>
+
+<p class="lead">The modern, correct way to alert on SLOs. Expect to be asked <em>why</em> multi-window multi-burn-rate beats a naive threshold.</p>
+
+<div class="callout">
+  <span class="label" style="color:var(--accent);">Burn rate defined</span>
+  <p style="margin:.2rem 0;"><strong>Burn rate = how fast you are consuming the error budget relative to the "even" pace.</strong> A burn rate of <code>1</code> spends the entire budget exactly over the SLO window (e.g. 30 days) — right on target. A burn rate of <code>10</code> spends it 10× faster; at that pace a 30-day budget is gone in 3 days.</p>
+</div>
+
+<div class="tablewrap">
+<table>
+  <caption>Burn rate ↔ time-to-exhaustion (for a 30-day / 99.9% SLO)</caption>
+  <thead>
+    <tr><th class="mono-col">Burn rate</th><th>Budget consumed in 1 hour</th><th>Full budget exhausted in</th><th>Severity</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="mono-col">1×</td><td>~0.14%</td><td>30 days</td><td>on target</td></tr>
+    <tr><td class="mono-col">6×</td><td>~0.83%</td><td>5 days</td><td>slow burn — ticket</td></tr>
+    <tr><td class="mono-col">14.4×</td><td>2%</td><td>~2 days</td><td>fast burn — page</td></tr>
+    <tr><td class="mono-col">36×</td><td>5%</td><td>~20 hours</td><td>very fast — page</td></tr>
+    <tr><td class="mono-col">1000×</td><td>100% (in that hour)</td><td>~43 min</td><td>total outage</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Why multi-window, multi-burn-rate?</h3>
+<p>Google's SRE Workbook recommends combining <strong>several alerts at different burn rates and window lengths</strong>. Each alert requires <em>both</em> a long window (the trigger) <strong>and</strong> a short window (a confirmation the problem is still happening right now), which kills the two failure modes of single alerts:</p>
+
+<ul>
+  <li><strong>Slow single threshold</strong> → poor <em>detection time</em>: a small-but-sustained error rate takes ages to trip.</li>
+  <li><strong>Fast single threshold</strong> → poor <em>reset time / false pages</em>: a 1-minute blip pages you, and it keeps firing after the incident resolved.</li>
+</ul>
+
+<div class="callout tip">
+  <span class="label">Canonical Google multi-window / multi-burn-rate config (99.9% SLO)</span>
+  <div class="tablewrap" style="margin:.6rem 0 0;border:none;">
+  <table style="min-width:460px;">
+    <thead><tr><th>Severity</th><th class="mono-col">Burn rate</th><th>Long window</th><th>Short window</th><th>Budget in long window</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Page</strong> (fast)</td><td class="mono-col">14.4×</td><td>1 hour</td><td>5 min</td><td>2%</td></tr>
+      <tr><td><strong>Page</strong> (medium)</td><td class="mono-col">6×</td><td>6 hours</td><td>30 min</td><td>5%</td></tr>
+      <tr><td><strong>Ticket</strong> (slow)</td><td class="mono-col">3×</td><td>1 day</td><td>2 hours</td><td>10%</td></tr>
+      <tr><td><strong>Ticket</strong> (slow)</td><td class="mono-col">1×</td><td>3 days</td><td>6 hours</td><td>10%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="muted" style="margin:.6rem 0 0;">Short window ≈ 1/12 of long window. The short window must <em>also</em> be over threshold for the alert to fire — this gives fast reset when the incident clears.</p>
+</div>
+
+<pre><code><span class="cmt"># Prometheus-style fast-burn page (14.4x over 1h AND 5m)</span>
+<span class="kw">alert:</span> ErrorBudgetFastBurn
+<span class="kw">expr:</span> (
+    slo:error_ratio:rate1h  &gt; (<span class="num-lit">14.4</span> * <span class="num-lit">0.001</span>)
+  <span class="kw">and</span>
+    slo:error_ratio:rate5m  &gt; (<span class="num-lit">14.4</span> * <span class="num-lit">0.001</span>)
+  )
+<span class="kw">for:</span> <span class="num-lit">2m</span>
+<span class="kw">labels:</span>   {severity: page}</code></pre>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  "Why not just alert when availability drops below 99.9%?" — because that alerts on the <em>SLO threshold</em>, not the <em>burn rate</em>. It fires <strong>after</strong> you've already breached, gives no early warning, and doesn't distinguish a catastrophic outage (page now!) from a slow leak (open a ticket). Burn-rate alerting is <em>symptom-based and budget-aware</em>: it pages proportionally to how fast you're heading toward breach.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="signals"><span class="num">05</span>The four golden signals</h2>
+
+<p>From the Google SRE book: if you can only measure four things about a user-facing system, measure these.</p>
+
+<div class="grid2">
+  <div class="card"><h3>① Latency</h3><p>Time to service a request. <strong>Separate successful from failed latency</strong> — a fast 500 error can otherwise make latency look great. Track distributions (p50/p95/p99), not averages.</p></div>
+  <div class="card"><h3>② Traffic</h3><p>Demand on the system — requests/sec, transactions/sec, concurrent sessions, I/O rate. The denominator that gives errors and latency context.</p></div>
+  <div class="card"><h3>③ Errors</h3><p>Rate of failed requests — explicit (5xx), implicit (200 with wrong content), or policy (too slow counts as failed). Directly feeds the error budget.</p></div>
+  <div class="card"><h3>④ Saturation</h3><p>How "full" the system is — CPU, memory, disk I/O, queue depth. Utilization vs. capacity; the leading indicator of imminent latency/error degradation. Watch the most constrained resource.</p></div>
+</div>
+
+<div class="callout tip">
+  <span class="label">Related mnemonics (know these too)</span>
+  <ul style="margin:.2rem 0;">
+    <li><strong>USE</strong> (Brendan Gregg, for resources): <em>Utilization, Saturation, Errors</em> — per resource.</li>
+    <li><strong>RED</strong> (Tom Wilkie, for request-driven services): <em>Rate, Errors, Duration</em> — essentially golden signals minus saturation.</li>
+  </ul>
+</div>
+
+<!-- ============================================================= -->
+<h2 id="toil"><span class="num">06</span>Toil</h2>
+
+<div class="callout">
+  <span class="label" style="color:var(--accent);">Definition</span>
+  <p style="margin:.2rem 0;"><strong>Toil</strong> is operational work that is <em>manual, repetitive, automatable, tactical, devoid of enduring value, and scales linearly (O(n)) with service size.</em> It's not just "work I dislike" — overhead like email and meetings isn't toil. Restarting a stuck server by hand every week <em>is</em> toil.</p>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h4>The &lt;50% rule</h4>
+    <p>Google caps toil at <strong>50% of each SRE's time</strong>. The other half must go to <strong>engineering</strong> — automation, software, and durable reliability improvements that reduce future toil. If a team persistently exceeds 50%, that's a management signal to shed load back to the dev team or invest in automation.</p>
+  </div>
+  <div class="card">
+    <h4>Why cap it</h4>
+    <ul style="margin:.2rem 0;">
+      <li>Toil scales with the service → linear headcount growth → doesn't scale.</li>
+      <li>It's demoralizing and causes attrition/burnout.</li>
+      <li>It crowds out the engineering that would eliminate it (vicious cycle).</li>
+      <li>Career stagnation — no skill growth from repetitive ops.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  "Automate everything!" — no. Automate when <strong>the cost to automate &lt; the cumulative cost of the toil</strong> (the classic "is it worth the time?" calculation over the automation's lifetime). Some rare, high-judgment tasks are cheaper left manual. And beware automating a <em>broken</em> process — you just make bad things happen faster.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="incident"><span class="num">07</span>Incident management</h2>
+
+<h3>Incident Command System (ICS) roles</h3>
+<p>Borrowed from emergency services. Separating roles prevents the "everyone debugging, no one coordinating" failure mode.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Core incident roles</caption>
+  <thead><tr><th>Role</th><th>Owns</th><th>Does NOT do</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Incident Commander (IC)</strong></td><td>Overall coordination, delegation, decisions, keeping the response on track. The single point of authority.</td><td>Should <em>not</em> get hands-dirty debugging — coordinates, doesn't fix.</td></tr>
+    <tr><td><strong>Operations / Ops Lead</strong></td><td>The only role that <em>touches the system</em> — applies fixes, runs diagnostics, mitigations.</td><td>Doesn't manage comms or external updates.</td></tr>
+    <tr><td><strong>Communications (Comms)</strong></td><td>Stakeholder updates, status page, exec briefings, customer messaging. The public face.</td><td>Doesn't debug or command.</td></tr>
+    <tr><td><span class="muted">Planning (optional)</span></td><td>Tracks long-running state, handoffs, filing the postmortem, logistics for extended incidents.</td><td>—</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout tip">
+  <span class="label">Best practices</span>
+  <ul style="margin:.2rem 0;">
+    <li><strong>Clear handoffs</strong> — the IC role transfers explicitly ("you are now IC"), never ambiguously, especially across follow-the-sun shifts.</li>
+    <li><strong>Live incident doc</strong> — a shared, timestamped log of what's known, tried, and decided. Becomes the postmortem's raw material.</li>
+    <li><strong>Prioritize mitigation over root cause</strong> — <em>stop the bleeding first</em> (roll back, drain, failover), diagnose later.</li>
+    <li><strong>Declare early</strong> — it's cheaper to spin up incident response and stand down than to escalate late.</li>
+  </ul>
+</div>
+
+<h3>Severity levels (illustrative)</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Sev</th><th>Impact</th><th>Response</th></tr></thead>
+  <tbody>
+    <tr><td><strong>SEV1</strong></td><td>Critical — major outage, data loss, security breach; large revenue/user impact.</td><td>All-hands, IC named, exec &amp; customer comms, page immediately.</td></tr>
+    <tr><td><strong>SEV2</strong></td><td>Significant — key feature down / severe degradation for many users.</td><td>Page on-call, IC assigned, active war room.</td></tr>
+    <tr><td><strong>SEV3</strong></td><td>Minor — limited/partial impact, workaround exists.</td><td>Handle in business hours; ticket.</td></tr>
+    <tr><td><strong>SEV4/5</strong></td><td>Low — cosmetic, single-user, no SLO impact.</td><td>Backlog.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>The reliability metrics — MTTx</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Metric</th><th>Meaning</th><th>Formula / note</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MTTD</strong></td><td>Mean Time To <em>Detect</em> — outage start → alert fires.</td><td>Improve with better monitoring &amp; burn-rate alerts.</td></tr>
+    <tr><td><strong>MTTA</strong></td><td>Mean Time To <em>Acknowledge</em> — alert → human responds.</td><td>Pager hygiene, on-call readiness.</td></tr>
+    <tr><td><strong>MTTR</strong></td><td>Mean Time To <em>Repair/Recover/Resolve</em> — detection → service restored.</td><td>Improve with runbooks, rollback, automation.</td></tr>
+    <tr><td><strong>MTBF</strong></td><td>Mean Time <em>Between</em> Failures — reliability/frequency of incidents.</td><td>Higher is better; improved by fixing root causes.</td></tr>
+    <tr><td><span class="muted">MTTF</span></td><td>Mean Time To Failure — for non-repairable components.</td><td>Availability ≈ MTBF / (MTBF + MTTR).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  <strong>MTTR is a noisy, skewed metric</strong> — a few catastrophic incidents dominate the mean, and "mean" over a handful of incidents is statistically weak. Interviewers reward candidates who say they'd look at the <em>distribution</em>, use medians, and treat MTTR as a directional trend, not a precise KPI. Reducing MTTR (fast rollback/mitigation) is often more valuable than chasing MTBF (preventing every failure).
+</div>
+
+<!-- ============================================================= -->
+<h2 id="oncall"><span class="num">08</span>On-call &amp; alert fatigue</h2>
+
+<div class="grid2">
+  <div class="card">
+    <h4>Rotation design</h4>
+    <ul style="margin:.2rem 0;">
+      <li><strong>Follow-the-sun</strong> — hand off between geographically distributed teams so nobody works nights. Requires clean handoffs.</li>
+      <li>Single-site alternative: weekly primary + secondary (backup/escalation) rotation.</li>
+      <li>Google guidance: cap on-call load so an engineer handles <strong>≤ 2 incidents per on-call shift</strong> — more means the team is too small or too noisy.</li>
+      <li><strong>Compensation</strong> — on-call is paid (time-off or cash), which also disincentivizes overloading a rotation.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Pager hygiene / fighting alert fatigue</h4>
+    <ul style="margin:.2rem 0;">
+      <li><strong>Every page must be actionable</strong> and urgent. If it doesn't need human action <em>now</em>, it's a ticket, not a page.</li>
+      <li>Alert on <strong>symptoms (user impact), not causes</strong> — one "checkout failing" page beats 40 "CPU high on host-x" pages.</li>
+      <li>Delete/tune alerts that fire without action ("no-op pages").</li>
+      <li>Every page should map to a <strong>runbook/playbook</strong> entry.</li>
+      <li>Track page volume as a health metric; a noisy rotation causes <strong>desensitization</strong> — the real page gets ignored among the noise.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  Alert fatigue is a <em>reliability</em> risk, not just a morale one: when responders are numbed by hundreds of low-value alerts, they miss or slow-ack the one that matters, directly inflating MTTD/MTTA. "More alerts = safer" is backwards.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="postmortem"><span class="num">09</span>Blameless postmortems</h2>
+
+<p><strong>Blameless</strong> means the write-up focuses on <em>systems and contributing factors</em>, never on punishing individuals. The premise: people act rationally given the information, tooling, and incentives they had — so if a human "caused" it, the real fix is the system that allowed one human to. Blame drives incidents underground; blamelessness surfaces them so they get fixed.</p>
+
+<h3>Structure of a good postmortem</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Section</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td>Summary</td><td>One-paragraph what/impact/duration.</td></tr>
+    <tr><td>Impact</td><td>Users affected, requests/revenue lost, SLO/error-budget burned.</td></tr>
+    <tr><td>Timeline</td><td>Timestamped sequence: detection → escalation → mitigation → resolution.</td></tr>
+    <tr><td>Root cause &amp; contributing factors</td><td>The causal chain — usually multiple factors, not one.</td></tr>
+    <tr><td>What went well / what went poorly</td><td>Honest assessment of the <em>response</em>, not just the failure.</td></tr>
+    <tr><td>Detection</td><td>How it was found; could it have been found sooner (MTTD)?</td></tr>
+    <tr><td>Action items</td><td>Specific, <strong>owned, tracked, prioritized</strong> follow-ups.</td></tr>
+    <tr><td>Lessons learned</td><td>Reusable insight for other teams.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout tip">
+  <span class="label">Root cause vs contributing factors</span>
+  <p style="margin:.2rem 0;">Modern SRE rejects the idea of a <strong>single</strong> root cause. Complex systems fail from a <em>combination</em> of contributing factors (Swiss-cheese model — several latent holes lining up). "Human error" is never a root cause — it's a <em>symptom</em> pointing at a missing guardrail. Use techniques like the <strong>5 Whys</strong>, but keep asking past the first human in the chain.</p>
+</div>
+
+<div class="callout tip">
+  <span class="label">Action items that actually help</span>
+  <ul style="margin:.2rem 0;">
+    <li><strong>SMART &amp; owned</strong> — each has a named owner and a ticket, or it won't happen.</li>
+    <li>Prefer <strong>systemic fixes</strong> (add a guardrail, an automated check, a canary) over "be more careful" or "add training."</li>
+    <li>Track completion — a postmortem whose action items are never done is theatre.</li>
+    <li><strong>Trigger criteria</strong> — write a postmortem for any incident that crosses a threshold (user-visible, SLO-impacting, took manual intervention), even if narrowly averted.</li>
+  </ul>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap</span>
+  "Blameless" is not "no accountability." The team is still accountable for <em>fixing the system</em> and completing action items. Blameless removes fear of <em>personal</em> punishment so facts flow freely — it does not remove responsibility for improvement.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="patterns"><span class="num">10</span>Reliability &amp; resilience patterns</h2>
+<p class="lead">The whiteboard menu. Know what each protects against and its failure mode.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Resilience patterns interviewers expect you to name</caption>
+  <thead><tr><th>Pattern</th><th>What it does</th><th>Watch out for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Redundancy / replication</strong></td><td>N+1 or N+2 instances, multi-AZ/region; no single point of failure.</td><td>Correlated failure (shared dependency, same bad deploy) defeats it.</td></tr>
+    <tr><td><strong>Graceful degradation</strong></td><td>Shed non-essential features under stress; serve stale/cached/partial results instead of failing wholesale.</td><td>Must be designed in; decide what's "essential" up front.</td></tr>
+    <tr><td><strong>Load shedding</strong></td><td>Deliberately drop/reject excess requests (429) to protect the core from overload collapse.</td><td>Shed by priority; return fast so clients don't pile up.</td></tr>
+    <tr><td><strong>Circuit breaker</strong></td><td>Stop calling a failing dependency after a failure threshold (open state); periodically probe (half-open) before closing.</td><td>Tune thresholds &amp; reset window; avoid flapping.</td></tr>
+    <tr><td><strong>Retries + exponential backoff + jitter</strong></td><td>Retry transient failures with growing, randomized delays.</td><td><strong>Retries amplify outages</strong> — cap attempts, add jitter, use retry budgets.</td></tr>
+    <tr><td><strong>Timeouts</strong></td><td>Bound every remote call; fail fast instead of hanging and exhausting threads/connections.</td><td>No timeout = cascading resource exhaustion. Propagate deadlines.</td></tr>
+    <tr><td><strong>Bulkheads</strong></td><td>Isolate resources (thread pools, connection pools) per dependency so one slow dependency can't sink the whole ship.</td><td>Named after ship compartments; sizing per pool matters.</td></tr>
+    <tr><td><strong>Rate limiting / throttling</strong></td><td>Cap request rate per client/tenant; protect against abuse &amp; noisy neighbors.</td><td>Token bucket / leaky bucket; per-tenant fairness.</td></tr>
+    <tr><td><strong>Idempotency</strong></td><td>Same request applied twice = one effect (idempotency keys). Makes retries &amp; at-least-once delivery safe.</td><td>Essential before you enable retries on writes.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout trap">
+  <span class="label">⚠ Trap — the retry storm</span>
+  The classic distributed-systems failure: a dependency slows down → every caller retries → traffic multiplies → dependency fully collapses → thundering-herd on recovery. Mitigations that <em>must</em> come as a set: <strong>exponential backoff</strong> (spread load over time), <strong>jitter</strong> (de-synchronize clients so they don't retry in lockstep), <strong>retry budgets / caps</strong> (limit total retries as a fraction of traffic), and <strong>circuit breakers</strong> (stop retrying a dead dependency entirely). Naming retries without jitter is a red flag.
+</div>
+
+<pre><code><span class="cmt"># Exponential backoff with full jitter (AWS-recommended)</span>
+<span class="kw">delay</span> = random_between(<span class="num-lit">0</span>, min(cap, base * <span class="num-lit">2</span>**attempt))
+
+<span class="cmt"># attempt 0: 0..1s   attempt 1: 0..2s   attempt 2: 0..4s ... capped</span>
+<span class="cmt"># jitter is what prevents synchronized retry waves</span></code></pre>
+
+<!-- ============================================================= -->
+<h2 id="delivery"><span class="num">11</span>Capacity, chaos &amp; progressive delivery</h2>
+
+<div class="grid2">
+  <div class="card">
+    <h3>Capacity planning</h3>
+    <ul style="margin:.2rem 0;">
+      <li>Forecast demand (organic growth + launches/events) and provision <strong>ahead</strong> of it, with headroom for N+1 failures.</li>
+      <li>Drive it with <strong>load tests</strong> to find the real per-instance ceiling, not a guess.</li>
+      <li>Plan for both <strong>organic</strong> (steady growth) and <strong>inorganic</strong> (launch spike) demand.</li>
+      <li>Autoscaling handles short-term; capacity planning handles the long-term lead-time resources (quota, hardware, regions).</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Chaos engineering / game days</h3>
+    <ul style="margin:.2rem 0;">
+      <li>Deliberately inject failure (kill nodes, add latency, drop a zone) to <strong>verify resilience holds</strong> before reality tests it.</li>
+      <li>Form a <strong>hypothesis</strong>, blast-radius-limit it, run in prod-like (ideally prod) conditions, observe, fix gaps.</li>
+      <li><strong>Game days</strong> — scheduled, cross-team exercises rehearsing incident response &amp; runbooks.</li>
+      <li>Netflix's Chaos Monkey is the canonical origin.</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Progressive delivery (deployment strategies)</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Strategy</th><th>How</th><th>Trade-off</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Canary</strong></td><td>Route a small % of traffic to the new version; watch SLIs; ramp up if healthy, roll back if not.</td><td>Best risk/cost balance; needs good metrics &amp; automated analysis to judge the canary.</td></tr>
+    <tr><td><strong>Blue-green</strong></td><td>Two full environments; flip all traffic from blue (old) to green (new) at once; instant rollback by flipping back.</td><td>Fast rollback but 2× infra cost; DB schema compatibility is the hard part.</td></tr>
+    <tr><td><strong>Rolling</strong></td><td>Replace instances batch by batch.</td><td>No extra infra, but mixed versions live simultaneously; slower rollback.</td></tr>
+    <tr><td><strong>Feature flags</strong></td><td>Decouple <em>deploy</em> from <em>release</em>; toggle features on/off (or per-cohort) without redeploying. Kill switch for bad features.</td><td>Flag debt; must be cleaned up. Enables dark launches &amp; A/B.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout tip">
+  <span class="label">Key distinction</span>
+  <strong>Deploy ≠ release.</strong> Deployment puts code on servers; release exposes it to users. Feature flags and canaries let you deploy continuously while releasing carefully — the foundation of low-risk, high-velocity delivery.
+</div>
+
+<!-- ============================================================= -->
+<h2 id="release"><span class="num">12</span>Release engineering &amp; change management</h2>
+
+<ul>
+  <li><strong>Most incidents are caused by change</strong> (deploys, config, flag flips). So change management is reliability's biggest lever.</li>
+  <li><strong>Reproducible, hermetic builds</strong> — same source + same tools ⇒ identical artifact; pinned dependencies; build from version control, not a laptop.</li>
+  <li><strong>Progressive rollouts + fast rollback</strong> — every change must have a tested, one-click undo. "Roll back first, diagnose later."</li>
+  <li><strong>Self-service &amp; automated</strong> — release tooling owned by SRE but usable by devs, gated by automated tests, canary analysis, and error-budget policy.</li>
+  <li><strong>Config as code</strong> — configuration changes go through the same review/test/rollout as code, because they cause just as many outages.</li>
+</ul>
+
+<div class="callout">
+  <span class="label" style="color:var(--accent);">Toil vs engineering — the balance</span>
+  <p style="margin:.2rem 0;">The whole SRE operating model is a lever: <strong>error budgets</strong> govern how much change velocity reliability can afford; the <strong>50% toil cap</strong> guarantees SREs keep enough engineering time to automate the toil away; <strong>postmortems</strong> convert incidents into systemic fixes. Take away any one and the model degrades — unbounded toil starves the automation that would end the toil; no error budget makes reliability a subjective fight; no blameless culture and incidents hide. Interviewers want you to see these as a <em>system</em>, not a checklist.</p>
+</div>
+
+<!-- ============================================================= -->
+<h2 id="qbank"><span class="num">13</span>Rapid-fire Q&amp;A</h2>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: What's the difference between SRE and DevOps?</p>
+  <p class="a">DevOps is a <em>culture/philosophy</em> (break down dev/ops silos, automate, shared ownership). SRE is a <em>specific implementation</em> of those principles with prescriptive practices — SLOs, error budgets, toil caps, blameless postmortems. "SRE implements DevOps" (class SRE implements interface DevOps).</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: Your service is at 99.99% but the SLO is 99.9%. What do you do?</p>
+  <p class="a">You're <em>over-delivering</em> and hoarding error budget. Options: ship faster / take more risk, run chaos experiments, do risky migrations, or loosen the SLO. Over-reliability is wasted engineering that could be feature velocity. Unspent budget is a problem, not a trophy.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: How do you set an SLO for a brand-new service?</p>
+  <p class="a">Start from user expectations and dependencies (your SLO can't exceed the product of your critical dependencies' SLOs). Measure current performance for a few weeks to get a realistic baseline, pick an achievable-but-meaningful target, set the internal SLO tighter than any SLA, and iterate. Don't invent "four nines" out of thin air.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: A dependency you call has a 99.9% SLO and you call it on every request. What's your ceiling?</p>
+  <p class="a">Your availability can't exceed it on that path — roughly 99.9% at best, and if you have several such serial hard dependencies you <em>multiply</em> them (0.999 × 0.999 × …), so more dependencies = lower ceiling. Fixes: make the dependency non-critical (cache, degrade gracefully, async), add redundancy, or reduce fan-out.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: 99.9% monthly — how much downtime is that? Derive it.</p>
+  <p class="a">30-day month = 43,200 min. Budget = 0.1% = 43,200 × 0.001 = <strong>43.2 min = 43m 12s</strong>. Each extra nine ÷10: 99.99% ≈ 4m 19s, 99.95% ≈ 21m 36s.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: Why prefer symptom-based alerting over cause-based?</p>
+  <p class="a">Symptoms (user-visible: high error rate, high latency) are what actually matter and are stable across implementation changes; causes (high CPU, full disk) are numerous, noisy, and may not affect users. Page on symptoms, use causes for diagnosis. Fewer, more meaningful pages ⇒ less alert fatigue.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: How do you reduce MTTR?</p>
+  <p class="a">Faster detection (good monitoring, burn-rate alerts), well-rehearsed runbooks/playbooks, one-click rollback and feature-flag kill switches, clear incident roles (IC/Ops/Comms), automation of common mitigations, and game-day practice. Mitigate first, root-cause later.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: When would you NOT automate something?</p>
+  <p class="a">When automation cost &gt; lifetime toil cost, when the task is rare and needs human judgment, when the underlying process is still changing/broken (automate a broken process and you scale the breakage), or when a bad automation's blast radius is unacceptable. Automation itself needs guardrails, tests, and a manual override.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: What makes a postmortem "blameless" and why does it matter?</p>
+  <p class="a">It focuses on systemic contributing factors and fixes, not on punishing the person who pushed the button. It matters because fear suppresses honest disclosure — if people are blamed, incidents get hidden and recur. Blamelessness maximizes learning while still holding the team accountable for completing fixes.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: Design an alert for a 99.9% SLO. Walk me through it.</p>
+  <p class="a">Multi-window, multi-burn-rate. A fast-burn page at 14.4× over a 1h window (confirmed by a 5m short window) — catches catastrophic burn (2% of budget/hr, breach in ~2 days). A slower 6× over 6h page, plus 3×/1-day and 1×/3-day tickets for slow leaks. Requiring both a long <em>and</em> short window gives good precision (few false pages) and fast reset when it clears.</p>
+</div>
+
+<div class="callout qa">
+  <span class="label">Q&amp;A</span>
+  <p class="q">Q: What's the difference between resilience and reliability?</p>
+  <p class="a">Reliability = the system performs correctly over time (measured by SLIs/uptime). Resilience = the system's ability to <em>absorb and recover from</em> faults and stress (redundancy, degradation, circuit breakers). Resilience is a means; reliability is the outcome you measure.</p>
+</div>
+
+<hr>
+<p class="muted" style="font-size:.85rem;">Sources: <em>Site Reliability Engineering</em> and <em>The Site Reliability Workbook</em> (Google/O'Reilly), plus common industry practice. Downtime figures computed for a 30-day month (43,200 min) and 365-day year (525,600 min); values rounded to the second. Current to 2026. Study aid — verify specific numbers against your org's own SLO windows (a 28-day rolling window shifts the "per month" figures slightly).</p>
+
+</div>
+</body>
+</html>

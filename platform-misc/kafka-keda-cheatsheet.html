@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kafka + KEDA Deep Dive</title>
+<link href="../assets/fonts/font-set-9.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #06080e;
+  --s1: #0c1018;
+  --s2: #111720;
+  --border: #1b2333;
+  --b2: #253045;
+  /* Kafka = warm orange-red, KEDA = electric blue-teal */
+  --kfk: #ff5722;
+  --kfk2: #ff8a65;
+  --kda: #00bcd4;
+  --kda2: #4dd0e1;
+  --grn: #4caf50;
+  --amb: #ffb300;
+  --pur: #9c27b0;
+  --red: #f44336;
+  --text: #eceff1;
+  --dim: #546e7a;
+  --mid: #90a4ae;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;line-height:1.5;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,87,34,0.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(0,188,212,0.07) 0%,transparent 60%),
+    linear-gradient(rgba(255,87,34,0.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,188,212,0.015) 1px,transparent 1px);
+  background-size:100%,100%,52px 52px,52px 52px;
+  pointer-events:none;z-index:0;
+}
+.page{position:relative;z-index:1;max-width:1360px;margin:0 auto;padding:36px 24px 60px;}
+
+/* ── HEADER ── */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.hl{display:flex;align-items:baseline;gap:16px;}
+.hl h1{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:5px;line-height:1;}
+.hl h1 .kfk{background:linear-gradient(135deg,var(--kfk),var(--kfk2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hl h1 .plus{color:var(--b2);font-size:48px;}
+.hl h1 .kda{background:linear-gradient(135deg,var(--kda),var(--kda2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hl-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:-4px;}
+.hr-badges{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.hbadge{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1px solid;}
+.hb-k{border-color:var(--kfk);color:var(--kfk);background:rgba(255,87,34,0.06);}
+.hb-d{border-color:var(--kda);color:var(--kda);background:rgba(0,188,212,0.06);}
+.hb-g{border-color:var(--grn);color:var(--grn);background:rgba(76,175,80,0.06);}
+
+/* ── SECTION ── */
+.sl{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;margin:0 0 14px;display:flex;align-items:center;gap:12px;}
+.sl::after{content:'';flex:1;height:1px;}
+.sl.kfk-s{color:var(--kfk);}
+.sl.kfk-s::after{background:linear-gradient(90deg,rgba(255,87,34,.35),transparent);}
+.sl.kda-s{color:var(--kda);}
+.sl.kda-s::after{background:linear-gradient(90deg,rgba(0,188,212,.35),transparent);}
+.sl.mix-s{color:var(--mid);}
+.sl.mix-s::after{background:linear-gradient(90deg,rgba(144,164,174,.2),transparent);}
+.sl span{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;font-weight:400;}
+.mb{margin-bottom:20px;}
+
+/* ── GRIDS ── */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:14px;margin-bottom:14px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:18px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+.card:hover{border-color:var(--b2);}
+.card .glow{position:absolute;top:-20px;left:-20px;width:90px;height:90px;border-radius:50%;opacity:.1;filter:blur(28px);pointer-events:none;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.ck::before{background:linear-gradient(90deg,var(--kfk),transparent);}
+.cd::before{background:linear-gradient(90deg,var(--kda),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.ca::before{background:linear-gradient(90deg,var(--amb),transparent);}
+.cp::before{background:linear-gradient(90deg,var(--pur),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.cx::before{background:linear-gradient(90deg,var(--kfk),var(--kda));}
+
+/* ── CARD HEADER ── */
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.ci{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.ck .ci{background:rgba(255,87,34,0.1);}
+.cd .ci{background:rgba(0,188,212,0.1);}
+.cg .ci{background:rgba(76,175,80,0.1);}
+.ca .ci{background:rgba(255,179,0,0.1);}
+.cp .ci{background:rgba(156,39,176,0.1);}
+.cr .ci{background:rgba(244,67,54,0.1);}
+.cx .ci{background:linear-gradient(135deg,rgba(255,87,34,0.1),rgba(0,188,212,0.1));}
+.ct{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;}
+.ck .ct{color:var(--kfk);}
+.cd .ct{color:var(--kda);}
+.cg .ct{color:var(--grn);}
+.ca .ct{color:var(--amb);}
+.cp .ct{color:var(--pur);}
+.cr .ct{color:var(--red);}
+.cx .ct{background:linear-gradient(90deg,var(--kfk),var(--kda));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.csub{font-size:9px;color:var(--dim);margin-top:2px;}
+
+/* ── FACT ROWS ── */
+.fr{display:grid;grid-template-columns:108px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.035);align-items:baseline;font-size:11px;}
+.fk{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.ck .fk{color:rgba(255,87,34,.7);}
+.cd .fk{color:rgba(0,188,212,.7);}
+.cg .fk{color:rgba(76,175,80,.7);}
+.ca .fk{color:rgba(255,179,0,.7);}
+.cp .fk{color:rgba(156,39,176,.7);}
+.cr .fk{color:rgba(244,67,54,.7);}
+.cx .fk{color:rgba(0,188,212,.7);}
+.fv{color:var(--mid);line-height:1.55;}
+.fv b,.fv strong{color:var(--text);font-weight:500;}
+.fv code{font-family:'Space Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--kda);}
+
+/* ── CALLOUT ── */
+.cal{padding:8px 11px;font-size:10.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 4px 4px 0;line-height:1.6;}
+.cal b,.cal strong{color:var(--text);}
+.ck .cal{background:rgba(255,87,34,0.05);border-color:var(--kfk);}
+.cd .cal{background:rgba(0,188,212,0.05);border-color:var(--kda);}
+.cg .cal{background:rgba(76,175,80,0.05);border-color:var(--grn);}
+.ca .cal{background:rgba(255,179,0,0.05);border-color:var(--amb);}
+.cp .cal{background:rgba(156,39,176,0.05);border-color:var(--pur);}
+.cr .cal{background:rgba(244,67,54,0.05);border-color:var(--red);}
+.cx .cal{background:rgba(0,188,212,0.04);border-color:var(--kda);}
+
+/* ── CODE ── */
+.code{background:#050810;border:1px solid var(--border);border-radius:6px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:10px;line-height:1.8;color:var(--dim);margin-top:8px;overflow-x:auto;}
+.code .kw{color:#ce93d8;}
+.code .fn{color:var(--grn);}
+.code .str{color:var(--amb);}
+.code .cm{color:#2e3d4f;}
+.code .ky{color:var(--kda);}
+.code .va{color:var(--kfk2);}
+.code .num{color:#f48fb1;}
+
+/* ── PILL ── */
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.pill{padding:3px 9px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid;font-family:'Space Mono',monospace;}
+.pk{border-color:rgba(255,87,34,.4);color:var(--kfk);background:rgba(255,87,34,.07);}
+.pd{border-color:rgba(0,188,212,.4);color:var(--kda);background:rgba(0,188,212,.07);}
+.pg{border-color:rgba(76,175,80,.4);color:var(--grn);background:rgba(76,175,80,.07);}
+.pa{border-color:rgba(255,179,0,.4);color:var(--amb);background:rgba(255,179,0,.07);}
+.pp{border-color:rgba(156,39,176,.4);color:var(--pur);background:rgba(156,39,176,.07);}
+.pr{border-color:rgba(244,67,54,.4);color:var(--red);background:rgba(244,67,54,.07);}
+
+/* ── GOTCHA ── */
+.trap{background:rgba(244,67,54,0.05);border:1px solid rgba(244,67,54,0.2);border-radius:6px;padding:9px 11px;font-size:10.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ GOTCHA — ';font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;color:var(--red);letter-spacing:1px;}
+.trap b{color:var(--text);}
+
+/* ── KEY/VAL mini ── */
+.kv{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);font-size:10.5px;}
+.kv:first-child{border-top:none;}
+.kvk{font-family:'Space Mono',monospace;font-size:9px;color:var(--mid);}
+.kvv{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;}
+
+/* ── TIMELINE ── */
+.tl{display:flex;flex-direction:column;}
+.tl-step{display:grid;grid-template-columns:20px 1fr;gap:10px;position:relative;}
+.tl-step:not(:last-child) .tls::after{content:'';position:absolute;left:9px;top:22px;bottom:-4px;width:1px;background:linear-gradient(180deg,var(--border),transparent);}
+.tls{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
+.tln{width:18px;height:18px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'Space Mono',monospace;font-weight:700;flex-shrink:0;}
+.tlc{padding:2px 0 12px;}
+.tlt{font-weight:600;font-size:11px;margin-bottom:2px;}
+.tlb{font-size:10.5px;color:var(--mid);line-height:1.5;}
+.tlb b{color:var(--text);}
+
+/* ── FORMULA ── */
+.formula{background:#070c14;border:1px solid var(--b2);border-radius:6px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:12px;text-align:center;margin-top:8px;color:var(--text);}
+.formula .highlight{color:var(--kda);font-weight:700;}
+.formula .op{color:var(--dim);}
+.formula .label{font-size:9px;color:var(--dim);display:block;margin-top:4px;letter-spacing:1px;}
+
+/* ── SCALE TABLE ── */
+.stable{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px;}
+.stable th{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.stable td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--mid);vertical-align:top;}
+.stable td:first-child{color:var(--text);font-weight:500;}
+.stable tr:last-child td{border-bottom:none;}
+.stable .good{color:var(--grn);}
+.stable .warn{color:var(--amb);}
+.stable .bad{color:var(--red);}
+
+/* ── HIGHLIGHT BOX ── */
+.hbox{border-radius:8px;padding:16px;margin-top:0;}
+.hbox-k{background:rgba(255,87,34,0.05);border:1px solid rgba(255,87,34,0.15);}
+.hbox-d{background:rgba(0,188,212,0.05);border:1px solid rgba(0,188,212,0.15);}
+.hbox-mix{background:linear-gradient(135deg,rgba(255,87,34,0.04),rgba(0,188,212,0.04));border:1px solid rgba(255,255,255,0.06);}
+.hbox-title{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.hbox-k .hbox-title{color:var(--kfk);}
+.hbox-d .hbox-title{color:var(--kda);}
+.hbox-mix .hbox-title{color:var(--mid);}
+
+/* ── METRIC CARD ── */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.metric{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;text-align:center;}
+.metric-num{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;line-height:1;}
+.metric-lbl{font-family:'Space Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+
+/* ── FLOW DIAGRAM ── */
+.flow-wrap{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden;}
+.flow-wrap .corner-tag{position:absolute;top:14px;right:16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+/* animations */
+@keyframes fadein{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fadein .4s ease both;}
+.page>*:nth-child(1){animation-delay:.00s}
+.page>*:nth-child(2){animation-delay:.04s}
+.page>*:nth-child(3){animation-delay:.08s}
+.page>*:nth-child(4){animation-delay:.12s}
+.page>*:nth-child(5){animation-delay:.16s}
+.page>*:nth-child(6){animation-delay:.20s}
+.page>*:nth-child(7){animation-delay:.24s}
+.page>*:nth-child(8){animation-delay:.28s}
+.page>*:nth-child(9){animation-delay:.32s}
+.page>*:nth-child(10){animation-delay:.36s}
+.page>*:nth-child(11){animation-delay:.40s}
+
+.footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.ft{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="hl">
+      <h1><span class="kfk">KAFKA</span> <span class="plus">+</span> <span class="kda">KEDA</span></h1>
+    </div>
+    <div class="hl-sub">Event Streaming + Kubernetes Event-Driven Autoscaling · Deep Dive</div>
+  </div>
+  <div class="hr-badges">
+    <div class="hbadge hb-k">Producer → Broker → Consumer</div>
+    <div class="hbadge hb-d">ScaledObject · Scaler · HPA</div>
+    <div class="hbadge hb-g">Singular · Billions of events / day</div>
+  </div>
+</div>
+
+<!-- ══════════════════════ KAFKA ARCHITECTURE ══════════════════════ -->
+<div class="sl kfk-s mb">Kafka Architecture <span>// cluster topology · the whole picture</span></div>
+
+<div class="flow-wrap">
+  <div class="corner-tag">KAFKA CLUSTER TOPOLOGY</div>
+  <svg viewBox="0 0 1280 310" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;">
+    <defs>
+      <marker id="arr-k" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(255,87,34,0.7)"/></marker>
+      <marker id="arr-d" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(0,188,212,0.7)"/></marker>
+      <marker id="arr-g" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(76,175,80,0.7)"/></marker>
+      <marker id="arr-w" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(144,164,174,0.5)"/></marker>
+      <linearGradient id="g-k" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff5722" stop-opacity=".25"/><stop offset="100%" stop-color="#ff5722" stop-opacity=".06"/></linearGradient>
+      <linearGradient id="g-d" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00bcd4" stop-opacity=".22"/><stop offset="100%" stop-color="#00bcd4" stop-opacity=".05"/></linearGradient>
+      <linearGradient id="g-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4caf50" stop-opacity=".18"/><stop offset="100%" stop-color="#4caf50" stop-opacity=".05"/></linearGradient>
+      <linearGradient id="g-p" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9c27b0" stop-opacity=".18"/><stop offset="100%" stop-color="#9c27b0" stop-opacity=".05"/></linearGradient>
+      <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <!-- Producers zone -->
+    <rect x="10" y="30" width="190" height="250" rx="8" fill="rgba(156,39,176,0.04)" stroke="rgba(156,39,176,0.12)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="22" y="48" font-family="Space Mono" font-size="8" fill="rgba(156,39,176,0.5)" letter-spacing="2">PRODUCERS</text>
+    <!-- Producer boxes -->
+    <g transform="translate(22,58)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#9c27b0" font-weight="700">Ad Event Service</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">billions of events/day</text></g>
+    <g transform="translate(22,110)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#9c27b0" font-weight="700">Attribution API</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">click/install events</text></g>
+    <g transform="translate(22,162)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#9c27b0" font-weight="700">Fraud Detector</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">fraud signals</text></g>
+
+    <!-- Arrows producers → broker -->
+    <line x1="188" y1="78" x2="240" y2="135" stroke="#9c27b0" stroke-width="1.5" stroke-dasharray="5 3" opacity=".5" marker-end="url(#arr-w)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
+    <line x1="188" y1="130" x2="240" y2="150" stroke="#9c27b0" stroke-width="1.5" stroke-dasharray="5 3" opacity=".5" marker-end="url(#arr-w)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1.3s" repeatCount="indefinite"/></line>
+    <line x1="188" y1="182" x2="240" y2="165" stroke="#9c27b0" stroke-width="1.5" stroke-dasharray="5 3" opacity=".5" marker-end="url(#arr-w)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1.1s" repeatCount="indefinite"/></line>
+
+    <!-- BROKERS zone -->
+    <rect x="238" y="30" width="480" height="250" rx="8" fill="rgba(255,87,34,0.04)" stroke="rgba(255,87,34,0.15)" stroke-width="1.2"/>
+    <text x="252" y="48" font-family="Space Mono" font-size="8" fill="rgba(255,87,34,0.5)" letter-spacing="2">KAFKA BROKERS (RF=3)</text>
+
+    <!-- Broker 1 -->
+    <g transform="translate(250,58)">
+      <rect width="140" height="210" rx="6" fill="url(#g-k)" stroke="#ff5722" stroke-width="1.5" filter="url(#glow)"/>
+      <text x="70" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">BROKER 0</text>
+      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">LEADER for P0,P3</text>
+      <!-- Partitions -->
+      <rect x="10" y="42" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
+      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P0 [LEADER]</text>
+      <rect x="10" y="70" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P1 [replica]</text>
+      <rect x="10" y="98" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P2 [replica]</text>
+      <rect x="10" y="126" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
+      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P3 [LEADER]</text>
+      <text x="70" y="175" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">ISR: B0, B1, B2</text>
+      <text x="70" y="190" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">offset 0→8.4M</text>
+    </g>
+
+    <!-- Broker 2 -->
+    <g transform="translate(408,58)">
+      <rect width="140" height="210" rx="6" fill="url(#g-k)" stroke="#ff5722" stroke-width="1.5"/>
+      <text x="70" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">BROKER 1</text>
+      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">LEADER for P1,P4</text>
+      <rect x="10" y="42" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P0 [replica]</text>
+      <rect x="10" y="70" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
+      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P1 [LEADER]</text>
+      <rect x="10" y="98" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P2 [replica]</text>
+      <rect x="10" y="126" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P3 [replica]</text>
+      <rect x="10" y="154" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
+      <text x="70" y="169" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P4 [LEADER]</text>
+    </g>
+
+    <!-- Broker 3 -->
+    <g transform="translate(566,58)">
+      <rect width="140" height="210" rx="6" fill="url(#g-k)" stroke="#ff5722" stroke-width="1.5"/>
+      <text x="70" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">BROKER 2</text>
+      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">LEADER for P2,P5</text>
+      <rect x="10" y="42" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P0 [replica]</text>
+      <rect x="10" y="70" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P1 [replica]</text>
+      <rect x="10" y="98" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
+      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P2 [LEADER]</text>
+      <rect x="10" y="126" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
+      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P3 [replica]</text>
+      <rect x="10" y="154" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
+      <text x="70" y="169" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P5 [LEADER]</text>
+    </g>
+
+    <!-- Arrows broker → consumers -->
+    <line x1="718" y1="130" x2="776" y2="110" stroke="#00bcd4" stroke-width="1.5" stroke-dasharray="5 3" opacity=".6" marker-end="url(#arr-d)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="0.9s" repeatCount="indefinite"/></line>
+    <line x1="718" y1="155" x2="776" y2="175" stroke="#00bcd4" stroke-width="1.5" stroke-dasharray="5 3" opacity=".6" marker-end="url(#arr-d)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+
+    <!-- ZooKeeper / KRaft -->
+    <g transform="translate(252,278)">
+      <rect width="430" height="0" rx="3" fill="none"/>
+      <text x="215" y="0" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(255,87,34,0.4)" letter-spacing="2">↑ KRaft mode (Kafka 3.x) — no ZooKeeper needed · metadata in internal topic</text>
+    </g>
+
+    <!-- CONSUMERS zone -->
+    <rect x="776" y="30" width="490" height="250" rx="8" fill="rgba(0,188,212,0.03)" stroke="rgba(0,188,212,0.12)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="790" y="48" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.5)" letter-spacing="2">CONSUMER GROUP: attribution-workers</text>
+
+    <!-- Consumer boxes with KEDA marker -->
+    <g transform="translate(788,58)">
+      <rect width="210" height="60" rx="6" fill="url(#g-d)" stroke="#00bcd4" stroke-width="1.5"/>
+      <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00bcd4" font-weight="700">Consumer Pod 0</text>
+      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">consumes: P0, P1</text>
+      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.5)">committed offset: 8,389,201</text>
+    </g>
+    <g transform="translate(788,134)">
+      <rect width="210" height="60" rx="6" fill="url(#g-d)" stroke="#00bcd4" stroke-width="1.5"/>
+      <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00bcd4" font-weight="700">Consumer Pod 1</text>
+      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">consumes: P2, P3</text>
+      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.5)">committed offset: 8,390,044</text>
+    </g>
+    <g transform="translate(788,210)">
+      <rect width="210" height="60" rx="6" fill="rgba(0,188,212,0.04)" stroke="rgba(0,188,212,0.3)" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="rgba(0,188,212,0.5)" font-weight="700">Consumer Pod 2</text>
+      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.3)">consumes: P4, P5</text>
+      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.35)">committed offset: 8,385,990</text>
+    </g>
+
+    <!-- KEDA indicator -->
+    <g transform="translate(1012,58)">
+      <rect width="240" height="212" rx="8" fill="rgba(0,188,212,0.04)" stroke="rgba(0,188,212,0.2)" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="120" y="22" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4" font-weight="700" letter-spacing="2">KEDA</text>
+      <text x="120" y="38" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">monitors lag, drives HPA</text>
+      <!-- Lag indicator -->
+      <rect x="16" y="48" width="208" height="30" rx="4" fill="rgba(255,179,0,0.08)" stroke="rgba(255,179,0,0.3)" stroke-width="1"/>
+      <text x="20" y="65" font-family="Space Mono" font-size="9" fill="#ffb300">LAG: 124,500 msgs</text>
+      <text x="20" y="76" font-family="DM Sans" font-size="8" fill="rgba(255,179,0,0.5)">&gt; threshold=50000</text>
+      <!-- Arrow scale up -->
+      <text x="120" y="100" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,255,255,0.3)">↓ triggers scale</text>
+      <rect x="16" y="108" width="208" height="30" rx="4" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.3)" stroke-width="1"/>
+      <text x="20" y="126" font-family="Space Mono" font-size="9" fill="#4caf50">replicas: 3 → 6</text>
+      <text x="20" y="137" font-family="DM Sans" font-size="8" fill="rgba(76,175,80,0.5)">desiredReplicas = ceil(lag/target)</text>
+      <text x="120" y="162" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.3)">polling interval: 30s</text>
+      <text x="120" y="178" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.3)">cooldown period: 5m</text>
+      <text x="120" y="194" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.3)">maxReplicas: 12</text>
+    </g>
+  </svg>
+</div>
+
+<!-- ══════════════════════ KAFKA CORE CONCEPTS ══════════════════════ -->
+<div class="sl kfk-s mb">Kafka Core Concepts <span>// the fundamentals you'll be asked</span></div>
+
+<div class="g3">
+  <div class="card ck">
+    <div class="glow" style="background:var(--kfk)"></div>
+    <div class="ch"><div class="ci">📦</div><div><div class="ct">Topics, Partitions, Offsets</div><div class="csub">The data model</div></div></div>
+    <div class="fr"><span class="fk">Topic</span><span class="fv">Logical stream name. Split into partitions for parallelism. <b>Partitions = max consumer parallelism.</b></span></div>
+    <div class="fr"><span class="fk">Partition</span><span class="fv">Ordered, immutable log. Messages appended only. Each partition has exactly <b>one leader broker</b> at any time.</span></div>
+    <div class="fr"><span class="fk">Offset</span><span class="fv">Monotonically increasing integer per partition. Consumer tracks "up to where I've read." <b>Stored in <code>__consumer_offsets</code> topic.</b></span></div>
+    <div class="fr"><span class="fk">Ordering</span><span class="fv"><b>Guaranteed within a partition only.</b> Use consistent partition key (e.g., device_id) to keep events for same device ordered.</span></div>
+    <div class="fr"><span class="fk">Retention</span><span class="fv">Time-based (<code>retention.ms</code>) OR size-based (<code>retention.bytes</code>). Compacted topics keep <b>latest value per key</b> forever.</span></div>
+    <div class="trap">More consumers than partitions in a group = <b>idle consumers</b>. Consumers don't share a partition. Plan partitions generously upfront — repartitioning requires rebalance.</div>
+  </div>
+
+  <div class="card ck">
+    <div class="glow" style="background:var(--kfk)"></div>
+    <div class="ch"><div class="ci">🔁</div><div><div class="ct">Replication + Durability</div><div class="csub">How Kafka survives broker failures</div></div></div>
+    <div class="fr"><span class="fk">RF (Replication Factor)</span><span class="fv">How many broker copies exist. RF=3 means can lose <b>2 brokers</b> and still serve. Standard in prod.</span></div>
+    <div class="fr"><span class="fk">Leader</span><span class="fv">Handles all produce AND fetch requests for a partition. Elected by controller. Followers only replicate.</span></div>
+    <div class="fr"><span class="fk">ISR</span><span class="fv"><b>In-Sync Replicas</b> — replicas caught up within <code>replica.lag.time.max.ms</code>. <b>Only ISR members can become leader.</b></span></div>
+    <div class="fr"><span class="fk">acks=all</span><span class="fv">Producer waits for <b>all ISR members</b> to ack write. Slowest but zero message loss. Use for attribution.</span></div>
+    <div class="fr"><span class="fk">min.insync.replicas</span><span class="fv">Minimum ISR size to accept writes. Set to 2 with RF=3: <code>min.insync.replicas=2</code>. Rejects writes if only 1 broker alive — <b>prevents silent data loss.</b></span></div>
+    <div class="formula">
+      <span><span class="highlight">min.insync.replicas</span> <span class="op">=</span> <span class="highlight">⌊RF/2⌋ + 1</span></span>
+      <span class="label">max tolerance = RF − min.insync.replicas broker failures</span>
+    </div>
+  </div>
+
+  <div class="card ck">
+    <div class="glow" style="background:var(--kfk)"></div>
+    <div class="ch"><div class="ci">👥</div><div><div class="ct">Consumer Groups</div><div class="csub">Horizontal scaling for consumers</div></div></div>
+    <div class="fr"><span class="fk">Group ID</span><span class="fv">Consumers sharing a group ID share the work. Each partition assigned to <b>exactly one consumer</b> per group.</span></div>
+    <div class="fr"><span class="fk">Rebalance</span><span class="fv">Triggered when consumer joins/leaves/crashes. All partition assignments re-computed. <b>Processing pauses</b> during rebalance — minimize it.</span></div>
+    <div class="fr"><span class="fk">Static membership</span><span class="fv"><code>group.instance.id</code> — consumer retains its assignment across restarts without triggering rebalance. Critical for K8s rolling updates.</span></div>
+    <div class="fr"><span class="fk">Commit modes</span><span class="fv"><b>Auto-commit</b> (risky, may lose events). <b>Sync commit</b> after processing (safe, slower). <b>Async commit</b> (fast, must handle failures).</span></div>
+    <div class="fr"><span class="fk">At-least-once</span><span class="fv">Default semantic. Re-process after restart. Your consumer <b>must be idempotent</b> — dedup by event ID.</span></div>
+    <div class="trap">Committing offset <b>before</b> processing = at-most-once (can lose messages). Commit <b>after</b> = at-least-once (safe but requires idempotency).</div>
+  </div>
+</div>
+
+<!-- ══════════════════════ KAFKA OBSERVABILITY ══════════════════════ -->
+<div class="sl kfk-s mb">Kafka Observability <span>// metrics that matter in production</span></div>
+
+<div class="g2">
+  <div class="card ca">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">📊</div><div><div class="ct">Critical Metrics Hierarchy</div><div class="csub">Priority order for alerting</div></div></div>
+    <div class="tl">
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--red);color:var(--red);">1</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--red);">Consumer Group Lag (per partition)</div>
+          <div class="tlb"><b>Lag = LatestOffset − CommittedOffset.</b> The most important metric. Per-partition granularity reveals hot partitions. Alert: lag growing monotonically OR lag &gt; N.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--red);color:var(--red);">2</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--red);">UnderReplicatedPartitions</div>
+          <div class="tlb"><b>Must be 0 in production.</b> Any value &gt; 0 means a follower is behind — data at risk. Causes: broker overloaded, network partition, GC pause.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--amb);color:var(--amb);">3</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--amb);">ISR Shrink Rate</div>
+          <div class="tlb">Followers dropping out of ISR. Leading indicator before UnderReplicated. Caused by slow disk I/O, GC, network jitter.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--amb);color:var(--amb);">4</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--amb);">Request Queue Time + Response Time</div>
+          <div class="tlb">High request queue depth = broker CPU/IO saturated. Produce latency P99 &gt; threshold = pipeline slowing.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">5</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--grn);">Throughput: BytesIn/Out per broker</div>
+          <div class="tlb">Reveals hot brokers (uneven partition leader distribution). Balance leaders across brokers with <b>kafka-preferred-replica-election</b>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cg">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">🔧</div><div><div class="ct">Monitoring Stack for Kafka</div><div class="csub">Tools + setup</div></div></div>
+    <div class="fr"><span class="fk">JMX Exporter</span><span class="fv">Exposes all Kafka JMX metrics as Prometheus metrics. Run as Java agent on each broker. Scrape with Prometheus.</span></div>
+    <div class="fr"><span class="fk">Burrow</span><span class="fv">LinkedIn's Kafka consumer lag evaluator. Trend-based alerting — not just a threshold, but <b>is lag growing?</b> smarter than raw lag alerts.</span></div>
+    <div class="fr"><span class="fk">AWS MSK Metrics</span><span class="fv">CloudWatch metrics: <code>KafkaDataLogsDiskUsed</code>, <code>UnderReplicatedPartitions</code>, <code>EstimatedTimeLag</code>. MSK also pushes per-consumer metrics.</span></div>
+    <div class="fr"><span class="fk">kminion</span><span class="fv">Modern Prometheus exporter for Kafka. Includes consumer group lag per-partition, topic offsets, consumer commit rates.</span></div>
+    <div class="fr"><span class="fk">Grafana</span><span class="fv">Dashboards: <b>Consumer Lag by group/partition</b>, Broker throughput, Produce/fetch latency P95/P99, ISR changes over time.</span></div>
+    <div class="code">
+<span class="cm"># Check lag quickly via CLI</span>
+kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 \
+  --group attribution-workers \
+  --describe
+
+<span class="cm"># Output: GROUP TOPIC PARTITION CURRENT-OFFSET LOG-END-OFFSET LAG</span>
+<span class="cm"># LAG = LOG-END-OFFSET - CURRENT-OFFSET</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ KAFKA PRODUCTION TUNING ══════════════════════ -->
+<div class="sl kfk-s mb">Kafka Production Tuning <span>// the params that move the needle</span></div>
+
+<div class="g3">
+  <div class="card ck">
+    <div class="glow" style="background:var(--kfk)"></div>
+    <div class="ch"><div class="ci">⚙️</div><div><div class="ct">Producer Config</div><div class="csub">For high-throughput attribution pipeline</div></div></div>
+    <div class="code">
+<span class="cm"># Durability config (never lose ad events)</span>
+<span class="ky">acks</span>: <span class="va">all</span>
+<span class="ky">min.insync.replicas</span>: <span class="num">2</span>
+<span class="ky">retries</span>: <span class="num">Integer.MAX_VALUE</span>
+<span class="ky">enable.idempotence</span>: <span class="va">true</span>
+
+<span class="cm"># Throughput tuning</span>
+<span class="ky">batch.size</span>: <span class="num">65536</span>        <span class="cm"># 64KB batch</span>
+<span class="ky">linger.ms</span>: <span class="num">10</span>            <span class="cm"># wait 10ms to fill batch</span>
+<span class="ky">compression.type</span>: <span class="va">lz4</span>   <span class="cm"># fast + good ratio</span>
+<span class="ky">buffer.memory</span>: <span class="num">33554432</span>  <span class="cm"># 32MB buffer</span>
+    </div>
+    <div class="cal"><strong>linger.ms vs latency tradeoff:</strong> higher = better batching = higher throughput but more latency. For attribution events: 5–20ms is acceptable.</div>
+  </div>
+
+  <div class="card ck">
+    <div class="glow" style="background:var(--kfk)"></div>
+    <div class="ch"><div class="ci">⚙️</div><div><div class="ct">Consumer Config</div><div class="csub">For event-driven processing at scale</div></div></div>
+    <div class="code">
+<span class="cm"># Throughput + safety</span>
+<span class="ky">max.poll.records</span>: <span class="num">500</span>       <span class="cm"># records per poll</span>
+<span class="ky">max.poll.interval.ms</span>: <span class="num">300000</span> <span class="cm"># 5min, avoid rebalance</span>
+<span class="ky">fetch.min.bytes</span>: <span class="num">1024</span>        <span class="cm"># wait for 1KB batch</span>
+<span class="ky">fetch.max.wait.ms</span>: <span class="num">500</span>       <span class="cm"># max wait for batch</span>
+
+<span class="cm"># Offset management (explicit)</span>
+<span class="ky">enable.auto.commit</span>: <span class="va">false</span>   <span class="cm"># manual commit = safe</span>
+<span class="ky">auto.offset.reset</span>: <span class="va">earliest</span> <span class="cm"># new group → start fresh</span>
+
+<span class="cm"># K8s rolling update stability</span>
+<span class="ky">group.instance.id</span>: <span class="va">pod-${POD_NAME}</span>
+    </div>
+    <div class="cal"><strong>max.poll.interval.ms:</strong> if processing takes longer than this, Kafka thinks consumer is dead → triggers rebalance. Increase if you have slow batch processing jobs.</div>
+  </div>
+
+  <div class="card ca">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">⚙️</div><div><div class="ct">Broker Config</div><div class="csub">Operational tuning for large clusters</div></div></div>
+    <div class="code">
+<span class="cm"># Replication + durability</span>
+<span class="ky">default.replication.factor</span>: <span class="num">3</span>
+<span class="ky">min.insync.replicas</span>: <span class="num">2</span>
+<span class="ky">unclean.leader.election.enable</span>: <span class="va">false</span>
+
+<span class="cm"># Log management</span>
+<span class="ky">log.retention.hours</span>: <span class="num">168</span>       <span class="cm"># 7 days</span>
+<span class="ky">log.segment.bytes</span>: <span class="num">1073741824</span> <span class="cm"># 1GB segments</span>
+<span class="ky">log.cleanup.policy</span>: <span class="va">delete</span>     <span class="cm"># or compact</span>
+
+<span class="cm"># Network + I/O threads</span>
+<span class="ky">num.network.threads</span>: <span class="num">8</span>
+<span class="ky">num.io.threads</span>: <span class="num">16</span>
+<span class="ky">socket.send.buffer.bytes</span>: <span class="num">1048576</span>
+    </div>
+    <div class="trap"><code>unclean.leader.election.enable=true</code> allows out-of-sync replicas to become leader. <b>Never do this for attribution data</b> — you will lose messages.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════ KEDA ══════════════════════ -->
+<div class="sl kda-s mb">KEDA — Kubernetes Event-Driven Autoscaling <span>// how it works end to end</span></div>
+
+<!-- KEDA Architecture Diagram -->
+<div class="flow-wrap">
+  <div class="corner-tag">KEDA COMPONENT TOPOLOGY</div>
+  <svg viewBox="0 0 1280 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;">
+    <defs>
+      <linearGradient id="gk2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00bcd4" stop-opacity=".2"/><stop offset="100%" stop-color="#00bcd4" stop-opacity=".05"/></linearGradient>
+      <linearGradient id="gk3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4caf50" stop-opacity=".15"/><stop offset="100%" stop-color="#4caf50" stop-opacity=".05"/></linearGradient>
+      <linearGradient id="gk4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff5722" stop-opacity=".15"/><stop offset="100%" stop-color="#ff5722" stop-opacity=".04"/></linearGradient>
+      <filter id="neon"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <!-- External source: Kafka -->
+    <g transform="translate(20,80)">
+      <rect width="150" height="100" rx="8" fill="url(#gk4)" stroke="#ff5722" stroke-width="1.5"/>
+      <text x="75" y="22" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">Kafka Broker</text>
+      <text x="75" y="40" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">Consumer Group Lag</text>
+      <rect x="12" y="48" width="126" height="20" rx="3" fill="rgba(255,179,0,0.1)" stroke="rgba(255,179,0,0.3)" stroke-width="1"/>
+      <text x="75" y="62" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ffb300">lag: 124,500</text>
+      <text x="75" y="82" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,87,34,0.5)">topic: ad-events</text>
+    </g>
+
+    <!-- Arrow Kafka → KEDA Metrics Adapter -->
+    <line x1="170" y1="130" x2="230" y2="130" stroke="#00bcd4" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-d)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="0.8s" repeatCount="indefinite"/></line>
+    <text x="190" y="124" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.5)">poll lag</text>
+
+    <!-- KEDA Operator box (central) -->
+    <g transform="translate(228,30)">
+      <rect width="780" height="200" rx="10" fill="rgba(0,188,212,0.04)" stroke="rgba(0,188,212,0.2)" stroke-width="1.5" filter="url(#neon)"/>
+      <text x="390" y="22" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00bcd4" font-weight="700" letter-spacing="2">KEDA OPERATOR</text>
+
+      <!-- Scaler -->
+      <g transform="translate(16,32)">
+        <rect width="170" height="150" rx="7" fill="url(#gk2)" stroke="#00bcd4" stroke-width="1"/>
+        <text x="85" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4" font-weight="700">Scaler</text>
+        <text x="85" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">KafkaScaler</text>
+        <text x="85" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">Polls Kafka</text>
+        <text x="85" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">Gets lag / topic</text>
+        <text x="85" y="82" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">Computes desired</text>
+        <text x="85" y="96" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">replicas</text>
+        <rect x="12" y="108" width="146" height="28" rx="3" fill="rgba(0,188,212,0.1)" stroke="rgba(0,188,212,0.3)" stroke-width="1"/>
+        <text x="85" y="124" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4">ceil(124500/50000)</text>
+        <text x="85" y="136" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50">= 3 pods needed</text>
+      </g>
+
+      <!-- Arrow → ScaledObject -->
+      <line x1="186" y1="107" x2="230" y2="107" stroke="rgba(0,188,212,0.5)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr-d)"/>
+
+      <!-- ScaledObject box -->
+      <g transform="translate(228,32)">
+        <rect width="200" height="150" rx="7" fill="url(#gk2)" stroke="#00bcd4" stroke-width="1"/>
+        <text x="100" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4" font-weight="700">ScaledObject</text>
+        <text x="100" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">CRD (Custom Resource)</text>
+        <text x="100" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">scaleTargetRef: Deployment</text>
+        <text x="100" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">minReplicas: 0</text>
+        <text x="100" y="80" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">maxReplicas: 20</text>
+        <text x="100" y="96" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">trigger: kafka</text>
+        <text x="100" y="110" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">lagThreshold: 50000</text>
+        <text x="100" y="124" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">activationThreshold: 1</text>
+      </g>
+
+      <!-- Arrow → HPA -->
+      <line x1="428" y1="107" x2="472" y2="107" stroke="rgba(0,188,212,0.5)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr-d)"/>
+
+      <!-- HPA box -->
+      <g transform="translate(470,32)">
+        <rect width="170" height="150" rx="7" fill="url(#gk3)" stroke="#4caf50" stroke-width="1"/>
+        <text x="85" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50" font-weight="700">HPA</text>
+        <text x="85" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">managed by KEDA</text>
+        <text x="85" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">metricName: kafka-lag</text>
+        <text x="85" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">targetValue: 50000</text>
+        <text x="85" y="82" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">current: 124500</text>
+        <rect x="12" y="90" width="146" height="26" rx="3" fill="rgba(76,175,80,0.1)" stroke="rgba(76,175,80,0.3)" stroke-width="1"/>
+        <text x="85" y="107" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50">desired: 3 replicas</text>
+        <text x="85" y="132" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">stabilization: 300s</text>
+      </g>
+    </g>
+
+    <!-- Arrow → K8s Deployment -->
+    <line x1="1008" y1="130" x2="1068" y2="130" stroke="#4caf50" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-g)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
+    <text x="1022" y="124" font-family="Space Mono" font-size="8" fill="rgba(76,175,80,0.5)">scale</text>
+
+    <!-- K8s Deployment -->
+    <g transform="translate(1066,60)">
+      <rect width="190" height="140" rx="8" fill="url(#gk3)" stroke="#4caf50" stroke-width="1.5"/>
+      <text x="95" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#4caf50" font-weight="700">Deployment</text>
+      <text x="95" y="34" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">attribution-consumer</text>
+      <rect x="12" y="44" width="166" height="22" rx="3" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)" stroke-width="1"/>
+      <text x="95" y="59" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50">Pod ✓ running</text>
+      <rect x="12" y="72" width="166" height="22" rx="3" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)" stroke-width="1"/>
+      <text x="95" y="87" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50">Pod ✓ running</text>
+      <rect x="12" y="100" width="166" height="22" rx="3" fill="rgba(0,188,212,0.06)" stroke="rgba(0,188,212,0.3)" stroke-width="1" stroke-dasharray="3 2"/>
+      <text x="95" y="115" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4">Pod ↑ scaling up</text>
+    </g>
+
+    <!-- Custom Metrics API path label -->
+    <text x="640" y="250" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.4)" letter-spacing="2">KEDA Metrics Adapter ← exposes kafka-lag to K8s Custom Metrics API → HPA reads it via metrics.k8s.io</text>
+  </svg>
+</div>
+
+<!-- ══════════════════════ KEDA CONFIG + CONCEPTS ══════════════════════ -->
+<div class="sl kda-s mb">KEDA Deep Dive <span>// ScaledObject · triggers · scaling math</span></div>
+
+<div class="g32">
+  <div class="card cd">
+    <div class="glow" style="background:var(--kda)"></div>
+    <div class="ch"><div class="ci">📄</div><div><div class="ct">ScaledObject YAML — Full Example</div><div class="csub">For Singular's attribution consumer deployment</div></div></div>
+    <div class="code">
+<span class="kw">apiVersion</span>: <span class="va">keda.sh/v1alpha1</span>
+<span class="kw">kind</span>: <span class="va">ScaledObject</span>
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: <span class="va">attribution-consumer-scaler</span>
+  <span class="kw">namespace</span>: <span class="va">attribution-prod</span>
+<span class="kw">spec</span>:
+  <span class="kw">scaleTargetRef</span>:
+    <span class="kw">apiVersion</span>: <span class="va">apps/v1</span>
+    <span class="kw">kind</span>:       <span class="va">Deployment</span>
+    <span class="kw">name</span>:       <span class="va">attribution-consumer</span>
+
+  <span class="kw">pollingInterval</span>: <span class="num">30</span>    <span class="cm"># check lag every 30s</span>
+  <span class="kw">cooldownPeriod</span>:  <span class="num">300</span>   <span class="cm"># wait 5m before scale-in</span>
+  <span class="kw">minReplicaCount</span>: <span class="num">1</span>    <span class="cm"># never 0 (keep 1 warm)</span>
+  <span class="kw">maxReplicaCount</span>: <span class="num">20</span>   <span class="cm"># max = partition count</span>
+
+  <span class="kw">advanced</span>:
+    <span class="kw">horizontalPodAutoscalerConfig</span>:
+      <span class="kw">behavior</span>:
+        <span class="kw">scaleUp</span>:
+          <span class="kw">stabilizationWindowSeconds</span>: <span class="num">60</span>   <span class="cm"># fast up</span>
+          <span class="kw">policies</span>:
+          - <span class="kw">type</span>: <span class="va">Percent</span>
+            <span class="kw">value</span>: <span class="num">100</span>    <span class="cm"># double per 60s</span>
+            <span class="kw">periodSeconds</span>: <span class="num">60</span>
+        <span class="kw">scaleDown</span>:
+          <span class="kw">stabilizationWindowSeconds</span>: <span class="num">300</span>  <span class="cm"># slow down</span>
+
+  <span class="kw">triggers</span>:
+  - <span class="kw">type</span>: <span class="va">kafka</span>
+    <span class="kw">metadata</span>:
+      <span class="kw">bootstrapServers</span>: <span class="va">kafka-broker:9092</span>
+      <span class="kw">consumerGroup</span>:   <span class="va">attribution-workers</span>
+      <span class="kw">topic</span>:           <span class="va">ad-events</span>
+      <span class="kw">lagThreshold</span>:    <span class="str">"50000"</span>  <span class="cm"># lag per replica</span>
+      <span class="kw">activationLagThreshold</span>: <span class="str">"1"</span>  <span class="cm"># wake from 0</span>
+      <span class="kw">offsetResetPolicy</span>: <span class="va">latest</span>
+    </div>
+    <div class="cal"><strong>maxReplicaCount should = partition count.</strong> More consumers than partitions = idle pods wasting memory. If you need to scale beyond current partitions — increase partitions first.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card cd">
+      <div class="glow" style="background:var(--kda)"></div>
+      <div class="ch"><div class="ci">🧮</div><div><div class="ct">Scaling Formula</div><div class="csub">How KEDA computes desiredReplicas</div></div></div>
+      <div class="formula">
+        <span><span class="highlight">desiredReplicas</span> <span class="op">= ceil(</span><span class="highlight">totalLag</span> <span class="op">÷</span> <span class="highlight">lagThreshold</span><span class="op">)</span></span>
+        <span class="label">clamped between minReplicaCount and maxReplicaCount</span>
+      </div>
+      <div class="fr" style="margin-top:10px;"><span class="fk">Example</span><span class="fv">lag=124,500 ÷ threshold=50,000 → ceil(2.49) = <b>3 replicas</b></span></div>
+      <div class="fr"><span class="fk">lag=0</span><span class="fv">Scale to <b>minReplicaCount</b>. If min=0 → scale to zero (cost saving for batch jobs).</span></div>
+      <div class="fr"><span class="fk">activationLag</span><span class="fv">Separate threshold to wake from 0 replicas. Avoids flapping at low lag.</span></div>
+      <div class="trap">lagThreshold is <b>per replica</b>, not total. With 3 replicas and threshold=50k, KEDA expects total lag ≤ 150k before scaling down.</div>
+    </div>
+
+    <div class="card cg">
+      <div class="glow" style="background:var(--grn)"></div>
+      <div class="ch"><div class="ci">📊</div><div><div class="ct">Scale Behavior Tuning</div><div class="csub">Fast up, slow down pattern</div></div></div>
+      <table class="stable">
+        <tr><th>Parameter</th><th>Recommended</th><th>Why</th></tr>
+        <tr><td>scaleUp stabilization</td><td class="good">30–60s</td><td>React fast to lag spikes</td></tr>
+        <tr><td>scaleDown stabilization</td><td class="warn">300–600s</td><td>Avoid rebalance churn</td></tr>
+        <tr><td>cooldownPeriod</td><td class="warn">300s</td><td>Wait for lag to drain</td></tr>
+        <tr><td>pollingInterval</td><td class="good">30s</td><td>Balance freshness vs API calls</td></tr>
+        <tr><td>min replicas</td><td class="warn">1+ for prod</td><td>Avoid cold start lag spike</td></tr>
+        <tr><td>min replicas = 0</td><td class="good">OK for batch</td><td>Scale-to-zero saves $$$</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ KAFKA + KEDA PATTERNS ══════════════════════ -->
+<div class="sl mix-s mb">Kafka + KEDA Operational Patterns <span>// real production scenarios</span></div>
+
+<div class="g3">
+  <div class="card cx">
+    <div class="glow" style="background:var(--kda)"></div>
+    <div class="ch"><div class="ci">🌊</div><div><div class="ct">Traffic Spike Pattern</div><div class="csub">Super Bowl / campaign launch scenario</div></div></div>
+    <div class="tl">
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kfk);color:var(--kfk);">T=0</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--kfk);">Traffic 10× spikes (Nike launches campaign)</div>
+          <div class="tlb">Kafka lag on <code>ad-events</code> grows from 5k → 500k in 2 minutes. Consumers can't keep up.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kda);color:var(--kda);">T+30s</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--kda);">KEDA polls lag, computes replicas</div>
+          <div class="tlb">ceil(500,000 ÷ 50,000) = <b>10 replicas needed</b>. KEDA updates HPA. HPA notifies scheduler.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">T+90s</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--grn);">New pods running, rebalance completes</div>
+          <div class="tlb">Kafka rebalances partitions across 10 consumers. Each gets 2 partitions (20 total). Lag starts draining.</div>
+        </div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">T+10m</div></div>
+        <div class="tlc">
+          <div class="tlt" style="color:var(--grn);">Lag back to zero, cooldown starts</div>
+          <div class="tlb">Traffic normalizes. KEDA cooldown (300s) prevents premature scale-down. Avoids immediate rebalance.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cd">
+    <div class="glow" style="background:var(--kda)"></div>
+    <div class="ch"><div class="ci">⚠️</div><div><div class="ct">Pitfalls & Solutions</div><div class="csub">What goes wrong in production</div></div></div>
+    <div class="fr"><span class="fk">Rebalance storm</span><span class="fv">KEDA scales too aggressively → constant rebalancing → consumer downtime. Fix: <b>increase stabilizationWindow</b> + use <b>static membership</b> (<code>group.instance.id</code>).</span></div>
+    <div class="fr"><span class="fk">Scale to 0 lag</span><span class="fv">If min=0 for prod, lag spike from cold start as pods spin up. Fix: <b>min=1 or min=2</b> for always-on topics. Scale-to-zero only for overnight batch jobs.</span></div>
+    <div class="fr"><span class="fk">Partition ceiling</span><span class="fv">maxReplicas &gt; partition count = idle pods. KEDA will scale to min of (desired, partitions). Always cap maxReplicas at partition count.</span></div>
+    <div class="fr"><span class="fk">Lag metric noise</span><span class="fv">Bursting producers cause temporary lag. With short pollingInterval, KEDA over-scales. Fix: <b>longer stabilization</b> or <b>Burrow</b> for trend-based scaling instead of raw lag.</span></div>
+    <div class="fr"><span class="fk">MSK IAM auth</span><span class="fv">On AWS MSK, use <b>SASL/IAM</b>. KEDA needs a TriggerAuthentication with IAM role annotation on the service account. Easy to miss in initial setup.</span></div>
+    <div class="trap">KEDA creates and <b>owns</b> the HPA. If you also manually create an HPA for the same Deployment, they fight over replicas. <b>Never mix manual HPA + KEDA on the same target.</b></div>
+  </div>
+
+  <div class="card cg">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">🔐</div><div><div class="ct">KEDA Auth on AWS MSK</div><div class="csub">Production IAM setup</div></div></div>
+    <div class="code">
+<span class="cm"># TriggerAuthentication with IAM</span>
+<span class="kw">apiVersion</span>: <span class="va">keda.sh/v1alpha1</span>
+<span class="kw">kind</span>: <span class="va">TriggerAuthentication</span>
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: <span class="va">keda-msk-auth</span>
+<span class="kw">spec</span>:
+  <span class="kw">podIdentity</span>:
+    <span class="kw">provider</span>: <span class="va">aws-eks</span>  <span class="cm"># IRSA</span>
+
+<span class="cm">---</span>
+<span class="cm"># In ScaledObject trigger:</span>
+  <span class="kw">triggers</span>:
+  - <span class="kw">type</span>: <span class="va">kafka</span>
+    <span class="kw">authenticationRef</span>:
+      <span class="kw">name</span>: <span class="va">keda-msk-auth</span>
+    <span class="kw">metadata</span>:
+      <span class="kw">sasl</span>:          <span class="va">aws_msk_iam</span>
+      <span class="kw">tls</span>:           <span class="va">enable</span>
+      <span class="kw">bootstrapServers</span>: <span class="va">b-1.msk.aws:9098</span>
+    </div>
+    <div class="fr" style="margin-top:10px;"><span class="fk">IRSA setup</span><span class="fv">Annotate the KEDA operator ServiceAccount with <code>eks.amazonaws.com/role-arn</code>. IAM role needs <b>kafka:DescribeCluster</b>, <b>kafka-cluster:Read*</b> on your MSK cluster.</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ COMPARISON TABLE ══════════════════════ -->
+<div class="sl mix-s mb">HPA vs KEDA vs Cluster Autoscaler <span>// know the differences</span></div>
+
+<div class="card cx" style="margin-bottom:20px;">
+  <div class="glow" style="background:var(--kda)"></div>
+  <div class="ch"><div class="ci">⚖️</div><div><div class="ct">Autoscaling Tools Comparison</div><div class="csub">When to use what</div></div></div>
+  <table class="stable">
+    <tr>
+      <th style="width:140px;">Tool</th>
+      <th>What it scales</th>
+      <th>Triggers on</th>
+      <th>Scale-to-zero</th>
+      <th>Best for Singular</th>
+    </tr>
+    <tr>
+      <td>Native HPA</td>
+      <td>Pod replicas in Deployment/RS</td>
+      <td>CPU%, memory%, custom metrics API</td>
+      <td class="bad">No (min 1)</td>
+      <td>CPU-bound services (API servers)</td>
+    </tr>
+    <tr>
+      <td style="color:var(--kda);">KEDA</td>
+      <td>Pod replicas via managed HPA</td>
+      <td><b>External event sources</b> — Kafka lag, SQS depth, Prometheus, cron, etc.</td>
+      <td class="good">Yes (min 0)</td>
+      <td><b>Kafka consumers, batch jobs, event processors</b></td>
+    </tr>
+    <tr>
+      <td>VPA</td>
+      <td>Pod resource requests/limits</td>
+      <td>Historical resource usage</td>
+      <td class="bad">No</td>
+      <td>Right-sizing long-running services (Druid, Redis)</td>
+    </tr>
+    <tr>
+      <td>Cluster Autoscaler</td>
+      <td>Nodes in the cluster</td>
+      <td>Unschedulable pods (pending)</td>
+      <td class="warn">Slow (minutes)</td>
+      <td>Node provisioning; pair with KEDA pod scaling</td>
+    </tr>
+    <tr>
+      <td>Karpenter</td>
+      <td>Nodes (AWS native)</td>
+      <td>Unschedulable pods + node utilization</td>
+      <td class="good">Fast + aggressive consolidation</td>
+      <td><b>Replace Cluster Autoscaler on EKS</b> — smarter instance selection</td>
+    </tr>
+  </table>
+  <div class="cal"><strong>The full stack for Singular:</strong> KEDA drives consumer pod count based on Kafka lag → Karpenter provisions/deprovisions EC2 nodes based on pod demand → VPA ensures pods have correct resource requests for Karpenter to make good node decisions. Three-layer autoscaling.</div>
+</div>
+
+<!-- ══════════════════════ INTERVIEW SCENARIOS ══════════════════════ -->
+<div class="sl mix-s mb">Interview Scenarios <span>// answer templates for Singular</span></div>
+
+<div class="g2">
+  <div class="card ck">
+    <div class="glow" style="background:var(--kfk)"></div>
+    <div class="ch"><div class="ci">💬</div><div><div class="ct">"Consumer lag spiked to 10M. Walk me through your response."</div></div></div>
+    <div class="tl">
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kfk);color:var(--kfk);">1</div></div>
+        <div class="tlc"><div class="tlb"><b>Check lag distribution per partition</b> — is it all partitions or one hot partition? Hot = bad partition key. All = consumer too slow.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kfk);color:var(--kfk);">2</div></div>
+        <div class="tlc"><div class="tlb"><b>Check consumer health</b> — CPU/memory/GC on consumer pods. Is processing time per message high? Check app logs for slow downstream calls.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tls"><div class="tln" style="border-color:var(--amb);color:var(--amb);">3</div></div></div>
+        <div class="tlc"><div class="tlb"><b>Check if KEDA already triggered</b> — look at HPA events, number of consumer pods. Did it scale? If not, check KEDA operator logs and ScaledObject status.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">4</div></div>
+        <div class="tlc"><div class="tlb"><b>If KEDA maxed out:</b> you're at partition count ceiling. Either increase partitions (requires topic recreation or replication) or horizontally scale the underlying processing (e.g., increase Druid ingestion capacity).</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">5</div></div>
+        <div class="tlc"><div class="tlb"><b>Post-mortem:</b> Was this a traffic spike (normal), a slow downstream (Druid/Aerospike degraded), or a bad deploy? Add lag <b>rate-of-change</b> alert, not just raw threshold.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cd">
+    <div class="glow" style="background:var(--kda)"></div>
+    <div class="ch"><div class="ci">💬</div><div><div class="ct">"Design event-driven autoscaling for our attribution consumers."</div></div></div>
+    <div class="tl">
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kda);color:var(--kda);">1</div></div>
+        <div class="tlc"><div class="tlb"><b>Install KEDA operator</b> in the cluster (Helm: <code>keda/keda</code>). It deploys the Metrics Adapter and the operator controller.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kda);color:var(--kda);">2</div></div>
+        <div class="tlc"><div class="tlb"><b>Identify partition count</b> for each consumer's topic. Set <code>maxReplicaCount = partition count</code>. No point scaling beyond parallelism ceiling.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--kda);color:var(--kda);">3</div></div>
+        <div class="tlc"><div class="tlb"><b>Set lagThreshold</b> based on acceptable latency SLO. If we need attribution within 5 min and each consumer processes 10k/sec: threshold = 300s × 10k = 3M messages per replica.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">4</div></div>
+        <div class="tlc"><div class="tlb"><b>Configure scale behavior</b>: fast scale-up (100% per 60s), slow scale-down (5min stabilization). Enable <code>group.instance.id</code> in consumer to minimize rebalance cost.</div></div>
+      </div>
+      <div class="tl-step">
+        <div class="tls"><div class="tln" style="border-color:var(--grn);color:var(--grn);">5</div></div>
+        <div class="tlc"><div class="tlb"><b>Pair with Karpenter</b>: as KEDA adds pods, Karpenter adds nodes. As pods drain, Karpenter consolidates and terminates underutilized nodes. Full elastic cost model.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KEY NUMBERS -->
+<div class="sl mix-s mb">Key Numbers to Remember <span>// quote these in interviews</span></div>
+
+<div class="g4">
+  <div class="card ck" style="text-align:center;">
+    <div class="metric-num" style="color:var(--kfk);">RF=3</div>
+    <div class="metric-lbl">Replication factor in prod. Tolerates 1 broker failure with min.insync=2.</div>
+  </div>
+  <div class="card ca" style="text-align:center;">
+    <div class="metric-num" style="color:var(--amb);">50k</div>
+    <div class="metric-lbl">Typical KEDA lagThreshold per replica. Tune to your processing rate × acceptable lag time.</div>
+  </div>
+  <div class="card cd" style="text-align:center;">
+    <div class="metric-num" style="color:var(--kda);">300s</div>
+    <div class="metric-lbl">KEDA cooldown period. Prevents scale-in before lag fully drains after a spike.</div>
+  </div>
+  <div class="card cg" style="text-align:center;">
+    <div class="metric-num" style="color:var(--grn);">64KB</div>
+    <div class="metric-lbl">Good Kafka producer batch.size. Balance between memory and throughput gains from batching.</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="ft">Kafka + KEDA Deep Dive · Singular Interview</div>
+  <div class="ft" style="color:rgba(0,188,212,0.4);">Consumer Lag · ScaledObject · Partition Ceiling · MSK IAM</div>
+</div>
+
+</div>
+</body>
+</html>

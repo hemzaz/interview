@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubernetes Upgrade — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-6.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #03050a;
+  --s1:    #060a12;
+  --s2:    #0a0f1a;
+  --bd:    #0f1e30;
+  --b2:    #182840;
+
+  /* K8s blue palette */
+  --k8s:   #326CE5;
+  --k8s2:  #5090f8;
+  --grn:   #00C896;
+  --red:   #FF4560;
+  --yel:   #FFB627;
+  --teal:  #00D4FF;
+  --vio:   #9B5DE5;
+  --orn:   #FF6B35;
+  --pink:  #F72585;
+  --lime:  #90EE02;
+
+  --text:  #d0e4f8;
+  --dim:   #0f2030;
+  --mid:   #3a6080;
+
+  --mono:  'JetBrains Mono', monospace;
+  --sans:  'Space Grotesk', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 45% at 50% -10%,rgba(50,108,229,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 30% at 0%   55%,rgba(0,200,150,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 25% at 100% 70%,rgba(155,93,229,.05) 0%,transparent 45%),
+    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(50,108,229,.018) 60px),
+    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(50,108,229,.018) 60px);
+}
+
+.page{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:32px 24px 80px;}
+
+/* ── HERO ── */
+.hero{position:relative;background:linear-gradient(135deg,rgba(50,108,229,.08) 0%,rgba(0,200,150,.04) 50%,rgba(155,93,229,.06) 100%);border:1px solid rgba(50,108,229,.2);border-radius:14px;padding:30px 36px;margin-bottom:24px;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--k8s),var(--teal),var(--grn),var(--vio));}
+.hero::after{content:'⎈';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:120px;color:rgba(50,108,229,.06);line-height:1;}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;position:relative;}
+.hero h1{font-size:56px;font-weight:700;line-height:.9;letter-spacing:-2px;}
+.h-k{background:linear-gradient(90deg,var(--k8s2),var(--teal),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h-u{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(50,108,229,.25);}
+.hero-sub{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--mid);text-transform:uppercase;margin-top:10px;}
+.hero-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+.htag{font-family:var(--mono);font-size:8.5px;padding:4px 11px;border-radius:4px;border:1px solid;font-weight:500;}
+.ht-k{background:rgba(50,108,229,.08);border-color:rgba(50,108,229,.3);color:var(--k8s2);}
+.ht-g{background:rgba(0,200,150,.07);border-color:rgba(0,200,150,.3);color:var(--grn);}
+.ht-r{background:rgba(255,69,96,.07);border-color:rgba(255,69,96,.3);color:var(--red);}
+.ht-y{background:rgba(255,182,39,.07);border-color:rgba(255,182,39,.3);color:var(--yel);}
+.ht-v{background:rgba(155,93,229,.07);border-color:rgba(155,93,229,.3);color:var(--vio);}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-width:280px;}
+.hstat{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:14px 12px;text-align:center;}
+.hstat-n{font-size:26px;font-weight:700;line-height:1;}
+.hstat-l{font-family:var(--mono);font-size:7px;color:var(--mid);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:3px;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:5px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:9px;letter-spacing:.5px;font-weight:600;padding:9px 16px;border-radius:6px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nb.on{background:rgba(50,108,229,.12);color:var(--k8s2);box-shadow:0 0 0 1px rgba(50,108,229,.25);}
+
+/* ── SECTIONS ── */
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-i{font-size:20px;flex-shrink:0;}
+.sh-l{font-size:22px;font-weight:700;letter-spacing:-.5px;}
+.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+.g53{display:grid;grid-template-columns:5fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.ck::before{background:linear-gradient(90deg,var(--k8s),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.cy::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.ct::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.cv::before{background:linear-gradient(90deg,var(--vio),transparent);}
+.co::before{background:linear-gradient(90deg,var(--orn),transparent);}
+.cl::before{background:linear-gradient(90deg,var(--lime),transparent);}
+
+.ctt{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.2px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+
+/* code */
+.code{background:#020408;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:10px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--yel);}
+.nu{color:var(--teal);} .cm{color:#0d2030;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+
+/* trap / note */
+.trap{background:rgba(255,69,96,.04);border:1px solid rgba(255,69,96,.15);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:3px solid var(--bd);padding:8px 12px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(255,255,255,.02);}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
+.st th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* ── INTERACTIVE CHECKLIST ── */
+.checklist{display:flex;flex-direction:column;gap:6px;}
+.cl-item{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:7px;border:1px solid var(--bd);background:var(--s2);cursor:pointer;transition:.2s;user-select:none;}
+.cl-item:hover{border-color:var(--b2);}
+.cl-item.checked{background:rgba(0,200,150,.05);border-color:rgba(0,200,150,.2);}
+.cl-cb{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bd);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:.2s;}
+.cl-item.checked .cl-cb{background:rgba(0,200,150,.2);border-color:rgba(0,200,150,.4);color:var(--grn);}
+.cl-text{font-size:11px;line-height:1.6;color:var(--mid);}
+.cl-item.checked .cl-text{color:rgba(255,255,255,.4);}
+.cl-text b{color:var(--text);}
+.cl-text code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.cl-item.checked .cl-text b,.cl-item.checked .cl-text code{color:inherit;}
+.cl-tag{font-family:var(--mono);font-size:7.5px;padding:2px 6px;border-radius:3px;flex-shrink:0;align-self:flex-start;margin-top:2px;border:1px solid;}
+.tg-crit{background:rgba(255,69,96,.1);border-color:rgba(255,69,96,.3);color:var(--red);}
+.tg-imp{background:rgba(255,182,39,.08);border-color:rgba(255,182,39,.3);color:var(--yel);}
+.tg-rec{background:rgba(50,108,229,.08);border-color:rgba(50,108,229,.3);color:var(--k8s2);}
+.cl-progress{font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.cl-bar{flex:1;height:4px;background:var(--dim);border-radius:2px;overflow:hidden;}
+.cl-fill{height:100%;background:linear-gradient(90deg,var(--k8s),var(--grn));border-radius:2px;transition:.4s;}
+
+/* ── ORDER FLOW ── */
+.order-flow{display:flex;flex-direction:column;gap:2px;margin-bottom:14px;}
+.of-step{display:grid;grid-template-columns:48px 1fr;gap:0;position:relative;}
+.of-num{display:flex;flex-direction:column;align-items:center;gap:0;}
+.of-circle{width:36px;height:36px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;z-index:1;position:relative;}
+.of-line{width:2px;flex:1;min-height:20px;}
+.of-body{padding:8px 0 16px 12px;}
+.of-title{font-weight:700;font-size:12.5px;margin-bottom:4px;}
+.of-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.of-desc b{color:var(--text);}
+.of-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── VERSION MATRIX ── */
+.vm-wrap{overflow-x:auto;margin-bottom:12px;}
+.vm{border-collapse:collapse;font-size:10.5px;min-width:900px;width:100%;}
+.vm th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);padding:7px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap;}
+.vm td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.022);vertical-align:top;line-height:1.5;}
+.vm td:first-child{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--teal);white-space:nowrap;}
+.vm-removed{background:rgba(255,69,96,.07);color:var(--red);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(255,69,96,.2);}
+.vm-deprecated{background:rgba(255,182,39,.07);color:var(--yel);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(255,182,39,.2);}
+.vm-new{background:rgba(0,200,150,.07);color:var(--grn);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(0,200,150,.2);}
+.vm-change{background:rgba(50,108,229,.07);color:var(--k8s2);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(50,108,229,.2);}
+
+/* ── FAILURE CARDS ── */
+.fail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.fail-card{background:var(--s1);border:1px solid rgba(255,69,96,.1);border-radius:9px;padding:14px;position:relative;overflow:hidden;cursor:pointer;transition:.2s;}
+.fail-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,96,.4),transparent);}
+.fail-card:hover{border-color:rgba(255,69,96,.2);transform:translateY(-1px);}
+.fc-num{position:absolute;top:8px;right:12px;font-size:30px;font-weight:700;color:rgba(255,69,96,.06);font-family:var(--mono);line-height:1;}
+.fc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.fc-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.fc-title code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.fc-body{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.fc-body b{color:var(--text);}
+.fc-body code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── METHOD CARDS ── */
+.method-card{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:16px;cursor:pointer;transition:.2s;position:relative;}
+.method-card:hover,.method-card.open{border-color:rgba(50,108,229,.3);}
+.mc-head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;}
+.mc-icon{font-size:24px;}
+.mc-name{font-size:13px;font-weight:700;}
+.mc-type{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--mid);margin-top:2px;}
+.mc-arrow{color:var(--mid);transition:.2s;}
+.method-card.open .mc-arrow{transform:rotate(90deg);color:var(--k8s2);}
+.mc-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);}
+.method-card.open .mc-body{display:block;}
+
+/* ── VALIDATION ── */
+.val-category{margin-bottom:16px;}
+.vc-title{font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.vc-title::after{content:'';flex:1;height:1px;background:var(--bd);}
+.val-checks{display:flex;flex-direction:column;gap:5px;}
+.vcheck{display:flex;gap:10px;align-items:baseline;padding:6px 10px;background:var(--s2);border-radius:5px;border:1px solid var(--bd);font-size:11px;}
+.vcheck-cmd{font-family:var(--mono);font-size:9.5px;color:var(--teal);flex-shrink:0;width:280px;}
+.vcheck-what{color:var(--mid);line-height:1.5;}
+.vcheck-what b{color:var(--text);}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-left:20px;}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--k8s),var(--grn),var(--vio));}
+.tl-item{position:relative;padding:0 0 20px 24px;}
+.tl-dot{position:absolute;left:-5px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid;background:var(--bg);}
+.tl-time{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.tl-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+.tl-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.tl-desc b{color:var(--text);}
+.tl-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec.on>*{animation:fi .3s ease both;}
+.sec.on>*:nth-child(1){animation-delay:.02s}.sec.on>*:nth-child(2){animation-delay:.05s}
+.sec.on>*:nth-child(3){animation-delay:.08s}.sec.on>*:nth-child(4){animation-delay:.11s}
+.sec.on>*:nth-child(5){animation-delay:.14s}.sec.on>*:nth-child(6){animation-delay:.17s}
+.sec.on>*:nth-child(7){animation-delay:.20s}.sec.on>*:nth-child(8){animation-delay:.23s}
+
+.footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-grid">
+    <div>
+      <h1><span class="h-k">KUBERNETES</span><br><span class="h-u">UPGRADE GUIDE</span></h1>
+      <div class="hero-sub">// production-grade upgrade playbook · version-agnostic · what bites · how to validate</div>
+      <div class="hero-tags">
+        <div class="htag ht-k">⎈ Platform-agnostic</div>
+        <div class="htag ht-g">✅ Interactive checklists</div>
+        <div class="htag ht-r">💥 Failure encyclopedia</div>
+        <div class="htag ht-y">📋 Pre + Post playbooks</div>
+        <div class="htag ht-v">🔧 kubeadm · kops · managed · GitOps</div>
+        <div class="htag ht-k">🔍 Validation commands</div>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" style="color:var(--red);">1</div><div class="hstat-l">minor ver at a time</div></div>
+      <div class="hstat"><div class="hstat-n" style="color:var(--k8s2);">CP→NG</div><div class="hstat-l">always this order</div></div>
+      <div class="hstat"><div class="hstat-n" style="color:var(--grn);">14mo</div><div class="hstat-l">release support</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nb on"  onclick="show('order')">📐 Upgrade Order</button>
+  <button class="nb" onclick="show('pre')">📋 Pre-Upgrade</button>
+  <button class="nb" onclick="show('methods')">🔧 Methods</button>
+  <button class="nb" onclick="show('versions')">📅 Version Changes</button>
+  <button class="nb" onclick="show('failures')">💥 What Fails</button>
+  <button class="nb" onclick="show('post')">✅ Post-Upgrade</button>
+  <button class="nb" onclick="show('validate')">🔍 Validation</button>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!--          UPGRADE ORDER            -->
+<!-- ══════════════════════════════════ -->
+<div class="sec on" id="sec-order">
+
+<div class="sh"><div class="sh-i">📐</div><div class="sh-l" style="color:var(--k8s2);">The Order of Things</div><div class="sh-s">// this is the law · deviating causes split-brain and version skew</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(50,108,229,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <!-- ORDER FLOW -->
+  <div class="card ck" style="margin-bottom:12px;">
+    <div class="ctt" style="color:var(--k8s2);">⚡ The Canonical Upgrade Order</div>
+
+    <div class="order-flow">
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--red);color:var(--red);">0</div>
+          <div class="of-line" style="background:linear-gradient(180deg,rgba(255,69,96,.3),rgba(50,108,229,.3));"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--red);">Pre-flight: Read release notes + scan deprecated APIs</div>
+          <div class="of-desc">Run <code>pluto detect-all-in-cluster</code>, <code>kubent</code>, check <code>kubectl deprecations</code>. <b>Never skip this step.</b> Removed APIs cause immediate application failures.</div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--k8s);color:var(--k8s2);">1</div>
+          <div class="of-line" style="background:linear-gradient(180deg,rgba(50,108,229,.3),rgba(50,108,229,.25));"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--k8s2);">etcd backup (if self-managed)</div>
+          <div class="of-desc"><code>etcdctl snapshot save snapshot.db</code>. Validate it: <code>etcdctl snapshot status snapshot.db</code>. Store off-cluster. This is your only rollback option. <b>Managed K8s: provider handles this.</b></div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--k8s);color:var(--k8s2);">2</div>
+          <div class="of-line" style="background:rgba(50,108,229,.25);"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--k8s2);">Upgrade first control plane node</div>
+          <div class="of-desc">On the primary control plane: <code>kubeadm upgrade apply v1.31.0</code>. This upgrades: apiserver, scheduler, controller-manager, etcd (if kubeadm-managed), CoreDNS, kube-proxy.</div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--k8s);color:var(--k8s2);">3</div>
+          <div class="of-line" style="background:rgba(50,108,229,.25);"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--k8s2);">Upgrade additional control plane nodes</div>
+          <div class="of-desc">On each additional CP node: <code>kubeadm upgrade node</code>. Then upgrade kubelet/kubectl: <code>apt-get update && apt-get install -y kubelet=1.31.0-1.1 kubectl=1.31.0-1.1</code>.</div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--yel);color:var(--yel);">4</div>
+          <div class="of-line" style="background:linear-gradient(180deg,rgba(255,182,39,.25),rgba(0,200,150,.25));"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--yel);">Upgrade worker nodes — one at a time (rolling)</div>
+          <div class="of-desc">Cordon + drain node → upgrade kubelet on node → uncordon. Or use MNG/Karpenter drift for managed clusters. <b>Worker kubelet must be ≤1 minor version behind API server.</b></div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--grn);color:var(--grn);">5</div>
+          <div class="of-line" style="background:rgba(0,200,150,.2);"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--grn);">Upgrade cluster addons + system components</div>
+          <div class="of-desc">CNI plugin, CoreDNS, kube-proxy, metrics-server, Ingress controllers, CSI drivers. Each has its own version matrix. Check compatibility before upgrading.</div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--grn);color:var(--grn);">6</div>
+          <div class="of-line" style="background:rgba(0,200,150,.15);"></div>
+        </div>
+        <div class="of-body">
+          <div class="of-title" style="color:var(--grn);">Update manifests / Helm charts to use new API versions</div>
+          <div class="of-desc">Replace deprecated API versions in all manifests. Redeploy affected resources. This is the step teams forget — apps that used <code>policy/v1beta1</code> break silently until re-deployed.</div>
+        </div>
+      </div>
+      <div class="of-step">
+        <div class="of-num">
+          <div class="of-circle" style="border-color:var(--grn);color:var(--grn);">7</div>
+          <div class="of-line" style="background:none;"></div>
+        </div>
+        <div class="of-body" style="padding-bottom:0;">
+          <div class="of-title" style="color:var(--grn);">Validate + monitor 24-72 hours</div>
+          <div class="of-desc">Run full validation suite. Monitor error rates, latency. Keep pre-upgrade etcd backup available. Check audit logs for removed API usage that slipped through.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card ck">
+    <div class="ctt" style="color:var(--k8s2);">📏 Version Skew Policy</div>
+    <table class="st">
+      <tr><th>Component</th><th>vs API Server</th><th>Rule</th></tr>
+      <tr><td>kubelet</td><td class="warn">±1 minor</td><td>kubelet may be up to 3 minor versions older than kube-apiserver (2 before v1.28); <b>must never be newer</b>.</td></tr>
+      <tr><td>kube-proxy</td><td class="warn">±1 minor</td><td>Same as kubelet on each node</td></tr>
+      <tr><td>kubectl</td><td>±1 minor</td><td>Your laptop's kubectl can lag by 1</td></tr>
+      <tr><td>kube-scheduler</td><td class="good">may be up to 1 minor older; must not be newer</td><td>Same binary, same node as apiserver</td></tr>
+      <tr><td>kube-controller</td><td class="good">may be up to 1 minor older; must not be newer</td><td>Same binary, same node as apiserver</td></tr>
+      <tr><td>etcd</td><td class="good">see notes</td><td>Specific etcd version per K8s version</td></tr>
+    </table>
+    <div class="note" style="margin-top:10px;"><b>Multi-CP during upgrade:</b> for HA clusters, one CP node at a time. During transition, CPs can be at different minor versions — the skew policy allows CP N+1 to run alongside N briefly. This is expected and safe during rolling upgrade.</div>
+  </div>
+
+  <div class="card cr">
+    <div class="ctt" style="color:var(--red);">🚨 Golden Rules</div>
+    <div class="fr"><span class="fk">One minor version</span><span class="fv"><b>Never skip minor versions.</b> 1.28 → 1.29 → 1.30. Skipping causes unknown behavior, unsupported upgrade paths, data migration failures.</span></div>
+    <div class="fr"><span class="fk">CP before workers</span><span class="fv"><b>Control plane is always first.</b> A newer kubelet talking to an older API server is unsupported and breaks. Workers can lag by one minor version.</span></div>
+    <div class="fr"><span class="fk">No rollback</span><span class="fv"><b>There is no supported rollback.</b> etcd data format changes between versions. The only "rollback" is restore from etcd snapshot (data loss since backup time).</span></div>
+    <div class="fr"><span class="fk">Staging first</span><span class="fv">Always upgrade a staging cluster using identical procedure. If it works → prod. If staging doesn't exist, create one before the upgrade.</span></div>
+    <div class="fr"><span class="fk">Component upgrades</span><span class="fv">Addons (CNI, ingress, CSI) must be compatible with the new K8s version. Check each addon's compatibility matrix before upgrading the cluster.</span></div>
+    <div class="trap"><b>Upgrading to a version that removes APIs your apps use = instant outage</b> for those apps on next restart. The apiserver returns 404 or 410 for removed API paths. Use <code>pluto</code> or <code>kubent</code> to scan before every upgrade.</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctt" style="color:var(--yel);">⚠️ The Version Skew Window</div>
+    <div style="background:#020408;border:1px solid var(--bd);border-radius:6px;padding:12px;font-family:var(--mono);font-size:10px;line-height:2;color:var(--mid);">
+      <div style="color:var(--k8s2);">Start:  CP=1.29, Workers=1.29  ← all same version ✓</div>
+      <div style="color:var(--yel);">Step 1: CP=1.30, Workers=1.29  ← skew=1 (allowed) ✓</div>
+      <div style="color:var(--yel);">Step 2: CP=1.30, Workers=1.30  ← all upgraded ✓</div>
+      <div style="color:rgba(255,255,255,.1);">──────────────────────────────────────────────</div>
+      <div style="color:var(--red);">WRONG:  CP=1.30, Workers=1.28  ← skew=2 (banned) ✗</div>
+      <div style="color:var(--red);">WRONG:  CP=1.28, Workers=1.30  ← workers newer ✗</div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /order -->
+
+<!-- ══════════════════════════════════ -->
+<!--          PRE-UPGRADE              -->
+<!-- ══════════════════════════════════ -->
+<div class="sec" id="sec-pre">
+
+<div class="sh"><div class="sh-i">📋</div><div class="sh-l" style="color:var(--yel);">Pre-Upgrade Playbook</div><div class="sh-s">// everything you must do before touching the cluster</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,182,39,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cy">
+    <div class="ctt" style="color:var(--yel);">☑️ Interactive Checklist</div>
+    <div class="cl-progress">
+      <span id="pre-count">0/16 completed</span>
+      <div class="cl-bar"><div class="cl-fill" id="pre-fill" style="width:0%"></div></div>
+    </div>
+    <div class="checklist" id="pre-cl">
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Read the release notes</b> for every version between current and target. <code>kubernetes.io/blog/releases</code> — check CHANGELOG for your specific jump.</div><div class="cl-tag tg-crit">CRITICAL</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Scan for deprecated/removed APIs</b> with <code>pluto detect-all-in-cluster --target-versions k8s=v1.31.0</code> or <code>kubent</code>. Any hits = must fix before upgrade.</div><div class="cl-tag tg-crit">CRITICAL</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Check API Server audit logs</b> for warnings about deprecated API usage from external clients (CI/CD pipelines, monitoring tools, operators).</div><div class="cl-tag tg-crit">CRITICAL</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Take etcd snapshot</b>: <code>etcdctl snapshot save /backup/etcd-$(date +%Y%m%d).db</code> and validate with <code>etcdctl snapshot status</code>. Store off-cluster.</div><div class="cl-tag tg-crit">CRITICAL</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Verify all PodDisruptionBudgets.</b> Find blockers: <code>kubectl get pdb -A</code>. Check for <code>maxUnavailable:0</code> or <code>minAvailable==replicas</code> — these will deadlock node drain.</div><div class="cl-tag tg-crit">CRITICAL</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Check cluster health baseline.</b> All nodes Ready: <code>kubectl get nodes</code>. All system pods Running: <code>kubectl get pods -n kube-system</code>. Don't upgrade an already broken cluster.</div><div class="cl-tag tg-crit">CRITICAL</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Verify addon compatibility.</b> Check CNI, Ingress controller, CSI drivers, CertManager, ArgoCD — all have K8s version compatibility matrices. Pin versions before upgrading.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Test in non-prod first.</b> Use identical procedure. If staging cluster is on a different version, first bring it to match prod, then upgrade staging one version ahead.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Run kubeadm upgrade plan</b> (self-managed): shows what will be upgraded and to which version. Shows any issues with current state.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Review webhook configurations.</b> Admission webhooks failing = API calls blocked. Check all MutatingWebhookConfiguration and ValidatingWebhookConfiguration.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Scale up critical single-replica workloads</b> to ≥2 replicas before upgrade. Add PodAntiAffinity so they spread across nodes. Node drain kills single-replica pods.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Notify stakeholders.</b> Announce maintenance window. Estimate duration: ~10 min/CP + ~10 min/worker node. 20 nodes = 3-4 hour window.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Check image pull policies and availability.</b> Nodes will pull new system images during upgrade. Ensure registry access and no quota limits.</div><div class="cl-tag tg-rec">RECOMMENDED</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Snapshot node images</b> if using cloud VMs. AMI snapshot = faster node recovery if something goes wrong on the node.</div><div class="cl-tag tg-rec">RECOMMENDED</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Check RBAC / ServiceAccount token usage</b> if upgrading across versions that change token projection or expiry. Legacy SA tokens may stop working.</div><div class="cl-tag tg-rec">RECOMMENDED</div></div>
+      <div class="cl-item" onclick="check(this,'pre')"><div class="cl-cb"></div><div class="cl-text"><b>Document current state:</b> <code>kubectl get all -A -o yaml > pre-upgrade-state.yaml</code>. Helm: <code>helm list -A</code>. Capture baseline metrics and alert thresholds.</div><div class="cl-tag tg-rec">RECOMMENDED</div></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card ct">
+    <div class="ctt" style="color:var(--teal);">🔍 Essential Pre-Upgrade Tools</div>
+    <div class="fr"><span class="fk">pluto</span><span class="fv"><b>FairwindsOps/pluto</b> — best in class. Scans live cluster, Helm releases, manifest files. Outputs: deprecated, removed, or replacement API versions. CI integration available.</span></div>
+    <div class="fr"><span class="fk">kubent</span><span class="fv"><b>kubectl neat + kubent</b> — alternative scanner. Less features than pluto but simpler to run. <code>kubent --target-version 1.31</code>.</span></div>
+    <div class="fr"><span class="fk">kubectl deprecations</span><span class="fv"><code>kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</code> — shows deprecated APIs currently being called, per resource + version + client.</span></div>
+    <div class="fr"><span class="fk">popeye</span><span class="fv">Scans cluster for misconfigurations: missing resources, deprecated APIs, failed pods, dangling ConfigMaps. <code>popeye -s deploy,svc</code>.</span></div>
+    <div class="fr"><span class="fk">kubeadm upgrade plan</span><span class="fv">For self-managed clusters: shows exact upgrade path, component versions, any issues. Run this before every upgrade.</span></div>
+    <div class="code"><span class="cm"># Install pluto</span>
+brew install FairwindsOps/tap/pluto
+
+<span class="cm"># Scan everything in the cluster</span>
+pluto detect-all-in-cluster \
+  --target-versions k8s=v1.31.0
+
+<span class="cm"># Scan Helm releases</span>
+pluto detect-helm \
+  --target-versions k8s=v1.31.0
+
+<span class="cm"># Scan directory of manifests</span>
+pluto detect-files \
+  -d ./k8s-manifests \
+  --target-versions k8s=v1.31.0
+
+<span class="cm"># Alternative: kubent</span>
+sh -c "$(curl -sSL https://git.io/install-kubent)"
+kubent --target-version 1.31
+
+<span class="cm"># etcd backup</span>
+ETCDCTL_API=3 etcdctl snapshot save /backup/etcd-pre-upgrade.db \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key
+
+<span class="cm"># Validate snapshot</span>
+ETCDCTL_API=3 etcdctl snapshot status \
+  /backup/etcd-pre-upgrade.db --write-out=table</div>
+  </div>
+  <div class="card cr">
+    <div class="ctt" style="color:var(--red);">⚠️ Pre-Upgrade Common Mistakes</div>
+    <div class="fr"><span class="fk">Skipping notes</span><span class="fv">Release notes contain breaking changes in plain text. Teams that skip them discover the same issues in production. The notes are short. Read them.</span></div>
+    <div class="fr"><span class="fk">Upgrading broken clusters</span><span class="fv">If nodes are NotReady or pods are CrashLoopBackOff before the upgrade — fix those first. Upgrade amplifies existing problems.</span></div>
+    <div class="fr"><span class="fk">No staging upgrade</span><span class="fv">Upgrading prod without staging = discovering issues in prod. At minimum, create a temporary test cluster with the same manifests.</span></div>
+    <div class="fr"><span class="fk">Forgetting CI/CD tools</span><span class="fv">Helm, ArgoCD, Flux, Jenkins operators — all use K8s APIs. They will break if their versions don't support the new API server. Check tool compatibility too.</span></div>
+  </div>
+</div>
+</div>
+
+</div><!-- /pre -->
+
+<!-- ══════════════════════════════════ -->
+<!--            METHODS                -->
+<!-- ══════════════════════════════════ -->
+<div class="sec" id="sec-methods">
+
+<div class="sh"><div class="sh-i">🔧</div><div class="sh-l" style="color:var(--grn);">Upgrade Methods</div><div class="sh-s">// kubeadm · managed services · kops · Rancher · GitOps · IaC</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,200,150,.3),transparent);"></div></div>
+
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+
+  <!-- kubeadm -->
+  <div class="method-card" onclick="toggleMethod(this)">
+    <div class="mc-head">
+      <div class="mc-icon">🔩</div>
+      <div><div class="mc-name" style="color:var(--k8s2);">kubeadm</div><div class="mc-type">Self-managed · Most common bare-metal/VM approach</div></div>
+      <div class="mc-arrow">▶</div>
+    </div>
+    <div class="mc-body">
+      <div class="g2">
+        <div>
+          <div style="font-family:var(--mono);font-size:9.5px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">FULL UPGRADE PROCEDURE</div>
+          <div class="code" style="font-size:9.5px;"><span class="cm">## On FIRST control plane node ##</span>
+
+<span class="cm"># 1. Update kubeadm</span>
+apt-get update && apt-get install -y kubeadm=1.31.0-1.1
+<span class="cm"># Or yum/dnf for RHEL-based</span>
+
+<span class="cm"># 2. Verify upgrade plan</span>
+kubeadm upgrade plan
+
+<span class="cm"># 3. Apply upgrade (CP components)</span>
+kubeadm upgrade apply v1.31.0 --yes
+
+<span class="cm"># 4. Cordon this node</span>
+kubectl drain &lt;cp-node&gt; \
+  --ignore-daemonsets \
+  --delete-emptydir-data
+
+<span class="cm"># 5. Upgrade kubelet + kubectl</span>
+apt-get install -y \
+  kubelet=1.31.0-1.1 \
+  kubectl=1.31.0-1.1
+systemctl daemon-reload && systemctl restart kubelet
+
+<span class="cm"># 6. Uncordon</span>
+kubectl uncordon &lt;cp-node&gt;
+
+<span class="cm">## On ADDITIONAL CP nodes ##</span>
+kubeadm upgrade node
+<span class="cm"># Then: drain → upgrade kubelet → uncordon</span>
+
+<span class="cm">## On WORKER nodes (repeat each) ##</span>
+<span class="cm"># From control plane:</span>
+kubectl drain &lt;worker&gt; \
+  --ignore-daemonsets \
+  --delete-emptydir-data \
+  --grace-period=60
+
+<span class="cm"># On the worker node:</span>
+apt-get install -y kubelet=1.31.0-1.1
+systemctl daemon-reload && systemctl restart kubelet
+
+<span class="cm"># Back on control plane:</span>
+kubectl uncordon &lt;worker&gt;</div>
+        </div>
+        <div>
+          <div class="fr" style="margin-top:0;border-top:none;"><span class="fk">What it upgrades</span><span class="fv">apiserver, scheduler, controller-manager, etcd, CoreDNS, kube-proxy (system components). <b>Does NOT auto-upgrade addons</b> like CNI, Ingress controllers, CSI drivers.</span></div>
+          <div class="fr"><span class="fk">Rollback</span><span class="fv">No native rollback. Only etcd snapshot restore. Restore procedure: stop all K8s services → restore etcd → restart services at old version. Data loss since snapshot time.</span></div>
+          <div class="fr"><span class="fk">HA clusters</span><span class="fv">Do NOT drain all CP nodes before upgrading. Upgrade one at a time: upgrade → drain → kubelet restart → uncordon → next CP node. etcd quorum must be maintained.</span></div>
+          <div class="fr"><span class="fk">Validation cmd</span><span class="fv"><code>kubeadm upgrade plan</code> shows current state and available upgrades. Always run before applying.</span></div>
+          <div class="trap"><b>Never run <code>kubeadm upgrade apply</code> on secondary CP nodes.</b> Use <code>kubeadm upgrade node</code> instead. <code>apply</code> is only for the first/primary CP node. Using <code>apply</code> on secondary nodes causes config conflicts.</div>
+          <div class="note"><b>Lock package versions</b> with <code>apt-mark hold kubelet kubeadm kubectl</code> to prevent accidental upgrades. Unhold before upgrading, then re-hold after.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Managed services -->
+  <div class="method-card" onclick="toggleMethod(this)">
+    <div class="mc-head">
+      <div class="mc-icon">☁️</div>
+      <div><div class="mc-name" style="color:var(--teal);">Managed K8s (EKS / GKE / AKS / DOKS)</div><div class="mc-type">Provider manages control plane · You manage nodes</div></div>
+      <div class="mc-arrow">▶</div>
+    </div>
+    <div class="mc-body">
+      <div class="g3">
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">AWS EKS</div>
+          <div class="code" style="font-size:9px;"><span class="cm"># Upgrade control plane</span>
+aws eks update-cluster-version \
+  --name my-cluster \
+  --kubernetes-version 1.31
+
+<span class="cm"># Update addons after CP</span>
+aws eks update-addon \
+  --cluster-name my-cluster \
+  --addon-name vpc-cni \
+  --addon-version v1.19.0-eksbuild.1
+
+<span class="cm"># Update node group</span>
+aws eks update-nodegroup-version \
+  --cluster-name my-cluster \
+  --nodegroup-name workers \
+  --kubernetes-version 1.31
+
+<span class="cm"># Monitor</span>
+aws eks describe-cluster \
+  --name my-cluster \
+  --query 'cluster.status'</div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">GKE</div>
+          <div class="code" style="font-size:9px;"><span class="cm"># Enable release channel or manual</span>
+gcloud container clusters upgrade my-cluster \
+  --master \
+  --cluster-version 1.31.0-gke.100
+
+<span class="cm"># Upgrade node pool</span>
+gcloud container clusters upgrade my-cluster \
+  --node-pool default-pool \
+  --cluster-version 1.31.0-gke.100
+
+<span class="cm"># List available versions</span>
+gcloud container get-server-config \
+  --format "yaml(validMasterVersions)"</div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">AKS</div>
+          <div class="code" style="font-size:9px;"><span class="cm"># Check available versions</span>
+az aks get-versions \
+  --location eastus -o table
+
+<span class="cm"># Upgrade cluster</span>
+az aks upgrade \
+  --resource-group myRG \
+  --name my-cluster \
+  --kubernetes-version 1.31.0
+
+<span class="cm"># Upgrade only node pool</span>
+az aks nodepool upgrade \
+  --resource-group myRG \
+  --cluster-name my-cluster \
+  --name agentpool \
+  --kubernetes-version 1.31.0</div>
+        </div>
+      </div>
+      <div class="note"><b>Managed CP upgrade is non-reversible.</b> All managed providers (EKS, GKE, AKS) handle HA during CP upgrade but cannot rollback once started. GKE supports auto-upgrades on release channels. EKS requires explicit triggering. AKS has auto-upgrade channels (patch/stable/rapid).</div>
+    </div>
+  </div>
+
+  <!-- Terraform / IaC -->
+  <div class="method-card" onclick="toggleMethod(this)">
+    <div class="mc-head">
+      <div class="mc-icon">🏗️</div>
+      <div><div class="mc-name" style="color:var(--vio);">Terraform / IaC</div><div class="mc-type">Infrastructure as Code · Reproducible · State-managed</div></div>
+      <div class="mc-arrow">▶</div>
+    </div>
+    <div class="mc-body">
+      <div class="g2">
+        <div class="code"><span class="cm"># terraform-aws-eks module</span>
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.0"
+
+  cluster_version = "1.31"  <span class="cm"># bump this</span>
+
+  eks_managed_node_groups = {
+    workers = {
+      min_size       = 2
+      max_size       = 10
+      desired_size   = 3
+      instance_types = ["m7g.xlarge"]
+    }
+  }
+}
+
+<span class="cm"># Plan and review before applying</span>
+terraform plan -target=module.eks
+terraform apply -target=module.eks
+
+<span class="cm"># WARNING: state ordering matters</span>
+<span class="cm"># Upgrade CP first (cluster_version)</span>
+<span class="cm"># Then run apply again for node groups</span>
+<span class="cm"># Or use explicit targets:</span>
+terraform apply \
+  -target=module.eks.aws_eks_cluster.this
+
+terraform apply \
+  -target=module.eks.aws_eks_node_group.workers</div>
+        <div>
+          <div class="fr" style="border-top:none;"><span class="fk">Ordering risk</span><span class="fv"><b>Terraform dependency graph may not match required upgrade order.</b> If TF tries to upgrade node groups before CP is done, apply will fail or produce partial state. Use <code>-target</code> to control ordering.</span></div>
+          <div class="fr"><span class="fk">State drift</span><span class="fv">If you manually upgrade via CLI then run TF, state drift causes TF to want to "revert" or re-trigger. Always upgrade via the same method (TF or CLI, not both).</span></div>
+          <div class="fr"><span class="fk">Sensitive changes</span><span class="fv"><code>cluster_version</code> change triggers in-place update of the EKS cluster (via AWS API). It's not a destroy+create. But TF shows it as <code>~</code> (update) — verify in the plan.</span></div>
+          <div class="fr"><span class="fk">Addons in TF</span><span class="fv">Manage addon versions as separate resources: <code>aws_eks_addon</code>. Update <code>addon_version</code> after CP upgrade. Pin exact versions to avoid surprises.</span></div>
+          <div class="trap"><b>Never set <code>lifecycle { ignore_changes = [cluster_version] }</code></b> on an EKS cluster — you'll lose track of what TF wants to manage. Instead, use state to track the version and keep TF as the source of truth.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- kops -->
+  <div class="method-card" onclick="toggleMethod(this)">
+    <div class="mc-head">
+      <div class="mc-icon">🔑</div>
+      <div><div class="mc-name" style="color:var(--orn);">kops (Kubernetes Operations)</div><div class="mc-type">Self-managed K8s on AWS/GCP/DO · declarative cluster spec</div></div>
+      <div class="mc-arrow">▶</div>
+    </div>
+    <div class="mc-body">
+      <div class="code"><span class="cm"># Edit cluster spec to change version</span>
+kops edit cluster --name mycluster.k8s.local
+
+<span class="cm"># In the editor, change:</span>
+<span class="cm"># spec.kubernetesVersion: 1.30.0</span>
+<span class="cm"># →</span>
+<span class="cm"># spec.kubernetesVersion: 1.31.0</span>
+
+<span class="cm"># Preview changes (dry run)</span>
+kops update cluster --name mycluster.k8s.local
+
+<span class="cm"># Apply the changes</span>
+kops update cluster --name mycluster.k8s.local --yes
+
+<span class="cm"># Trigger rolling update of nodes</span>
+kops rolling-update cluster --name mycluster.k8s.local
+
+<span class="cm"># Rolling update with validation between batches</span>
+kops rolling-update cluster \
+  --name mycluster.k8s.local \
+  --max-unavailable 1 \
+  --yes</div>
+      <div class="note" style="margin-top:10px;"><b>kops stores cluster state in S3 (or GCS).</b> The spec is declarative — change the version in the spec, apply, then rolling-update. kops handles the kubeadm bootstrap internally. Supports multiple instance groups (MIG) for different node types.</div>
+    </div>
+  </div>
+
+  <!-- Rancher / RKE -->
+  <div class="method-card" onclick="toggleMethod(this)">
+    <div class="mc-head">
+      <div class="mc-icon">🐄</div>
+      <div><div class="mc-name" style="color:var(--lime);">Rancher / RKE / RKE2</div><div class="mc-type">SUSE Rancher Platform · Multi-cluster management</div></div>
+      <div class="mc-arrow">▶</div>
+    </div>
+    <div class="mc-body">
+      <div class="g2">
+        <div class="code"><span class="cm"># RKE cluster.yml upgrade</span>
+kubernetes_version: v1.31.0-rancher1-1
+
+<span class="cm"># Apply with rke</span>
+rke up --config cluster.yml
+
+<span class="cm"># RKE2: via systemd config</span>
+<span class="cm"># /etc/rancher/rke2/config.yaml:</span>
+<span class="cm"># system-default-registry: ""</span>
+
+<span class="cm"># Update RKE2 binary</span>
+curl -sfL https://get.rke2.io | \
+  INSTALL_RKE2_VERSION=v1.31.0+rke2r1 sh -
+systemctl restart rke2-server
+
+<span class="cm"># Rancher UI: Cluster → Edit → K8s Version</span>
+<span class="cm"># Rancher handles rolling update automatically</span></div>
+        <div>
+          <div class="fr" style="border-top:none;"><span class="fk">Rancher UI</span><span class="fv">Click cluster → Edit → change Kubernetes Version dropdown. Rancher queues rolling upgrade. Watch progress in Cluster Events.</span></div>
+          <div class="fr"><span class="fk">RKE vs RKE2</span><span class="fv">RKE2 is the newer, security-focused runtime (replaces Docker with containerd, CIS benchmark by default). RKE1 is legacy. Both support rolling upgrades of nodes.</span></div>
+          <div class="fr"><span class="fk">Multi-cluster</span><span class="fv">Rancher Fleet (GitOps) allows synchronized upgrades across multiple clusters from a single Git repo. Define cluster version in <code>fleet.yaml</code>.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitOps -->
+  <div class="method-card" onclick="toggleMethod(this)">
+    <div class="mc-head">
+      <div class="mc-icon">🔁</div>
+      <div><div class="mc-name" style="color:var(--pink);">GitOps Approach (ArgoCD / Flux)</div><div class="mc-type">Version-controlled upgrade config · Audit trail · Rollback via Git</div></div>
+      <div class="mc-arrow">▶</div>
+    </div>
+    <div class="mc-body">
+      <div class="g2">
+        <div class="code"><span class="cm"># Flux: cluster version as GitRepository</span>
+<span class="cm"># clusters/prod/cluster-config.yaml</span>
+<span class="ky">apiVersion</span>: cluster.x-k8s.io/v1beta1
+<span class="ky">kind</span>: Cluster
+<span class="ky">spec</span>:
+  <span class="ky">topology</span>:
+    <span class="ky">version</span>: v1.31.0  <span class="cm"># bump in git</span>
+    <span class="ky">workers</span>:
+      <span class="ky">machineDeployments</span>:
+      - <span class="ky">name</span>: workers
+        <span class="ky">replicas</span>: 3
+
+<span class="cm"># ArgoCD: helm values in git</span>
+<span class="cm"># eks-cluster/values.yaml</span>
+cluster_version: "1.31"
+
+<span class="cm"># PR-based upgrade workflow:</span>
+<span class="cm"># 1. Create branch: bump version in config</span>
+<span class="cm"># 2. Open PR → triggers CI validation (pluto, kubent)</span>
+<span class="cm"># 3. Merge PR → Flux/ArgoCD detects change</span>
+<span class="cm"># 4. ArgoCD syncs → triggers cluster upgrade API</span>
+<span class="cm"># 5. Upgrade progress visible in ArgoCD UI</span></div>
+        <div>
+          <div class="fr" style="border-top:none;"><span class="fk">Benefits</span><span class="fv"><b>Every upgrade is a Git commit.</b> Full audit trail of who changed what when. "Rollback" = revert the commit + sync. CI can run pluto/kubent on every PR before merge.</span></div>
+          <div class="fr"><span class="fk">CAPI integration</span><span class="fv">Cluster API (cluster.x-k8s.io) makes K8s clusters themselves declarative objects. Changing <code>spec.topology.version</code> triggers rolling upgrade via the CAPI provider (AWS CAPA, GCP CAPG, etc.).</span></div>
+          <div class="fr"><span class="fk">Limitation</span><span class="fv">GitOps manages the desired state — but still relies on the underlying upgrade mechanism (kubeadm, EKS API, etc.). It doesn't replace those tools; it orchestrates them.</span></div>
+          <div class="note"><b>Add pluto scan to your CI pipeline.</b> Every PR that changes a Helm chart or manifest should run <code>pluto detect-files</code>. Block merges with removed API usage. This prevents deprecated API surprises reaching production.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /methods list -->
+</div><!-- /methods -->
+
+<!-- ══════════════════════════════════ -->
+<!--       VERSION CHANGES             -->
+<!-- ══════════════════════════════════ -->
+<div class="sec" id="sec-versions">
+
+<div class="sh"><div class="sh-i">📅</div><div class="sh-l" style="color:var(--teal);">API Changes Between Versions</div><div class="sh-s">// removed APIs · deprecations · behavior changes · 1.22 → 1.32</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,.3),transparent);"></div></div>
+
+<div style="display:flex;gap:8px;margin-bottom:12px;font-size:10px;flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;gap:5px;"><span class="vm-removed">REMOVED</span> API completely removed — apps using it break immediately</div>
+  <div style="display:flex;align-items:center;gap:5px;"><span class="vm-deprecated">DEPRECATED</span> API will be removed in future version</div>
+  <div style="display:flex;align-items:center;gap:5px;"><span class="vm-new">NEW</span> New feature or promoted to stable</div>
+  <div style="display:flex;align-items:center;gap:5px;"><span class="vm-change">CHANGED</span> Behavior change or breaking flag</div>
+</div>
+
+<div class="vm-wrap">
+<table class="vm">
+  <tr><th>Version</th><th>Removed APIs</th><th>Breaking Changes</th><th>Key New Features</th></tr>
+  <tr>
+    <td>1.22</td>
+    <td>
+      <span class="vm-removed">extensions/v1beta1 Ingress</span>
+      <span class="vm-removed">networking/v1beta1 Ingress</span>
+      <span class="vm-removed">networking/v1beta1 IngressClass</span>
+      <span class="vm-removed">rbac.authorization.k8s.io/v1beta1</span>
+      <span class="vm-removed">apiextensions.k8s.io/v1beta1 CRD</span>
+    </td>
+    <td><b>Biggest removal release.</b> <span class="vm-change">Ingress moved to networking.k8s.io/v1 (required backend.service.port.number)</span><span class="vm-change">CRDs must use v1 (structural schema required)</span></td>
+    <td><span class="vm-new">Immutable ConfigMaps/Secrets</span><span class="vm-new">BoundServiceAccountTokenVolume (SA token expiry)</span></td>
+  </tr>
+  <tr>
+    <td>1.23</td>
+    <td>
+      <span class="vm-removed">HPA autoscaling/v2beta2 → use v2</span>
+    </td>
+    <td><span class="vm-change">In-tree EBS volume plugin deprecated (use CSI)</span><span class="vm-change">PodSecurityPolicy deprecated (removed in 1.25)</span></td>
+    <td><span class="vm-new">Dual-stack IPv4/IPv6 GA</span><span class="vm-new">HPA autoscaling/v2 GA</span></td>
+  </tr>
+  <tr>
+    <td>1.24</td>
+    <td>
+      <span class="vm-removed">Dockershim removed</span>
+    </td>
+    <td><b>Dockershim removed.</b> <span class="vm-change">Nodes using Docker need containerd/CRI-O. Any direct Docker socket mounts in pods break.</span><span class="vm-change">Legacy SA tokens no longer auto-created for new SAs</span></td>
+    <td><span class="vm-new">Non-graceful node shutdown</span><span class="vm-new">OpenAPI v3</span></td>
+  </tr>
+  <tr>
+    <td>1.25</td>
+    <td>
+      <span class="vm-removed">PodSecurityPolicy (PSP)</span>
+      <span class="vm-removed">CronJob batch/v1beta1</span>
+      <span class="vm-removed">EndpointSlice discovery/v1beta1</span>
+    </td>
+    <td><b>PSP removed.</b> <span class="vm-change">Migrate to Pod Security Admission (PSA) or OPA Gatekeeper/Kyverno before upgrading</span><span class="vm-change">CronJob uses only batch/v1</span></td>
+    <td><span class="vm-new">Pod Security Admission GA</span><span class="vm-new">Ephemeral containers GA</span></td>
+  </tr>
+  <tr>
+    <td>1.26</td>
+    <td>
+      <span class="vm-removed">autoscaling/v2beta2 HPA</span>
+      <span class="vm-removed">flowcontrol.apiserver.k8s.io/v1beta1</span>
+    </td>
+    <td><span class="vm-change">CRI v1alpha2 removed (containerd 1.5 and older incompatible)</span><span class="vm-change">vSphere CSI in-tree deprecated</span></td>
+    <td><span class="vm-new">HPAScaleToZero (KEDA compatible)</span><span class="vm-new">ResourceQuota based on PriorityClass</span></td>
+  </tr>
+  <tr>
+    <td>1.27</td>
+    <td>
+      <span class="vm-removed">storage.k8s.io/v1beta1 CSIStorageCapacity</span>
+    </td>
+    <td><span class="vm-change">kubectl.kubernetes.io/default-container annotation behavior changed</span><span class="vm-change">SeccompDefault enabled by default (may restrict syscalls)</span></td>
+    <td><span class="vm-new">ReadWriteOncePod PVC GA</span><span class="vm-new">In-place Pod vertical scaling (alpha)</span><span class="vm-new">Sidecar containers (alpha)</span></td>
+  </tr>
+  <tr>
+    <td>1.28</td>
+    <td><span class="vm-removed">flowcontrol.apiserver.k8s.io/v1beta2</span></td>
+    <td><span class="vm-change">kubelet drops cAdvisor /metrics/cadvisor endpoint by default in some configs</span><span class="vm-change">Node lifecycle controller changes eviction behavior</span></td>
+    <td><span class="vm-new">Sidecar containers (beta)</span><span class="vm-new">Job success policy (alpha)</span><span class="vm-new">ProxyTerminatingEndpoints GA</span></td>
+  </tr>
+  <tr>
+    <td>1.29</td>
+    <td><span class="vm-removed">flowcontrol.apiserver.k8s.io/v1beta3</span></td>
+    <td><span class="vm-change">LoadBalancer.spec.ipMode added — behavior change for external IPs</span><span class="vm-change">AppArmor moved to GA (new field, old annotation deprecated)</span></td>
+    <td><span class="vm-new">ReadWriteOncePod SchedulingGates GA</span><span class="vm-new">VolumeAttributesClass (alpha)</span></td>
+  </tr>
+  <tr>
+    <td>1.30</td>
+    <td><em>No major removals</em></td>
+    <td><span class="vm-change">Coordinated Leader Election (beta) - watch for leader election churn</span><span class="vm-change">PodIndexLabel on StatefulSet pods changed label key format</span></td>
+    <td><span class="vm-new">Structured auth config (beta)</span><span class="vm-new">Bound service account token improvements</span></td>
+  </tr>
+  <tr>
+    <td>1.31</td>
+    <td><em>No major API removals</em></td>
+    <td><span class="vm-change">AppArmor annotation deprecated (use securityContext.appArmorProfile)</span><span class="vm-change">kubelet drops legacy credential provider config format</span></td>
+    <td><span class="vm-new">PersistentVolumeClaim protection finalizer changes</span><span class="vm-new">In-place Pod vertical scaling (beta)</span></td>
+  </tr>
+  <tr>
+    <td>1.32</td>
+    <td><em>No major API removals</em></td>
+    <td><span class="vm-change">DRA (Dynamic Resource Allocation) beta graduation - device plugin changes</span></td>
+    <td><span class="vm-new">Job managed-by field (multi-kueue)</span><span class="vm-new">WindowsHostNetwork (stable)</span></td>
+  </tr>
+</table>
+</div>
+
+<div class="g2">
+  <div class="card cr">
+    <div class="ctt" style="color:var(--red);">🚨 The Historically Painful Upgrades</div>
+    <div class="fr"><span class="fk">1.16 (2019)</span><span class="fv"><b>Removed Deployment, DaemonSet, StatefulSet, ReplicaSet from extensions/v1beta1 and apps/v1beta.</b> Many Helm charts still used old APIs. Mass breakage across the ecosystem. This set the precedent for API removal pain.</span></div>
+    <div class="fr"><span class="fk">1.22 (2021)</span><span class="fv"><b>Ingress removed from extensions/v1beta1 and networking/v1beta1.</b> Every app with an Ingress needed manifest updates. CRDs with v1beta1 broke. The most impactful removal release. ~18 months warning didn't help much in practice.</span></div>
+    <div class="fr"><span class="fk">1.24 (2022)</span><span class="fv"><b>Dockershim removed.</b> Any cluster node using Docker as container runtime needed to migrate to containerd or CRI-O. Caught many "set and forget" clusters off-guard. Pod-level Docker socket mounts broke.</span></div>
+    <div class="fr"><span class="fk">1.25 (2022)</span><span class="fv"><b>PSP removed.</b> PodSecurityPolicy was the defacto pod admission mechanism. Teams had to migrate to PSA, Kyverno, or OPA Gatekeeper before upgrading. No migration path = pods blocked at admission.</span></div>
+  </div>
+  <div class="card ct">
+    <div class="ctt" style="color:var(--teal);">🔄 API Migration Guide</div>
+    <table class="st">
+      <tr><th>Old API</th><th>→ New API</th></tr>
+      <tr><td><code>extensions/v1beta1 Ingress</code></td><td class="good"><code>networking.k8s.io/v1 Ingress</code></td></tr>
+      <tr><td><code>extensions/v1beta1 NetworkPolicy</code></td><td class="good"><code>networking.k8s.io/v1 NetworkPolicy</code></td></tr>
+      <tr><td><code>apps/v1beta1 Deployment</code></td><td class="good"><code>apps/v1 Deployment</code></td></tr>
+      <tr><td><code>apps/v1beta2 DaemonSet</code></td><td class="good"><code>apps/v1 DaemonSet</code></td></tr>
+      <tr><td><code>extensions/v1beta1 ReplicaSet</code></td><td class="good"><code>apps/v1 ReplicaSet</code></td></tr>
+      <tr><td><code>batch/v1beta1 CronJob</code></td><td class="good"><code>batch/v1 CronJob</code></td></tr>
+      <tr><td><code>policy/v1beta1 PodDisruptionBudget</code></td><td class="good"><code>policy/v1 PodDisruptionBudget</code></td></tr>
+      <tr><td><code>policy/v1beta1 PodSecurityPolicy</code></td><td class="bad">Removed — use PSA/Kyverno/OPA</td></tr>
+      <tr><td><code>autoscaling/v2beta2 HPA</code></td><td class="good"><code>autoscaling/v2 HPA</code></td></tr>
+      <tr><td><code>apiextensions.k8s.io/v1beta1 CRD</code></td><td class="good"><code>apiextensions.k8s.io/v1 CRD</code></td></tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- /versions -->
+
+<!-- ══════════════════════════════════ -->
+<!--            FAILURES               -->
+<!-- ══════════════════════════════════ -->
+<div class="sec" id="sec-failures">
+
+<div class="sh"><div class="sh-i">💥</div><div class="sh-l" style="color:var(--red);">What Fails — And Why</div><div class="sh-s">// failure encyclopedia · causes · fixes · prevention</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,69,96,.3),transparent);"></div></div>
+
+<div class="fail-grid">
+  <div class="fail-card">
+    <div class="fc-num">01</div>
+    <div class="fc-tag">API Removal</div>
+    <div class="fc-title">App CrashLoops after upgrade: <code>the server could not find the requested resource</code></div>
+    <div class="fc-body"><b>Cause:</b> app uses removed API version (e.g., extensions/v1beta1 Ingress). API server returns 404/410. Deployment controllers, Helm hooks, operators all affected.<br><br><b>Fix:</b> update manifest apiVersion. If Helm: <code>helm upgrade --force</code> with updated chart. <b>Prevention:</b> pluto scan in CI before every upgrade.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">02</div>
+    <div class="fc-tag">PDB Deadlock</div>
+    <div class="fc-title">Node drain hangs forever during rolling upgrade</div>
+    <div class="fc-body"><b>Cause:</b> <code>minAvailable: 2</code> on Deployment with 2 replicas, or <code>maxUnavailable: 0</code>. Both pods on nodes being drained simultaneously. PDB blocks eviction of both.<br><br><b>Fix:</b> temporarily patch PDB: <code>kubectl patch pdb my-pdb -p '{"spec":{"maxUnavailable":1}}'</code>. Or scale up replicas first. <b>Prevention:</b> always check PDBs before upgrade. Ensure replicas > minAvailable.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">03</div>
+    <div class="fc-tag">Webhook Failure</div>
+    <div class="fc-title">All pod creation fails after upgrade: <code>Internal error occurred: failed calling webhook</code></div>
+    <div class="fc-body"><b>Cause:</b> Admission webhook (Kyverno, OPA, custom) is down or incompatible with new K8s version. Webhook endpoint unreachable → API server blocks all matching API calls.<br><br><b>Fix:</b> if <code>failurePolicy: Fail</code> — temporarily set to <code>Ignore</code>, fix the webhook, restore. Or delete the webhook temporarily: <code>kubectl delete mutatingwebhookconfiguration my-webhook</code>. <b>Prevention:</b> set webhooks to Ignore during upgrade windows.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">04</div>
+    <div class="fc-tag">etcd Failure</div>
+    <div class="fc-title">API server unresponsive: etcd cluster is unavailable</div>
+    <div class="fc-body"><b>Cause:</b> lost etcd quorum during CP upgrade. Upgrading 2 of 3 etcd members simultaneously. Or etcd version mismatch. For 3-node etcd: can only lose 1 member.<br><br><b>Fix:</b> restore from snapshot. <code>etcdctl snapshot restore snapshot.db --data-dir=/new/path</code>. Then update etcd configs to point to new data dir. <b>Prevention:</b> upgrade etcd members one at a time. Validate health after each: <code>etcdctl endpoint health</code>.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">05</div>
+    <div class="fc-tag">Version Skew</div>
+    <div class="fc-title">kubelet refuses to register: version too old</div>
+    <div class="fc-body"><b>Cause:</b> worker kubelet is 2+ minor versions behind API server. K8s skew policy: kubelet must be ≤1 minor version behind. After upgrading CP by 2 versions, old workers are incompatible.<br><br><b>Fix:</b> immediately upgrade worker nodes after CP. <b>Prevention:</b> never let workers fall 2 versions behind. Upgrade nodes within the same maintenance window as CP.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">06</div>
+    <div class="fc-tag">PSP Migration</div>
+    <div class="fc-title">All pods stuck in <code>Pending</code> after upgrading to 1.25+</div>
+    <div class="fc-body"><b>Cause:</b> cluster relied on PodSecurityPolicy (removed in 1.25). Without PSP admission controller, pods may be blocked by the new Pod Security Admission controller if namespaces have PSA labels set to <code>restricted</code>.<br><br><b>Fix:</b> set namespace PSA labels appropriately, or configure PSA in audit-only mode. <b>Prevention:</b> migrate from PSP to Kyverno/OPA/PSA before upgrading to 1.25. Test PSA in warn/audit mode.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">07</div>
+    <div class="fc-tag">Addon Mismatch</div>
+    <div class="fc-title">DNS fails for new pods after upgrade</div>
+    <div class="fc-body"><b>Cause:</b> CoreDNS version incompatible with new K8s, or CoreDNS DaemonSet not updated. New pods can't resolve cluster DNS. Existing pods with cached DNS still work until TTL expires.<br><br><b>Fix:</b> upgrade CoreDNS to a compatible version. Check configmap format hasn't changed. Restart CoreDNS pods. <b>Prevention:</b> upgrade CoreDNS as part of the upgrade process, not after.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">08</div>
+    <div class="fc-tag">CNI Breakage</div>
+    <div class="fc-title">Pods scheduled but stuck in <code>ContainerCreating</code>: CNI plugin error</div>
+    <div class="fc-body"><b>Cause:</b> CNI plugin (Calico, Cilium, Flannel) is incompatible with new kernel version or new K8s version. CNI fails to configure pod networking.<br><br><b>Fix:</b> upgrade CNI to compatible version. Check CNI DaemonSet pods are Running: <code>kubectl get pods -n kube-system -l k8s-app=calico-node</code>. <b>Prevention:</b> check CNI compatibility matrix. Upgrade CNI before or during K8s upgrade.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">09</div>
+    <div class="fc-tag">StatefulSet Local PV</div>
+    <div class="fc-title">StatefulSet pod drain fails: pods won't terminate</div>
+    <div class="fc-body"><b>Cause:</b> StatefulSet pods using local PVs (hostPath, local PersistentVolume) cannot move to other nodes — the data is tied to the node. Drain blocks waiting for pod to be rescheduled elsewhere, which is impossible.<br><br><b>Fix:</b> manually delete the pod <code>kubectl delete pod --grace-period=0</code>, then remove/replace the node. <b>Prevention:</b> use distributed storage (Longhorn, Rook-Ceph, cloud PVs) instead of local PVs for StatefulSets.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">10</div>
+    <div class="fc-tag">Service Account Tokens</div>
+    <div class="fc-title">Apps get 401 from API server after upgrade</div>
+    <div class="fc-body"><b>Cause:</b> 1.24 stopped auto-creating legacy SA secrets. Apps relying on <code>kubernetes.io/service-account-token</code> type secrets find them expired or missing. Bound tokens have shorter TTL (1h by default in 1.22+).<br><br><b>Fix:</b> use projected volume tokens (<code>serviceAccountToken</code> volume source). Ensure AWS SDK / client-go >= version that handles token refresh. <b>Prevention:</b> audit applications using SA tokens before 1.24+ upgrade.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">11</div>
+    <div class="fc-tag">Dockershim</div>
+    <div class="fc-title">Nodes fail to join after 1.24 upgrade: <code>container runtime not running</code></div>
+    <div class="fc-body"><b>Cause:</b> node still configured with Docker as CRI. Dockershim removed in 1.24. Kubelet cannot start without a compatible CRI. Nodes bootstrapped with old config stay broken.<br><br><b>Fix:</b> migrate to containerd: <code>systemctl stop docker; systemctl enable containerd; containerd config default > /etc/containerd/config.toml</code>. Update kubelet <code>--container-runtime-endpoint</code>. <b>Prevention:</b> migrate all nodes to containerd before 1.24 upgrade.</div>
+  </div>
+  <div class="fail-card">
+    <div class="fc-num">12</div>
+    <div class="fc-tag">Ingress</div>
+    <div class="fc-title">Ingress controller stops reconciling new Ingress objects</div>
+    <div class="fc-body"><b>Cause:</b> Ingress controller version doesn't support <code>networking.k8s.io/v1</code> Ingress (required since 1.22). Old nginx-ingress watching the old API version sees nothing.<br><br><b>Fix:</b> upgrade Ingress controller chart to latest. Old: <code>kubernetes/ingress-nginx</code>, new watches v1 automatically. <b>Prevention:</b> upgrade Ingress controller before or alongside K8s upgrade to 1.22+.</div>
+  </div>
+</div>
+
+</div><!-- /failures -->
+
+<!-- ══════════════════════════════════ -->
+<!--          POST-UPGRADE             -->
+<!-- ══════════════════════════════════ -->
+<div class="sec" id="sec-post">
+
+<div class="sh"><div class="sh-i">✅</div><div class="sh-l" style="color:var(--grn);">Post-Upgrade Playbook</div><div class="sh-s">// what to do immediately after · what to monitor · when to declare success</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,200,150,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cg">
+    <div class="ctt" style="color:var(--grn);">☑️ Post-Upgrade Checklist</div>
+    <div class="cl-progress">
+      <span id="post-count">0/14 completed</span>
+      <div class="cl-bar"><div class="cl-fill" id="post-fill" style="width:0%"></div></div>
+    </div>
+    <div class="checklist" id="post-cl">
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Verify all nodes are on target version</b>: <code>kubectl get nodes -o wide</code>. All nodes should show the new version. No nodes stuck on old version.</div><div class="cl-tag tg-crit">IMMEDIATE</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Verify all kube-system pods are Running</b>: <code>kubectl get pods -n kube-system</code>. CoreDNS, kube-proxy, CNI daemonsets. No CrashLoopBackOff or Pending.</div><div class="cl-tag tg-crit">IMMEDIATE</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Verify all application pods are healthy</b>: <code>kubectl get pods -A | grep -v Running</code>. Any non-Running/Completed pods need investigation.</div><div class="cl-tag tg-crit">IMMEDIATE</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Test DNS resolution</b> from a pod: <code>kubectl run test --rm -it --image=busybox --restart=Never -- nslookup kubernetes.default</code>. CoreDNS must be working before declaring success.</div><div class="cl-tag tg-crit">IMMEDIATE</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Run application smoke tests.</b> Hit critical API endpoints, run health checks. Verify frontend-to-backend connectivity. Check PVC mounts work.</div><div class="cl-tag tg-crit">IMMEDIATE</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Check HPA/KEDA is still scaling.</b> HPA depends on metrics-server. KEDA depends on external triggers. Verify both are functional post-upgrade.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Verify CSI/storage works.</b> Create a test PVC and pod, verify mount, delete. CSI drivers often need upgrading alongside K8s versions.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Check etcd health</b> (self-managed): <code>etcdctl endpoint health --cluster</code>. All members should be healthy. Verify etcd version with <code>etcdctl version</code>.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Verify Ingress/LB endpoints.</b> External traffic should reach services. Check ALB/NLB target health (managed cloud) or nginx-ingress pods.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Run pluto again post-upgrade.</b> Check nothing slipped through. Any deprecated API now showing = must fix before next upgrade.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Check audit logs for new deprecation warnings.</b> APIs deprecated in this version = need fixing before the next upgrade window.</div><div class="cl-tag tg-imp">IMPORTANT</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Monitor error rates for 24-72 hours.</b> Track 5xx rates, latency P99, pod restart rates. Compare to pre-upgrade baseline.</div><div class="cl-tag tg-rec">MONITOR</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Update runbooks and documentation.</b> Note the new version, what changed, any issues encountered. Future team members will thank you.</div><div class="cl-tag tg-rec">HOUSEKEEPING</div></div>
+      <div class="cl-item" onclick="check(this,'post')"><div class="cl-cb"></div><div class="cl-text"><b>Schedule next upgrade now.</b> K8s releases every 4 months. You need to upgrade within 14 months of a release (before EOL). Don't let it pile up.</div><div class="cl-tag tg-rec">HOUSEKEEPING</div></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cg">
+    <div class="ctt" style="color:var(--grn);">📅 K8s Release Lifecycle</div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--k8s2);"></div>
+        <div class="tl-time" style="color:var(--k8s2);">Day 0 — Release</div>
+        <div class="tl-title">Minor version released (every ~4 months)</div>
+        <div class="tl-desc">v1.31.0 released. Patch releases (v1.31.1, .2...) follow monthly. Support window: 14 months from release date.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--yel);"></div>
+        <div class="tl-time" style="color:var(--yel);">+4 months — Next minor</div>
+        <div class="tl-title">Next version released (v1.32)</div>
+        <div class="tl-desc">Your current version is now 1 version behind. <b>Upgrade before you fall 3 versions behind</b> (EOL of your version).</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--orn);"></div>
+        <div class="tl-time" style="color:var(--orn);">+12 months — Deprecation notice</div>
+        <div class="tl-title">Minor version enters final 2 months</div>
+        <div class="tl-desc">Last patch releases. Community support winds down. You MUST be planning your upgrade now.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="border-color:var(--red);"></div>
+        <div class="tl-time" style="color:var(--red);">+14 months — EOL</div>
+        <div class="tl-title">Version reaches End of Life</div>
+        <div class="tl-desc"><b>No more patches. No security fixes. No CVE responses.</b> Managed providers (EKS/GKE/AKS) may auto-upgrade your cluster. Self-managed clusters are on their own.</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:10px;"><b>Rule of thumb:</b> upgrade 2-4 weeks after a minor release (let community find issues), but no later than 10 months after release. This gives you a comfortable runway before EOL.</div>
+  </div>
+  <div class="card cy">
+    <div class="ctt" style="color:var(--yel);">⚠️ When To Declare the Upgrade Failed</div>
+    <div class="fr"><span class="fk">Stop if</span><span class="fv">etcd quorum lost during CP upgrade. Restore from snapshot immediately — don't try to push through.</span></div>
+    <div class="fr"><span class="fk">Stop if</span><span class="fv">API server returns 500 errors on all requests after upgrade. Something fundamental broke. Check kube-apiserver logs.</span></div>
+    <div class="fr"><span class="fk">Stop if</span><span class="fv">More than 20% of application pods are in error state after node upgrades. Rollback nodes (re-provision old AMI) and investigate.</span></div>
+    <div class="fr"><span class="fk">Continue with</span><span class="fv">One or two applications in CrashLoop with a clear cause (deprecated API). Fix the app, not the cluster.</span></div>
+    <div class="fr"><span class="fk">Restore command</span><span class="fv"><code>etcdctl snapshot restore snapshot.db --data-dir=/var/lib/etcd-restore --initial-cluster-token="etcd-cluster-new"</code> — the token must differ from old cluster to prevent split-brain.</span></div>
+  </div>
+</div>
+</div>
+
+</div><!-- /post -->
+
+<!-- ══════════════════════════════════ -->
+<!--          VALIDATION               -->
+<!-- ══════════════════════════════════ -->
+<div class="sec" id="sec-validate">
+
+<div class="sh"><div class="sh-i">🔍</div><div class="sh-l" style="color:var(--vio);">Cluster Validation & Sanity</div><div class="sh-s">// commands · tools · what healthy looks like</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(155,93,229,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card cv">
+    <div class="ctt" style="color:var(--vio);">🧰 Validation Toolkit</div>
+    <div class="fr"><span class="fk">sonobuoy</span><span class="fv"><b>CNCF conformance testing.</b> Runs K8s conformance tests to verify your cluster meets the spec. Slow (~2h) but comprehensive. Use after major upgrades to confirm conformance.</span></div>
+    <div class="fr"><span class="fk">kubectl-neat</span><span class="fv">Remove noise from kubectl output. <code>kubectl get pod mypod -o yaml | kubectl-neat</code>. Easier to read resource state post-upgrade.</span></div>
+    <div class="fr"><span class="fk">popeye</span><span class="fv">Cluster linting: finds misconfigurations, deprecated usage, health issues. <code>popeye -s deploy,svc,pvc</code>. Color-coded health scores.</span></div>
+    <div class="fr"><span class="fk">kubescape</span><span class="fv">Security posture validation. Detects misconfigurations, CVE risks, NSA/CISA framework compliance. <code>kubescape scan --enable-host-scan</code>.</span></div>
+    <div class="fr"><span class="fk">kubectl-score</span><span class="fv">Grades individual resources: missing liveness/readiness, low CPU/memory limits, pod anti-affinity. <code>kubectl score deployment -n mynamespace</code>.</span></div>
+    <div class="fr"><span class="fk">k9s</span><span class="fv">TUI dashboard — fastest way to visually scan cluster health post-upgrade. Spot non-Running pods instantly. Sort by restart count.</span></div>
+    <div class="code"><span class="cm"># Conformance test (full, takes 2h)</span>
+sonobuoy run --wait --mode=certified-conformance
+sonobuoy results $(sonobuoy retrieve)
+sonobuoy delete --all
+
+<span class="cm"># Quick conformance subset</span>
+sonobuoy run --wait \
+  --plugin e2e \
+  --plugin-env e2e.E2E_FOCUS="Conformance" \
+  --plugin-env e2e.E2E_SKIP="Serial"
+
+<span class="cm"># Popeye scan</span>
+popeye -s no,ns,po,dp,svc,pvc
+
+<span class="cm"># Kubescape full scan</span>
+kubescape scan framework nsa \
+  --enable-host-scan \
+  --format pretty-printer</div>
+  </div>
+  <div class="card cv">
+    <div class="ctt" style="color:var(--vio);">📡 Prometheus Metrics to Watch</div>
+    <div class="fr"><span class="fk">API server health</span><span class="fv"><code>apiserver_request_total{code=~"5.."}</code> — 5xx errors. Should be ~0. Spikes indicate apiserver issues.</span></div>
+    <div class="fr"><span class="fk">API latency</span><span class="fv"><code>histogram_quantile(0.99, rate(apiserver_request_duration_seconds_bucket[5m]))</code> — P99 should be &lt;1s for most requests.</span></div>
+    <div class="fr"><span class="fk">etcd latency</span><span class="fv"><code>histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket[5m]))</code> — should be &lt;25ms. Spikes = disk I/O issue.</span></div>
+    <div class="fr"><span class="fk">etcd leader changes</span><span class="fv"><code>increase(etcd_server_leader_changes_seen_total[1h])</code> — should be 0 or near 0. Frequent leader changes = etcd instability.</span></div>
+    <div class="fr"><span class="fk">Pod restarts</span><span class="fv"><code>kube_pod_container_status_restarts_total</code> — compare to pre-upgrade baseline. New restarts post-upgrade indicate broken apps.</span></div>
+    <div class="fr"><span class="fk">Node conditions</span><span class="fv"><code>kube_node_status_condition{condition="Ready",status="true"}</code> == num_nodes. Any node not Ready = problem.</span></div>
+    <div class="fr"><span class="fk">Scheduler latency</span><span class="fv"><code>scheduler_scheduling_algorithm_duration_seconds</code> — elevated scheduling latency indicates scheduler load or configuration issues.</span></div>
+    <div class="fr"><span class="fk">Deprecated API hits</span><span class="fv"><code>apiserver_requested_deprecated_apis</code> — non-zero after upgrade = apps still using old APIs. Must fix before next upgrade.</span></div>
+  </div>
+</div>
+
+<div class="card cv" style="margin-bottom:12px;">
+  <div class="ctt" style="color:var(--vio);">🔬 Comprehensive Validation Commands</div>
+  <div class="val-category">
+    <div class="vc-title" style="color:var(--k8s2);">▸ Control Plane Health</div>
+    <div class="val-checks">
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get nodes -o wide</span><span class="vcheck-what"><b>All nodes Ready</b>, correct version, correct OS image. No NotReady, SchedulingDisabled, or Unknown status.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get pods -n kube-system</span><span class="vcheck-what"><b>All system pods Running.</b> Check CoreDNS (2+ replicas), kube-proxy (all nodes), CNI daemonset (all nodes).</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl version --short</span><span class="vcheck-what"><b>Server version matches target.</b> Client version within 1 minor of server.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get componentstatuses</span><span class="vcheck-what"><b>Healthy: etcd, scheduler, controller-manager.</b> (Deprecated in newer K8s but still useful on older clusters)</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get --raw='/healthz?verbose'</span><span class="vcheck-what"><b>API server healthz endpoint.</b> Should return "ok". Shows which subsystems are healthy.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get --raw='/readyz?verbose'</span><span class="vcheck-what"><b>API server readyz (1.16+).</b> More granular than healthz. Shows post-start-hooks and shutdown state.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get --raw='/livez?verbose'</span><span class="vcheck-what"><b>API server livez (1.16+).</b> Liveness check — if this fails, the API server process itself is broken.</span></div>
+    </div>
+  </div>
+  <div class="val-category">
+    <div class="vc-title" style="color:var(--grn);">▸ Workload Health</div>
+    <div class="val-checks">
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get pods -A | grep -Ev "Running|Completed"</span><span class="vcheck-what"><b>Any non-Running/Completed pods.</b> Pending, CrashLoopBackOff, ImagePullBackOff all need investigation.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get deployments -A | grep -v "True"</span><span class="vcheck-what"><b>Deployments not available.</b> Available column should be True. If not, deployment is degraded.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get events -A --sort-by='.lastTimestamp' | tail -30</span><span class="vcheck-what"><b>Recent events</b> — look for Warnings about Failed pulls, FailedScheduling, BackOff, Unhealthy probes.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl top nodes && kubectl top pods -A</span><span class="vcheck-what"><b>Resource usage</b> — compare to pre-upgrade baseline. Elevated CPU/memory may indicate workloads in restart loops.</span></div>
+    </div>
+  </div>
+  <div class="val-category">
+    <div class="vc-title" style="color:var(--teal);">▸ Networking</div>
+    <div class="val-checks">
+      <div class="vcheck"><span class="vcheck-cmd">kubectl run -it --rm nettest --image=nicolaka/netshoot --restart=Never -- bash</span><span class="vcheck-what"><b>Interactive network debug pod.</b> Run: nslookup, curl service names, ping pod IPs cross-node.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl exec -n kube-system &lt;coredns-pod&gt; -- nslookup kubernetes.default</span><span class="vcheck-what"><b>CoreDNS resolving internal names.</b> kubernetes.default should resolve to the ClusterIP of the kubernetes service.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get svc -A | grep -v None | grep ClusterIP</span><span class="vcheck-what"><b>Services have valid ClusterIPs.</b> No services with &lt;none&gt; IP (unless headless intentionally).</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get endpoints -A | grep "&lt;none&gt;"</span><span class="vcheck-what"><b>Services with no endpoints = pods not matching selector.</b> Label mismatch or no pods running.</span></div>
+    </div>
+  </div>
+  <div class="val-category">
+    <div class="vc-title" style="color:var(--yel);">▸ etcd Health (self-managed only)</div>
+    <div class="val-checks">
+      <div class="vcheck"><span class="vcheck-cmd">etcdctl endpoint health --cluster --write-out=table</span><span class="vcheck-what"><b>All etcd members healthy.</b> Check endpoint, health status, and latency. &gt;25ms commit latency = disk issue.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">etcdctl endpoint status --cluster --write-out=table</span><span class="vcheck-what"><b>Leader elected, DB sizes within range.</b> All members should have similar DB sizes. Leader should be stable.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">etcdctl member list --write-out=table</span><span class="vcheck-what"><b>All members present and started.</b> No unstarted members left from a failed join.</span></div>
+    </div>
+  </div>
+  <div class="val-category">
+    <div class="vc-title" style="color:var(--red);">▸ Deprecated API Scan</div>
+    <div class="val-checks">
+      <div class="vcheck"><span class="vcheck-cmd">pluto detect-all-in-cluster</span><span class="vcheck-what"><b>Scan for deprecated API usage in live cluster.</b> Covers all Helm releases and resources. Zero results = clean.</span></div>
+      <div class="vcheck"><span class="vcheck-cmd">kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</span><span class="vcheck-what"><b>Metrics-based deprecated API hits.</b> Shows which deprecated APIs are actively being called and by whom.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card ck">
+    <div class="ctt" style="color:var(--k8s2);">🚦 What "Healthy" Looks Like</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># All nodes Ready, same version</span>
+$ kubectl get nodes
+NAME       STATUS   ROLES    VERSION
+master-1   Ready    cp       v1.31.0
+master-2   Ready    cp       v1.31.0
+worker-1   Ready    &lt;none&gt;   v1.31.0
+worker-2   Ready    &lt;none&gt;   v1.31.0
+
+<span class="cm"># API server all green</span>
+$ kubectl get --raw='/healthz?verbose'
+[+]ping ok
+[+]log ok
+[+]etcd ok
+[+]poststarthook/... ok
+healthz check passed
+
+<span class="cm"># etcd quorum stable</span>
+$ etcdctl endpoint health --cluster
+https://10.0.0.1:2379 is healthy
+https://10.0.0.2:2379 is healthy
+https://10.0.0.3:2379 is healthy
+
+<span class="cm"># Zero deprecated API hits</span>
+$ pluto detect-all-in-cluster
+No output = nothing deprecated ✓</div>
+  </div>
+  <div class="card cr">
+    <div class="ctt" style="color:var(--red);">🚨 What "Broken" Looks Like</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Node stuck on old version</span>
+$ kubectl get nodes
+worker-3   NotReady   v1.29.0  <span class="re">← old kubelet</span>
+
+<span class="cm"># API server unhealthy</span>
+$ kubectl get --raw='/healthz?verbose'
+[-]etcd failed: ... <span class="re">← etcd issue!</span>
+healthz check failed
+
+<span class="cm"># Deprecated API hits</span>
+$ pluto detect-all-in-cluster
+NAME              KIND        VERSION           REPLACEMENT
+my-ingress        Ingress     extensions/v1b1   networking.k8s.io/v1
+
+<span class="cm"># Pods stuck</span>
+$ kubectl get pods -A | grep -v Running
+my-app   0/1   CrashLoopBackOff   12   2m
+legacy   0/1   Error              4    1m
+
+<span class="cm"># Events showing the cause</span>
+$ kubectl get events -A | grep Warning
+Warning   BackOff   pod/legacy   Back-off restarting failed container</div>
+  </div>
+  <div class="card cg">
+    <div class="ctt" style="color:var(--grn);">📊 Quick Health Script</div>
+    <div class="code" style="font-size:9.5px;"><span class="cm">#!/usr/bin/env bash</span>
+<span class="cm"># post-upgrade-health-check.sh</span>
+
+echo "=== Node Status ==="
+kubectl get nodes -o wide
+
+echo "=== System Pods ==="
+kubectl get pods -n kube-system \
+  --sort-by='.status.phase'
+
+echo "=== Non-Running App Pods ==="
+kubectl get pods -A | \
+  grep -Ev "Running|Completed|NAME"
+
+echo "=== Recent Warning Events ==="
+kubectl get events -A \
+  --field-selector type=Warning \
+  --sort-by='.lastTimestamp' | tail -20
+
+echo "=== API Health ==="
+kubectl get --raw='/healthz?verbose'
+
+echo "=== Deprecated APIs ==="
+pluto detect-all-in-cluster 2>/dev/null \
+  || echo "pluto not installed"
+
+echo "=== Deployment Rollout Status ==="
+kubectl rollout status deployment \
+  --all-namespaces 2>/dev/null | \
+  grep -v "successfully rolled out"</div>
+  </div>
+</div>
+
+</div><!-- /validate -->
+
+<div class="footer">
+  <div class="ft">Kubernetes Upgrade Field Guide · Order · Pre/Post Checklists · Version Changes · Validation</div>
+  <div class="ft" style="color:rgba(50,108,229,.25);">One version at a time · CP first → addons → workers · pluto before every upgrade · etcd backup is your only rollback</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ── SECTION NAV ──
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── INTERACTIVE CHECKLIST ──
+const counters = {};
+
+function check(el, list) {
+  el.classList.toggle('checked');
+  const cb = el.querySelector('.cl-cb');
+  cb.textContent = el.classList.contains('checked') ? '✓' : '';
+
+  const items = document.querySelectorAll('#' + list + '-cl .cl-item');
+  const done  = document.querySelectorAll('#' + list + '-cl .cl-item.checked').length;
+  const total = items.length;
+  const pct   = Math.round((done / total) * 100);
+  document.getElementById(list + '-count').textContent = `${done}/${total} completed`;
+  document.getElementById(list + '-fill').style.width  = pct + '%';
+}
+
+// ── METHOD CARDS TOGGLE ──
+function toggleMethod(el) {
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.method-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+</script>
+</body>
+</html>

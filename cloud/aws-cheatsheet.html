@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Core — IAM/VPC/EC2/S3</title>
+<style>
+  :root{
+    --bg:#0a0c10; --surface:#111318; --surface2:#161a21; --border:#232833;
+    --text:#e6edf3; --muted:#8b98a9; --accent:#ff9f2e; --accent-dim:#3a2c14;
+    --green:#3fb950; --red:#f85149; --blue:#58a6ff; --purple:#bc8cff;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6; font-size:16px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:0 20px 80px}
+  header.page{
+    padding:64px 20px 40px; text-align:center;
+    border-bottom:1px solid var(--border);
+    background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,159,46,.10), transparent 70%);
+  }
+  header.page h1{
+    font-size:clamp(28px,5vw,44px); margin:0 0 10px; letter-spacing:-.02em;
+    font-weight:800;
+  }
+  header.page p{color:var(--muted); max-width:720px; margin:0 auto; font-size:16px}
+  .kpill{display:inline-block; margin-top:16px; padding:5px 14px; border-radius:999px;
+    background:var(--accent-dim); color:var(--accent); font-size:13px; font-weight:600;
+    border:1px solid rgba(255,159,46,.3)}
+  nav.toc{
+    margin:32px 0 8px; padding:20px 24px; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px;
+  }
+  nav.toc h2{margin:0 0 12px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
+  nav.toc ul{list-style:none; margin:0; padding:0; display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:6px 20px}
+  nav.toc a{color:var(--text); text-decoration:none; font-size:14.5px; padding:3px 0; display:block}
+  nav.toc a:hover{color:var(--accent)}
+  nav.toc a .n{color:var(--accent); font-weight:700; margin-right:8px; font-variant-numeric:tabular-nums}
+  section{margin-top:52px; scroll-margin-top:20px}
+  section > h2{
+    font-size:clamp(22px,3.5vw,30px); margin:0 0 6px; letter-spacing:-.015em;
+    display:flex; align-items:baseline; gap:12px; font-weight:800;
+  }
+  section > h2 .num{color:var(--accent); font-size:.72em; font-weight:700; font-variant-numeric:tabular-nums}
+  .lead{color:var(--muted); margin:0 0 20px; font-size:15.5px}
+  h3{font-size:19px; margin:30px 0 10px; font-weight:700; color:#fff}
+  h4{font-size:15.5px; margin:20px 0 6px; font-weight:700; color:var(--blue)}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0; padding-left:22px}
+  li{margin:5px 0}
+  strong{color:#fff; font-weight:650}
+  code{
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.88em;
+    background:var(--surface2); padding:2px 6px; border-radius:5px; color:var(--accent);
+    border:1px solid var(--border);
+  }
+  pre{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:16px 18px; overflow-x:auto; margin:14px 0; line-height:1.5;
+  }
+  pre code{background:none; border:none; padding:0; color:#cdd9e5; font-size:13px; display:block}
+  .tk{color:var(--purple)} .ts{color:var(--green)} .tc{color:var(--muted); font-style:italic}
+  .tn{color:var(--accent)} .tb{color:var(--blue)}
+  .tblwrap{overflow-x:auto; margin:16px 0; border:1px solid var(--border); border-radius:10px}
+  table{border-collapse:collapse; width:100%; min-width:560px; font-size:14px}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top}
+  th{background:var(--surface2); color:#fff; font-weight:650; white-space:nowrap; position:sticky; top:0}
+  tr:last-child td{border-bottom:none}
+  td:first-child{color:#fff; font-weight:600; white-space:nowrap}
+  .callout{
+    margin:18px 0; padding:14px 18px 14px 16px; border-radius:10px;
+    border:1px solid var(--border); border-left-width:4px; background:var(--surface);
+  }
+  .callout .lbl{font-weight:750; font-size:13px; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:5px}
+  .callout p{margin:4px 0}
+  .trap{border-left-color:var(--red)} .trap .lbl{color:var(--red)}
+  .qa{border-left-color:var(--blue)} .qa .lbl{color:var(--blue)}
+  .tip{border-left-color:var(--green)} .tip .lbl{color:var(--green)}
+  .qa .q{color:#fff; font-weight:650} .qa .a{color:var(--muted)}
+  .qa .a strong{color:var(--text)}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin:16px 0}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+  .card h4{margin-top:0}
+  .pill{display:inline-block; padding:1px 8px; border-radius:6px; font-size:12px; font-weight:600; border:1px solid var(--border); background:var(--surface2); color:var(--muted)}
+  .pill.g{color:var(--green); border-color:rgba(63,185,80,.3)}
+  .pill.r{color:var(--red); border-color:rgba(248,81,73,.3)}
+  .pill.a{color:var(--accent); border-color:rgba(255,159,46,.3)}
+  hr{border:none; border-top:1px solid var(--border); margin:40px 0}
+  a.svc{color:var(--blue); text-decoration:none} a.svc:hover{text-decoration:underline}
+  .foot{margin-top:60px; padding-top:24px; border-top:1px solid var(--border); color:var(--muted); font-size:13px; text-align:center}
+  ::selection{background:rgba(255,159,46,.28)}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<header class="page">
+  <h1>AWS Core for DevOps / SRE</h1>
+  <p>Interview-ready reference for the AWS services that come up in every senior DevOps and SRE loop — IAM, VPC networking, compute, load balancing, storage, DNS, and the ops glue. Accurate to 2026.</p>
+  <span class="kpill">EKS has its own sheet — this covers core services</span>
+</header>
+
+<div class="wrap">
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ul>
+    <li><a href="#iam"><span class="n">01</span>IAM &amp; STS</a></li>
+    <li><a href="#vpc"><span class="n">02</span>VPC Networking</a></li>
+    <li><a href="#compute"><span class="n">03</span>Compute (EC2 / ASG)</a></li>
+    <li><a href="#lb"><span class="n">04</span>Load Balancing</a></li>
+    <li><a href="#storage"><span class="n">05</span>Storage &amp; Data</a></li>
+    <li><a href="#dns"><span class="n">06</span>Route 53 / DNS</a></li>
+    <li><a href="#ops"><span class="n">07</span>Ops Glue</a></li>
+    <li><a href="#war"><span class="n">08</span>Well-Architected</a></li>
+    <li><a href="#traps"><span class="n">09</span>Trap Rapid-Fire</a></li>
+  </ul>
+</nav>
+
+<!-- ==================== IAM ==================== -->
+<section id="iam">
+  <h2><span class="num">01</span> IAM &amp; STS</h2>
+  <p class="lead">The single most interview-heavy topic. Know the vocabulary, the policy evaluation flow cold, and why roles beat long-lived keys.</p>
+
+  <h3>Principals &amp; identities</h3>
+  <ul>
+    <li><strong>User</strong> — a long-lived identity for a human/app. Has credentials (console password, up to 2 access keys). Avoid for workloads.</li>
+    <li><strong>Group</strong> — a collection of users; attach policies to the group, not each user. Groups <em>cannot</em> be nested and cannot be a principal in a policy.</li>
+    <li><strong>Role</strong> — an identity with <em>no long-term credentials</em>. It's <em>assumed</em> to get temporary STS credentials. Used by EC2, Lambda, EKS pods, cross-account access, and federated users.</li>
+    <li><strong>Instance profile</strong> — the container that lets an <strong>EC2 instance</strong> assume a role. One role per instance profile; the instance retrieves temporary creds from IMDS (use <strong>IMDSv2</strong>, token-based, to block SSRF).</li>
+  </ul>
+
+  <h3>Policy types — the two big families</h3>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>Type</th><th>Attached to</th><th>Has Principal?</th><th>Answers…</th></tr></thead>
+    <tbody>
+      <tr><td>Identity-based</td><td>User / group / role</td><td>No</td><td>"What can <em>this identity</em> do?"</td></tr>
+      <tr><td>Resource-based</td><td>The resource (S3 bucket, SQS, KMS key, role trust policy)</td><td>Yes (required)</td><td>"Who can act on <em>this resource</em>?"</td></tr>
+      <tr><td>Permission boundary</td><td>User / role (as a ceiling)</td><td>No</td><td>Max perms an identity <em>can be granted</em></td></tr>
+      <tr><td>SCP (Organizations)</td><td>OU / account</td><td>No</td><td>Max perms for <em>everyone</em> in the account (a guardrail, not a grant)</td></tr>
+      <tr><td>Session policy</td><td>Passed at AssumeRole</td><td>No</td><td>Further scopes down a session</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Key nuance: within a <strong>single account</strong>, a resource-based policy can grant access on its own — the bucket policy alone suffices, no matching identity policy required. For <em>cross-account</em> access to S3, you need an allow on <em>both</em> the identity side (caller's account) and the resource side (bucket policy). Exception: some services (SNS, SQS, Lambda, KMS) let a resource policy that names the exact principal suffice on its own.</p>
+
+  <h3 id="eval">Policy evaluation logic — memorize this order</h3>
+  <div class="callout tip">
+    <span class="lbl">The one rule everyone asks</span>
+    <p><strong>Explicit Deny &gt; Explicit Allow &gt; Implicit Deny (default).</strong> Access is denied by default. An <em>Allow</em> anywhere opens it. A single <em>explicit Deny anywhere</em> — in any policy type — overrides <em>all</em> Allows. There is no "override a deny."</p>
+  </div>
+  <p>Full decision flow for a request:</p>
+  <ol>
+    <li>Default = <strong>implicit deny</strong>.</li>
+    <li>Evaluate all applicable policies (identity, resource, boundary, SCP, session).</li>
+    <li>Is there an <strong>explicit Deny</strong>? → <span class="pill r">DENY</span> (final, wins over everything).</li>
+    <li><strong>SCP</strong> allows the action? (Org accounts only) If not → deny.</li>
+    <li><strong>Permission boundary</strong> allows it? If not → deny.</li>
+    <li>An <strong>explicit Allow</strong> exists (identity or resource)? → <span class="pill g">ALLOW</span>.</li>
+    <li>Otherwise → <span class="pill r">DENY</span> (implicit).</li>
+  </ol>
+  <p>Effective permissions = <em>intersection</em> of SCP ∩ permission boundary ∩ identity policy (union with resource policy), minus any explicit deny.</p>
+
+  <h4>Example identity policy (least privilege, scoped)</h4>
+  <pre><code><span class="tk">{</span>
+  <span class="ts">"Version"</span>: <span class="ts">"2012-10-17"</span>,
+  <span class="ts">"Statement"</span>: [
+    <span class="tk">{</span>
+      <span class="ts">"Sid"</span>: <span class="ts">"ReadOneBucket"</span>,
+      <span class="ts">"Effect"</span>: <span class="ts">"Allow"</span>,
+      <span class="ts">"Action"</span>: [<span class="ts">"s3:GetObject"</span>, <span class="ts">"s3:ListBucket"</span>],
+      <span class="ts">"Resource"</span>: [
+        <span class="ts">"arn:aws:s3:::my-app-data"</span>,
+        <span class="ts">"arn:aws:s3:::my-app-data/*"</span>
+      ],
+      <span class="ts">"Condition"</span>: <span class="tk">{</span>
+        <span class="ts">"IpAddress"</span>: <span class="tk">{</span> <span class="ts">"aws:SourceIp"</span>: <span class="ts">"203.0.113.0/24"</span> <span class="tk">}</span>
+      <span class="tk">}</span>
+    <span class="tk">}</span>
+  ]
+<span class="tk">}</span></code></pre>
+  <p class="lead" style="margin-top:0"><code>ListBucket</code> is a <em>bucket-level</em> action (resource = bucket ARN); <code>GetObject</code> is <em>object-level</em> (resource = <code>bucket/*</code>). Mixing these up is a classic failed-question.</p>
+
+  <h4>Explicit Deny example (boundary / SCP style)</h4>
+  <pre><code><span class="tk">{</span>
+  <span class="ts">"Effect"</span>: <span class="ts">"Deny"</span>,
+  <span class="ts">"Action"</span>: <span class="ts">"*"</span>,
+  <span class="ts">"Resource"</span>: <span class="ts">"*"</span>,
+  <span class="ts">"Condition"</span>: <span class="tk">{</span>
+    <span class="ts">"StringNotEquals"</span>: <span class="tk">{</span> <span class="ts">"aws:RequestedRegion"</span>: [<span class="ts">"us-east-1"</span>, <span class="ts">"eu-west-1"</span>] <span class="tk">}</span>
+  <span class="tk">}</span>
+<span class="tk">}</span></code></pre>
+  <p>Deny-everything-outside-approved-regions. As an SCP this locks the whole account regardless of what admins later grant — the guardrail pattern.</p>
+
+  <h3>STS &amp; AssumeRole</h3>
+  <ul>
+    <li><strong>STS</strong> (Security Token Service) issues <em>temporary</em> credentials (access key + secret + <strong>session token</strong>, minutes to hours). <code>sts:AssumeRole</code>, <code>AssumeRoleWithWebIdentity</code> (OIDC), <code>AssumeRoleWithSAML</code>.</li>
+    <li>A role has two policy sides: the <strong>trust policy</strong> (resource-based — <em>who</em> may assume it) and the <strong>permission policy</strong> (<em>what</em> the assumed session can do).</li>
+    <li><strong>Cross-account:</strong> Account A's role trust policy names Account B's principal; B's identity needs <code>sts:AssumeRole</code> on that role ARN. Add <code>ExternalId</code> to defend against the confused-deputy problem for third parties.</li>
+  </ul>
+
+  <h4>Role trust policy (EC2 service principal)</h4>
+  <pre><code><span class="tk">{</span>
+  <span class="ts">"Version"</span>: <span class="ts">"2012-10-17"</span>,
+  <span class="ts">"Statement"</span>: [<span class="tk">{</span>
+    <span class="ts">"Effect"</span>: <span class="ts">"Allow"</span>,
+    <span class="ts">"Principal"</span>: <span class="tk">{</span> <span class="ts">"Service"</span>: <span class="ts">"ec2.amazonaws.com"</span> <span class="tk">}</span>,
+    <span class="ts">"Action"</span>: <span class="ts">"sts:AssumeRole"</span>
+  <span class="tk">}</span>]
+<span class="tk">}</span></code></pre>
+
+  <h3>Federation &amp; workload identity</h3>
+  <ul>
+    <li><strong>OIDC federation</strong> — trust an external IdP (GitHub Actions, Google, EKS) so workloads exchange an OIDC token for AWS creds via <code>AssumeRoleWithWebIdentity</code>. No stored AWS keys. This is how <strong>GitHub Actions → AWS</strong> should be wired.</li>
+    <li><strong>IRSA</strong> (IAM Roles for Service Accounts) — EKS maps a K8s service account to an IAM role via the cluster's OIDC provider. <span class="pill">EKS sheet has depth</span></li>
+    <li><strong>EKS Pod Identity</strong> — newer, simpler alternative to IRSA (an agent + association, no per-cluster OIDC trust wiring). Prefer for new clusters. <span class="pill">EKS sheet has depth</span></li>
+  </ul>
+
+  <div class="callout qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Access keys or roles for an app on EC2?</p>
+    <p class="a"><strong>Roles, always.</strong> Attach an instance profile → the SDK pulls short-lived, auto-rotated creds from IMDSv2. Long-lived access keys baked into an AMI/env var are the #1 leaked-credential source. Static keys have <em>one</em> legit niche: on-prem/off-AWS systems that can't assume a role — and even those should move to IAM Roles Anywhere.</p>
+  </div>
+
+  <div class="callout trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>A <strong>permission boundary is a ceiling, not a grant.</strong> Attaching a boundary that allows <code>s3:*</code> gives <em>zero</em> permissions on its own — you still need an identity policy that allows the action. Effective perms = boundary ∩ identity policy.</p>
+  </div>
+  <div class="callout trap">
+    <span class="lbl">⚠ Trap</span>
+    <p><strong>SCPs never grant permissions</strong> — they only cap them. An SCP allowing an action does nothing unless an IAM policy also allows it. And the management (payer) account is <em>not</em> restricted by SCPs.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== VPC ==================== -->
+<section id="vpc">
+  <h2><span class="num">02</span> VPC Networking</h2>
+  <p class="lead">Subnets, routing, gateways, and the stateful-vs-stateless firewall contrast that appears in nearly every networking interview.</p>
+
+  <h3>Building blocks</h3>
+  <ul>
+    <li><strong>VPC</strong> — a regional, logically isolated network. You pick a <strong>CIDR</strong> (e.g. <code>10.0.0.0/16</code> = 65,536 addresses). Can add secondary CIDRs.</li>
+    <li><strong>Subnet</strong> — AZ-scoped slice of the VPC CIDR. AWS reserves <strong>5 IPs per subnet</strong> (.0 network, .1 router, .2 DNS, .3 future, .255 broadcast).</li>
+    <li><strong>Public subnet</strong> = its route table has a <code>0.0.0.0/0</code> route to an <strong>Internet Gateway</strong>. <strong>Private subnet</strong> = no direct IGW route.</li>
+    <li><strong>Route table</strong> — controls where subnet traffic goes. <em>Longest-prefix match wins.</em> The <code>local</code> route (VPC CIDR) is always present and can't be removed.</li>
+  </ul>
+
+  <h3>Egress for private subnets: NAT</h3>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>NAT Gateway</th><th>NAT Instance</th></tr></thead>
+    <tbody>
+      <tr><td>Managed?</td><td>Fully managed by AWS</td><td>You run an EC2 instance</td></tr>
+      <tr><td>Availability</td><td>Highly available within one AZ (deploy 1/AZ for resilience)</td><td>Single point of failure unless you script HA</td></tr>
+      <tr><td>Bandwidth</td><td>Up to 100 Gbps, auto-scales</td><td>Bounded by instance size</td></tr>
+      <tr><td>Cost</td><td>Hourly + <strong>per-GB data processing</strong> charge</td><td>Instance cost only (cheaper at low volume)</td></tr>
+      <tr><td>Security groups</td><td>N/A (no SG)</td><td>Yes (it's an EC2)</td></tr>
+      <tr><td>Use case</td><td>Default choice, production</td><td>Edge/legacy; can double as bastion or port-forward</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>NAT lets private instances make <em>outbound</em> connections (pull updates, hit APIs) while blocking <em>inbound</em> from the internet. NAT lives in a <strong>public</strong> subnet; private route tables point <code>0.0.0.0/0</code> → NAT.</p>
+
+  <div class="callout trap">
+    <span class="lbl">⚠ Trap — the cost gotcha</span>
+    <p>NAT Gateway bills <em>both</em> an hourly rate <em>and</em> a per-GB data-processing fee on all traffic through it. Pulling large images or backups through NAT gets expensive fast. For S3/DynamoDB/ECR traffic, use <strong>VPC endpoints</strong> to bypass NAT entirely and cut the bill.</p>
+  </div>
+
+  <h3 id="sgnacl">Security Groups vs NACLs — the classic contrast</h3>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>Security Group</th><th>Network ACL</th></tr></thead>
+    <tbody>
+      <tr><td>Operates at</td><td>Instance / ENI level</td><td>Subnet level</td></tr>
+      <tr><td>State</td><td><strong>Stateful</strong> — return traffic auto-allowed</td><td><strong>Stateless</strong> — must allow return traffic explicitly</td></tr>
+      <tr><td>Rules</td><td><strong>Allow only</strong> (implicit deny rest)</td><td><strong>Allow <em>and</em> Deny</strong></td></tr>
+      <tr><td>Evaluation</td><td>All rules evaluated (permissive union)</td><td><strong>Numbered order</strong>, first match wins</td></tr>
+      <tr><td>Default</td><td>Deny all inbound, allow all outbound</td><td>Default NACL allows all; custom NACL denies all</td></tr>
+      <tr><td>Rule targets</td><td>Can reference other SGs (e.g. "allow from web-SG")</td><td>CIDR blocks only</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Why does a stateless NACL need ephemeral ports open?</p>
+    <p class="a">A client connecting to port 443 receives the reply on a <strong>high ephemeral port</strong> (1024–65535). Because NACLs don't track connection state, the <em>outbound</em> NACL rule must explicitly allow that ephemeral range or replies get dropped. Security groups handle this automatically because they're stateful.</p>
+  </div>
+  <p><strong>Mental model:</strong> SG = bouncer who remembers who they let in. NACL = a rulebook checked in both directions with no memory. In practice SGs do 95% of the work; reach for NACLs for coarse subnet-wide deny rules (e.g. block a bad CIDR).</p>
+
+  <h3>Connecting VPCs &amp; on-prem</h3>
+  <ul>
+    <li><strong>VPC Peering</strong> — 1:1 private link between two VPCs. <em>Non-transitive</em> (A↔B and B↔C does not give A↔C). CIDRs must not overlap. Fine for a handful of VPCs.</li>
+    <li><strong>Transit Gateway (TGW)</strong> — hub-and-spoke router connecting many VPCs, VPNs, and Direct Connect. <strong>Transitive</strong>, scales to thousands of attachments, route tables per attachment. Use when peering becomes a mesh nightmare (n² connections).</li>
+    <li><strong>Direct Connect</strong> — dedicated physical line to AWS (consistent low latency, not encrypted by default). <strong>Site-to-Site VPN</strong> — IPsec over the internet (encrypted, quick to stand up).</li>
+  </ul>
+
+  <h3>VPC Endpoints — private access to AWS services</h3>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>Gateway Endpoint</th><th>Interface Endpoint (PrivateLink)</th></tr></thead>
+    <tbody>
+      <tr><td>Services</td><td><strong>S3 and DynamoDB only</strong></td><td>Most AWS services + your own/partner services</td></tr>
+      <tr><td>How</td><td>A route-table entry (prefix list)</td><td>An <strong>ENI with a private IP</strong> in your subnet</td></tr>
+      <tr><td>Cost</td><td>Free</td><td>Hourly + per-GB</td></tr>
+      <tr><td>Security</td><td>Endpoint policy</td><td>Security group + endpoint policy</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Endpoints keep traffic on the AWS private network — no IGW, no NAT, no public internet. A gateway endpoint to S3 is the standard way to avoid NAT data-processing charges for S3 access from private subnets.</p>
+
+  <h3>DNS &amp; visibility</h3>
+  <ul>
+    <li>Enable <code>enableDnsSupport</code> + <code>enableDnsHostnames</code> for the Amazon DNS resolver (the <strong>.2 address</strong>, or <code>169.254.169.253</code>) to work and to get private DNS names.</li>
+    <li><strong>VPC Flow Logs</strong> — capture accepted/rejected IP traffic metadata (5-tuple, action, bytes) to CloudWatch Logs / S3. Primary tool for "why is this connection failing?" — check for <code>REJECT</code>.</li>
+  </ul>
+</section>
+
+<hr>
+
+<!-- ==================== COMPUTE ==================== -->
+<section id="compute">
+  <h2><span class="num">03</span> Compute — EC2 &amp; Auto Scaling</h2>
+  <p class="lead">Instance families, storage-attach models, and how ASGs give you elasticity and self-healing.</p>
+
+  <h3>EC2 basics</h3>
+  <ul>
+    <li><strong>Instance families</strong> — <code>T</code> burstable (dev, low baseline, CPU credits), <code>M</code> general purpose, <code>C</code> compute-optimized, <code>R</code>/<code>X</code> memory-optimized, <code>I</code>/<code>D</code> storage-optimized, <code>P</code>/<code>G</code>/<code>Inf</code>/<code>Trn</code> GPU/ML accelerators. Naming: <code>m7g.large</code> = family M, gen 7, <code>g</code>=Graviton (ARM), size large.</li>
+    <li><strong>AMI</strong> — Amazon Machine Image, the template (OS + config) an instance boots from. Bake golden AMIs for fast, reproducible launches.</li>
+  </ul>
+
+  <h4>EBS vs Instance Store</h4>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>EBS</th><th>Instance Store</th></tr></thead>
+    <tbody>
+      <tr><td>Persistence</td><td><strong>Persists</strong> beyond stop/terminate (if not delete-on-termination)</td><td><strong>Ephemeral</strong> — wiped on stop/terminate</td></tr>
+      <tr><td>Attach</td><td>Network-attached block storage, detach/reattach</td><td>Physically attached to the host</td></tr>
+      <tr><td>Performance</td><td>High, provisionable (io2)</td><td>Very high, lowest latency (NVMe local)</td></tr>
+      <tr><td>Use</td><td>Boot volumes, databases, anything that must survive</td><td>Scratch, caches, buffers</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Auto Scaling Groups (ASG)</h3>
+  <ul>
+    <li><strong>Launch template</strong> (preferred over legacy launch configs) — defines instance type, AMI, SGs, user data, IAM profile. Supports versioning and mixed instances / spot.</li>
+    <li><strong>Min / Desired / Max</strong> capacity. ASG keeps <em>Desired</em> healthy instances running across the AZs/subnets you specify.</li>
+    <li><strong>Health checks</strong> — <code>EC2</code> (instance status) or <code>ELB</code> (target group health). Prefer ELB checks so an app that hangs but keeps the OS alive still gets replaced.</li>
+    <li><strong>Self-healing</strong> — an unhealthy instance is terminated and replaced automatically to meet Desired.</li>
+  </ul>
+  <h4>Scaling policies</h4>
+  <ul>
+    <li><strong>Target tracking</strong> — "keep avg CPU at 50%." Simplest, most common.</li>
+    <li><strong>Step scaling</strong> — add N instances per CloudWatch alarm threshold band.</li>
+    <li><strong>Scheduled</strong> — scale on known patterns (business hours).</li>
+    <li><strong>Predictive</strong> — ML forecasts load and pre-scales.</li>
+  </ul>
+
+  <h3>Purchasing options — cost lever</h3>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>Model</th><th>Discount</th><th>Commitment</th><th>Best for</th></tr></thead>
+    <tbody>
+      <tr><td>On-Demand</td><td>Baseline</td><td>None</td><td>Spiky/unpredictable, dev</td></tr>
+      <tr><td>Spot</td><td>Up to ~90% off</td><td>None, but <strong>can be reclaimed with 2-min warning</strong></td><td>Fault-tolerant, stateless, batch, CI</td></tr>
+      <tr><td>Reserved (RI)</td><td>Up to ~72% off</td><td>1 or 3 yr, specific instance type</td><td>Steady legacy baselines</td></tr>
+      <tr><td>Savings Plans</td><td>Up to ~72% off</td><td>1 or 3 yr <em>$/hr commit</em></td><td>Flexible baseline (covers EC2/Fargate/Lambda) — usually preferred over RIs today</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout tip">
+    <span class="lbl">Interview framing</span>
+    <p>The senior answer: <strong>Savings Plans / RIs for the steady baseline, On-Demand for the variable middle, Spot for fault-tolerant burst.</strong> Spot in an ASG mixed-instances policy with multiple types/AZs minimizes reclaim impact.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== LOAD BALANCING ==================== -->
+<section id="lb">
+  <h2><span class="num">04</span> Load Balancing (ELB)</h2>
+  <p class="lead">Pick the right one by OSI layer and feature need. ALB vs NLB is the one they'll drill.</p>
+
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>ALB</th><th>NLB</th><th>GWLB</th><th>CLB (legacy)</th></tr></thead>
+    <tbody>
+      <tr><td>Layer</td><td>L7 (HTTP/HTTPS)</td><td>L4 (TCP/UDP/TLS)</td><td>L3/4 (IP, GENEVE)</td><td>L4 &amp; L7</td></tr>
+      <tr><td>Routing</td><td>Path, host, header, query, method</td><td>Flow hash (port/IP)</td><td>To virtual appliances</td><td>Basic</td></tr>
+      <tr><td>Performance</td><td>High</td><td><strong>Ultra-low latency, millions rps</strong></td><td>High</td><td>Lower</td></tr>
+      <tr><td>Static IP</td><td>No (DNS name; use NLB in front for static)</td><td><strong>Yes — static IP / Elastic IP per AZ</strong></td><td>N/A</td><td>No</td></tr>
+      <tr><td>Preserve client IP</td><td>Via <code>X-Forwarded-For</code></td><td>Yes (true source IP)</td><td>Yes</td><td>Via XFF</td></tr>
+      <tr><td>Use</td><td>Microservices, containers, web apps, WAF</td><td>Extreme perf, TCP/gaming, static IP, PrivateLink</td><td>Inline firewalls / IDS/IPS</td><td>Don't — migrate off</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Target groups &amp; health checks</h3>
+  <ul>
+    <li><strong>Target group</strong> — the set of backends (instances, IPs, Lambda, or containers) an LB routes to. ALB routing rules point to target groups.</li>
+    <li><strong>Health checks</strong> — LB probes a path/port; unhealthy targets are pulled from rotation. Tune threshold + interval so you don't flap on brief blips.</li>
+    <li><strong>Sticky sessions</strong> — ALB can pin a client to a target via a cookie (needed for stateful apps that don't externalize session).</li>
+  </ul>
+  <div class="callout qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">You need a load balancer with a fixed IP to whitelist in a partner's firewall. Which one?</p>
+    <p class="a"><strong>NLB.</strong> It gives you a static IP (one per AZ, and you can assign Elastic IPs). ALB only exposes a DNS name whose IPs change. Common pattern: NLB (static IP) → ALB (L7 routing) behind it if you need both.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== STORAGE ==================== -->
+<section id="storage">
+  <h2><span class="num">05</span> Storage &amp; Data</h2>
+  <p class="lead">S3 dominates. Know storage classes, security controls, and the HA-vs-scaling contrast on RDS.</p>
+
+  <h3>S3 — object storage</h3>
+  <ul>
+    <li><strong>Bucket</strong> (globally unique name) holds <strong>objects</strong> (key + value + metadata). Flat namespace; "folders" are just key prefixes. Effectively unlimited; object max 5 TB (multipart upload required &gt; 5 GB).</li>
+    <li><strong>Strong read-after-write consistency</strong> for all operations since Dec 2020 — a GET right after a PUT/overwrite/delete now always returns the latest data. (Old "eventual consistency for overwrites" caveat is gone — say this if asked.)</li>
+    <li><strong>Versioning</strong> — keeps every version; protects against overwrite/delete. Deletes add a delete marker. Pair with MFA-delete for critical buckets.</li>
+    <li><strong>Lifecycle rules</strong> — transition objects between classes or expire them on age (e.g. → IA at 30d → Glacier at 90d → delete at 365d).</li>
+  </ul>
+
+  <h4>Storage classes</h4>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>Class</th><th>Use / retrieval</th></tr></thead>
+    <tbody>
+      <tr><td>Standard</td><td>Hot data, frequent access, low latency</td></tr>
+      <tr><td>Intelligent-Tiering</td><td>Unknown/changing access — auto-moves tiers, no retrieval fee</td></tr>
+      <tr><td>Standard-IA / One Zone-IA</td><td>Infrequent access; One Zone = cheaper, single AZ (less durable)</td></tr>
+      <tr><td>Glacier Instant Retrieval</td><td>Archive, needs ms access</td></tr>
+      <tr><td>Glacier Flexible Retrieval</td><td>Archive, minutes–hours retrieval</td></tr>
+      <tr><td>Glacier Deep Archive</td><td>Cheapest, 12h retrieval, compliance/cold</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>S3 security</h4>
+  <ul>
+    <li><strong>Encryption at rest</strong>: <code>SSE-S3</code> (AWS-managed keys, default), <code>SSE-KMS</code> (KMS keys — audit trail, rotation, per-key access control), <code>SSE-C</code> (you supply keys). All new objects are encrypted by default now.</li>
+    <li><strong>Bucket policies vs ACLs</strong>: prefer <strong>bucket policies</strong> (IAM JSON, fine-grained). <strong>ACLs are legacy</strong> — AWS now disables them by default (Object Ownership = "Bucket owner enforced"). Don't reach for ACLs in an interview.</li>
+    <li><strong>Block Public Access</strong> — account- and bucket-level master switch; <em>on by default</em>. The correct guard against accidental public buckets.</li>
+    <li><strong>Pre-signed URLs</strong> — time-limited URL that grants temporary GET/PUT to a private object using <em>your</em> credentials. The right way to hand out temporary download/upload access without making the bucket public.</li>
+    <li><strong>Static website hosting</strong> — S3 can serve a static site; front with CloudFront for HTTPS, caching, and OAC (Origin Access Control) so the bucket stays private.</li>
+  </ul>
+  <div class="callout trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>"Make the object publicly downloadable" is almost never the answer — it usually means <strong>pre-signed URL</strong> (temporary, scoped) or CloudFront. And <strong>Block Public Access on = ignores</strong> any policy/ACL that would make the bucket public, even if someone sets one. That's a feature, not a bug.</p>
+  </div>
+
+  <h3>EBS &amp; EFS</h3>
+  <ul>
+    <li><strong>EBS volume types</strong>: <code>gp3</code> (default SSD — decouple IOPS/throughput from size, cheaper than gp2), <code>gp2</code> (legacy SSD, IOPS tied to size), <code>io2 / io2 Block Express</code> (highest IOPS, durability, multi-attach for clustered DBs), <code>st1</code> (throughput HDD, big sequential), <code>sc1</code> (cold HDD). EBS is <strong>single-AZ, single-instance</strong> (except io2 multi-attach).</li>
+    <li><strong>EFS</strong> — managed NFS, <strong>multi-AZ, mounts to many instances at once</strong>, elastic. Use when you need a shared POSIX filesystem across instances. (FSx = managed Windows/Lustre/NetApp FS.)</li>
+  </ul>
+
+  <h3>RDS — managed relational</h3>
+  <div class="callout tip">
+    <span class="lbl">The contrast they want: Multi-AZ ≠ Read Replica</span>
+  </div>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>Multi-AZ</th><th>Read Replica</th></tr></thead>
+    <tbody>
+      <tr><td>Purpose</td><td><strong>High availability / failover</strong></td><td><strong>Read scaling</strong> (offload read queries)</td></tr>
+      <tr><td>Replication</td><td>Synchronous to standby</td><td>Asynchronous (can lag)</td></tr>
+      <tr><td>Standby serves traffic?</td><td>No — passive until failover (Multi-AZ instance); Multi-AZ <em>cluster</em> adds readable standbys</td><td>Yes — actively serves reads</td></tr>
+      <tr><td>Failover</td><td>Automatic, ~60–120s, DNS flips to standby</td><td>Manual promotion to standalone primary</td></tr>
+      <tr><td>Cross-region?</td><td>No (same region)</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>They solve different problems and are often used together.</strong> Multi-AZ = durability/uptime; Read Replicas = throughput. Neither is a backup.</p>
+  <ul>
+    <li><strong>Aurora</strong> — AWS's MySQL/PostgreSQL-compatible engine; storage auto-scales, up to 15 low-lag read replicas, 6-way replication across 3 AZs, faster failover. Aurora Serverless v2 auto-scales capacity.</li>
+    <li><strong>Backups</strong> — automated backups (point-in-time restore within retention window, up to 35 days) vs manual <strong>snapshots</strong> (kept until you delete, shareable across accounts/regions).</li>
+  </ul>
+
+  <h3>DynamoDB (brief)</h3>
+  <ul>
+    <li>Fully managed serverless <strong>NoSQL</strong> key-value / document store. Single-digit-ms latency at any scale.</li>
+    <li>Partition key (+ optional sort key) design drives performance — avoid hot partitions. On-demand or provisioned capacity. Global tables = multi-region active-active. DynamoDB Streams for change capture.</li>
+    <li>Reach for it over RDS when you need massive scale, predictable latency, and a flexible schema — not for complex joins/transactions-heavy relational workloads.</li>
+  </ul>
+</section>
+
+<hr>
+
+<!-- ==================== DNS ==================== -->
+<section id="dns">
+  <h2><span class="num">06</span> Route 53 &amp; DNS</h2>
+  <p class="lead">AWS's managed DNS — record types, routing policies, and the alias-vs-CNAME distinction that trips people up.</p>
+
+  <h3>Record types</h3>
+  <ul>
+    <li><code>A</code> / <code>AAAA</code> — name → IPv4 / IPv6. <code>CNAME</code> — name → another name. <code>MX</code> — mail. <code>TXT</code> — verification/SPF/DKIM. <code>NS</code> / <code>SOA</code> — zone delegation.</li>
+    <li><strong>Alias record</strong> — Route 53-specific; points a name at an AWS resource (ALB, CloudFront, S3 website, another R53 record). Free queries, resolves at the zone apex, auto-tracks the target's IP.</li>
+  </ul>
+  <div class="callout trap">
+    <span class="lbl">⚠ Trap — Alias vs CNAME</span>
+    <p>A <strong>CNAME cannot exist at the zone apex</strong> (<code>example.com</code>) — DNS forbids it. To point the naked/apex domain at an ALB or CloudFront, you <em>must</em> use an <strong>Alias A record</strong>. Alias also has no per-query charge and works at apex; CNAME only works on subdomains.</p>
+  </div>
+
+  <h3>Routing policies</h3>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>Policy</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td>Simple</td><td>One record, one (or multi-value) answer. No health check logic.</td></tr>
+      <tr><td>Weighted</td><td>Split traffic by percentage across records — canary/blue-green, A/B.</td></tr>
+      <tr><td>Latency-based</td><td>Route to the region with lowest latency for the user.</td></tr>
+      <tr><td>Failover</td><td>Primary/secondary — health check fails → serve the backup (active-passive DR).</td></tr>
+      <tr><td>Geolocation</td><td>Route by user's continent/country (compliance, localization).</td></tr>
+      <tr><td>Geoproximity</td><td>Route by geographic distance with a bias knob.</td></tr>
+      <tr><td>Multivalue answer</td><td>Return multiple healthy IPs (client-side round-robin + health checks).</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>Health checks</strong> monitor endpoints and can gate failover/weighted/latency records so DNS stops handing out a dead endpoint.</p>
+</section>
+
+<hr>
+
+<!-- ==================== OPS GLUE ==================== -->
+<section id="ops">
+  <h2><span class="num">07</span> Ops Glue</h2>
+  <p class="lead">Observability, config/secrets, encryption, and who's responsible for what.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>CloudWatch</h4>
+      <ul>
+        <li><strong>Metrics</strong> — time-series (CPU, latency, custom). Namespaces + dimensions.</li>
+        <li><strong>Logs</strong> — log groups/streams; the CloudWatch agent ships app + OS logs (memory/disk aren't default EC2 metrics — need the agent).</li>
+        <li><strong>Alarms</strong> — threshold on a metric → SNS/Auto Scaling/action. Composite alarms combine conditions.</li>
+        <li><strong>EventBridge</strong> (event bus) + <strong>CloudWatch Logs Insights</strong> (query language) for events and ad-hoc log analysis.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Systems Manager (SSM)</h4>
+      <ul>
+        <li><strong>Session Manager</strong> — shell into instances with <em>no SSH, no open port 22, no bastion</em> (IAM-gated, audited). Big security win.</li>
+        <li><strong>Run Command / Patch Manager / State Manager</strong> — fleet automation &amp; patching.</li>
+        <li><strong>Parameter Store</strong> — config + secrets (see below).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4>Secrets Manager vs Parameter Store</h4>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th></th><th>Secrets Manager</th><th>SSM Parameter Store</th></tr></thead>
+    <tbody>
+      <tr><td>Purpose</td><td>Secrets, first-class</td><td>Config + secrets (SecureString)</td></tr>
+      <tr><td>Rotation</td><td><strong>Built-in automatic rotation</strong> (Lambda, native RDS integration)</td><td>No native rotation</td></tr>
+      <tr><td>Cost</td><td>Per secret / per API call (paid)</td><td><strong>Standard tier free</strong>; advanced tier paid</td></tr>
+      <tr><td>Use</td><td>DB creds, API keys needing rotation</td><td>Feature flags, config, cheap secrets</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Rule of thumb: if it needs <strong>rotation</strong> (DB passwords) → Secrets Manager. Plain config or cost-sensitive → Parameter Store. Both integrate with KMS and IAM.</p>
+
+  <h3>KMS</h3>
+  <ul>
+    <li>Managed keys for encryption across AWS. <strong>Envelope encryption</strong>: KMS encrypts a data key that encrypts your data. Master key never leaves KMS.</li>
+    <li>Key policies (resource-based) + IAM control access; every use is logged in CloudTrail. Customer-managed keys support rotation and cross-account grants; AWS-managed keys are simpler but less flexible.</li>
+  </ul>
+
+  <h3>Shared Responsibility Model</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4><span class="pill a">AWS</span> Security <em>OF</em> the cloud</h4>
+      <p>Hardware, global infra, the hypervisor, managed-service internals, physical security, patching of managed services.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill a">You</span> Security <em>IN</em> the cloud</h4>
+      <p>IAM &amp; least privilege, OS/app patching on EC2, SG/NACL config, encryption choices, data classification, correct S3 access settings.</p>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:0">The line shifts by service model: for <strong>EC2</strong> you patch the OS; for <strong>RDS/Lambda/S3</strong> AWS handles more of the stack — but <em>your data, IAM, and network config are always yours</em>.</p>
+</section>
+
+<hr>
+
+<!-- ==================== WELL ARCHITECTED ==================== -->
+<section id="war">
+  <h2><span class="num">08</span> Well-Architected Framework</h2>
+  <p class="lead">Name the six pillars — a favorite "do they know the framework" checkbox.</p>
+  <ol>
+    <li><strong>Operational Excellence</strong> — run &amp; monitor systems, IaC, automate, learn from failure.</li>
+    <li><strong>Security</strong> — least privilege, defense in depth, encryption, traceability.</li>
+    <li><strong>Reliability</strong> — recover from failure, scale horizontally, test recovery (Multi-AZ, backups, health checks).</li>
+    <li><strong>Performance Efficiency</strong> — use the right resource/type, scale, go serverless where it fits.</li>
+    <li><strong>Cost Optimization</strong> — right-size, Savings Plans/Spot, kill idle, measure spend.</li>
+    <li><strong>Sustainability</strong> — minimize environmental impact (efficient regions, utilization).</li>
+  </ol>
+  <p class="lead" style="margin-top:0">Mnemonic: <strong>"OSCAR-S"</strong> won't quite spell — just remember Ops, Security, Reliability, Performance, Cost, Sustainability. Six since Sustainability was added.</p>
+</section>
+
+<hr>
+
+<!-- ==================== TRAPS ==================== -->
+<section id="traps">
+  <h2><span class="num">09</span> Trap Rapid-Fire</h2>
+  <p class="lead">The gotchas interviewers use to separate memorizers from operators.</p>
+
+  <div class="callout trap"><span class="lbl">⚠ SG vs NACL statefulness</span><p>Security groups are <strong>stateful</strong> (return traffic implicit). NACLs are <strong>stateless</strong> — you must open ephemeral ports for return traffic. Getting this backwards is an instant tell.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ NAT gateway cost / egress</span><p>NAT charges per-hour <em>and</em> per-GB processed. Route S3/DynamoDB/ECR through <strong>VPC endpoints</strong> to skip NAT. NAT is for <em>outbound only</em> — it never allows unsolicited inbound.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ IAM explicit-deny precedence</span><p><strong>Explicit Deny always wins</strong> — over any Allow, in any policy type. Default is implicit deny. SCPs and boundaries only <em>limit</em>, never grant.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ Multi-AZ ≠ Read Replica</span><p>Multi-AZ = <strong>HA/failover</strong> (synchronous standby, not serving reads in the classic setup). Read Replica = <strong>read scaling</strong> (async, serves reads). Neither is a backup.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ S3 public access</span><p><strong>Block Public Access is on by default</strong> and overrides any policy/ACL that would expose the bucket. For temporary access use <strong>pre-signed URLs</strong>, not a public bucket. ACLs are legacy — use bucket policies.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ Mutable AMI / <code>:latest</code> drift</span><p>Referencing "the latest AMI" or a mutable tag means two launches from the "same" template can boot different images → config drift and un-reproducible fleets. <strong>Pin explicit AMI IDs</strong> (or SSM Parameter Store references) and bake immutable golden images.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ CNAME at zone apex</span><p>You can't put a CNAME on the naked domain. Use a Route 53 <strong>Alias A record</strong> for apex → ALB/CloudFront/S3.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ Roles &gt; access keys</span><p>Never bake long-lived access keys into instances/AMIs/env. Use <strong>IAM roles + IMDSv2</strong> on EC2, OIDC federation for CI/CD. Static keys are the top leaked-secret vector.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ VPC peering is non-transitive</span><p>A↔B and B↔C does <em>not</em> give A↔C. Need a mesh? Use <strong>Transit Gateway</strong>, which is transitive and scales.</p></div>
+
+  <div class="callout trap"><span class="lbl">⚠ ALB has no static IP</span><p>ALB exposes a changing DNS name. Need a fixed IP to whitelist? Use <strong>NLB</strong> (static/Elastic IP), optionally fronting an ALB.</p></div>
+
+  <div class="callout qa"><span class="lbl">Q&amp;A — favorite closer</span>
+    <p class="q">"How would you give a Lambda access to an S3 bucket in another account?"</p>
+    <p class="a">Lambda's <strong>execution role</strong> (identity policy) allows the S3 action <em>and</em> the bucket's <strong>resource policy</strong> in the other account allows this role's ARN. Cross-account needs an allow on <em>both</em> sides. Encrypt with a KMS key whose key policy also grants the role. Mentioning both sides + KMS scores the point.</p>
+  </div>
+</section>
+
+<div class="foot">
+  AWS Core cheatsheet — IAM · VPC · EC2/ASG · ELB · S3/RDS · Route 53 · Ops. Current to 2026.<br>
+  Companion sheet covers EKS in depth. Offline · self-contained · no external resources.
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>werf — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-13.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #05080b;
+  --s1:    #080d12;
+  --s2:    #0c1218;
+  --bd:    #152030;
+  --b2:    #1f3048;
+
+  --w:     #F5783C;   /* werf orange */
+  --w2:    #FF9B60;
+  --teal:  #20E3B2;
+  --grn:   #3EFF9A;
+  --yel:   #FFD046;
+  --red:   #FF4547;
+  --vio:   #9B72FF;
+  --blue:  #42A5F5;
+  --pink:  #F48FB1;
+  --lime:  #C6FF00;
+  --sky:   #4DD0E1;
+
+  --text:  #d0e8ff;
+  --dim:   #0e2030;
+  --mid:   #2a4560;
+
+  --mono: 'Fira Code', monospace;
+  --sans: 'Outfit', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -10%,rgba(245,120,60,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 28% at 0%   60%,rgba(32,227,178,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 22% at 100% 75%,rgba(155,114,255,.05) 0%,transparent 45%);}
+
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(135deg,transparent,transparent 40px,rgba(245,120,60,.012) 41px);}
+
+.page{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:28px 22px 80px;}
+
+/* ── HERO ── */
+.hero{position:relative;border:1px solid rgba(245,120,60,.22);border-radius:14px;padding:30px 36px;margin-bottom:22px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(245,120,60,.08) 0%,rgba(32,227,178,.04) 60%,rgba(155,114,255,.04) 100%);}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--w),var(--yel),var(--teal),var(--vio));}
+.hero-bg{position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:160px;font-weight:900;color:rgba(245,120,60,.04);line-height:1;pointer-events:none;font-family:var(--sans);letter-spacing:-8px;}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
+.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--w);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:22px;height:2px;background:var(--w);}
+.hero h1{font-size:80px;font-weight:900;line-height:.85;letter-spacing:-3px;}
+.h1a{background:linear-gradient(135deg,var(--w) 0%,var(--yel) 50%,#fff 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h1b{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(245,120,60,.2);}
+.hero-sub{font-size:11.5px;color:var(--mid);margin-top:10px;line-height:1.9;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
+.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
+.hw{background:rgba(245,120,60,.09);border-color:rgba(245,120,60,.35);color:var(--w);}
+.ht{background:rgba(32,227,178,.07);border-color:rgba(32,227,178,.3);color:var(--teal);}
+.hg{background:rgba(62,255,154,.07);border-color:rgba(62,255,154,.3);color:var(--grn);}
+.hv{background:rgba(155,114,255,.08);border-color:rgba(155,114,255,.3);color:var(--vio);}
+.hy{background:rgba(255,208,70,.07);border-color:rgba(255,208,70,.3);color:var(--yel);}
+.hb{background:rgba(66,165,245,.07);border-color:rgba(66,165,245,.3);color:var(--blue);}
+.hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
+.hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
+.hcard-n{font-size:22px;font-weight:900;color:var(--w);line-height:1;}
+.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nb.on{background:rgba(245,120,60,.12);color:var(--w);box-shadow:0 0 0 1px rgba(245,120,60,.3);}
+
+/* ── SECTIONS ── */
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-i{font-size:18px;flex-shrink:0;}
+.sh-l{font-size:20px;font-weight:800;letter-spacing:-.3px;}
+.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cw::before{background:linear-gradient(90deg,var(--w),transparent);}
+.ct::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.cv::before{background:linear-gradient(90deg,var(--vio),transparent);}
+.cy::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.cb::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.cl::before{background:linear-gradient(90deg,var(--lime),transparent);}
+.cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
+.cs::before{background:linear-gradient(90deg,var(--sky),transparent);}
+
+.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+
+/* code */
+.code{background:#030608;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--vio);} .ky{color:var(--teal);} .st{color:var(--yel);}
+.nu{color:var(--grn);} .cm{color:#101e30;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+
+/* trap/note */
+.trap{background:rgba(255,69,71,.04);border:1px solid rgba(255,69,71,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(32,227,178,.35);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(32,227,178,.03);}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── STAGE PIPELINE ── */
+.pipeline{display:flex;gap:0;overflow-x:auto;margin-bottom:12px;}
+.ps{flex:1;min-width:110px;position:relative;}
+.ps:not(:last-child)::after{content:'';position:absolute;right:-12px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;z-index:2;}
+.ps-body{background:var(--s2);border:1px solid var(--bd);border-right:none;padding:12px 10px;min-height:90px;}
+.ps:first-child .ps-body{border-radius:8px 0 0 8px;}
+.ps:last-child .ps-body{border-right:1px solid var(--bd);border-radius:0 8px 8px 0;}
+.ps:last-child::after{display:none;}
+.ps-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+.ps-name{font-size:11px;font-weight:700;margin-bottom:4px;}
+.ps-desc{font-size:9.5px;color:var(--mid);line-height:1.5;}
+
+/* ── TRAP GRID ── */
+.trap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.trap-card{background:var(--s1);border:1px solid rgba(255,69,71,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
+.trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,71,.45),transparent);}
+.tc-n{position:absolute;top:7px;right:11px;font-family:var(--mono);font-size:28px;color:rgba(255,69,71,.06);line-height:1;}
+.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-q code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.tc-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.tc-a b{color:var(--text);}
+.tc-a code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
+.quiz-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.quiz-title{font-size:14px;font-weight:700;color:var(--w);}
+.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score span{color:var(--grn);font-weight:700;}
+.q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
+.q-item.revealed{border-color:rgba(62,255,154,.2);}
+.q-item.revealed-bad{border-color:rgba(255,69,71,.2);}
+.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-opts{display:flex;flex-direction:column;gap:5px;}
+.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt:hover:not(:disabled){background:rgba(245,120,60,.07);border-color:rgba(245,120,60,.3);color:var(--text);}
+.q-opt.correct{background:rgba(62,255,154,.08);border-color:rgba(62,255,154,.35);color:var(--grn);}
+.q-opt.wrong{background:rgba(255,69,71,.07);border-color:rgba(255,69,71,.3);color:var(--red);}
+.q-opt:disabled{cursor:default;}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain.show{display:block;}
+.q-explain b{color:var(--text);}
+.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.quiz-btns{display:flex;gap:8px;margin-top:12px;}
+.qbtn{font-family:var(--mono);font-size:8.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
+.qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.qb-w{background:rgba(245,120,60,.09);border-color:rgba(245,120,60,.3);color:var(--w);}
+.qb-w:hover{background:rgba(245,120,60,.18);}
+
+/* ── BADGES ── */
+.new-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(62,255,154,.08);border:1px solid rgba(62,255,154,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.v2-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(245,120,60,.09);border:1px solid rgba(245,120,60,.3);color:var(--w);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+
+/* ── GITERMISM RULES ── */
+.git-rule{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:12px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;}
+.gr-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.gr-title{font-size:12px;font-weight:700;margin-bottom:3px;}
+.gr-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.gr-desc b{color:var(--text);}
+.gr-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── CONTENT TAG DIAGRAM ── */
+.tag-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:14px;background:#030608;border:1px solid var(--bd);border-radius:6px;margin:10px 0;font-family:var(--mono);font-size:9px;}
+.tf-box{padding:6px 12px;border-radius:5px;border:1px solid;}
+.tf-w{background:rgba(245,120,60,.1);border-color:rgba(245,120,60,.35);color:var(--w);}
+.tf-t{background:rgba(32,227,178,.07);border-color:rgba(32,227,178,.3);color:var(--teal);}
+.tf-g{background:rgba(62,255,154,.07);border-color:rgba(62,255,154,.3);color:var(--grn);}
+.tf-v{background:rgba(155,114,255,.08);border-color:rgba(155,114,255,.3);color:var(--vio);}
+.tf-arr{color:var(--mid);font-size:16px;}
+
+/* ── STAGE CARDS ── */
+.stage-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.stage{background:var(--s2);border:1px solid var(--bd);border-radius:7px;display:grid;grid-template-columns:130px 1fr auto;gap:12px;padding:11px 14px;align-items:center;cursor:pointer;transition:.2s;}
+.stage:hover,.stage.open{border-color:rgba(245,120,60,.3);}
+.stage-n{font-family:var(--mono);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:4px;text-align:center;}
+.stage-name{font-size:12px;font-weight:700;}
+.stage-desc{font-size:11px;color:var(--mid);}
+.stage-arrow{color:var(--mid);transition:.2s;font-size:12px;flex-shrink:0;}
+.stage.open .stage-arrow{transform:rotate(90deg);color:var(--w);}
+.stage-detail{display:none;background:#030608;border:1px solid var(--bd);border-radius:0 0 7px 7px;border-top:none;padding:12px 14px;margin-top:-6px;}
+.stage.open+.stage-detail{display:block;}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec.on>*{animation:fi .3s ease both;}
+.sec.on>*:nth-child(1){animation-delay:.02s}.sec.on>*:nth-child(2){animation-delay:.05s}
+.sec.on>*:nth-child(3){animation-delay:.08s}.sec.on>*:nth-child(4){animation-delay:.11s}
+.sec.on>*:nth-child(5){animation-delay:.14s}.sec.on>*:nth-child(6){animation-delay:.17s}
+.sec.on>*:nth-child(7){animation-delay:.20s}
+
+.footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-bg">werf</div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Field Guide · 2026</div>
+      <h1><span class="h1a">werf</span><br><span class="h1b">Deep Dive</span></h1>
+      <div class="hero-sub">
+        Current stable: v2.68+ · Nelm 1.0 GA · CNCF Sandbox · 10 years old (Jan 2026)<br>
+        Build · Deploy · Cleanup · Giterminism · Content-based tagging · Bundles
+      </div>
+      <div class="hero-pills">
+        <div class="hp hw">⚙️ v2.68+ stable</div>
+        <div class="hp ht">🔒 Giterminism</div>
+        <div class="hp hg">🏷️ Content-based tagging</div>
+        <div class="hp hv">⎈ Nelm (replaces Helm)</div>
+        <div class="hp hy">🏗️ Stapel + Dockerfile builders</div>
+        <div class="hp hb">📦 OCI Bundles</div>
+        <div class="hp hw">🔁 werf converge</div>
+        <div class="hp ht">🧹 Smart registry cleanup</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hcard"><div class="hcard-n">v2</div><div class="hcard-l">Current major</div></div>
+      <div class="hcard"><div class="hcard-n">CNCF</div><div class="hcard-l">Sandbox project</div></div>
+      <div class="hcard"><div class="hcard-n">CI</div><div class="hcard-l">Push-based model</div></div>
+      <div class="hcard"><div class="hcard-n">Nelm</div><div class="hcard-l">replaces Helm 3</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nb on" onclick="show('phil')">🧠 Philosophy</button>
+  <button class="nb" onclick="show('yaml')">📄 werf.yaml</button>
+  <button class="nb" onclick="show('stapel')">🏗️ Stapel Builder</button>
+  <button class="nb" onclick="show('gitermism')">🔒 Giterminism</button>
+  <button class="nb" onclick="show('nelm')">⎈ Nelm & Deploy</button>
+  <button class="nb" onclick="show('tags')">🏷️ Content Tagging</button>
+  <button class="nb" onclick="show('ci')">🔄 CI/CD & Cleanup</button>
+  <button class="nb" onclick="show('bundles')">📦 Bundles</button>
+  <button class="nb" onclick="show('traps')">⚡ Traps & Quiz</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--              PHILOSOPHY               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec on" id="sec-phil">
+
+<div class="sh"><div class="sh-i">🧠</div><div class="sh-l" style="color:var(--w);">Philosophy & Architecture</div><div class="sh-s">// what werf is · how it differs · where it fits · the CI-first model</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(245,120,60,.3),transparent);"></div></div>
+
+<!-- FULL PIPELINE FLOW -->
+<div class="card cw" style="margin-bottom:12px;padding:20px;">
+<svg viewBox="0 0 1360 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+  <defs>
+    <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(245,120,60,.9)"/></marker>
+    <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(32,227,178,.8)"/></marker>
+    <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(62,255,154,.7)"/></marker>
+    <marker id="a4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(155,114,255,.7)"/></marker>
+    <filter id="gw"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- Git (source) -->
+  <g transform="translate(10,70)">
+    <rect width="130" height="80" rx="8" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5" filter="url(#gw)"/>
+    <text x="65" y="26" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F05033" font-weight="600">Git Repository</text>
+    <text x="65" y="42" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(240,80,51,.5)">werf.yaml</text>
+    <text x="65" y="57" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(240,80,51,.45)">.helm/</text>
+    <text x="65" y="72" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(240,80,51,.3)">giterminism</text>
+  </g>
+
+  <!-- Arrow Git → Build -->
+  <line x1="140" y1="110" x2="200" y2="110" stroke="rgba(245,120,60,.6)" stroke-width="1.8" marker-end="url(#a1)"/>
+  <text x="170" y="100" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.4)">content hash</text>
+
+  <!-- Build -->
+  <g transform="translate(200,60)">
+    <rect width="170" height="100" rx="8" fill="rgba(245,120,60,.07)" stroke="rgba(245,120,60,.35)" stroke-width="1.5"/>
+    <text x="85" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F5783C" font-weight="700">werf build</text>
+    <text x="85" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(245,120,60,.5)">Dockerfile or Stapel</text>
+    <text x="85" y="55" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.4)">content-based cache</text>
+    <text x="85" y="70" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.35)">BuildKit integration</text>
+    <text x="85" y="87" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.3)">tag = sha256(layers)</text>
+  </g>
+
+  <!-- Arrow Build → Registry -->
+  <line x1="370" y1="110" x2="430" y2="110" stroke="rgba(245,120,60,.6)" stroke-width="1.8" marker-end="url(#a1)"/>
+  <text x="400" y="100" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.4)">push image</text>
+
+  <!-- Registry -->
+  <g transform="translate(430,70)">
+    <rect width="150" height="80" rx="8" fill="rgba(155,114,255,.06)" stroke="rgba(155,114,255,.25)" stroke-width="1.5"/>
+    <text x="75" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#9B72FF" font-weight="600">OCI Registry</text>
+    <text x="75" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(155,114,255,.5)">ECR / GHCR / Docker</text>
+    <text x="75" y="55" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,114,255,.4)">content-addressed tags</text>
+    <text x="75" y="70" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,114,255,.3)">myapp:sha256-abc123</text>
+  </g>
+
+  <!-- Arrow Registry → Deploy -->
+  <line x1="580" y1="110" x2="640" y2="110" stroke="rgba(32,227,178,.6)" stroke-width="1.8" marker-end="url(#a2)"/>
+  <text x="610" y="100" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(32,227,178,.4)">werf converge</text>
+
+  <!-- Deploy (Nelm) -->
+  <g transform="translate(640,55)">
+    <rect width="200" height="110" rx="8" fill="rgba(32,227,178,.06)" stroke="rgba(32,227,178,.3)" stroke-width="1.5" filter="url(#gw)"/>
+    <text x="100" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#20E3B2" font-weight="700">werf deploy / Nelm</text>
+    <text x="100" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(32,227,178,.5)">Helm-compatible engine</text>
+    <text x="100" y="56" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(32,227,178,.4)">Server-Side Apply (SSA)</text>
+    <text x="100" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(32,227,178,.35)">resource tracking</text>
+    <text x="100" y="88" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(32,227,178,.3)">auto rollback</text>
+    <text x="100" y="104" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(32,227,178,.25)">werf plan (dry-run)</text>
+  </g>
+
+  <!-- Arrow Deploy → K8s -->
+  <line x1="840" y1="110" x2="900" y2="110" stroke="rgba(62,255,154,.6)" stroke-width="1.8" marker-end="url(#a3)"/>
+
+  <!-- K8s Cluster -->
+  <g transform="translate(900,70)">
+    <rect width="160" height="80" rx="8" fill="rgba(62,255,154,.05)" stroke="rgba(62,255,154,.25)" stroke-width="1.5"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#3EFF9A" font-weight="600">K8s Cluster</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(62,255,154,.5)">Deployments, Services</text>
+    <text x="80" y="55" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(62,255,154,.4)">running containers</text>
+    <text x="80" y="70" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(62,255,154,.3)">tracked by Nelm</text>
+  </g>
+
+  <!-- Cleanup loop -->
+  <g transform="translate(1080,70)">
+    <rect width="160" height="80" rx="8" fill="rgba(255,208,70,.05)" stroke="rgba(255,208,70,.2)" stroke-width="1"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#FFD046" font-weight="600">werf cleanup</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(255,208,70,.45)">scans Git + cluster</text>
+    <text x="80" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,208,70,.35)">removes unused images</text>
+    <text x="80" y="70" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,208,70,.25)">from registry</text>
+  </g>
+
+  <path d="M 1060 110 L 1080 110" fill="none" stroke="rgba(255,208,70,.4)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  <path d="M 1160 150 L 1160 185 L 500 185 L 500 150" fill="none" stroke="rgba(255,208,70,.25)" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="830" y="198" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(255,208,70,.35)">cleanup scans registry + k8s to determine which images are "in use"</text>
+
+  <!-- werf converge label (all in one) -->
+  <rect x="195" y="10" width="655" height="20" rx="4" fill="rgba(245,120,60,.04)" stroke="rgba(245,120,60,.12)" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="523" y="24" text-anchor="middle" font-family="Fira Code" font-size="8.5" fill="rgba(245,120,60,.45)" letter-spacing="2">werf converge = build + push + deploy (all in one command)</text>
+</svg>
+</div>
+
+<div class="g3">
+  <div class="card cw">
+    <div class="ctit" style="color:var(--w);">🎯 What werf Actually Is</div>
+    <div class="fr"><span class="fk">Core idea</span><span class="fv"><b>werf is a CI-first delivery tool.</b> Unlike ArgoCD/Flux (in-cluster agents), werf is a CLI binary that runs in your CI pipeline. It owns the entire delivery lifecycle: build image → push → deploy → cleanup.</span></div>
+    <div class="fr"><span class="fk">vs ArgoCD/Flux</span><span class="fv">ArgoCD/Flux are <b>pull-based</b> cluster agents that watch Git. werf is <b>push-based</b> — runs in CI, has kubeconfig, pushes changes directly. Different model, different tradeoffs.</span></div>
+    <div class="fr"><span class="fk">Key differentiators</span><span class="fv"><b>Giterminism</b> (builds reproducible from Git), <b>content-based tagging</b> (no unnecessary rebuilds), <b>Nelm</b> (their Helm replacement with SSA), <b>smart cleanup</b> (knows what's still needed).</span></div>
+    <div class="fr"><span class="fk">Single binary</span><span class="fv">One <code>werf</code> binary does everything. No separate build tool + deploy tool + cleanup tool. One config (<code>werf.yaml</code>), one pipeline step (<code>werf converge</code>).</span></div>
+    <div class="fr"><span class="fk">Helm compatible</span><span class="fv">Uses <code>.helm/</code> directory — standard Helm chart layout. Your existing Helm charts work with werf without modification. Nelm is a superset of Helm 3, not a replacement of the chart format.</span></div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🔁 werf vs ArgoCD vs Flux</div>
+    <table class="st">
+      <tr><th></th><th style="color:var(--w);">werf</th><th style="color:rgba(249,94,98,.8);">ArgoCD</th><th style="color:#5468FF;">FluxCD</th></tr>
+      <tr><td>Model</td><td class="warn">Push (CI runs werf)</td><td class="good">Pull (in-cluster)</td><td class="good">Pull (in-cluster)</td></tr>
+      <tr><td>Cluster creds in CI</td><td class="bad">Yes — werf needs kubeconfig</td><td class="good">No</td><td class="good">No</td></tr>
+      <tr><td>Build images</td><td class="good">Yes — built-in</td><td class="bad">No</td><td class="bad">No</td></tr>
+      <tr><td>Deploy engine</td><td>Nelm (v2)</td><td>kubectl apply</td><td>Kustomize/Helm</td></tr>
+      <tr><td>Registry cleanup</td><td class="good">Smart built-in cleanup</td><td class="bad">No</td><td class="bad">No</td></tr>
+      <tr><td>Giterminism</td><td class="good">Core principle</td><td class="bad">No equivalent</td><td class="bad">No equivalent</td></tr>
+      <tr><td>Content-based tags</td><td class="good">Native</td><td class="bad">No</td><td class="bad">No</td></tr>
+      <tr><td>Drift correction</td><td class="bad">No auto-heal</td><td class="good">selfHeal</td><td class="good">Continuous reconcile</td></div></tr>
+      <tr><td>Multi-cluster</td><td class="warn">One kubeconfig per run</td><td class="good">Hub-and-spoke</td><td>Per-cluster agent</td></tr>
+    </table>
+    <div class="note" style="margin-top:10px;"><b>werf and ArgoCD/Flux aren't mutually exclusive.</b> Common pattern: werf handles build + test + publish bundle. ArgoCD/Flux handles deploy using the published bundle. werf as the CI tool, GitOps agent as the deploy mechanism. The upcoming Nelm Operator enables this pattern natively.</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🔢 Semantic Versioning Channels</div>
+    <div class="fr"><span class="fk">Channels</span><span class="fv">werf uses release channels instead of simple semver. Install a channel, get automatic updates within that channel's stability guarantee.</span></div>
+    <table class="st" style="margin-top:6px;">
+      <tr><th>Channel</th><th>Stability</th><th>Updates</th></tr>
+      <tr><td>rock-solid</td><td class="good">Most stable</td><td>Slow, heavily tested</td></tr>
+      <tr><td>stable</td><td class="good">Production-ready</td><td>Regular</td></tr>
+      <tr><td>ea (early access)</td><td class="warn">Stable preview</td><td>Faster</td></tr>
+      <tr><td>beta</td><td class="warn">Testing</td><td>Frequent</td></tr>
+      <tr><td>alpha</td><td class="bad">Development</td><td>Bleeding edge</td></tr>
+    </table>
+    <div class="code" style="margin-top:10px;font-size:9px;"><span class="cm"># Install via tuf (recommended — verified binary)</span>
+curl -sSL https://werf.io/install.sh | \
+  bash -s -- --version 2 --channel stable
+
+<span class="cm"># Or specific version</span>
+curl -sSLO "https://tuf.werf.io/targets/releases/\
+  2.68.1/linux-amd64/bin/werf"
+
+<span class="cm"># In CI: use the versioned Docker image</span>
+image: registry.werf.io/werf/werf:2.68.1
+
+<span class="cm"># Check version</span>
+werf version</div>
+  </div>
+</div>
+</div><!-- /phil -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--              WERF.YAML                 -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-yaml">
+
+<div class="sh"><div class="sh-i">📄</div><div class="sh-l" style="color:var(--yel);">werf.yaml</div><div class="sh-s">// project config · Dockerfile images · multi-image · dependencies · naming</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,208,70,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cy" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--yel);">📄 werf.yaml — Full Reference</div>
+    <div class="code"><span class="cm">##################################</span>
+<span class="cm">## werf.yaml — Project definition</span>
+<span class="cm">##################################</span>
+<span class="ky">configVersion</span>: <span class="nu">1</span>
+<span class="ky">project</span>: <span class="st">my-project</span>   <span class="cm"># used in Helm release name</span>
+
+<span class="cm">## ── DOCKERFILE IMAGE ────────────────────</span>
+<span class="cm">---</span>
+<span class="ky">image</span>: <span class="st">backend</span>           <span class="cm"># image name (used in .helm/templates)</span>
+<span class="ky">dockerfile</span>: <span class="st">./backend/Dockerfile</span>
+<span class="ky">context</span>: <span class="st">./backend</span>       <span class="cm"># build context directory</span>
+<span class="ky">target</span>: <span class="st">production</span>      <span class="cm"># Dockerfile multi-stage target</span>
+<span class="ky">args</span>:                    <span class="cm"># build args</span>
+  <span class="ky">NODE_ENV</span>: <span class="st">production</span>
+  <span class="ky">API_VERSION</span>: <span class="st">v2</span>
+<span class="ky">secrets</span>:                 <span class="cm"># build secrets (never baked in)</span>
+- <span class="ky">id</span>: <span class="st">npmrc</span>
+  <span class="ky">src</span>: <span class="st">/run/secrets/npmrc</span>
+<span class="ky">addHost</span>:                 <span class="cm"># add hosts to /etc/hosts during build</span>
+- <span class="st">internal-registry:10.0.0.1</span>
+<span class="ky">contextAddFiles</span>:         <span class="cm"># inject files not tracked by Git</span>
+- <span class="st">.env.production</span>       <span class="cm"># requires giterminism relaxation</span>
+
+<span class="cm">## ── SECOND DOCKERFILE IMAGE ─────────────</span>
+<span class="cm">---</span>
+<span class="ky">image</span>: <span class="st">frontend</span>
+<span class="ky">dockerfile</span>: <span class="st">./frontend/Dockerfile</span>
+<span class="ky">context</span>: <span class="st">./frontend</span>
+
+<span class="cm">## ── DOCKERFILE FROM INLINE DEFINITION ──</span>
+<span class="cm">---</span>
+<span class="ky">image</span>: <span class="st">migrations</span>
+<span class="ky">dockerfile</span>: <span class="st">./Dockerfile.migrations</span>
+<span class="ky">dependencies</span>:            <span class="cm"># wait for other images to build first</span>
+- <span class="ky">image</span>: <span class="st">backend</span>
+  <span class="ky">imports</span>:               <span class="cm"># import files FROM another image</span>
+  - <span class="ky">type</span>: <span class="st">ImageName</span>
+    <span class="ky">targetEnv</span>: <span class="st">BACKEND_IMAGE</span>  <span class="cm"># inject image name as env var</span>
+
+<span class="cm">## ── STAPEL IMAGE ────────────────────────</span>
+<span class="cm">---</span>
+<span class="ky">image</span>: <span class="st">tools</span>
+<span class="ky">from</span>: <span class="st">ubuntu:24.04</span>       <span class="cm"># base image (Stapel builder)</span>
+<span class="ky">git</span>:                     <span class="cm"># Git mappings (see Stapel section)</span>
+- { <span class="ky">add</span>: <span class="st">/</span>, <span class="ky">to</span>: <span class="st">/app</span>, <span class="ky">stageDependencies</span>: { <span class="ky">install</span>: [<span class="st">package.json</span>] } }
+<span class="ky">shell</span>:
+  <span class="ky">install</span>:
+  - <span class="st">apt-get update && apt-get install -y curl git</span></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🏷️ Image Naming in Helm Templates</div>
+    <div class="fr"><span class="fk">The key link</span><span class="fv">werf injects the built image references into your Helm chart via the <code>werf_image()</code> Sprig-like function. You never hardcode image tags — werf resolves them at deploy time based on content hash.</span></div>
+    <div class="code"><span class="cm"># .helm/templates/deployment.yaml</span>
+<span class="ky">containers</span>:
+- <span class="ky">name</span>: <span class="st">backend</span>
+  <span class="ky">image</span>: {{ werf_image <span class="st">"backend"</span> }}
+  <span class="cm"># ↑ werf resolves to: registry.example.com/myapp/backend:sha256-abc123</span>
+  <span class="cm"># The tag is the content hash — deterministic, immutable</span>
+
+- <span class="ky">name</span>: <span class="st">frontend</span>
+  <span class="ky">image</span>: {{ werf_image <span class="st">"frontend"</span> }}
+
+<span class="cm"># werf.yaml image name = werf_image() argument name</span>
+<span class="cm"># They MUST match exactly</span>
+
+<span class="cm"># werf.yaml: image: backend</span>
+<span class="cm"># .helm: {{ werf_image "backend" }}</span></div>
+    <div class="trap"><b>Image name mismatch = deploy fails.</b> If <code>werf.yaml</code> says <code>image: backend</code> but the template says <code>werf_image "app-backend"</code> — werf throws an error at deploy time. The names must be identical. Also: image names must be lowercase alphanumeric with hyphens only.</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🔗 Dependencies Between Images</div>
+    <div class="fr"><span class="fk">Build order</span><span class="fv">Without <code>dependencies</code>, werf builds all images in parallel. Add <code>dependencies</code> to enforce ordering: image B won't start building until image A is complete.</span></div>
+    <div class="fr"><span class="fk">Import from image</span><span class="fv"><code>imports</code> under <code>dependencies</code>: inject another image's name/ID as an environment variable into the Dockerfile build args. Used when one image needs to know the tag of another (e.g., a migration image that references the app image).</span></div>
+    <div class="code" style="font-size:9px;"><span class="cm"># werf.yaml: make e2e-tests depend on backend</span>
+<span class="ky">image</span>: <span class="st">e2e-tests</span>
+<span class="ky">dockerfile</span>: <span class="st">./Dockerfile.e2e</span>
+<span class="ky">dependencies</span>:
+- <span class="ky">image</span>: <span class="st">backend</span>
+  <span class="ky">imports</span>:
+  - <span class="ky">type</span>: <span class="st">ImageName</span>         <span class="cm"># full image:tag reference</span>
+    <span class="ky">targetEnv</span>: <span class="st">BACKEND_IMAGE</span>
+  - <span class="ky">type</span>: <span class="st">ImageID</span>           <span class="cm"># sha256 digest</span>
+    <span class="ky">targetEnv</span>: <span class="st">BACKEND_DIGEST</span>
+  - <span class="ky">type</span>: <span class="st">ImageTag</span>          <span class="cm"># just the tag</span>
+    <span class="ky">targetEnv</span>: <span class="st">BACKEND_TAG</span>
+
+<span class="cm"># In Dockerfile.e2e:</span>
+<span class="cm">ARG BACKEND_IMAGE</span>
+<span class="cm">RUN echo "Testing against ${BACKEND_IMAGE}"</span></div>
+  </div>
+
+  <div class="card cw">
+    <div class="ctit" style="color:var(--w);">🌐 Go Templating in werf.yaml</div>
+    <div class="fr"><span class="fk">Template support</span><span class="fv">werf.yaml supports Go templating via <code>{{ }}</code> syntax. Access environment variables with <code>env "VAR_NAME"</code>. Enables dynamic config based on CI environment.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Dynamic image selection based on CI env</span>
+<span class="ky">image</span>: <span class="st">app</span>
+{{ if eq (env "CI_ENVIRONMENT") "staging" }}
+<span class="ky">dockerfile</span>: <span class="st">Dockerfile.staging</span>
+{{ else }}
+<span class="ky">dockerfile</span>: <span class="st">Dockerfile</span>
+{{ end }}
+<span class="ky">context</span>: <span class="st">.</span>
+<span class="ky">args</span>:
+  <span class="ky">ENV</span>: {{ env "CI_ENVIRONMENT" | default "production" }}
+
+<span class="cm"># Named templates (reuse config blocks)</span>
+{{- define "common-labels" }}
+  <span class="ky">team</span>: platform
+  <span class="ky">project</span>: {{ .Values.project }}
+{{- end }}</div>
+    <div class="trap"><b>Giterminism by default restricts <code>env</code> usage in werf.yaml.</b> Using environment variables in werf.yaml breaks giterminism (result depends on env, not just Git). You must explicitly allow it in <code>werf-giterminism.yaml</code>: <code>werf: {config: {goTemplateRendering: {allowEnvVariables: ["CI_ENVIRONMENT"]}}}</code>.</div>
+  </div>
+</div>
+</div>
+</div><!-- /yaml -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--            STAPEL BUILDER              -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-stapel">
+
+<div class="sh"><div class="sh-i">🏗️</div><div class="sh-l" style="color:var(--vio);">Stapel Builder</div><div class="sh-s">// werf's own builder · stages · Git mappings · mounts · artifact images</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(155,114,255,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">📋 What is Stapel?</div>
+    <div class="fr"><span class="fk">Definition</span><span class="fv">Stapel (Dutch for "stack") is werf's own builder, an alternative to Dockerfile. It uses an explicit stage model with fine-grained cache invalidation. Stages are invalidated only when their specific inputs change — not the whole layer chain.</span></div>
+    <div class="fr"><span class="fk">vs Dockerfile</span><span class="fv">Dockerfile: any change invalidates all subsequent layers. Stapel: you declare which files each stage depends on via <code>stageDependencies</code> — change a JS file only rebuilds stages that depend on JS. Better cache efficiency for monorepos.</span></div>
+    <div class="fr"><span class="fk">Git-native</span><span class="fv">Stapel's <code>git</code> directive is a first-class feature. Source files are mapped from Git into the image at specified paths. werf tracks Git patches between builds — only changed files trigger re-execution of dependent stages.</span></div>
+    <div class="fr"><span class="fk">Use when</span><span class="fv">Complex multi-stage builds where Dockerfile cache invalidation is too coarse. Monorepos where multiple services share dependencies. Need to import artifacts from other images mid-build.</span></div>
+    <div class="note"><b>Dockerfile builder is simpler and usually sufficient.</b> Use Stapel when you need fine-grained stage-level cache control or Git-aware incremental builds. Both coexist — use Dockerfile for simple images, Stapel for complex ones, in the same werf.yaml.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🔢 Stapel Stages (in order)</div>
+    <div class="stage-wrap">
+      <div class="stage" onclick="toggleStage(this)">
+        <div class="stage-n" style="background:rgba(155,114,255,.1);color:var(--vio);border:1px solid rgba(155,114,255,.3);">from</div>
+        <div><div class="stage-name">From</div><div class="stage-desc">Base image layer. Cache key: base image digest.</div></div>
+        <div class="stage-arrow">▶</div>
+      </div>
+      <div class="stage-detail">
+        <div class="code" style="font-size:9px;"><span class="ky">from</span>: <span class="st">node:20-alpine</span>
+<span class="ky">fromImage</span>: <span class="st">tools</span>           <span class="cm"># use another werf image as base</span>
+<span class="ky">fromCacheVersion</span>: <span class="st">"v2"</span>     <span class="cm"># force cache bust by changing this</span></div>
+      </div>
+
+      <div class="stage" onclick="toggleStage(this)">
+        <div class="stage-n" style="background:rgba(155,114,255,.1);color:var(--vio);border:1px solid rgba(155,114,255,.3);">beforeInstall</div>
+        <div><div class="stage-name">Before Install</div><div class="stage-desc">System setup before app deps. Rarely changes (apt, adduser).</div></div>
+        <div class="stage-arrow">▶</div>
+      </div>
+      <div class="stage-detail">
+        <div class="code" style="font-size:9px;"><span class="ky">shell</span>:
+  <span class="ky">beforeInstall</span>:
+  - <span class="st">apt-get update -qq</span>
+  - <span class="st">apt-get install -y curl build-essential</span>
+  - <span class="st">adduser --disabled-password app</span>
+  <span class="ky">beforeInstallCacheVersion</span>: <span class="st">"1"</span>  <span class="cm"># manual cache busting</span></div>
+        <div class="fr" style="border-top:none;margin-top:8px;"><span class="fk">Invalidation</span><span class="fv">Only when <code>beforeInstall</code> commands change or <code>beforeInstallCacheVersion</code> bumped. System package installs go here for maximum caching.</span></div>
+      </div>
+
+      <div class="stage" onclick="toggleStage(this)">
+        <div class="stage-n" style="background:rgba(155,114,255,.1);color:var(--vio);border:1px solid rgba(155,114,255,.3);">install</div>
+        <div><div class="stage-name">Install</div><div class="stage-desc">App dependencies. Keyed on dependency files (package.json, go.mod).</div></div>
+        <div class="stage-arrow">▶</div>
+      </div>
+      <div class="stage-detail">
+        <div class="code" style="font-size:9px;"><span class="ky">git</span>:
+- <span class="ky">add</span>: <span class="st">/</span>
+  <span class="ky">to</span>: <span class="st">/app</span>
+  <span class="ky">stageDependencies</span>:
+    <span class="ky">install</span>: [<span class="st">package.json</span>, <span class="st">package-lock.json</span>]
+    <span class="cm"># ↑ install stage only reruns when these change</span>
+<span class="ky">shell</span>:
+  <span class="ky">install</span>:
+  - <span class="st">cd /app && npm ci --only=production</span></div>
+      </div>
+
+      <div class="stage" onclick="toggleStage(this)">
+        <div class="stage-n" style="background:rgba(155,114,255,.1);color:var(--vio);border:1px solid rgba(155,114,255,.3);">beforeSetup</div>
+        <div><div class="stage-name">Before Setup</div><div class="stage-desc">Pre-compile / asset prep. Between install and setup.</div></div>
+        <div class="stage-arrow">▶</div>
+      </div>
+      <div class="stage-detail"><div class="fr" style="border-top:none;"><span class="fk">Use case</span><span class="fv">Run TypeScript compilation, asset preprocessing, proto-gen. Anything that transforms sources before the main setup step. Keyed on files listed in <code>stageDependencies.beforeSetup</code>.</span></div></div>
+
+      <div class="stage" onclick="toggleStage(this)">
+        <div class="stage-n" style="background:rgba(155,114,255,.1);color:var(--vio);border:1px solid rgba(155,114,255,.3);">setup</div>
+        <div><div class="stage-name">Setup</div><div class="stage-desc">Main app setup. Keyed on app source files.</div></div>
+        <div class="stage-arrow">▶</div>
+      </div>
+      <div class="stage-detail">
+        <div class="code" style="font-size:9px;"><span class="ky">git</span>:
+- <span class="ky">add</span>: <span class="st">/</span>
+  <span class="ky">to</span>: <span class="st">/app</span>
+  <span class="ky">stageDependencies</span>:
+    <span class="ky">setup</span>: [<span class="st">"**/*.go"</span>, <span class="st">go.sum</span>]  <span class="cm"># rebuild when Go files change</span>
+<span class="ky">shell</span>:
+  <span class="ky">setup</span>:
+  - <span class="st">cd /app && go build -o /usr/local/bin/app ./cmd/app</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🗺️ Git Mappings</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">The <code>git</code> directive maps files from your Git repo into the image. werf tracks content changes and only re-adds changed files between builds — not a full COPY each time.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="ky">git</span>:
+<span class="cm"># Map everything from repo root to /app</span>
+- <span class="ky">add</span>: <span class="st">/</span>
+  <span class="ky">to</span>: <span class="st">/app</span>
+
+<span class="cm"># Map only src/ subdirectory</span>
+- <span class="ky">add</span>: <span class="st">/src</span>
+  <span class="ky">to</span>: <span class="st">/app/src</span>
+  <span class="ky">owner</span>: <span class="st">app</span>            <span class="cm"># set file ownership</span>
+  <span class="ky">group</span>: <span class="st">app</span>
+  <span class="ky">includePaths</span>:        <span class="cm"># include only these paths</span>
+  - <span class="st">**/*.go</span>
+  <span class="ky">excludePaths</span>:        <span class="cm"># exclude these paths</span>
+  - <span class="st">**/*_test.go</span>
+  - <span class="st">**/*.md</span>
+  <span class="ky">stageDependencies</span>:
+    <span class="ky">install</span>: [<span class="st">go.mod</span>, <span class="st">go.sum</span>]
+    <span class="ky">setup</span>: [<span class="st">"**/*.go"</span>]</div>
+    <div class="trap"><b>Git mappings only work with committed files.</b> Uncommitted/untracked files are invisible to Stapel git mappings (giterminism). Use <code>contextAddFiles</code> for non-gitignored local files, or commit everything before building.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🗻 Mounts</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Mounts allow sharing directories across stages or between builds — like persistent volume mounts during build. Cache dependencies (node_modules, Go cache) without baking them into the image.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="ky">mount</span>:
+<span class="cm"># Share build cache between builds (not in final image)</span>
+- <span class="ky">from</span>: <span class="st">build_dir</span>        <span class="cm"># werf-managed cache dir</span>
+  <span class="ky">to</span>: <span class="st">/root/.cache/go</span>   <span class="cm"># mounted during build stages</span>
+
+<span class="cm"># Share /tmp between stages</span>
+- <span class="ky">from</span>: <span class="st">tmp_dir</span>
+  <span class="ky">to</span>: <span class="st">/tmp</span>
+
+<span class="cm"># Reference another image's path</span>
+- <span class="ky">fromPath</span>: <span class="st">/usr/local/bin</span>
+  <span class="ky">to</span>: <span class="st">/tools</span>
+  <span class="ky">from</span>: <span class="st">my-tools-image</span></div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">build_dir</span><span class="fv">Persists between builds on the same host. A Go module cache in <code>build_dir</code> means modules are downloaded once and reused across many builds — dramatically faster CI builds.</span></div>
+    <div class="note"><b>Mounts are build-time only</b> — they're not present in the final image. Their contents don't affect the final image tag (content hash). Perfect for caches that should speed up builds without changing the final artifact.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🏺 Artifact Images</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Artifact images are intermediate images used only during build — they're never published to the registry or referenced in Helm charts. Used to share files between images without final image bloat.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># werf.yaml: define an artifact image</span>
+<span class="ky">artifact</span>: <span class="st">builder</span>      <span class="cm"># key: "artifact" not "image"</span>
+<span class="ky">from</span>: <span class="st">golang:1.23-alpine</span>
+<span class="ky">git</span>:
+- { <span class="ky">add</span>: <span class="st">/</span>, <span class="ky">to</span>: <span class="st">/src</span> }
+<span class="ky">shell</span>:
+  <span class="ky">install</span>:
+  - <span class="st">cd /src && go build -o /bin/app ./cmd/app</span>
+
+<span class="cm"># Final image: import from artifact</span>
+<span class="ky">image</span>: <span class="st">app</span>
+<span class="ky">from</span>: <span class="st">scratch</span>            <span class="cm"># or distroless, alpine</span>
+<span class="ky">import</span>:
+- <span class="ky">artifact</span>: <span class="st">builder</span>
+  <span class="ky">add</span>: <span class="st">/bin/app</span>
+  <span class="ky">to</span>: <span class="st">/app</span>
+  <span class="ky">before</span>: <span class="st">setup</span>          <span class="cm"># import at which stage</span>
+
+<span class="cm"># Result: tiny final image with just the binary</span>
+<span class="cm"># The Go toolchain never enters the final image</span></div>
+    <div class="note"><b>Artifacts are the Stapel equivalent of Docker multi-stage builds</b> — but more powerful because they can be shared across multiple final images, cached independently, and imported at specific stages.</div>
+  </div>
+</div>
+</div><!-- /stapel -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--              GITERMINISM               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-gitermism">
+
+<div class="sh"><div class="sh-i">🔒</div><div class="sh-l" style="color:var(--teal);">Giterminism — The Core Principle</div><div class="sh-s">// Git-determinism · werf-giterminism.yaml · what's allowed · reproducibility</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(32,227,178,.3),transparent);"></div></div>
+
+<div class="card ct" style="margin-bottom:12px;padding:20px;">
+  <div class="ctit" style="color:var(--teal);">🔒 What is Giterminism?</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:10px;">The Problem Werf Solves</div>
+      <div style="font-size:11.5px;color:var(--mid);line-height:1.9;margin-bottom:12px;">Traditional CI builds are <b style="color:var(--text);">non-deterministic</b>. The same commit can produce different images depending on: environment variables in the shell, local files that aren't committed, the state of an external service, or the time of day. <b style="color:var(--text);">You can't reproduce yesterday's build</b> from the same commit.</div>
+      <div style="font-family:var(--mono);font-size:10px;background:#030608;border:1px solid var(--bd);border-radius:6px;padding:12px;line-height:2;">
+        <div style="color:var(--teal);">Giterminism means:</div>
+        <div style="color:var(--mid);">Given the same Git commit SHA</div>
+        <div style="color:var(--mid);">+ the same werf version</div>
+        <div style="color:var(--mid);">+ the same registry</div>
+        <div style="color:var(--w);margin-top:4px;">= always the same image tag</div>
+        <div style="color:var(--w);">= always the same deployed state</div>
+        <div style="color:var(--grn);margin-top:4px;">regardless of: env vars, local files,</div>
+        <div style="color:var(--grn);">machine state, who runs it</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:10px;">The Rules</div>
+      <div class="git-rule">
+        <div class="gr-icon">📁</div>
+        <div>
+          <div class="gr-title" style="color:var(--grn);">All config files must be committed</div>
+          <div class="gr-desc"><code>werf.yaml</code>, <code>werf-giterminism.yaml</code>, and all <code>.helm/</code> files must be tracked by Git. Uncommitted changes are <b>ignored by default</b>.</div>
+        </div>
+      </div>
+      <div class="git-rule">
+        <div class="gr-icon">🚫</div>
+        <div>
+          <div class="gr-title" style="color:var(--yel);">No env vars in config (by default)</div>
+          <div class="gr-desc">Using <code>env "VAR"</code> in <code>werf.yaml</code> or Helm templates introduces non-determinism. Must be explicitly allowed in <code>werf-giterminism.yaml</code>.</div>
+        </div>
+      </div>
+      <div class="git-rule">
+        <div class="gr-icon">🔍</div>
+        <div>
+          <div class="gr-title" style="color:var(--grn);">Docker context = committed files only</div>
+          <div class="gr-desc">Build context only includes Git-committed files. Local modifications not staged in Git are invisible to the build. Guarantees reproducibility.</div>
+        </div>
+      </div>
+      <div class="git-rule">
+        <div class="gr-icon">⚡</div>
+        <div>
+          <div class="gr-title" style="color:var(--yel);">Escape hatch: werf-giterminism.yaml</div>
+          <div class="gr-desc">Explicitly list exceptions — env vars, local files, untracked Go templates. Each exception is documented, auditable, and intentional.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">📄 werf-giterminism.yaml — Relaxing Rules</div>
+    <div class="code"><span class="ky">giterminismConfigVersion</span>: <span class="nu">1</span>
+
+<span class="ky">config</span>:
+  <span class="cm"># Allow env variables in werf.yaml Go templates</span>
+  <span class="ky">goTemplateRendering</span>:
+    <span class="ky">allowEnvVariables</span>:
+    - <span class="st">CI_ENVIRONMENT</span>
+    - <span class="st">CI_REGISTRY</span>
+    - <span class="st">^APP_.*$</span>    <span class="cm"># regex: all APP_ prefixed vars</span>
+
+  <span class="cm"># Allow reading files that aren't committed to Git</span>
+  <span class="ky">allowUncommitted</span>:  <span class="cm"># must be listed explicitly</span>
+    <span class="ky">dockerfiles</span>:
+    - <span class="st">./Dockerfile</span>   <span class="cm"># allow uncommitted Dockerfile</span>
+    <span class="ky">werf.yaml files</span>:
+    - <span class="st">./werf.yaml</span>
+    <span class="ky">files</span>:           <span class="cm"># for contextAddFiles</span>
+    - <span class="st">.env.production</span>
+
+<span class="ky">helm</span>:
+  <span class="cm"># Allow env vars in Helm templates</span>
+  <span class="ky">allowEnvVariables</span>:
+    <span class="ky">patterns</span>: [<span class="st">^HELM_.*$</span>]
+
+  <span class="cm"># Allow Go template file-includes from outside .helm/</span>
+  <span class="ky">allowUncommittedFiles</span>:
+  - <span class="st">.helm/templates/_helpers.tpl</span>
+
+<span class="cm"># Dev mode: allow ALL uncommitted files (CI usage only)</span>
+<span class="cm"># werf converge --dev  (command-line flag, not giterminism.yaml)</span></div>
+    <div class="note"><b>werf-giterminism.yaml must itself be committed.</b> It's the contract — this file documents every exception from strict giterminism. If it's not in Git, the exceptions aren't giterministic either. Think of it as an auditable list of "intentional non-determinism".</div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">⚡ Dev Mode</div>
+    <div class="fr"><span class="fk">The problem</span><span class="fv">Giterminism is great for CI/prod. But during local development, you're constantly editing files that aren't committed yet. Strict giterminism would block your local builds.</span></div>
+    <div class="fr"><span class="fk">Dev flag</span><span class="fv"><code>werf converge --dev</code> disables giterminism checks. All local files (even uncommitted) are used. Never use <code>--dev</code> in CI — it breaks reproducibility. Only for local development.</span></div>
+    <div class="fr"><span class="fk">Dev watch</span><span class="fv"><code>werf converge --dev --follow</code> watches for file changes and re-runs converge automatically. Instant feedback loop during development without needing to commit.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Local dev: any local file change triggers rebuild + redeploy</span>
+werf converge --dev --follow \
+  --kube-config ~/.kube/config \
+  --namespace dev-myname
+
+<span class="cm"># Build only (no deploy), dev mode</span>
+werf build --dev
+
+<span class="cm"># Check what giterminism errors you'd get without --dev</span>
+werf converge 2>&1 | grep "giterminism"
+
+<span class="cm"># CI always runs WITHOUT --dev:</span>
+werf converge \
+  --repo registry.example.com/myapp \
+  --env production</span></div>
+    <div class="trap"><b>Never commit a CI script that uses <code>--dev</code>.</b> If a CI pipeline runs with <code>--dev</code>, the resulting image is built from uncommitted local state — it's not reproducible. If you need to include a non-committed file in CI builds, use <code>contextAddFiles</code> + explicit <code>werf-giterminism.yaml</code> permission.</div>
+  </div>
+</div>
+</div><!-- /gitermism -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--              NELM & DEPLOY             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-nelm">
+
+<div class="sh"><div class="sh-i">⎈</div><div class="sh-l" style="color:var(--grn);">Nelm & Deploy</div><div class="sh-s">// werf converge · Nelm (v2) · werf plan · rollbacks · .helm/ structure · SSA</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(62,255,154,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <div class="card cg" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--grn);">⎈ Nelm — werf's Deployment Engine</div>
+    <div class="fr"><span class="fk">What is Nelm</span><span class="fv">Nelm (New Helm) is werf v2's deployment engine, replacing Helm 3. <b>Backward compatible with Helm charts</b> — no changes needed to your <code>.helm/</code> directory. Nelm 1.0 released August 2025 as a standalone CLI too.</span></div>
+    <div class="fr"><span class="fk">Server-Side Apply</span><span class="fv">Nelm uses Kubernetes SSA instead of Helm's 3-way merge. <b>Proper field ownership tracking.</b> Eliminates "last-applied-configuration" annotation conflicts. Multiple managers (e.g., HPA + Nelm) coexist cleanly.</span></div>
+    <div class="fr"><span class="fk">Resource tracking</span><span class="fv">Heavily parallelized resource tracking during deploy. Nelm watches all deployed resources simultaneously and reports status in real-time. Old Helm: sequential waits.</span></div>
+    <div class="fr"><span class="fk">Auto rollback</span><span class="fv">If any resource fails health checks during deploy, Nelm automatically rolls back to the previous release. Configurable — can be disabled per resource with annotations.</span></div>
+    <div class="fr"><span class="fk">werf plan</span><span class="fv">New command in werf v2: <code>werf plan</code> shows exactly what Nelm would change in the cluster — without applying anything. The equivalent of <code>terraform plan</code> for K8s deployments.</span></div>
+    <div class="code"><span class="cm"># The full converge lifecycle</span>
+werf converge \
+  --repo registry.example.com/myapp \
+  --env production \
+  --namespace myapp-prod \
+  --release myapp-prod      <span class="cm"># Helm release name (default: project+env)</span>
+  --kube-config ~/.kube/config
+
+<span class="cm"># What converge does internally:</span>
+<span class="cm"># 1. werf build   — build images (skip if content unchanged)</span>
+<span class="cm"># 2. werf publish — push images to registry</span>
+<span class="cm"># 3. werf deploy  — Nelm applies .helm/ chart with built image refs</span>
+
+<span class="cm"># Plan before apply (dry-run with diff)</span>
+werf plan \
+  --repo registry.example.com/myapp \
+  --env production
+
+<span class="cm"># Deploy only (skip build, use existing images)</span>
+werf deploy \
+  --repo registry.example.com/myapp \
+  --env production
+
+<span class="cm"># Build only (no deploy)</span>
+werf build \
+  --repo registry.example.com/myapp
+
+<span class="cm"># Rollback: dismiss + re-converge with old commit</span>
+<span class="cm"># (no native rollback command — re-run converge at old SHA)</span>
+git checkout v1.2.3
+werf converge --env production</div>
+    <div class="trap"><b>werf has no native rollback command.</b> The "rollback" is running <code>werf converge</code> at the previous Git commit. This is intentional — giterminism means every deploy is fully reproducible from Git. However, Nelm does auto-rollback within a single converge run if the new version fails health checks.</div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">📁 .helm/ Directory Structure</div>
+    <div class="code" style="font-size:9px;"><span class="cm"># Standard Helm chart layout</span>
+.helm/
+├── Chart.yaml             <span class="cm"># chart metadata</span>
+├── values.yaml            <span class="cm"># default values</span>
+├── values_production.yaml <span class="cm"># werf env-specific values</span>
+├── values_staging.yaml
+├── secret-values.yaml     <span class="cm"># encrypted secrets (werf encrypt)</span>
+├── .helmignore
+├── templates/
+│   ├── _helpers.tpl
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
+└── charts/               <span class="cm"># chart dependencies</span>
+    └── redis/
+
+<span class="cm"># werf loads values in order (later overrides earlier):</span>
+<span class="cm"># values.yaml</span>
+<span class="cm"># → values_{env}.yaml  (e.g., values_production.yaml)</span>
+<span class="cm"># → secret-values.yaml (decrypted)</span>
+<span class="cm"># → --set / --values flags</span></div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">Env-specific values</span><span class="fv">werf automatically loads <code>values_{env}.yaml</code> based on <code>--env</code> flag. Pass <code>--env production</code> → loads <code>values_production.yaml</code> on top of <code>values.yaml</code>. Zero extra configuration needed.</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">🔐 Secret Values</div>
+    <div class="fr"><span class="fk">How it works</span><span class="fv">werf has a built-in secrets mechanism. Encrypt secret values with a symmetric key (<code>WERF_SECRET_KEY</code> env var or <code>.werf_secret_key</code> file). Encrypted values live in <code>secret-values.yaml</code> committed to Git.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Generate a secret key</span>
+werf helm secret generate-secret-key
+<span class="cm"># → store in CI secret as WERF_SECRET_KEY</span>
+<span class="cm"># → or in .werf_secret_key (gitignored!)</span>
+
+<span class="cm"># Encrypt a value</span>
+werf helm secret values encrypt \
+  -f secret-values.yaml
+
+<span class="cm"># secret-values.yaml (committed to Git)</span>
+<span class="ky">db</span>:
+  <span class="ky">password</span>: <span class="st">1000c5c03f39a6c4f02d5f7ba29e9b7...  # encrypted</span>
+
+<span class="cm"># In Helm templates — access like any value</span>
+env:
+- <span class="ky">name</span>: <span class="st">DB_PASSWORD</span>
+  <span class="ky">value</span>: {{ .Values.db.password }}
+
+<span class="cm"># werf decrypts in-memory before rendering</span></div>
+    <div class="trap"><b>Never commit <code>.werf_secret_key</code> to Git.</b> Gitignore it. The secret key must be injected via environment variable (<code>WERF_SECRET_KEY</code>) in CI. Without the key, <code>werf converge</code> fails. Rotate the key: generate new key → re-encrypt all secret files → update CI secret.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--grn);">📊 Nelm vs Helm 3 vs Helm 4</div>
+    <table class="st">
+      <tr><th>Feature</th><th style="color:var(--grn);">Nelm (werf v2)</th><th>Helm 3</th><th style="color:var(--blue);">Helm 4</th></tr>
+      <tr><td>Apply mechanism</td><td class="good">SSA (Server-Side Apply)</td><td class="warn">3-way merge</td><td class="good">SSA</td></tr>
+      <tr><td>Resource tracking</td><td class="good">Parallelized</td><td class="warn">Sequential</td><td>Improved</td></tr>
+      <tr><td>CRD management</td><td class="good">Full lifecycle</td><td class="warn">Install-only</td><td>Improved</td></tr>
+      <tr><td>Auto rollback</td><td class="good">On health failure</td><td class="warn">Manual only</td><td class="warn">Manual</td></tr>
+      <tr><td>Dry-run diff</td><td class="good"><code>werf plan</code></td><td class="warn">Incomplete</td><td>Improved</td></tr>
+      <tr><td>Dependency order</td><td class="warn">Weights/hooks</td><td class="warn">Weights/hooks</td><td class="warn">Weights/hooks</td></tr>
+      <tr><td>Chart format</td><td class="good">Helm 3 compatible</td><td>Helm 3</td><td>Helm 4 (SSA)</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+</div><!-- /nelm -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--           CONTENT-BASED TAGGING        -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-tags">
+
+<div class="sh"><div class="sh-i">🏷️</div><div class="sh-l" style="color:var(--w);">Content-Based Tagging</div><div class="sh-s">// how werf computes tags · cache invalidation · no unnecessary rebuilds · immutability</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(245,120,60,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card cw">
+    <div class="ctit" style="color:var(--w);">🏷️ How Content-Based Tags Work</div>
+    <div style="font-size:11.5px;color:var(--mid);line-height:1.8;margin-bottom:12px;">Instead of tagging images with Git branch names (<code>main</code>), commit SHAs, or timestamps, werf computes a <b style="color:var(--text);">cryptographic hash of the image content</b>. The tag is derived from the actual layers that make up the image — not from when or where it was built.</div>
+    <div class="tag-flow">
+      <div class="tf-box tf-w">Base image digest</div>
+      <div class="tf-arr">+</div>
+      <div class="tf-box tf-t">Dockerfile/Stapel instructions</div>
+      <div class="tf-arr">+</div>
+      <div class="tf-box tf-t">Build args</div>
+      <div class="tf-arr">+</div>
+      <div class="tf-box tf-v">Source files (via Git tree SHA)</div>
+      <div class="tf-arr">=</div>
+      <div class="tf-box tf-g">sha256(all inputs) → image tag</div>
+    </div>
+    <div class="fr" style="margin-top:10px;"><span class="fk">Same content = same tag</span><span class="fv">If nothing in the image's inputs changed between two commits, the tag is identical. <b>werf skips the build entirely</b> — image already in registry. No wasted CI time, no unnecessary pod restarts.</span></div>
+    <div class="fr"><span class="fk">Different content = different tag</span><span class="fv">Any change to source files, Dockerfile, or base image produces a new tag. The old tag is never overwritten. <b>Every tag is immutable.</b> You can always reproduce the exact image from the tag.</span></div>
+    <div class="fr"><span class="fk">Tag format</span><span class="fv"><code>sha256-{hash}</code> — e.g., <code>registry.example.com/myapp/backend:sha256-abc123def456</code>. Human-readable content addressing. Not guessable, not sequential, not tied to time.</span></div>
+    <div class="fr"><span class="fk">Deployment effect</span><span class="fv">If frontend changed but backend didn't — <code>werf converge</code> only rebuilds and redeploys the frontend pods. Backend pods are not restarted (same image tag = K8s does nothing). Precise, minimal blast radius.</span></div>
+  </div>
+
+  <div class="card ct">
+    <div class="ctit" style="color:var(--teal);">🔬 Stage-Level Caching (Stapel)</div>
+    <div style="font-size:11px;color:var(--mid);line-height:1.7;margin-bottom:10px;">For Stapel images, caching is even more granular — each stage has its own content hash:</div>
+    <div class="tag-flow">
+      <div class="tf-box tf-w">from stage hash</div>
+      <div class="tf-arr">→</div>
+      <div class="tf-box tf-t">beforeInstall hash</div>
+      <div class="tf-arr">→</div>
+      <div class="tf-box tf-t">install hash</div>
+      <div class="tf-arr">→</div>
+      <div class="tf-box tf-v">setup hash</div>
+      <div class="tf-arr">=</div>
+      <div class="tf-box tf-g">final tag</div>
+    </div>
+    <div class="fr" style="margin-top:10px;"><span class="fk">Stage cache hit</span><span class="fv">If you change a Go source file, only the <code>setup</code> stage (which depends on <code>*.go</code> via <code>stageDependencies</code>) is re-run. <code>beforeInstall</code> and <code>install</code> stages hit cache — their inputs haven't changed.</span></div>
+    <div class="fr"><span class="fk">stageDependencies</span><span class="fv">Explicitly declare which files invalidate each stage. Change in <code>package.json</code> → <code>install</code> stage reruns (npm ci). Change in <code>src/main.go</code> → only <code>setup</code> stage reruns (go build). Independent cache per stage.</span></div>
+    <div class="fr"><span class="fk">Registry as cache</span><span class="fv">Stage caches are stored in the OCI registry — same registry as final images. <b>Any CI runner can reuse the cache.</b> No shared Docker daemon needed, no EFS/S3 for cache. The registry IS the cache.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm">## What werf logs during build</span>
+$ werf build
+
+✓ [stage from] CACHED (no change since last build)
+✓ [stage beforeInstall] CACHED
+✗ [stage install] REBUILDING (package.json changed)
+  running: npm ci
+✗ [stage setup] REBUILDING (depends on install)
+  running: npm run build
+
+<span class="cm">## Result: 2 of 4 stages rebuilt (targeted cache miss)</span>
+<span class="cm">## Total build time: 45s instead of 3 minutes</span></div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card cw">
+    <div class="ctit" style="color:var(--w);">⚡ Why This Matters in Practice</div>
+    <div class="fr"><span class="fk">No stale images</span><span class="fv">Unlike <code>:latest</code> or branch tags, content-based tags are immutable. A tag pushed once never changes. No "latest was different on Tuesday" confusion.</span></div>
+    <div class="fr"><span class="fk">Free deduplication</span><span class="fv">If 5 branches all use the same base image and same npm dependencies, they all share the same <code>install</code> stage cache. One set of layers in the registry, referenced by 5 different final image tags.</span></div>
+    <div class="fr"><span class="fk">Auditable history</span><span class="fv">Given a tag (<code>sha256-abc123</code>), you can reverse-lookup exactly which Git commits produced that image. werf stores this provenance in image labels.</span></div>
+    <div class="fr"><span class="fk">Safe concurrent builds</span><span class="fv">Two CI jobs building the same commit simultaneously? Both compute the same tag. One pushes, the other finds the tag already exists — skips push. No race condition, no overwrite.</span></div>
+  </div>
+
+  <div class="card cw">
+    <div class="ctit" style="color:var(--w);">🔍 Build Report</div>
+    <div class="fr"><span class="fk">werf build --report</span><span class="fv">Generates a JSON/env report of all built images and their tags. Used by downstream CI steps or other tools to know which images were produced.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Generate build report</span>
+werf build \
+  --repo registry.example.com/myapp \
+  --report-path=images-report.json \
+  --report-format=json
+
+<span class="cm"># images-report.json</span>
+{
+  "Images": {
+    "backend": {
+      "WerfImageName": "backend",
+      "DockerImageName": "registry.../backend:sha256-abc",
+      "DockerImageID": "sha256:abc123...",
+      "Final": true
+    },
+    "frontend": {
+      "DockerImageName": "registry.../frontend:sha256-def",
+      ...
+    }
+  }
+}
+
+<span class="cm"># Use report in downstream step</span>
+export BACKEND_IMAGE=$(jq -r \
+  '.Images.backend.DockerImageName' images-report.json)</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">⚖️ Content Tags vs Other Tag Strategies</div>
+    <table class="st">
+      <tr><th>Strategy</th><th>Immutable?</th><th>Reproducible?</th><th>Skip rebuild?</th></tr>
+      <tr><td><code>:latest</code></td><td class="bad">No</td><td class="bad">No</td><td class="bad">No</td></tr>
+      <tr><td><code>:main</code> (branch)</td><td class="bad">No</td><td class="bad">No</td><td class="bad">No</td></tr>
+      <tr><td><code>:abc1234</code> (commit)</td><td class="good">Yes</td><td class="good">Yes</td><td class="bad">No (always rebuilds)</td></tr>
+      <tr><td><code>:20260501-143022</code> (time)</td><td class="good">Yes</td><td class="bad">No</td><td class="bad">No</td></tr>
+      <tr><td class="good"><code>:sha256-abc</code> (content)</td><td class="good">Yes</td><td class="good">Yes</td><td class="good">Yes — if content unchanged</td></tr>
+    </table>
+  </div>
+</div>
+</div><!-- /tags -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--             CI/CD & CLEANUP            -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-ci">
+
+<div class="sh"><div class="sh-i">🔄</div><div class="sh-l" style="color:var(--blue);">CI/CD Integration & Cleanup</div><div class="sh-s">// GitHub Actions · GitLab CI · cleanup policies · what gets deleted</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(66,165,245,.3),transparent);"></div></div>
+
+<div class="g2">
+  <div class="card cb">
+    <div class="ctit" style="color:var(--blue);">⚡ GitHub Actions</div>
+    <div class="code" style="font-size:9px;"><span class="cm"># .github/workflows/deploy.yaml</span>
+<span class="ky">name</span>: <span class="st">Deploy</span>
+<span class="ky">on</span>:
+  <span class="ky">push</span>:
+    <span class="ky">branches</span>: [main, staging]
+<span class="ky">jobs</span>:
+  <span class="ky">deploy</span>:
+    <span class="ky">runs-on</span>: <span class="st">ubuntu-latest</span>
+    <span class="ky">container</span>:
+      <span class="ky">image</span>: <span class="st">registry.werf.io/werf/werf:2.68.1</span>
+    <span class="ky">steps</span>:
+    - <span class="ky">uses</span>: <span class="st">actions/checkout@v4</span>
+      <span class="ky">with</span>:
+        <span class="ky">fetch-depth</span>: <span class="nu">0</span>     <span class="cm"># REQUIRED: full history for cleanup</span>
+
+    - <span class="ky">name</span>: <span class="st">Login to registry</span>
+      <span class="ky">run</span>: |
+        echo "${{ secrets.REGISTRY_PASSWORD }}" | \
+          docker login registry.example.com \
+          -u "${{ secrets.REGISTRY_USER }}" --password-stdin
+
+    - <span class="ky">name</span>: <span class="st">Deploy</span>
+      <span class="ky">env</span>:
+        <span class="ky">WERF_SECRET_KEY</span>: ${{ secrets.WERF_SECRET_KEY }}
+        <span class="ky">WERF_KUBECONFIG_BASE64</span>: ${{ secrets.KUBECONFIG_B64 }}
+      <span class="ky">run</span>: |
+        echo "$WERF_KUBECONFIG_BASE64" | base64 -d > /tmp/kube
+        werf converge \
+          --repo registry.example.com/myapp \
+          --env ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }} \
+          --kube-config /tmp/kube
+
+  <span class="ky">cleanup</span>:
+    <span class="ky">runs-on</span>: <span class="st">ubuntu-latest</span>
+    <span class="ky">if</span>: <span class="st">github.event_name == 'push' && github.ref == 'refs/heads/main'</span>
+    <span class="ky">container</span>:
+      <span class="ky">image</span>: <span class="st">registry.werf.io/werf/werf:2.68.1</span>
+    <span class="ky">steps</span>:
+    - <span class="ky">uses</span>: <span class="st">actions/checkout@v4</span>
+      <span class="ky">with</span>:
+        <span class="ky">fetch-depth</span>: <span class="nu">0</span>   <span class="cm"># full history required for cleanup!</span>
+    - <span class="ky">run</span>: |
+        werf cleanup \
+          --repo registry.example.com/myapp
+          <span class="cm"># --kube-config needed to check live cluster state</span></div>
+  </div>
+
+  <div class="card cb">
+    <div class="ctit" style="color:var(--blue);">🔶 GitLab CI</div>
+    <div class="code" style="font-size:9px;"><span class="cm"># .gitlab-ci.yml</span>
+<span class="ky">image</span>: <span class="st">registry.werf.io/werf/werf:2.68.1</span>
+
+<span class="ky">variables</span>:
+  <span class="cm"># GitLab built-in: used by werf for registry auth</span>
+  <span class="ky">WERF_REPO</span>: <span class="st">$CI_REGISTRY_IMAGE</span>
+
+<span class="ky">before_script</span>:
+- <span class="st">werf ci-env gitlab</span>   <span class="cm"># auto-configure from GitLab env vars!</span>
+
+<span class="ky">deploy-staging</span>:
+  <span class="ky">stage</span>: <span class="st">deploy</span>
+  <span class="ky">script</span>:
+  - <span class="st">werf converge --env staging</span>
+  <span class="ky">only</span>:
+    <span class="ky">refs</span>: [<span class="st">develop</span>]
+  <span class="ky">environment</span>:
+    <span class="ky">name</span>: <span class="st">staging</span>
+
+<span class="ky">deploy-prod</span>:
+  <span class="ky">stage</span>: <span class="st">deploy</span>
+  <span class="ky">script</span>:
+  - <span class="st">werf converge --env production</span>
+  <span class="ky">only</span>:
+    <span class="ky">refs</span>: [<span class="st">main</span>]
+  <span class="ky">when</span>: <span class="st">manual</span>      <span class="cm"># manual approval for prod</span>
+
+<span class="ky">cleanup</span>:
+  <span class="ky">stage</span>: <span class="st">cleanup</span>
+  <span class="ky">script</span>:
+  - <span class="st">werf cleanup</span>
+  <span class="ky">only</span>:
+    <span class="ky">refs</span>: [<span class="st">schedules</span>]   <span class="cm"># run on a schedule</span></div>
+    <div class="note"><b><code>werf ci-env gitlab</code></b> is magic — it reads GitLab CI environment variables (<code>CI_REGISTRY</code>, <code>CI_REGISTRY_USER</code>, <code>CI_JOB_TOKEN</code>, etc.) and sets up werf configuration automatically. No manual registry config needed for GitLab. Equivalent helpers exist for GitHub Actions, CircleCI, and others.</div>
+  </div>
+</div>
+
+<div class="g2" style="margin-top:0;">
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🧹 Smart Cleanup — How It Works</div>
+    <div class="fr"><span class="fk">The problem</span><span class="fv">Content-based tagging means a new tag is pushed on every build. Without cleanup, your registry fills with orphaned images. But you can't delete blindly — some "old" images are still deployed to production.</span></div>
+    <div class="fr"><span class="fk">werf's approach</span><span class="fv">werf scans both <b>Git history</b> and <b>live cluster state</b> to determine which images are still needed. An image is "in use" if it's referenced by a Git branch, tag, or commit — or is currently running in the cluster. Only truly orphaned images are removed.</span></div>
+    <div class="fr"><span class="fk">What cleanup checks</span><span class="fv"><b>Git strategy:</b> keep images for the last N commits per branch, keep images for all Git tags, keep images for HEAD of each branch. <b>Kubernetes strategy:</b> scan all cluster workloads — any image currently referenced in a pod spec is kept regardless of Git state.</span></div>
+    <div class="fr"><span class="fk">Full history needed</span><span class="fv"><b>Cleanup requires <code>fetch-depth: 0</code> in git checkout.</b> Shallow clones (default in most CI) only have recent history — cleanup would incorrectly mark older images as unreferenced and delete them.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Run cleanup (schedule daily in CI)</span>
+werf cleanup \
+  --repo registry.example.com/myapp \
+  --kube-config ~/.kube/config   <span class="cm"># needed to check cluster state</span>
+
+<span class="cm"># Dry run (see what would be deleted)</span>
+werf cleanup --dry-run \
+  --repo registry.example.com/myapp</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">⚙️ Cleanup Policies</div>
+    <div class="fr"><span class="fk">Default policies</span><span class="fv">By default, werf keeps: last 10 builds per branch, all Git tag builds, HEAD of each branch. Configure in <code>werf.yaml</code> under <code>cleanup.keepPolicies</code>.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># werf.yaml: custom cleanup policies</span>
+<span class="ky">configVersion</span>: <span class="nu">1</span>
+<span class="ky">project</span>: <span class="st">myapp</span>
+<span class="ky">cleanup</span>:
+  <span class="ky">keepPolicies</span>:
+  <span class="cm"># Keep images for Git tags</span>
+  - <span class="ky">references</span>:
+      <span class="ky">tag</span>: { <span class="ky">limit</span>: { <span class="ky">last</span>: <span class="nu">10</span> } }  <span class="cm"># last 10 release tags</span>
+    <span class="ky">imagesPerReference</span>:
+      <span class="ky">last</span>: <span class="nu">1</span>                         <span class="cm"># 1 image per tag</span>
+
+  <span class="cm"># Keep recent builds for main branch</span>
+  - <span class="ky">references</span>:
+      <span class="ky">branch</span>: <span class="st">main</span>
+    <span class="ky">imagesPerReference</span>:
+      <span class="ky">last</span>: <span class="nu">5</span>                         <span class="cm"># last 5 main builds</span>
+
+  <span class="cm"># Feature branches: keep only last 2 builds</span>
+  - <span class="ky">references</span>:
+      <span class="ky">branch</span>: { <span class="ky">limit</span>: { <span class="ky">last</span>: <span class="nu">20</span>, <span class="ky">in</span>: <span class="st">336h</span> } }  <span class="cm"># 20 branches active in 14 days</span>
+    <span class="ky">imagesPerReference</span>:
+      <span class="ky">last</span>: <span class="nu">2</span>                         <span class="cm"># 2 builds per feature branch</span>
+
+  <span class="cm"># KubernetesBased: keep images running in cluster</span>
+  - <span class="ky">references</span>:
+      <span class="ky">kubernetes</span>: {}   <span class="cm"># check live cluster (requires --kube-config)</span></div>
+    <div class="trap"><b>Run cleanup with <code>--kube-config</code>.</b> Without cluster access, werf can't determine which images are currently deployed. It may delete images still running in production (only knowing their Git history is gone). Always give cleanup access to all clusters that run your images.</div>
+  </div>
+</div>
+</div><!-- /ci -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--               BUNDLES                  -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-bundles">
+
+<div class="sh"><div class="sh-i">📦</div><div class="sh-l" style="color:var(--vio);">Bundles & Supply Chain</div><div class="sh-s">// OCI bundles · publish/apply · GitOps integration · signing · SBOMs</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(155,114,255,.3),transparent);"></div></div>
+
+<div class="card cv" style="margin-bottom:12px;padding:20px;">
+  <div class="ctit" style="color:var(--vio);">📦 Bundles — Decoupling Build from Deploy</div>
+  <svg viewBox="0 0 1320 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+    <defs>
+      <marker id="b1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(245,120,60,.8)"/></marker>
+      <marker id="b2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(155,114,255,.7)"/></marker>
+      <marker id="b3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(62,255,154,.7)"/></marker>
+    </defs>
+
+    <!-- CI (build) -->
+    <g transform="translate(10,50)">
+      <rect width="200" height="80" rx="7" fill="rgba(245,120,60,.07)" stroke="rgba(245,120,60,.3)" stroke-width="1.5"/>
+      <text x="100" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F5783C" font-weight="600">CI: werf bundle publish</text>
+      <text x="100" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(245,120,60,.5)">build images</text>
+      <text x="100" y="56" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(245,120,60,.45)">render Helm chart</text>
+      <text x="100" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.3)">package as OCI artifact</text>
+    </g>
+
+    <line x1="210" y1="90" x2="280" y2="90" stroke="rgba(245,120,60,.6)" stroke-width="1.8" marker-end="url(#b1)"/>
+    <text x="245" y="80" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(245,120,60,.4)">push bundle</text>
+
+    <!-- OCI Registry (bundle store) -->
+    <g transform="translate(280,40)">
+      <rect width="220" height="100" rx="7" fill="rgba(155,114,255,.07)" stroke="rgba(155,114,255,.3)" stroke-width="1.5"/>
+      <text x="110" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#9B72FF" font-weight="600">OCI Registry</text>
+      <text x="110" y="42" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(155,114,255,.5)">Bundle OCI artifact:</text>
+      <text x="110" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,114,255,.4)">• rendered Helm chart</text>
+      <text x="110" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,114,255,.35)">• built image references</text>
+      <text x="110" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,114,255,.3)">• Cosign signature</text>
+    </g>
+
+    <line x1="500" y1="90" x2="570" y2="90" stroke="rgba(155,114,255,.6)" stroke-width="1.8" marker-end="url(#b2)"/>
+    <text x="535" y="80" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,114,255,.4)">pull bundle</text>
+
+    <!-- GitOps / CD path -->
+    <g transform="translate(570,30)">
+      <rect width="200" height="120" rx="7" fill="rgba(62,255,154,.05)" stroke="rgba(62,255,154,.25)" stroke-width="1.5"/>
+      <text x="100" y="22" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#3EFF9A" font-weight="600">CD: werf bundle apply</text>
+      <text x="100" y="38" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(62,255,154,.5)">OR: ArgoCD / Flux</text>
+      <text x="100" y="52" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(62,255,154,.45)">(via Nelm Operator)</text>
+      <text x="100" y="70" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(62,255,154,.4)">no access to Git repo</text>
+      <text x="100" y="85" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(62,255,154,.35)">no build tools needed</div>
+      <text x="100" y="100" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(62,255,154,.3)">just: registry access + K8s</text>
+      <text x="100" y="115" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(62,255,154,.25)">+ kubeconfig</text>
+    </g>
+
+    <line x1="770" y1="90" x2="840" y2="90" stroke="rgba(62,255,154,.6)" stroke-width="1.8" marker-end="url(#b3)"/>
+
+    <!-- K8s -->
+    <g transform="translate(840,55)">
+      <rect width="160" height="70" rx="7" fill="rgba(62,255,154,.05)" stroke="rgba(62,255,154,.2)" stroke-width="1.5"/>
+      <text x="80" y="22" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#3EFF9A" font-weight="600">K8s Cluster</text>
+      <text x="80" y="38" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(62,255,154,.45)">images deployed</text>
+      <text x="80" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(62,255,154,.3)">from bundle's refs</text>
+    </g>
+
+    <!-- Cosign (supply chain) -->
+    <g transform="translate(1020,40)">
+      <rect width="280" height="100" rx="7" fill="rgba(255,208,70,.04)" stroke="rgba(255,208,70,.2)" stroke-width="1" stroke-dasharray="5 3"/>
+      <text x="140" y="22" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#FFD046" font-weight="600">Supply Chain Security</text>
+      <text x="140" y="40" text-anchor="middle" font-family="Outfit" font-size="8.5" fill="rgba(255,208,70,.45)">Cosign: bundle + images signed</text>
+      <text x="140" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(255,208,70,.35)">SBOM generation (coming)</text>
+      <text x="140" y="76" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(255,208,70,.3)">vulnerability scanning (coming)</text>
+      <text x="140" y="92" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,208,70,.25)">provenance attestation</text>
+    </g>
+  </svg>
+</div>
+
+<div class="g3">
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">📦 werf bundle publish</div>
+    <div class="fr"><span class="fk">What it creates</span><span class="fv">A bundle is an OCI artifact containing: the rendered Helm chart (with image references pre-resolved to content-based tags) + metadata about which images are included. Published to the same OCI registry as images.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># CI step: build + publish bundle</span>
+werf bundle publish \
+  --repo registry.example.com/myapp \
+  --tag 1.2.3                 <span class="cm"># bundle tag (semver or branch)</span>
+  --tag latest \              <span class="cm"># can add multiple tags</span>
+  --env production
+
+<span class="cm"># What gets published:</span>
+<span class="cm"># registry.example.com/myapp:1.2.3</span>
+<span class="cm"># → bundle manifest with:</span>
+<span class="cm">#   - rendered chart (values resolved)</span>
+<span class="cm">#   - image refs: backend:sha256-abc, frontend:sha256-def</span>
+
+<span class="cm"># Copy bundle between registries</span>
+werf bundle copy \
+  --from registry-internal.myco.com/myapp:1.2.3 \
+  --to  registry-prod.myco.com/myapp:1.2.3</div>
+    <div class="note"><b>bundle copy is great for air-gapped environments.</b> Build in internet-connected CI, push bundle to internal registry, CD environment pulls from internal registry. Zero internet access required for production deploys.</div>
+  </div>
+
+  <div class="card cv">
+    <div class="ctit" style="color:var(--vio);">🚀 werf bundle apply</div>
+    <div class="fr"><span class="fk">What it does</span><span class="fv">Pulls a published bundle from OCI registry and deploys it to the cluster. No Git access, no build tools, no werf.yaml needed. Just: registry credentials + kubeconfig.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># CD environment: deploy from bundle (no Git needed)</span>
+werf bundle apply \
+  --repo registry.example.com/myapp \
+  --tag 1.2.3 \
+  --namespace myapp-prod \
+  --env production
+
+<span class="cm"># Override values at deploy time</span>
+werf bundle apply \
+  --repo registry.example.com/myapp \
+  --tag 1.2.3 \
+  --set "replicaCount=5" \
+  --set "ingress.host=prod.myco.com"
+
+<span class="cm"># Use with ArgoCD: configure ArgoCD to</span>
+<span class="cm"># use OCI source pointing at bundle</span>
+<span class="cm"># (requires Nelm Operator — coming)</span>
+
+<span class="cm"># Export bundle as tar for fully air-gapped:</span>
+werf bundle export \
+  --repo registry.example.com/myapp \
+  --tag 1.2.3 \
+  --destination ./bundle.tar.gz</div>
+    <div class="trap"><b>Bundle tag ≠ image content tag.</b> The bundle tag (e.g., <code>1.2.3</code>) is a human-readable label you assign. The image tags inside the bundle are still content-based (<code>sha256-abc</code>). The bundle tag is mutable (you can re-publish to <code>latest</code>) but image tags inside are immutable.</div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">🔐 Supply Chain Security <span class="new-badge">Coming</span></div>
+    <div class="fr"><span class="fk">Current: Cosign</span><span class="fv">werf can sign images and bundles with Cosign. Set <code>WERF_SIGN</code> and provide a Cosign key. Consumers verify signatures before deploying: <code>cosign verify registry.example.com/myapp@sha256:...</code>.</span></div>
+    <div class="fr"><span class="fk">Upcoming: SBOMs</span><span class="fv">SBOM (Software Bill of Materials) generation — list of all packages in the image. Enables CVE scanning at the component level. Announced at 10th anniversary (Jan 2026).</span></div>
+    <div class="fr"><span class="fk">Upcoming: vuln scan</span><span class="fv">Integrated vulnerability scanning in the build pipeline. Fail builds on critical CVEs before images reach the registry.</span></div>
+    <div class="fr"><span class="fk">Nelm Operator</span><span class="fv">A planned K8s operator to run Nelm inside the cluster — enabling ArgoCD/Flux-style GitOps deployment of werf bundles without a CI runner. Bridges werf's push model with GitOps pull model.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Sign image with Cosign during publish</span>
+werf bundle publish \
+  --repo registry.example.com/myapp \
+  --tag 1.2.3 \
+  --sign                        <span class="cm"># requires COSIGN_KEY env or keyless</span>
+
+<span class="cm"># Verify before apply (manual)</span>
+cosign verify \
+  registry.example.com/myapp:sha256-abc \
+  --certificate-identity-regexp='https://github.com/myorg/.*' \
+  --certificate-oidc-issuer='https://token.actions.githubusercontent.com'</div>
+  </div>
+</div>
+</div><!-- /bundles -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--              TRAPS & QUIZ              -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-traps">
+
+<div class="sh"><div class="sh-i">⚡</div><div class="sh-l" style="color:var(--red);">Traps & Interview Quiz</div><div class="sh-s">// 15 operational gotchas · interactive quiz</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,69,71,.3),transparent);"></div></div>
+
+<div class="trap-grid">
+  <div class="trap-card"><div class="tc-n">01</div>
+    <div class="tc-tag">Giterminism</div>
+    <div class="tc-q">You edited <code>werf.yaml</code> locally but didn't commit. <code>werf build</code> uses the old version. Why?</div>
+    <div class="tc-a"><b>Giterminism: uncommitted files are invisible to werf.</b> werf reads config from Git (committed state), not the filesystem. This is intentional — ensures builds are reproducible. Use <code>werf build --dev</code> during local development to include uncommitted changes, but never in CI.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">02</div>
+    <div class="tc-tag">Content tagging</div>
+    <div class="tc-q">You push two identical commits to different branches. werf builds both. What tags are produced?</div>
+    <div class="tc-a"><b>The same tag.</b> Content-based tagging is independent of Git branch or commit. Two builds with identical inputs (same Dockerfile, same source files, same base image) produce the same content hash = same tag. The second build finds the image already in the registry and skips pushing. Zero wasted work.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">03</div>
+    <div class="tc-tag">Image naming</div>
+    <div class="tc-q"><code>werf.yaml</code> defines <code>image: app-backend</code> but the Helm template uses <code>werf_image "backend"</code>. What happens?</div>
+    <div class="tc-a"><b>Deploy fails — image name mismatch.</b> <code>werf_image</code> argument must exactly match the <code>image:</code> field in werf.yaml. werf throws an error: "image 'backend' is not defined in werf.yaml". The name comparison is case-sensitive and exact. Check all <code>werf_image "..."</code> calls against your werf.yaml image definitions.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">04</div>
+    <div class="tc-tag">Cleanup</div>
+    <div class="tc-q">Cleanup deletes an image that production is still using. How did this happen?</div>
+    <div class="tc-a"><b>Cleanup ran without cluster access OR without full Git history.</b> Without <code>--kube-config</code>, werf can't see live pods and may delete in-use images. Without <code>fetch-depth: 0</code> in git checkout, shallow history makes werf think old images are orphaned. Always: full Git fetch + cluster access for cleanup.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">05</div>
+    <div class="tc-tag">Stapel stages</div>
+    <div class="tc-q">You change <code>go.mod</code>. Which Stapel stages rebuild if <code>install: [go.mod, go.sum]</code> and <code>setup: ["**/*.go"]</code>?</div>
+    <div class="tc-a"><b>install and all subsequent stages (setup).</b> <code>go.mod</code> is in install's stageDependencies → install stage cache busts → since setup depends on install's output, setup also reruns. beforeInstall is NOT affected (it has different stageDependencies). This is the power of fine-grained stage dependencies.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">06</div>
+    <div class="tc-tag">Secret key</div>
+    <div class="tc-q"><code>werf converge</code> fails with "cannot decrypt secret values". CI worked yesterday. What changed?</div>
+    <div class="tc-a"><b><code>WERF_SECRET_KEY</code> environment variable missing or wrong in CI.</b> werf uses a symmetric key for secret-values.yaml decryption. If the key was rotated and the CI secret wasn't updated, or if the CI secret expired/was accidentally deleted, decryption fails. Check: <code>echo $WERF_SECRET_KEY | wc -c</code> should be non-zero in CI.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">07</div>
+    <div class="tc-tag">Dev mode in CI</div>
+    <div class="tc-q">A developer adds <code>--dev</code> to the CI pipeline "to fix a flaky build". What's the risk?</div>
+    <div class="tc-a"><b>Builds become non-reproducible.</b> <code>--dev</code> includes uncommitted local filesystem state. In CI, this means the runner's local state affects the build. Two CI runs on the same commit can produce different images. Content-based tagging may assign different tags to identical code. This completely breaks giterminism and audit trail.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">08</div>
+    <div class="tc-tag">Nelm rollback</div>
+    <div class="tc-q">A deploy fails. How do you rollback with werf?</div>
+    <div class="tc-a"><b>Re-run <code>werf converge</code> at the previous Git commit.</b> There's no <code>werf rollback</code> command. The GitOps-compatible rollback is: <code>git checkout v1.2.2 && werf converge --env production</code>. Or revert the Git commit and let CI redeploy. Nelm does auto-rollback within a single failing converge run, but historical rollback is via Git.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">09</div>
+    <div class="tc-tag">werf_image</div>
+    <div class="tc-q">Your Helm chart uses <code>image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"</code> — standard Helm pattern. Does this work with werf?</div>
+    <div class="tc-a"><b>It works but you lose content-based tagging benefits.</b> The standard Helm pattern injects a tag from values — you'd need to manually pass the content tag. The correct werf pattern is <code>{{ werf_image "myapp" }}</code> — werf injects the content-based reference automatically. Without it, you're responsible for passing the right tag to Helm values.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">10</div>
+    <div class="tc-tag">Env in werf.yaml</div>
+    <div class="tc-q"><code>werf.yaml</code> uses <code>{{ env "CI_ENVIRONMENT" }}</code> but werf errors with "using the env function is not allowed".</div>
+    <div class="tc-a"><b>Env variables in werf.yaml require explicit giterminism permission.</b> Add to <code>werf-giterminism.yaml</code>: <code>config: {goTemplateRendering: {allowEnvVariables: ["CI_ENVIRONMENT"]}}</code>. Each allowed env variable must be explicitly listed — this documents the intentional non-determinism. Commit werf-giterminism.yaml before re-running the build.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">11</div>
+    <div class="tc-tag">Bundles</div>
+    <div class="tc-q">You <code>werf bundle apply --tag latest</code>. The next day the tag points to a new bundle. Old deploy is silently replaced. How to prevent?</div>
+    <div class="tc-a"><b>Pin to immutable tags or digests, not <code>latest</code>.</b> Bundle tags (like <code>latest</code> or <code>main</code>) are mutable — they can be overwritten by new publishes. Use semver tags (<code>1.2.3</code>) or OCI digest (<code>@sha256:abc</code>) for production applies. Treat bundle tags like Docker image tags: <code>latest</code> in prod = asking for surprise deploys.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">12</div>
+    <div class="tc-tag">Values loading</div>
+    <div class="tc-q">Values in <code>values_production.yaml</code> are not being loaded during <code>werf converge --env production</code>.</div>
+    <div class="tc-a"><b>File must be committed to Git (giterminism).</b> If <code>values_production.yaml</code> exists locally but isn't committed, werf ignores it. Also: the file must be named exactly <code>values_{env}.yaml</code> — no exceptions. Check: <code>git status .helm/values_production.yaml</code>. If untracked, add it to Git or allow it in werf-giterminism.yaml.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">13</div>
+    <div class="tc-tag">Stapel mounts</div>
+    <div class="tc-q">You use <code>mount: from: build_dir</code> for Go cache. The CI runner is different each run. No cache benefit. Why?</div>
+    <div class="tc-a"><b><code>build_dir</code> mounts are local to the host.</b> If your CI uses ephemeral runners (new VM per job), <code>build_dir</code> is empty on every run. The cache only persists on the same host. Solution: use the OCI registry as cache storage — Stapel stage caches are always stored in the registry and work across any CI runner.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">14</div>
+    <div class="tc-tag">werf vs GitOps</div>
+    <div class="tc-q">Your security team says "CI must never have cluster credentials". Can you use werf?</div>
+    <div class="tc-a"><b>Yes — use werf bundle publish in CI, werf bundle apply or Nelm Operator in CD.</b> The upcoming Nelm Operator enables a pull-based model where CI only publishes a bundle to the registry, and the in-cluster operator deploys it. Or use ArgoCD/Flux pointing at the OCI bundle. werf + GitOps agent is a valid architecture that satisfies both requirements.</div>
+  </div>
+  <div class="trap-card"><div class="tc-n">15</div>
+    <div class="tc-tag">Nelm vs Helm</div>
+    <div class="tc-q">You migrate from werf 1.2 (Helm 3) to werf 2 (Nelm). Your existing Helm charts work but there are "stricter validation" errors. Why?</div>
+    <div class="tc-a"><b>Nelm enforces stricter Helm chart validation than Helm 3.</b> Invalid values types, extra keys, schema mismatches that Helm 3 silently ignored — Nelm reports as errors. Fix: run <code>helm lint .helm/</code> or <code>werf render</code> to find issues. Also: Nelm uses SSA instead of 3-way merge — first apply may show diff for field ownership migration. Expected and safe.</div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap">
+  <div class="quiz-hdr">
+    <div class="quiz-title">🎯 werf Interview Quiz</div>
+    <div class="quiz-score">Score: <span id="qScore">0</span> / <span id="qTotal">0</span></div>
+  </div>
+  <div id="qContainer"></div>
+  <div class="quiz-btns">
+    <button class="qbtn qb-r" onclick="resetQuiz()">↺ Reset</button>
+    <button class="qbtn qb-w" onclick="revealAll()">Show All Answers</button>
+  </div>
+</div>
+
+</div><!-- /traps -->
+
+<div class="footer">
+  <div class="ft">werf Field Guide · 2026 · v2.68+ · Nelm 1.0 · Giterminism · Content-based Tagging · Stapel · Bundles</div>
+  <div class="ft" style="color:rgba(245,120,60,.25);">fetch-depth: 0 for cleanup · --dev only locally · werf_image not .Values.image.tag · Nelm = Helm-compatible SSA · bundle apply = CI/CD decoupled</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleCtrl(el) {
+  const was = el.classList.contains('open');
+  document.querySelectorAll('.ctrl-card').forEach(c => c.classList.remove('open'));
+  if (!was) el.classList.add('open');
+}
+
+function toggleStage(el) {
+  const detail = el.nextElementSibling;
+  if (!detail || !detail.classList.contains('stage-detail')) return;
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.stage-detail').forEach(d => d.style.display = 'none');
+  if (!isOpen) {
+    el.classList.add('open');
+    detail.style.display = 'block';
+  }
+}
+
+const QS = [
+  {
+    q: "What does giterminism guarantee? Pick the most complete answer.",
+    opts: [
+      "That builds always succeed",
+      "That the same Git commit + werf version + registry = always the same image tag and cluster state",
+      "That builds are faster than Dockerfile builds",
+      "That images are stored in Git LFS"
+    ],
+    ans: 1,
+    ex: "<b>Giterminism = Git-determinism.</b> Given the same Git commit SHA, werf version, and registry, werf always produces the same image tags and deploys the same state. Eliminates 'works on my machine' and enables full reproducibility of any past deployment."
+  },
+  {
+    q: "You push two commits with identical source files but different commit messages to the same branch. How many distinct images does werf push?",
+    opts: [
+      "Two — one per commit",
+      "One — content hash is the same, second build finds image already exists",
+      "Zero — werf skips unchanged branches",
+      "Two — werf always rebuilds on new commits"
+    ],
+    ans: 1,
+    ex: "<b>One image, one push.</b> Content-based tagging hashes the actual image content, not the Git commit SHA. Identical source files = identical hash = same tag already in registry. The second build detects the tag exists and skips the push entirely. This is the key efficiency of content-based tagging."
+  },
+  {
+    q: "In Stapel, you have <code>stageDependencies: {install: [package.json], setup: ['**/*.ts']}</code>. You change a TypeScript file. Which stages rebuild?",
+    opts: [
+      "All stages from from to setup",
+      "Only the setup stage",
+      "Only install and setup",
+      "All stages — any change invalidates everything"
+    ],
+    ans: 1,
+    ex: "<b>Only setup.</b> TypeScript files are in setup's stageDependencies, not install's. The install stage (npm install) only reruns when package.json changes. Changing a .ts file only invalidates setup — which is all you need. This is Stapel's advantage over Dockerfile: surgical, file-level cache invalidation."
+  },
+  {
+    q: "What is the correct way to reference a built image in a Helm template with werf?",
+    opts: [
+      "<code>image: {{ .Values.image.repository }}:{{ .Values.image.tag }}</code>",
+      "<code>image: {{ werf_image \"backend\" }}</code>",
+      "<code>image: {{ .Values.werf.images.backend }}</code>",
+      "<code>image: $BACKEND_IMAGE</code>"
+    ],
+    ans: 1,
+    ex: "<b><code>werf_image \"name\"</code> is the correct pattern.</b> werf injects the content-based image reference (registry/image:sha256-hash) automatically. The name argument must match the <code>image:</code> field in werf.yaml exactly. Using .Values.image.tag bypasses content-based tagging — you'd have to pass the tag manually and lose the auto-skip-rebuild benefit."
+  },
+  {
+    q: "What does <code>werf bundle publish</code> create and where does it store it?",
+    opts: [
+      "A tarball in the CI artifacts directory",
+      "A Git tag in the source repository",
+      "An OCI artifact in the container registry containing the rendered Helm chart + built image references",
+      "A Kubernetes ConfigMap with the Helm chart values"
+    ],
+    ans: 2,
+    ex: "<b>An OCI artifact in the container registry.</b> The bundle contains the pre-rendered Helm chart with image references already resolved to content-based tags. Stored alongside your images in the same OCI registry. Enables CD environments that only need registry access + kubeconfig — no Git access, no build tools needed."
+  },
+  {
+    q: "Why does <code>werf cleanup</code> require <code>fetch-depth: 0</code> in the git checkout?",
+    opts: [
+      "For giterminism validation",
+      "To check which Helm chart versions are current",
+      "Shallow clones hide Git history — cleanup incorrectly marks older images as unreferenced and deletes them",
+      "werf needs full history to compute content-based tags"
+    ],
+    ans: 2,
+    ex: "<b>Shallow clones make old commits invisible.</b> werf cleanup determines which images are 'in use' by scanning Git references (branches, tags, recent commits). Without full history, commits from 2 weeks ago look like they don't exist — werf deletes their images, even if those images are deployed in production. Always: <code>fetch-depth: 0</code>."
+  },
+  {
+    q: "What is Nelm and how does it differ from Helm 3?",
+    opts: [
+      "Nelm is a new YAML format replacing Helm charts",
+      "Nelm is werf's deployment engine replacing Helm 3: backward-compatible with Helm charts, uses SSA instead of 3-way merge, parallelized tracking, auto-rollback",
+      "Nelm is a container runtime replacing containerd",
+      "Nelm is werf's registry API for content-based tagging"
+    ],
+    ans: 1,
+    ex: "<b>Nelm = werf v2's Helm replacement.</b> Key improvements: Server-Side Apply (proper field ownership, no more annotation conflicts), parallelized resource tracking, automatic rollback on health failure, <code>werf plan</code> dry-run. Backward compatible — existing Helm charts work without changes. Nelm 1.0 also released as standalone CLI."
+  },
+  {
+    q: "Your team wants to use werf for builds but ArgoCD for deployments (pull-based GitOps). Is this possible?",
+    opts: [
+      "No — werf requires managing the full pipeline end-to-end",
+      "Yes — use werf bundle publish in CI, then configure ArgoCD to pull the OCI bundle (or use Nelm Operator when available)",
+      "Yes — but only if you disable giterminism",
+      "Yes — but werf must still have kubeconfig in CI for ArgoCD registration"
+    ],
+    ans: 1,
+    ex: "<b>Yes, and it's a recommended pattern.</b> CI uses <code>werf bundle publish</code> to build images + package the Helm chart as an OCI artifact. CD uses <code>werf bundle apply</code> or ArgoCD with OCIRepository source. The upcoming Nelm Operator enables a native in-cluster pull-based model. This satisfies 'CI has no cluster credentials' security requirements while keeping werf's build benefits."
+  }
+];
+
+let score = 0, answered = 0;
+function buildQuiz() {
+  const c = document.getElementById('qContainer');
+  c.innerHTML = '';
+  score = 0; answered = 0;
+  updateScore();
+  QS.forEach((q, qi) => {
+    const d = document.createElement('div');
+    d.className = 'q-item'; d.id = 'qi-'+qi;
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+      <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
+      <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
+    c.appendChild(d);
+  });
+}
+function answer(qi, chosen) {
+  const qEl = document.getElementById('qi-'+qi);
+  if (qEl.dataset.done) return;
+  qEl.dataset.done = '1';
+  const q = QS[qi];
+  q.opts.forEach((_,oi) => {
+    const b = document.getElementById(`qo-${qi}-${oi}`);
+    b.disabled = true;
+    if (oi === q.ans) b.classList.add('correct');
+    else if (oi === chosen && chosen !== q.ans) b.classList.add('wrong');
+  });
+  qEl.classList.add(chosen === q.ans ? 'revealed' : 'revealed-bad');
+  document.getElementById('qe-'+qi).classList.add('show');
+  if (chosen === q.ans) score++;
+  answered++;
+  updateScore();
+}
+function updateScore() {
+  document.getElementById('qScore').textContent = score;
+  document.getElementById('qTotal').textContent = answered;
+}
+function resetQuiz() { buildQuiz(); }
+function revealAll() {
+  QS.forEach((q,qi) => {
+    const qEl = document.getElementById('qi-'+qi);
+    if (qEl.dataset.done) return;
+    qEl.dataset.done = '1';
+    q.opts.forEach((_,oi) => {
+      const b = document.getElementById(`qo-${qi}-${oi}`);
+      b.disabled = true;
+      if (oi === q.ans) b.classList.add('correct');
+    });
+    qEl.classList.add('revealed');
+    document.getElementById('qe-'+qi).classList.add('show');
+    answered++;
+  });
+  updateScore();
+}
+buildQuiz();
+</script>
+</body>
+</html>

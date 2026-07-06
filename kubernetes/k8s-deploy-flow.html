@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K8s Deployment Flow</title>
+<link href="../assets/fonts/font-set-5.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #060810;
+  --s1:    #0a0d14;
+  --bd:    #141c28;
+  --text:  #c8d8e8;
+  --dim:   #2a3a50;
+  --mid:   #4a6070;
+
+  --user:  #f472b6;
+  --kctl:  #a78bfa;
+  --api:   #326CE5;
+  --etcd:  #f59e0b;
+  --sch:   #10b981;
+  --kube:  #22d3ee;
+  --crt:   #f87171;
+
+  --p1: #3b82f6;
+  --p2: #8b5cf6;
+  --p3: #14b8a6;
+  --p4: #f59e0b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%,rgba(50,108,229,.1) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 20% at 5%  60%,rgba(34,211,238,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 25% 20% at 95% 70%,rgba(245,158,11,.05) 0%,transparent 45%),
+    repeating-linear-gradient(0deg, transparent,transparent 39px,rgba(50,108,229,.025) 40px),
+    repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(50,108,229,.025) 40px);
+}
+
+/* ── LAYOUT ── */
+.page{position:relative;z-index:1;min-height:100vh;padding:24px 20px 60px;}
+.header{text-align:center;margin-bottom:32px;}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;letter-spacing:-2px;line-height:.9;text-transform:uppercase;}
+.h-top{background:linear-gradient(90deg,var(--p1),var(--api),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h-bot{color:rgba(255,255,255,.06);-webkit-text-stroke:1px rgba(50,108,229,.3);}
+.header p{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:8px;}
+
+/* ── CONTROLS ── */
+.controls{display:flex;justify-content:center;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+.btn{font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:4px;border:1px solid;cursor:pointer;transition:all .2s;}
+.btn-play{background:rgba(50,108,229,.15);border-color:rgba(50,108,229,.5);color:var(--api);}
+.btn-play:hover,.btn-play.active{background:rgba(50,108,229,.3);border-color:var(--api);}
+.btn-reset{background:rgba(255,255,255,.04);border-color:var(--bd);color:var(--mid);}
+.btn-reset:hover{background:rgba(255,255,255,.08);border-color:var(--mid);color:var(--text);}
+.phase-btns{display:flex;gap:6px;}
+.pbtn{font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:1px;padding:6px 12px;border-radius:4px;border:1px solid;cursor:pointer;transition:all .2s;opacity:.5;}
+.pbtn:hover{opacity:.85;}
+.pbtn.active{opacity:1;}
+.pb1{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.4);color:var(--p1);}
+.pb2{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.4);color:var(--p2);}
+.pb3{background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.4);color:var(--p3);}
+.pb4{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.4);color:var(--p4);}
+
+/* ── DIAGRAM WRAPPER ── */
+.diag-wrap{position:relative;overflow-x:auto;margin-bottom:20px;}
+.diag{position:relative;min-width:900px;}
+
+/* ── PARTICIPANTS ROW ── */
+.participants{display:flex;justify-content:space-between;padding:0 24px;margin-bottom:0;position:sticky;top:0;z-index:20;background:var(--bg);padding-top:4px;padding-bottom:4px;}
+.participant{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.p-icon{width:48px;height:48px;border-radius:10px;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .3s;position:relative;z-index:1;}
+.p-icon.pulse{animation:pulse .5s ease;}
+@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.15);}100%{transform:scale(1);}}
+.p-name{font-family:'Share Tech Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-align:center;}
+.p-role{font-family:'Barlow',sans-serif;font-size:8px;color:var(--mid);text-align:center;}
+
+.pu{border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.08);color:var(--user);}
+.pk{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.08);color:var(--kctl);}
+.pa{border-color:rgba(50,108,229,.5);background:rgba(50,108,229,.12);color:#6090ff;}
+.pe{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);color:var(--etcd);}
+.ps{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.08);color:var(--sch);}
+.pk2{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08);color:var(--kube);}
+.pc{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08);color:var(--crt);}
+
+/* ── LIFELINE AREA ── */
+.lifeline-area{position:relative;padding:0 24px;}
+.lifelines{display:flex;justify-content:space-between;position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;padding:0 24px;}
+.lifeline{flex:1;display:flex;justify-content:center;}
+.lifeline-line{width:1px;background:var(--dim);height:100%;opacity:.5;}
+
+/* ── STEPS ── */
+.steps{position:relative;padding:8px 0;}
+
+/* Phase header */
+.phase-hdr{display:flex;align-items:center;gap:10px;padding:10px 16px;margin:14px 0 4px;border-radius:6px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .3s;opacity:.35;}
+.phase-hdr.visible{opacity:1;}
+.ph1{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.2);color:var(--p1);}
+.ph2{background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.2);color:var(--p2);}
+.ph3{background:rgba(20,184,166,.06);border-color:rgba(20,184,166,.2);color:var(--p3);}
+.ph4{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2);color:var(--p4);}
+.ph-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ph1 .ph-dot{background:var(--p1);} .ph2 .ph-dot{background:var(--p2);}
+.ph3 .ph-dot{background:var(--p3);} .ph4 .ph-dot{background:var(--p4);}
+
+/* Step row */
+.step{display:flex;align-items:center;position:relative;min-height:44px;padding:4px 0;opacity:0;transform:translateY(4px);transition:opacity .4s ease,transform .4s ease;}
+.step.visible{opacity:1;transform:translateY(0);}
+.step.highlight .arrow-line{filter:drop-shadow(0 0 4px currentColor);}
+
+/* Arrow line SVG container */
+.arrow-svg{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;overflow:visible;}
+
+/* Message label */
+.msg-label{position:absolute;z-index:5;background:var(--s1);border:1px solid;border-radius:4px;padding:3px 9px;font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.3px;white-space:nowrap;cursor:pointer;transition:all .2s;}
+.msg-label:hover{z-index:10;transform:scale(1.04);}
+.msg-label .detail{display:none;position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 6px);background:var(--s1);border:1px solid;border-radius:6px;padding:8px 11px;font-size:9px;font-family:'Barlow',sans-serif;font-weight:400;color:var(--text);line-height:1.6;z-index:100;width:240px;text-align:left;white-space:normal;letter-spacing:0;box-shadow:0 8px 32px rgba(0,0,0,.6);}
+.msg-label:hover .detail{display:block;}
+
+/* Alt/Opt box */
+.alt-box{border:1px solid;border-radius:6px;padding:8px 12px;margin:6px 0;position:relative;transition:all .3s;opacity:0;}
+.alt-box.visible{opacity:1;}
+.alt-box.success{border-color:rgba(16,185,129,.25);background:rgba(16,185,129,.04);}
+.alt-box.failure{border-color:rgba(248,113,113,.2);background:rgba(248,113,113,.03);}
+.alt-box.opt{border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.03);}
+.alt-label{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-bottom:6px;display:inline-block;}
+.alt-box.success .alt-label{background:rgba(16,185,129,.15);color:var(--sch);}
+.alt-box.failure .alt-label{background:rgba(248,113,113,.12);color:var(--crt);}
+.alt-box.opt .alt-label{background:rgba(245,158,11,.12);color:var(--etcd);}
+
+/* Status bar */
+.status-bar{text-align:center;margin-bottom:16px;height:24px;}
+.status-txt{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:3px;background:rgba(50,108,229,.1);border:1px solid rgba(50,108,229,.2);color:#6090ff;display:inline-block;}
+
+/* ── INFO PANEL ── */
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.info-card{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:14px;border-top:2px solid;}
+.ic1{border-top-color:var(--p1);} .ic2{border-top-color:var(--p2);}
+.ic3{border-top-color:var(--p3);} .ic4{border-top-color:var(--p4);}
+.ic-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.ic1 .ic-title{color:var(--p1);} .ic2 .ic-title{color:var(--p2);}
+.ic3 .ic-title{color:var(--p3);} .ic4 .ic-title{color:var(--p4);}
+.ic-items{display:flex;flex-direction:column;gap:4px;}
+.ic-item{font-size:10px;color:var(--mid);display:flex;align-items:baseline;gap:5px;line-height:1.5;}
+.ic-item::before{content:'›';color:var(--dim);flex-shrink:0;}
+.ic-item b{color:var(--text);}
+.ic-item code{font-family:'Share Tech Mono',monospace;font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--etcd);}
+
+/* Trap cards */
+.traps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.trap-card{background:var(--s1);border:1px solid rgba(248,113,113,.15);border-radius:6px;padding:12px;}
+.trap-card::before{content:'⚡ ';color:var(--crt);}
+.trap-card{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.trap-card b{color:var(--text);}
+.trap-card code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--etcd);}
+
+@keyframes fi{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fi .4s ease both;}
+.page>*:nth-child(1){animation-delay:.05s} .page>*:nth-child(2){animation-delay:.10s}
+.page>*:nth-child(3){animation-delay:.14s} .page>*:nth-child(4){animation-delay:.18s}
+.page>*:nth-child(5){animation-delay:.22s} .page>*:nth-child(6){animation-delay:.26s}
+
+.footer{text-align:center;margin-top:28px;padding-top:14px;border-top:1px solid var(--bd);}
+.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<div class="header">
+  <h1><span class="h-top">K8s DEPLOYMENT</span><br><span class="h-bot">FLOW</span></h1>
+  <p>// kubectl apply → pod running · 4 phases · interactive sequence diagram</p>
+</div>
+
+<div class="controls">
+  <button class="btn btn-play" id="btnPlay" onclick="playAll()">▶ PLAY ALL</button>
+  <button class="btn btn-reset" onclick="resetAll()">↺ RESET</button>
+  <div class="phase-btns">
+    <button class="pbtn pb1" onclick="jumpToPhase(1)">Phase 1</button>
+    <button class="pbtn pb2" onclick="jumpToPhase(2)">Phase 2</button>
+    <button class="pbtn pb3" onclick="jumpToPhase(3)">Phase 3</button>
+    <button class="pbtn pb4" onclick="jumpToPhase(4)">Phase 4</button>
+  </div>
+</div>
+
+<div class="status-bar"><span class="status-txt" id="statusTxt">Click ▶ PLAY ALL or jump to a phase</span></div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--                  SEQUENCE DIAGRAM                       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="diag-wrap">
+<div class="diag" id="diag">
+
+<!-- PARTICIPANTS -->
+<div class="participants" id="participants">
+  <div class="participant" id="part-user">
+    <div class="p-icon pu" id="pi-user">👤</div>
+    <div class="p-name" style="color:var(--user);">User</div>
+    <div class="p-role">developer</div>
+  </div>
+  <div class="participant" id="part-kubectl">
+    <div class="p-icon pk" id="pi-kubectl">🔧</div>
+    <div class="p-name" style="color:var(--kctl);">kubectl</div>
+    <div class="p-role">CLI</div>
+  </div>
+  <div class="participant" id="part-api">
+    <div class="p-icon pa" id="pi-api">🎮</div>
+    <div class="p-name" style="color:#6090ff;">API Server</div>
+    <div class="p-role">control plane</div>
+  </div>
+  <div class="participant" id="part-etcd">
+    <div class="p-icon pe" id="pi-etcd">💾</div>
+    <div class="p-name" style="color:var(--etcd);">etcd</div>
+    <div class="p-role">state store</div>
+  </div>
+  <div class="participant" id="part-sched">
+    <div class="p-icon ps" id="pi-sched">🧩</div>
+    <div class="p-name" style="color:var(--sch);">Scheduler</div>
+    <div class="p-role">control plane</div>
+  </div>
+  <div class="participant" id="part-kubelet">
+    <div class="p-icon pk2" id="pi-kubelet">🤖</div>
+    <div class="p-name" style="color:var(--kube);">Kubelet</div>
+    <div class="p-role">node agent</div>
+  </div>
+  <div class="participant" id="part-crt">
+    <div class="p-icon pc" id="pi-crt">🐳</div>
+    <div class="p-name" style="color:var(--crt);">Container RT</div>
+    <div class="p-role">containerd/runc</div>
+  </div>
+</div>
+
+<!-- LIFELINE + STEPS AREA -->
+<div class="lifeline-area" id="lifelineArea">
+  <div class="lifelines" id="lifelines"></div>
+  <div class="steps" id="steps"></div>
+</div>
+
+</div><!-- /diag -->
+</div><!-- /diag-wrap -->
+
+<!-- ═══════════════════════════════ INFO CARDS ═══════════════ -->
+<div class="info-grid">
+  <div class="info-card ic1">
+    <div class="ic-title"><span>①</span> Auth & Validation</div>
+    <div class="ic-items">
+      <div class="ic-item"><b>kubectl</b> runs local schema validation before sending</div>
+      <div class="ic-item">API Server runs <b>admission chain</b>: authn → authz → mutating webhooks → validating webhooks</div>
+      <div class="ic-item">etcd stores <b>desired state</b> only after admission passes</div>
+      <div class="ic-item">Response is <b>202 Accepted</b> — not 200 OK — because reconciliation is async</div>
+      <div class="ic-item">resourceVersion in etcd prevents <b>concurrent write conflicts</b></div>
+    </div>
+  </div>
+  <div class="info-card ic2">
+    <div class="ic-title"><span>②</span> Control Plane</div>
+    <div class="ic-items">
+      <div class="ic-item">Scheduler <b>watches</b> API Server via informer cache — not etcd directly</div>
+      <div class="ic-item">Scoring phases: <b>Filter</b> (removes unfit nodes) → <b>Score</b> (ranks survivors)</div>
+      <div class="ic-item">Filter plugins: NodeAffinity, Taints/Tolerations, ResourceFit, PodTopologySpread</div>
+      <div class="ic-item">Score plugins: LeastAllocated, ImageLocality, InterPodAffinity</div>
+      <div class="ic-item">Binding writes <code>spec.nodeName</code> to API Server (updates etcd)</div>
+    </div>
+  </div>
+  <div class="info-card ic3">
+    <div class="ic-title"><span>③</span> Node Ops</div>
+    <div class="ic-items">
+      <div class="ic-item">Kubelet <b>watches</b> its own node's pods via informer — triggered by <code>nodeName</code> binding</div>
+      <div class="ic-item">Validates: <b>securityContext</b>, volume mounts, resource limits</div>
+      <div class="ic-item">Calls containerd CRI gRPC → containerd → containerd-shim → <b>runc</b></div>
+      <div class="ic-item">Image pull uses <code>imagePullSecrets</code> → kubelet authenticates to registry</div>
+      <div class="ic-item">Sets up <b>cgroups</b> (limits) + <b>CNI</b> (networking) + <b>CSI</b> (volumes)</div>
+    </div>
+  </div>
+  <div class="info-card ic4">
+    <div class="ic-title"><span>④</span> Readiness</div>
+    <div class="ic-items">
+      <div class="ic-item"><b>livenessProbe</b> failure → container restart (does not affect Endpoints)</div>
+      <div class="ic-item"><b>readinessProbe</b> failure → removed from EndpointSlice → no traffic</div>
+      <div class="ic-item"><b>startupProbe</b> disables liveness/readiness until startup succeeds</div>
+      <div class="ic-item">Pod status <code>Running</code> ≠ pod <code>Ready</code> — readiness gates determine traffic</div>
+      <div class="ic-item"><code>minReadySeconds</code> on Deployment: pod must be ready for N seconds before counted</div>
+    </div>
+  </div>
+</div>
+
+<div class="traps">
+  <div class="trap-card"><b>202 ≠ deployed.</b> <code>kubectl apply</code> returning success means the API Server accepted the manifest. The pod may not exist yet — reconciliation is async. Use <code>kubectl rollout status</code> to wait.</div>
+  <div class="trap-card"><b>Scheduler watches API Server, not etcd.</b> All control plane components communicate through API Server only. Direct etcd access is reserved for API Server itself. Controllers use informer caches.</div>
+  <div class="trap-card"><b>Image pull happens on the node.</b> If your cluster nodes can't reach the registry (air-gapped, no egress), image pull fails with <code>ErrImagePull</code> → <code>ImagePullBackOff</code>. Pre-pull images or use a mirror.</div>
+  <div class="trap-card"><b>Running ≠ Ready.</b> A pod in <code>Running</code> phase with a failing readinessProbe has <code>Ready: False</code> and is <b>not</b> in the Service EndpointSlice. Traffic is not sent to it.</div>
+  <div class="trap-card"><b>kubelet watches its node's pods only.</b> kubelet doesn't see pods assigned to other nodes. Each kubelet watches a filtered list: <code>spec.nodeName=&lt;itself&gt;</code>.</div>
+  <div class="trap-card"><b>OOMKill is not ImagePullBackOff.</b> Both restart containers. OOMKill exit code = 137. ImagePullBackOff stays in <code>Waiting</code> state — never reaches <code>Running</code>. Check <code>kubectl describe pod</code> → Events.</div>
+</div>
+
+<div class="footer">
+  <div class="ft">K8s Deployment Sequence · kubectl apply → pod running · hover arrows for detail</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ─── CONFIGURATION ──────────────────────────────────────
+// participant indices: 0=User, 1=kubectl, 2=API, 3=etcd, 4=Sched, 5=Kubelet, 6=CRT
+const PARTS = ['user','kubectl','api','etcd','sched','kubelet','crt'];
+const COLORS = {
+  user:'#f472b6', kubectl:'#a78bfa', api:'#326CE5',
+  etcd:'#f59e0b', sched:'#10b981', kubelet:'#22d3ee', crt:'#f87171'
+};
+
+// Step definitions
+// type: 'arrow' | 'phase' | 'alt' | 'opt' | 'step-in-alt'
+const STEPS = [
+  // Phase 1
+  {type:'phase', phase:1, text:'Phase 1 — User Authentication & Validation'},
+  {type:'arrow', from:0, to:1, ret:false, color:'user',
+    label:'kubectl apply -f manifest.yaml',
+    detail:'kubectl validates manifest locally against OpenAPI schema before sending. Dry-run validation happens client-side.'},
+  {type:'arrow', from:1, to:2, ret:false, color:'kubectl',
+    label:'Authenticate & submit manifest',
+    detail:'API Server runs full admission chain: Authentication → Authorization (RBAC) → Mutating Admission Webhooks → Object Schema Validation → Validating Admission Webhooks.'},
+  {type:'arrow', from:2, to:3, ret:false, color:'api',
+    label:'Validate & check resource version',
+    detail:'etcd uses optimistic concurrency — resourceVersion field prevents lost-update race conditions when multiple writers modify the same object simultaneously.'},
+  {type:'arrow', from:3, to:2, ret:true, color:'etcd',
+    label:'Confirm no conflicts, store desired state',
+    detail:'etcd writes the desired state (spec). The status subresource is managed separately by controllers. etcd only stores what you declared — not what is running.'},
+  {type:'arrow', from:2, to:1, ret:true, color:'api',
+    label:'202 Accepted',
+    detail:'202 Accepted (not 200 OK) signals that the request was accepted for async processing. Reconciliation loops will make it real — kubectl does not wait.'},
+  {type:'arrow', from:1, to:0, ret:true, color:'kubectl',
+    label:'"deployment.apps/example created"',
+    detail:'This message means API Server accepted the object. The Deployment controller will soon create ReplicaSets and Pods — but not yet.'},
+
+  // Phase 2
+  {type:'phase', phase:2, text:'Phase 2 — Control Plane Processing'},
+  {type:'arrow', from:2, to:4, ret:false, color:'api',
+    label:'Notify of unscheduled pod(s)',
+    detail:'Scheduler watches API Server via an informer/reflector cache — it gets notified when a pod appears with spec.nodeName="" (unscheduled). It never reads etcd directly.'},
+  {type:'arrow', from:4, to:4, ret:false, color:'sched', selfLoop:true,
+    label:'Evaluate: capacity, taints, affinity',
+    detail:'Filter phase removes ineligible nodes. Score phase ranks survivors: LeastAllocated (bin-pack), ImageLocality (prefer nodes that already have the image), InterPodAffinity, TopologySpread.'},
+  {type:'arrow', from:4, to:2, ret:false, color:'sched',
+    label:'Binding decision → node selected',
+    detail:'Scheduler writes a Binding object to API Server. This patches spec.nodeName on the pod. That write triggers kubelet on the target node via its own informer watch.'},
+  {type:'arrow', from:2, to:3, ret:false, color:'api',
+    label:'Update pod spec with node assignment',
+    detail:'API Server persists the binding to etcd. The pod object now has spec.nodeName set. Kubelet on that node will pick it up on its next sync cycle (typically sub-second).'},
+
+  // Phase 3
+  {type:'phase', phase:3, text:'Phase 3 — Node Operations'},
+  {type:'arrow', from:2, to:5, ret:false, color:'api',
+    label:'Assign pod to node (via watch)',
+    detail:'Kubelet runs a reconciliation loop watching for pods where spec.nodeName matches its own node name. The binding triggers this watch — no polling required.'},
+  {type:'arrow', from:5, to:5, ret:false, color:'kubelet', selfLoop:true,
+    label:'Validate pod security context',
+    detail:'Kubelet checks: securityContext constraints, volume mount paths, resource limit validity, and whether the node can satisfy the resource request before proceeding.'},
+  {type:'arrow', from:5, to:6, ret:false, color:'kubelet',
+    label:'Pull image(s) with auth',
+    detail:'Kubelet calls containerd via CRI gRPC RunPodSandbox/PullImage. containerd delegates to containerd-shim → runc. imagePullSecrets provide registry credentials.'},
+  {type:'alt', altType:'success', label:'alt: Image Pull Successful'},
+  {type:'step-in-alt', altType:'success',
+    arrow:{from:6, to:5, ret:true, color:'crt', label:"Image(s) pulled successfully",
+    detail:'containerd verifies image digest against the registry manifest. Layers are stored in the content store. Subsequent pulls of the same digest skip re-download.'}},
+  {type:'step-in-alt', altType:'success',
+    arrow:{from:5, to:6, ret:false, color:'kubelet', label:"Start container(s)",
+    detail:'containerd creates the container spec (OCI config.json), sets up cgroups via runc, creates network namespace, calls CNI plugin to assign pod IP, mounts volumes.'}},
+  {type:'step-in-alt', altType:'success',
+    arrow:{from:5, to:5, ret:false, color:'kubelet', selfLoop:true, label:"Configure pod networking & volumes",
+    detail:'CNI plugin assigns pod IP from node CIDR. CSI driver mounts PVCs. ConfigMaps/Secrets mounted as files or env vars. All before container process starts.'}},
+  {type:'step-in-alt', altType:'success',
+    arrow:{from:6, to:5, ret:true, color:'crt', label:"Container(s) running",
+    detail:'containerd reports container state as RUNNING. Kubelet starts probe goroutines (liveness, readiness, startup) and updates pod status.'}},
+  {type:'step-in-alt', altType:'success',
+    arrow:{from:5, to:2, ret:true, color:'kubelet', label:"Update pod status → Running",
+    detail:'Kubelet patches the pod status subresource. Running phase + Ready condition set. EndpointSlice controller picks up Ready=True and adds pod IP to EndpointSlice → traffic flows.'}},
+  {type:'alt', altType:'failure', label:'else: Image Pull Failure'},
+  {type:'step-in-alt', altType:'failure',
+    arrow:{from:6, to:5, ret:true, color:'crt', label:"Image pull failed (401/404)",
+    detail:'401 = authentication failed (check imagePullSecrets). 404 = image tag does not exist. 429 = rate limited (Docker Hub). The error appears in pod Events and container state.'}},
+  {type:'step-in-alt', altType:'failure',
+    arrow:{from:5, to:2, ret:true, color:'kubelet', label:"Log error, apply backoff, retry",
+    detail:'ErrImagePull becomes ImagePullBackOff after 3 attempts. Backoff doubles: 10s → 20s → 40s → ... → 300s cap. No restart — pod stays in Waiting state until pull succeeds.'}},
+  {type:'alt-end'},
+
+  // Phase 4
+  {type:'phase', phase:4, text:'Phase 4 — Readiness & Availability'},
+  {type:'arrow', from:2, to:0, ret:true, color:'api',
+    label:'Deployment status (kubectl get pods)',
+    detail:'API Server serves pod status from informer cache. kubectl get pods shows Running/ContainerCreating/etc. Use kubectl rollout status deploy/name to wait for full availability.'},
+  {type:'opt', label:'opt: Readiness Checks (if readinessProbe configured)'},
+  {type:'step-in-alt', altType:'opt',
+    arrow:{from:5, to:6, ret:false, color:'kubelet', label:"Execute readiness probe",
+    detail:'Kubelet runs the probe: HTTP GET (checks response code 200-399), TCP socket (checks if port is open), or exec (checks exit code 0). Runs every periodSeconds.'}},
+  {type:'step-in-alt', altType:'opt',
+    arrow:{from:6, to:5, ret:true, color:'crt', label:"Container is ready",
+    detail:'Probe returns success. Kubelet sets the Ready condition to True. EndpointSlice controller adds this pod IP to the Service EndpointSlice. kube-proxy programs iptables rules.'}},
+  {type:'step-in-alt', altType:'opt',
+    arrow:{from:5, to:2, ret:true, color:'kubelet', label:"Update pod ready condition",
+    detail:'Kubelet patches status.conditions[type=Ready].status = True. Pod now receives traffic via Service. Any subsequent readinessProbe failure removes it from EndpointSlice immediately.'}},
+  {type:'alt-end'},
+];
+
+// ─── STATE ───────────────────────────────────────────────
+let currentStep = -1;
+let playing = false;
+let playTimer = null;
+
+// ─── BUILD LIFELINES ─────────────────────────────────────
+function buildLifelines() {
+  const ll = document.getElementById('lifelines');
+  ll.innerHTML = '';
+  PARTS.forEach(() => {
+    const d = document.createElement('div');
+    d.className = 'lifeline';
+    const l = document.createElement('div');
+    l.className = 'lifeline-line';
+    d.appendChild(l);
+    ll.appendChild(d);
+  });
+}
+
+// ─── GET PARTICIPANT X POSITION (percent) ────────────────
+function getPartX(idx) {
+  // 7 participants evenly spaced
+  return (idx / 6) * 100;
+}
+
+// ─── BUILD STEPS DOM ─────────────────────────────────────
+function buildSteps() {
+  const container = document.getElementById('steps');
+  container.innerHTML = '';
+  let altStack = [];
+
+  STEPS.forEach((s, i) => {
+    if (s.type === 'phase') {
+      const div = document.createElement('div');
+      div.className = `phase-hdr ph${s.phase}`;
+      div.id = `step-${i}`;
+      div.innerHTML = `<div class="ph-dot"></div>${s.text}`;
+      container.appendChild(div);
+
+    } else if (s.type === 'arrow') {
+      container.appendChild(makeArrowRow(s, i));
+
+    } else if (s.type === 'alt' || s.type === 'opt') {
+      const box = document.createElement('div');
+      const t = s.altType || (s.type === 'opt' ? 'opt' : 'success');
+      box.className = `alt-box ${t}`;
+      box.id = `step-${i}`;
+      const lbl = document.createElement('div');
+      lbl.className = 'alt-label';
+      lbl.textContent = s.label;
+      box.appendChild(lbl);
+      const inner = document.createElement('div');
+      inner.className = 'alt-inner';
+      inner.id = `alt-inner-${i}`;
+      box.appendChild(inner);
+      container.appendChild(box);
+      altStack.push({boxEl: box, innerEl: inner, idx: i});
+
+    } else if (s.type === 'step-in-alt') {
+      const current = altStack[altStack.length - 1];
+      if (current) {
+        const row = makeArrowRow(s.arrow, i);
+        current.innerEl.appendChild(row);
+      }
+
+    } else if (s.type === 'alt-end') {
+      altStack.pop();
+    }
+  });
+}
+
+function makeArrowRow(s, i) {
+  const row = document.createElement('div');
+  row.className = 'step';
+  row.id = `step-${i}`;
+  row.style.position = 'relative';
+  row.style.height = '44px';
+
+  const fromPct = getPartX(s.from);
+  const toPct   = getPartX(s.to);
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'arrow-svg');
+  svg.style.cssText = 'position:absolute;left:0;right:0;top:0;bottom:0;width:100%;height:100%;overflow:visible;';
+  svg.setAttribute('preserveAspectRatio', 'none');
+
+  const color = COLORS[s.color] || '#888';
+  const isDashed = s.ret;
+  const isSelf = s.selfLoop;
+
+  if (isSelf) {
+    // Self-loop arrow
+    const cx = `${fromPct}%`;
+    const path = document.createElementNS(svgNS, 'path');
+    const r = 18;
+    path.setAttribute('d', `M ${cx} 22 C calc(${cx} + 40px) 8, calc(${cx} + 40px) 36, ${cx} 22`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('opacity', '0.7');
+    if (isDashed) path.setAttribute('stroke-dasharray', '5 3');
+    // arrowhead
+    const mk = document.createElementNS(svgNS, 'marker');
+    const mid = `mk-${i}`;
+    mk.setAttribute('id', mid); mk.setAttribute('markerWidth','6'); mk.setAttribute('markerHeight','6');
+    mk.setAttribute('refX','5'); mk.setAttribute('refY','3'); mk.setAttribute('orient','auto');
+    const mp = document.createElementNS(svgNS, 'path');
+    mp.setAttribute('d','M0,1 L5,3 L0,5 Z'); mp.setAttribute('fill', color);
+    mk.appendChild(mp);
+    const defs = document.createElementNS(svgNS, 'defs');
+    defs.appendChild(mk);
+    svg.appendChild(defs);
+    path.setAttribute('marker-end', `url(#${mid})`);
+    svg.appendChild(path);
+  } else {
+    const defs = document.createElementNS(svgNS, 'defs');
+    const mkId = `mk-${i}`;
+    const mk = document.createElementNS(svgNS, 'marker');
+    mk.setAttribute('id', mkId); mk.setAttribute('markerWidth','7'); mk.setAttribute('markerHeight','7');
+    mk.setAttribute('refX','6'); mk.setAttribute('refY','3.5'); mk.setAttribute('orient','auto');
+    const mp = document.createElementNS(svgNS, 'path');
+    mp.setAttribute('d','M0,1 L6,3.5 L0,6 Z'); mp.setAttribute('fill', color);
+    mk.appendChild(mp); defs.appendChild(mk); svg.appendChild(defs);
+
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('class', 'arrow-line');
+    const y = '50%';
+    line.setAttribute('x1', `${fromPct}%`); line.setAttribute('y1', y);
+    line.setAttribute('x2', `${toPct}%`);   line.setAttribute('y2', y);
+    line.setAttribute('stroke', color); line.setAttribute('stroke-width', '1.8');
+    line.setAttribute('opacity', '0.75');
+    if (isDashed) line.setAttribute('stroke-dasharray', '6 3');
+    line.setAttribute('marker-end', `url(#${mkId})`);
+    svg.appendChild(line);
+  }
+
+  row.appendChild(svg);
+
+  // Label
+  const lbl = document.createElement('div');
+  lbl.className = 'msg-label';
+  const midPct = s.selfLoop ? fromPct + 3 : (fromPct + toPct) / 2;
+  lbl.style.cssText = `left:calc(${midPct}% - 90px);top:${s.selfLoop ? '2px' : '8px'};border-color:${color}33;color:${color};`;
+  lbl.textContent = s.label;
+
+  if (s.detail) {
+    const detail = document.createElement('div');
+    detail.className = 'detail';
+    detail.style.cssText = `border-color:${color}44;`;
+    detail.textContent = s.detail;
+    lbl.appendChild(detail);
+  }
+  row.appendChild(lbl);
+  return row;
+}
+
+// ─── REVEAL STEP ─────────────────────────────────────────
+function revealStep(i) {
+  const el = document.getElementById(`step-${i}`);
+  if (!el) return;
+  el.classList.add('visible');
+
+  const s = STEPS[i];
+  // pulse participants
+  if (s.type === 'arrow' && !s.selfLoop) {
+    pulseParticipant(s.from);
+    setTimeout(() => pulseParticipant(s.to), 250);
+  }
+  if (s.type === 'step-in-alt' && s.arrow) {
+    pulseParticipant(s.arrow.from);
+    setTimeout(() => pulseParticipant(s.arrow.to), 250);
+  }
+}
+
+function pulseParticipant(idx) {
+  const id = `pi-${PARTS[idx]}`;
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('pulse');
+  void el.offsetWidth;
+  el.classList.add('pulse');
+}
+
+// ─── PLAY ─────────────────────────────────────────────────
+function playAll() {
+  if (playing) { stopPlay(); return; }
+  playing = true;
+  document.getElementById('btnPlay').textContent = '⏸ PAUSE';
+  document.getElementById('btnPlay').classList.add('active');
+  runNext();
+}
+
+function runNext() {
+  if (!playing) return;
+  currentStep++;
+  if (currentStep >= STEPS.length) { stopPlay(); setStatus('✓ Complete — hover arrows for detail'); return; }
+  revealStep(currentStep);
+  updateStatus(currentStep);
+  const delay = STEPS[currentStep].type === 'phase' ? 600 :
+                STEPS[currentStep].type === 'alt' || STEPS[currentStep].type === 'opt' ? 400 : 700;
+  playTimer = setTimeout(runNext, delay);
+}
+
+function stopPlay() {
+  playing = false;
+  clearTimeout(playTimer);
+  document.getElementById('btnPlay').textContent = '▶ PLAY ALL';
+  document.getElementById('btnPlay').classList.remove('active');
+}
+
+function resetAll() {
+  stopPlay();
+  currentStep = -1;
+  document.querySelectorAll('.step,.phase-hdr,.alt-box').forEach(el => {
+    el.classList.remove('visible','highlight');
+  });
+  setStatus('Click ▶ PLAY ALL or jump to a phase');
+  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+}
+
+function jumpToPhase(ph) {
+  stopPlay();
+  resetAll();
+  // reveal all steps up to and including this phase
+  const phaseIdx = STEPS.findIndex(s => s.type === 'phase' && s.phase === ph);
+  const nextPhaseIdx = STEPS.findIndex((s,i) => i > phaseIdx && s.type === 'phase');
+  const end = nextPhaseIdx === -1 ? STEPS.length : nextPhaseIdx;
+  for (let i = 0; i < end; i++) {
+    revealStep(i);
+  }
+  currentStep = end - 1;
+  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.pb${ph}`).classList.add('active');
+  setStatus(`Phase ${ph} revealed — click ▶ to continue`);
+}
+
+function setStatus(txt) {
+  document.getElementById('statusTxt').textContent = txt;
+}
+
+const STEP_LABELS = {
+  'phase': (s) => `Phase ${s.phase}`,
+  'arrow': (s) => s.label,
+  'step-in-alt': (s) => s.arrow?.label,
+  'alt': (s) => s.label,
+  'opt': (s) => s.label,
+};
+function updateStatus(i) {
+  const s = STEPS[i];
+  const fn = STEP_LABELS[s.type];
+  const txt = fn ? fn(s) : '...';
+  setStatus(txt || '...');
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+buildLifelines();
+buildSteps();
+
+// Set lifeline area height dynamically
+window.addEventListener('load', () => {
+  const stepsEl = document.getElementById('steps');
+  document.getElementById('lifelineArea').style.minHeight = stepsEl.offsetHeight + 'px';
+});
+</script>
+</body>
+</html>

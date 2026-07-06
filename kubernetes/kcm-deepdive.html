@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kube-controller-manager — Vicious Deep Dive</title>
+<link href="../assets/fonts/font-set-2.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #04060a;
+  --s0: #070b10;
+  --s1: #0a0f17;
+  --s2: #0f1520;
+  --bd: #162030;
+  --b2: #1e2e42;
+  /* primary accent: electric teal-lime — the "current" flowing through loops */
+  --acc: #00ffc8;
+  --acc2: #00d4a8;
+  /* secondary: warm amber for controllers */
+  --amb: #ffb000;
+  --amb2: #ff8c00;
+  /* informer sky */
+  --sky: #38bdf8;
+  /* etcd purple */
+  --pur: #a855f7;
+  /* error red */
+  --red: #ff3d5a;
+  /* node green */
+  --grn: #22d47a;
+  /* work queue gold */
+  --gld: #ffd700;
+  --text: #dce8f0;
+  --dim: #4a6278;
+  --mid: #7a97ae;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:12px;
+  line-height:1.5;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(0,255,200,0.07) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 10% 60%, rgba(255,176,0,0.04) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 25% at 90% 80%, rgba(168,85,247,0.04) 0%,transparent 45%),
+    repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(0,255,200,0.012) 50px),
+    repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(0,255,200,0.012) 50px);
+  pointer-events:none;
+}
+.page{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:36px 22px 64px;}
+
+/* ── HEADER ── */
+.header{margin-bottom:40px;padding-bottom:22px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-end;}
+.hl h1{font-size:70px;font-weight:800;letter-spacing:-1px;line-height:.95;text-transform:uppercase;background:linear-gradient(120deg, var(--acc) 0%, #fff 35%, var(--amb) 75%, var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hl .sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:6px;}
+.hstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.hstat{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;}
+.hstat-n{font-size:28px;font-weight:800;color:var(--acc);line-height:1;}
+.hstat-l{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+
+/* ── SECTION ── */
+.sl{font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:2px;margin:0 0 14px;display:flex;align-items:center;gap:14px;}
+.sl::after{content:'';flex:1;height:1px;}
+.sl span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;font-weight:400;text-transform:none;}
+.sa{color:var(--acc);} .sa::after{background:linear-gradient(90deg,rgba(0,255,200,.3),transparent);}
+.sb{color:var(--amb);} .sb::after{background:linear-gradient(90deg,rgba(255,176,0,.3),transparent);}
+.sc{color:var(--sky);} .sc::after{background:linear-gradient(90deg,rgba(56,189,248,.3),transparent);}
+.sd{color:var(--pur);} .sd::after{background:linear-gradient(90deg,rgba(168,85,247,.3),transparent);}
+.se{color:var(--red);} .se::after{background:linear-gradient(90deg,rgba(255,61,90,.3),transparent);}
+.sf{color:var(--grn);} .sf::after{background:linear-gradient(90deg,rgba(34,212,122,.3),transparent);}
+.sg{color:var(--gld);} .sg::after{background:linear-gradient(90deg,rgba(255,215,0,.3),transparent);}
+.mb{margin-bottom:20px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:14px;margin-bottom:14px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.card .glow{position:absolute;top:-20px;left:-20px;width:80px;height:80px;border-radius:50%;opacity:.1;filter:blur(24px);pointer-events:none;}
+.ca::before{background:linear-gradient(90deg,var(--acc),transparent);}
+.cb::before{background:linear-gradient(90deg,var(--amb),transparent);}
+.cc::before{background:linear-gradient(90deg,var(--sky),transparent);}
+.cd::before{background:linear-gradient(90deg,var(--pur),transparent);}
+.ce::before{background:linear-gradient(90deg,var(--red),transparent);}
+.cf::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--gld),transparent);}
+.cx::before{background:linear-gradient(90deg,var(--acc),var(--amb));}
+
+/* card header */
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd);}
+.ci{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.ca .ci{background:rgba(0,255,200,0.1);}
+.cb .ci{background:rgba(255,176,0,0.1);}
+.cc .ci{background:rgba(56,189,248,0.1);}
+.cd .ci{background:rgba(168,85,247,0.1);}
+.ce .ci{background:rgba(255,61,90,0.1);}
+.cf .ci{background:rgba(34,212,122,0.1);}
+.cg .ci{background:rgba(255,215,0,0.1);}
+.cx .ci{background:linear-gradient(135deg,rgba(0,255,200,0.1),rgba(255,176,0,0.1));}
+.ct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.ca .ct{color:var(--acc);} .cb .ct{color:var(--amb);} .cc .ct{color:var(--sky);}
+.cd .ct{color:var(--pur);} .ce .ct{color:var(--red);} .cf .ct{color:var(--grn);}
+.cg .ct{color:var(--gld);}
+.cx .ct{background:linear-gradient(90deg,var(--acc),var(--amb));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.csub{font-size:9px;color:var(--dim);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+
+/* fact rows */
+.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);align-items:baseline;font-size:11px;}
+.fk{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.ca .fk{color:rgba(0,255,200,.65);} .cb .fk{color:rgba(255,176,0,.65);}
+.cc .fk{color:rgba(56,189,248,.65);} .cd .fk{color:rgba(168,85,247,.65);}
+.ce .fk{color:rgba(255,61,90,.65);} .cf .fk{color:rgba(34,212,122,.65);}
+.cg .fk{color:rgba(255,215,0,.65);} .cx .fk{color:rgba(0,255,200,.55);}
+.fv{color:var(--mid);line-height:1.55;}
+.fv b,.fv strong{color:var(--text);font-weight:600;}
+.fv code{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:3px;color:var(--acc);}
+
+/* callout */
+.cal{padding:8px 11px;font-size:10.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 5px 5px 0;line-height:1.65;}
+.cal b,.cal strong{color:var(--text);}
+.ca .cal{background:rgba(0,255,200,0.04);border-color:var(--acc);}
+.cb .cal{background:rgba(255,176,0,0.04);border-color:var(--amb);}
+.cc .cal{background:rgba(56,189,248,0.04);border-color:var(--sky);}
+.cd .cal{background:rgba(168,85,247,0.04);border-color:var(--pur);}
+.ce .cal{background:rgba(255,61,90,0.04);border-color:var(--red);}
+.cf .cal{background:rgba(34,212,122,0.04);border-color:var(--grn);}
+.cg .cal{background:rgba(255,215,0,0.04);border-color:var(--gld);}
+.cx .cal{background:rgba(0,255,200,0.03);border-color:var(--sky);}
+
+/* code */
+.code{background:#030508;border:1px solid var(--bd);border-radius:6px;padding:11px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.9;color:var(--dim);margin-top:8px;overflow-x:auto;}
+.code .kw{color:#c084fc;} .code .fn{color:var(--grn);} .code .st{color:var(--amb);}
+.code .cm{color:#1f2f3f;} .code .ky{color:var(--acc);} .code .va{color:#fb923c);}
+.code .va{color:#fb923c;} .code .re{color:var(--red);} .code .nu{color:#f472b6;}
+
+/* trap */
+.trap{background:rgba(255,61,90,0.05);border:1px solid rgba(255,61,90,0.2);border-radius:6px;padding:9px 12px;font-size:10.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ GOTCHA — ';font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;color:var(--red);letter-spacing:1px;}
+.trap b{color:var(--text);}
+
+/* pills */
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.pill{padding:3px 9px;border-radius:20px;font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:1px solid;font-family:'JetBrains Mono',monospace;}
+.pa{border-color:rgba(0,255,200,.35);color:var(--acc);background:rgba(0,255,200,.06);}
+.pb{border-color:rgba(255,176,0,.35);color:var(--amb);background:rgba(255,176,0,.06);}
+.pc{border-color:rgba(56,189,248,.35);color:var(--sky);background:rgba(56,189,248,.06);}
+.pd{border-color:rgba(168,85,247,.35);color:var(--pur);background:rgba(168,85,247,.06);}
+.pe{border-color:rgba(255,61,90,.35);color:var(--red);background:rgba(255,61,90,.06);}
+.pf{border-color:rgba(34,212,122,.35);color:var(--grn);background:rgba(34,212,122,.06);}
+.pg{border-color:rgba(255,215,0,.35);color:var(--gld);background:rgba(255,215,0,.06);}
+
+/* flow wrap */
+.fw{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;margin-bottom:20px;position:relative;overflow:hidden;}
+.fw .ftag{position:absolute;top:14px;right:16px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;}
+.tls{display:grid;grid-template-columns:22px 1fr;gap:10px;position:relative;}
+.tls:not(:last-child) .tlv::after{content:'';position:absolute;left:10px;top:22px;bottom:-4px;width:1px;background:linear-gradient(180deg,var(--bd),transparent);}
+.tlv{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
+.tlc{width:20px;height:20px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'JetBrains Mono',monospace;font-weight:700;flex-shrink:0;}
+.tlb{padding:2px 0 12px;}
+.tlt{font-weight:700;font-size:11px;margin-bottom:2px;}
+.tld{font-size:10.5px;color:var(--mid);line-height:1.5;}
+.tld b{color:var(--text);}
+.tld code{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--acc);}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+.st th{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.good{color:var(--grn)!important;} .warn{color:var(--amb)!important;} .bad{color:var(--red)!important;}
+.st td code{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px;color:var(--acc);}
+
+/* ctrl badge */
+.cbadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;border:1px solid;}
+.bga{border-color:rgba(0,255,200,.3);color:var(--acc);background:rgba(0,255,200,.06);}
+.bgb{border-color:rgba(255,176,0,.3);color:var(--amb);background:rgba(255,176,0,.06);}
+.bgc{border-color:rgba(56,189,248,.3);color:var(--sky);background:rgba(56,189,248,.06);}
+.bgd{border-color:rgba(168,85,247,.3);color:var(--pur);background:rgba(168,85,247,.06);}
+.bge{border-color:rgba(255,61,90,.3);color:var(--red);background:rgba(255,61,90,.06);}
+.bgf{border-color:rgba(34,212,122,.3);color:var(--grn);background:rgba(34,212,122,.06);}
+.bgg{border-color:rgba(255,215,0,.3);color:var(--gld);background:rgba(255,215,0,.06);}
+
+/* controller deep-dive card */
+.dc{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:14px;margin-top:10px;}
+.dc-title{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+
+/* animations */
+@keyframes fadein{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fadein .45s ease both;}
+.page>*:nth-child(1){animation-delay:.00s} .page>*:nth-child(2){animation-delay:.05s}
+.page>*:nth-child(3){animation-delay:.10s} .page>*:nth-child(4){animation-delay:.14s}
+.page>*:nth-child(5){animation-delay:.18s} .page>*:nth-child(6){animation-delay:.22s}
+.page>*:nth-child(7){animation-delay:.26s} .page>*:nth-child(8){animation-delay:.30s}
+.page>*:nth-child(9){animation-delay:.34s} .page>*:nth-child(10){animation-delay:.38s}
+.page>*:nth-child(11){animation-delay:.42s} .page>*:nth-child(12){animation-delay:.46s}
+.page>*:nth-child(13){animation-delay:.50s} .page>*:nth-child(14){animation-delay:.54s}
+
+.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="hl">
+    <h1>kube-controller<br>-manager</h1>
+    <div class="sub">// vicious deep dive · every controller · every loop · every trap</div>
+  </div>
+  <div class="hstats">
+    <div class="hstat"><div class="hstat-n">1</div><div class="hstat-l">process, N controllers</div></div>
+    <div class="hstat"><div class="hstat-n">30+</div><div class="hstat-l">embedded controllers</div></div>
+    <div class="hstat"><div class="hstat-n">1</div><div class="hstat-l">leader at a time</div></div>
+    <div class="hstat"><div class="hstat-n">∞</div><div class="hstat-l">reconcile loops</div></div>
+  </div>
+</div>
+
+<!-- ══ 1. THE BINARY ══ -->
+<div class="sl sa mb">The Binary — What It Is <span>// one process, all control loops, one leader</span></div>
+
+<div class="g32">
+  <div class="card ca">
+    <div class="glow" style="background:var(--acc)"></div>
+    <div class="ch"><div class="ci">⚙️</div><div><div class="ct">kube-controller-manager anatomy</div><div class="csub">single binary embedding every control loop</div></div></div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">A single Go binary that <b>runs all core controllers</b> as goroutines inside one process. Not separate processes. All share the same leader election.</span></div>
+    <div class="fr"><span class="fk">Where it runs</span><span class="fv">Static pod on each control-plane node (manifest in <code>/etc/kubernetes/manifests/</code>). Managed by kubelet directly, not by itself.</span></div>
+    <div class="fr"><span class="fk">API surface</span><span class="fv">Only communicates with <b>kube-apiserver</b>. Never touches etcd directly. Never talks to kubelets or other nodes.</span></div>
+    <div class="fr"><span class="fk">Startup sequence</span><span class="fv">1. Parse flags 2. Build kubeconfig 3. Create shared informer factory 4. Try to acquire leader Lease 5. On win: start all controller goroutines 6. Start informers 7. Wait for cache sync</span></div>
+    <div class="fr"><span class="fk">Leader election</span><span class="fv"><b>Single leader for the whole binary.</b> Lease object in <code>kube-system</code> namespace. All controllers inside start/stop together. There is no per-controller leader.</span></div>
+    <div class="fr"><span class="fk">cloud-ctrl-mgr</span><span class="fv">Cloud-specific controllers (Node lifecycle for cloud, LoadBalancer provisioning, Route management) were <b>extracted</b> into a separate <code>cloud-controller-manager</code> binary with its own leader election.</span></div>
+    <div class="trap"><b>Common interview trap:</b> "Can different controllers have different leaders?" NO. The entire kube-controller-manager binary has one Lease. All 30+ controllers inside it start and stop as a unit.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card cd">
+      <div class="glow" style="background:var(--pur)"></div>
+      <div class="ch"><div class="ci">🔐</div><div><div class="ct">Leader Election — Lease Object</div><div class="csub">how HA control-plane stays sane</div></div></div>
+      <div class="fr"><span class="fk">Mechanism</span><span class="fv">Candidates compete to PATCH a <b>Lease</b> object (<code>leases.coordination.k8s.io</code>) in <code>kube-system</code>. Atomicity guaranteed by apiserver + etcd MVCC.</span></div>
+      <div class="fr"><span class="fk">Lease fields</span><span class="fv"><code>holderIdentity</code>: who holds it. <code>leaseDurationSeconds</code>: 15s default. <code>renewTime</code>: leader heartbeats. <code>acquireTime</code>: when acquired.</span></div>
+      <div class="fr"><span class="fk">Renewal</span><span class="fv">Leader renews every <code>leaseDuration/2</code> (~7s). If leader dies, Lease expires. Other candidates detect stale <code>renewTime</code> → attempt takeover.</span></div>
+      <div class="fr"><span class="fk">Failover time</span><span class="fv">Worst case: <code>leaseDurationSeconds</code> (15s) + <code>retryPeriod</code> (~2s). New leader active within ~17s of leader death.</span></div>
+      <div class="code">
+<span class="cm"># Check who is current leader</span>
+kubectl <span class="fn">get</span> lease kube-controller-manager \
+  -n kube-system -o json \
+  | jq <span class="st">'{holder: .spec.holderIdentity, renew: .spec.renewTime}'</span>
+      </div>
+    </div>
+    <div class="card ca">
+      <div class="glow" style="background:var(--acc)"></div>
+      <div class="ch"><div class="ci">🔧</div><div><div class="ct">Key Startup Flags</div><div class="csub">what actually controls behavior</div></div></div>
+      <div class="fr"><span class="fk">--controllers</span><span class="fv"><code>*</code> = all. <code>-bootstrapsigner</code> to disable one. <code>deployment,replicaset</code> for explicit allowlist. Use this to disable specific controllers.</span></div>
+      <div class="fr"><span class="fk">--concurrent-*</span><span class="fv"><code>--concurrent-deployment-syncs=5</code> (default 5). Goroutines per controller for parallel reconciles. Tune up for large clusters.</span></div>
+      <div class="fr"><span class="fk">--sync-period</span><span class="fv">Full resync interval. Default 10m–1h per controller. Even without events, cache resyncs → re-queues all objects. Catches drift.</span></div>
+      <div class="fr"><span class="fk">--leader-elect</span><span class="fv">Must be <code>true</code> for multi-master HA. Default <code>true</code>. Set false only for single-master dev clusters.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 2. MASTER ARCHITECTURE DIAGRAM ══ -->
+<div class="sl sa mb">Internal Architecture <span>// shared factory → informers → controllers → work queues</span></div>
+
+<div class="fw">
+  <div class="ftag">KUBE-CONTROLLER-MANAGER INTERNALS</div>
+  <svg viewBox="0 0 1320 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;">
+    <defs>
+      <marker id="ma" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(0,255,200,0.7)"/></marker>
+      <marker id="mb" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(255,176,0,0.7)"/></marker>
+      <marker id="mc" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(56,189,248,0.7)"/></marker>
+      <marker id="md" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(255,61,90,0.7)"/></marker>
+      <filter id="neon"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glow2"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <!-- gradients -->
+      <linearGradient id="gacc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00ffc8" stop-opacity=".18"/><stop offset="100%" stop-color="#00ffc8" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="gamb" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffb000" stop-opacity=".18"/><stop offset="100%" stop-color="#ffb000" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="gsky" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#38bdf8" stop-opacity=".15"/><stop offset="100%" stop-color="#38bdf8" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="gpur" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#a855f7" stop-opacity=".18"/><stop offset="100%" stop-color="#a855f7" stop-opacity=".04"/></linearGradient>
+    </defs>
+
+    <!-- apiserver (external) -->
+    <g transform="translate(10,180)">
+      <rect width="130" height="160" rx="8" fill="url(#gacc)" stroke="#00ffc8" stroke-width="1.5" filter="url(#neon)"/>
+      <text x="65" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ffc8" font-weight="700">kube-</text>
+      <text x="65" y="36" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ffc8" font-weight="700">apiserver</text>
+      <text x="65" y="58" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.35)">REST + Watch</text>
+      <text x="65" y="76" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.35)">single source</text>
+      <text x="65" y="90" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.35)">of truth</text>
+      <text x="65" y="110" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.4)">← etcd behind</text>
+      <text x="65" y="125" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.4)">admission pipeline</text>
+      <text x="65" y="140" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.4)">RBAC checks</text>
+    </g>
+
+    <!-- LIST+WATCH arrow -->
+    <line x1="140" y1="250" x2="188" y2="250" stroke="rgba(0,255,200,0.6)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ma)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="0.9s" repeatCount="indefinite"/></line>
+    <text x="145" y="244" font-family="JetBrains Mono" font-size="8" fill="rgba(0,255,200,0.4)">List+Watch</text>
+
+    <!-- write back arrow -->
+    <path d="M 188 262 L 165 262 L 165 290 L 140 290" fill="none" stroke="rgba(255,176,0,0.5)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#mb)"><animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.2s" repeatCount="indefinite"/></path>
+    <text x="145" y="306" font-family="JetBrains Mono" font-size="8" fill="rgba(255,176,0,0.45)">write back</text>
+
+    <!-- kube-controller-manager outer box -->
+    <rect x="186" y="10" width="1120" height="500" rx="10" fill="rgba(0,255,200,0.02)" stroke="rgba(0,255,200,0.1)" stroke-width="1.5"/>
+    <text x="746" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(0,255,200,0.25)" letter-spacing="4">KUBE-CONTROLLER-MANAGER PROCESS</text>
+
+    <!-- Shared Informer Factory -->
+    <g transform="translate(200,40)">
+      <rect width="340" height="220" rx="8" fill="url(#gsky)" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="170" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#38bdf8" font-weight="700">SharedInformerFactory</text>
+      <text x="170" y="36" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,255,255,0.3)">ONE List+Watch per resource type · ONE cache · shared by all controllers</text>
+
+      <!-- informers inside factory -->
+      <g transform="translate(10,46)">
+        <rect x="0"   y="0" width="152" height="28" rx="4" fill="rgba(56,189,248,0.1)" stroke="rgba(56,189,248,0.3)" stroke-width="1"/>
+        <text x="76"  y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#38bdf8">Pods Informer</text>
+
+        <rect x="160" y="0" width="162" height="28" rx="4" fill="rgba(56,189,248,0.1)" stroke="rgba(56,189,248,0.3)" stroke-width="1"/>
+        <text x="241" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#38bdf8">Deployments Informer</text>
+
+        <rect x="0"   y="36" width="152" height="28" rx="4" fill="rgba(56,189,248,0.07)" stroke="rgba(56,189,248,0.2)" stroke-width="1"/>
+        <text x="76"  y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.8)">ReplicaSets Informer</text>
+
+        <rect x="160" y="36" width="162" height="28" rx="4" fill="rgba(56,189,248,0.07)" stroke="rgba(56,189,248,0.2)" stroke-width="1"/>
+        <text x="241" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.8)">Nodes Informer</text>
+
+        <rect x="0"   y="72" width="152" height="28" rx="4" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
+        <text x="76"  y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.7)">PVCs Informer</text>
+
+        <rect x="160" y="72" width="162" height="28" rx="4" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
+        <text x="241" y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.7)">ServiceAccounts Informer</text>
+
+        <rect x="0"   y="108" width="152" height="28" rx="4" fill="rgba(56,189,248,0.04)" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
+        <text x="76"  y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.6)">Jobs / CronJobs Info.</text>
+
+        <rect x="160" y="108" width="162" height="28" rx="4" fill="rgba(56,189,248,0.04)" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
+        <text x="241" y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.6)">ResourceQuota Info.</text>
+
+        <text x="161" y="152" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">each: DeltaFIFO → thread-safe Store → event handlers</text>
+        <text x="161" y="165" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">controllers register handlers → enqueue key to own work queue</text>
+      </g>
+    </g>
+
+    <!-- CONTROLLERS column 1 -->
+    <g transform="translate(562,40)">
+      <rect width="196" height="460" rx="8" fill="url(#gamb)" stroke="#ffb000" stroke-width="1.2"/>
+      <text x="98" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ffb000" font-weight="700" letter-spacing="2">WORKLOAD CTRL</text>
+
+      <!-- controller items -->
+      <g>
+        <rect x="8" y="30" width="180" height="36" rx="5" fill="rgba(255,176,0,0.12)" stroke="#ffb000" stroke-width="1.2"/>
+        <text x="98" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#ffb000" font-weight="700">Deployment</text>
+        <text x="98" y="59" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.4)">watches: Deployments, ReplicaSets</text>
+
+        <rect x="8" y="74" width="180" height="36" rx="5" fill="rgba(255,176,0,0.09)" stroke="rgba(255,176,0,0.4)" stroke-width="1"/>
+        <text x="98" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#ffb000" font-weight="700">ReplicaSet</text>
+        <text x="98" y="103" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.4)">watches: ReplicaSets, Pods</text>
+
+        <rect x="8" y="118" width="180" height="36" rx="5" fill="rgba(255,176,0,0.07)" stroke="rgba(255,176,0,0.3)" stroke-width="1"/>
+        <text x="98" y="133" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.85)">StatefulSet</text>
+        <text x="98" y="147" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.35)">watches: StatefulSets, Pods, PVCs</text>
+
+        <rect x="8" y="162" width="180" height="36" rx="5" fill="rgba(255,176,0,0.07)" stroke="rgba(255,176,0,0.3)" stroke-width="1"/>
+        <text x="98" y="177" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.85)">DaemonSet</text>
+        <text x="98" y="191" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.35)">watches: DaemonSets, Pods, Nodes</text>
+
+        <rect x="8" y="206" width="180" height="36" rx="5" fill="rgba(255,176,0,0.05)" stroke="rgba(255,176,0,0.22)" stroke-width="1"/>
+        <text x="98" y="221" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.75)">Job</text>
+        <text x="98" y="235" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.3)">watches: Jobs, Pods</text>
+
+        <rect x="8" y="250" width="180" height="36" rx="5" fill="rgba(255,176,0,0.05)" stroke="rgba(255,176,0,0.22)" stroke-width="1"/>
+        <text x="98" y="265" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.75)">CronJob</text>
+        <text x="98" y="279" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.3)">watches: CronJobs, Jobs</text>
+
+        <rect x="8" y="294" width="180" height="36" rx="5" fill="rgba(255,176,0,0.04)" stroke="rgba(255,176,0,0.18)" stroke-width="1"/>
+        <text x="98" y="309" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.65)">ReplicationController</text>
+        <text x="98" y="323" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">legacy — prefer RS</text>
+      </g>
+
+      <text x="98" y="360" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.3)">each has own work queue</text>
+      <text x="98" y="374" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.3)">+ N worker goroutines</text>
+      <text x="98" y="388" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.3)">default: 5 concurrent syncs</text>
+    </g>
+
+    <!-- CONTROLLERS column 2 -->
+    <g transform="translate(772,40)">
+      <rect width="196" height="460" rx="8" fill="rgba(34,212,122,0.04)" stroke="#22d47a" stroke-width="1.2"/>
+      <text x="98" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#22d47a" font-weight="700" letter-spacing="2">INFRA CTRL</text>
+
+      <rect x="8" y="30" width="180" height="36" rx="5" fill="rgba(34,212,122,0.1)" stroke="#22d47a" stroke-width="1.2"/>
+      <text x="98" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#22d47a" font-weight="700">NodeLifecycle</text>
+      <text x="98" y="59" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.4)">taints, eviction, conditions</text>
+
+      <rect x="8" y="74" width="180" height="36" rx="5" fill="rgba(34,212,122,0.07)" stroke="rgba(34,212,122,0.35)" stroke-width="1"/>
+      <text x="98" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.9)">EndpointSlice</text>
+      <text x="98" y="103" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.35)">watches: Services, Pods</text>
+
+      <rect x="8" y="118" width="180" height="36" rx="5" fill="rgba(34,212,122,0.05)" stroke="rgba(34,212,122,0.25)" stroke-width="1"/>
+      <text x="98" y="133" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.8)">ServiceAccount Token</text>
+      <text x="98" y="147" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.3)">auto-mount tokens</text>
+
+      <rect x="8" y="162" width="180" height="36" rx="5" fill="rgba(34,212,122,0.05)" stroke="rgba(34,212,122,0.2)" stroke-width="1"/>
+      <text x="98" y="177" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.75)">Namespace</text>
+      <text x="98" y="191" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.28)">cleanup on deletion</text>
+
+      <rect x="8" y="206" width="180" height="36" rx="5" fill="rgba(34,212,122,0.04)" stroke="rgba(34,212,122,0.18)" stroke-width="1"/>
+      <text x="98" y="221" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.7)">PersistentVolume</text>
+      <text x="98" y="235" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">bind PVC → PV</text>
+
+      <rect x="8" y="250" width="180" height="36" rx="5" fill="rgba(34,212,122,0.04)" stroke="rgba(34,212,122,0.15)" stroke-width="1"/>
+      <text x="98" y="265" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.65)">GarbageCollector</text>
+      <text x="98" y="279" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.22)">ownerRef cascade GC</text>
+
+      <rect x="8" y="294" width="180" height="36" rx="5" fill="rgba(34,212,122,0.04)" stroke="rgba(34,212,122,0.13)" stroke-width="1"/>
+      <text x="98" y="309" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.6)">ResourceQuota</text>
+      <text x="98" y="323" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.2)">usage tracking</text>
+
+      <rect x="8" y="338" width="180" height="36" rx="5" fill="rgba(34,212,122,0.03)" stroke="rgba(34,212,122,0.1)" stroke-width="1"/>
+      <text x="98" y="353" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.55)">HPA</text>
+      <text x="98" y="367" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.18)">scale based on metrics</text>
+
+      <rect x="8" y="382" width="180" height="36" rx="5" fill="rgba(34,212,122,0.03)" stroke="rgba(34,212,122,0.1)" stroke-width="1"/>
+      <text x="98" y="397" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.5)">Node</text>
+      <text x="98" y="411" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.15)">node object lifecycle</text>
+    </g>
+
+    <!-- CONTROLLERS column 3 -->
+    <g transform="translate(980,40)">
+      <rect width="180" height="460" rx="8" fill="rgba(168,85,247,0.04)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+      <text x="90" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#a855f7" font-weight="700" letter-spacing="2">POLICY CTRL</text>
+
+      <rect x="8" y="30" width="164" height="32" rx="4" fill="rgba(168,85,247,0.08)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
+      <text x="90" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#a855f7">TokenCleaner</text>
+
+      <rect x="8" y="70" width="164" height="32" rx="4" fill="rgba(168,85,247,0.06)" stroke="rgba(168,85,247,0.22)" stroke-width="1"/>
+      <text x="90" y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.8)">BootstrapSigner</text>
+
+      <rect x="8" y="110" width="164" height="32" rx="4" fill="rgba(168,85,247,0.05)" stroke="rgba(168,85,247,0.18)" stroke-width="1"/>
+      <text x="90" y="130" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.75)">CertificateApprover</text>
+
+      <rect x="8" y="150" width="164" height="32" rx="4" fill="rgba(168,85,247,0.04)" stroke="rgba(168,85,247,0.15)" stroke-width="1"/>
+      <text x="90" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.7)">CertificateSigner</text>
+
+      <rect x="8" y="190" width="164" height="32" rx="4" fill="rgba(168,85,247,0.04)" stroke="rgba(168,85,247,0.13)" stroke-width="1"/>
+      <text x="90" y="210" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.65)">CertificateCleaner</text>
+
+      <rect x="8" y="230" width="164" height="32" rx="4" fill="rgba(168,85,247,0.03)" stroke="rgba(168,85,247,0.1)" stroke-width="1"/>
+      <text x="90" y="250" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.6)">PodDisruptionBudget</text>
+
+      <rect x="8" y="270" width="164" height="32" rx="4" fill="rgba(168,85,247,0.03)" stroke="rgba(168,85,247,0.1)" stroke-width="1"/>
+      <text x="90" y="290" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.55)">TTLAfterFinished</text>
+
+      <rect x="8" y="310" width="164" height="32" rx="4" fill="rgba(168,85,247,0.03)" stroke="rgba(168,85,247,0.08)" stroke-width="1"/>
+      <text x="90" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.5)">EphemeralVolume</text>
+
+      <rect x="8" y="350" width="164" height="32" rx="4" fill="rgba(168,85,247,0.02)" stroke="rgba(168,85,247,0.07)" stroke-width="1"/>
+      <text x="90" y="370" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.45)">LegacySA Cleanup</text>
+
+      <rect x="8" y="390" width="164" height="32" rx="4" fill="rgba(168,85,247,0.02)" stroke="rgba(168,85,247,0.06)" stroke-width="1"/>
+      <text x="90" y="410" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.4)">StorageVersionMigrator</text>
+    </g>
+
+    <!-- arrows factory → controller columns -->
+    <line x1="540" y1="150" x2="562" y2="150" stroke="rgba(56,189,248,0.5)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#mc)"><animate attributeName="stroke-dashoffset" from="14" to="0" dur="1s" repeatCount="indefinite"/></line>
+    <line x1="540" y1="200" x2="772" y2="200" stroke="rgba(56,189,248,0.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#mc)"/>
+    <line x1="540" y1="250" x2="980" y2="250" stroke="rgba(56,189,248,0.25)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#mc)"/>
+
+    <!-- work queue annotation -->
+    <text x="760" y="488" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,176,0,0.35)" letter-spacing="2">EACH CONTROLLER HAS ITS OWN WORK QUEUE + N GOROUTINES — THEY NEVER SHARE QUEUES</text>
+  </svg>
+</div>
+
+<!-- ══ 3. SHARED INFORMER FACTORY ══ -->
+<div class="sl sc mb">SharedInformerFactory — The Nerve System <span>// one watch per resource type, shared by all</span></div>
+
+<div class="g23">
+  <div class="card cc">
+    <div class="glow" style="background:var(--sky)"></div>
+    <div class="ch"><div class="ci">📡</div><div><div class="ct">Why SharedInformerFactory Exists</div><div class="csub">solving the N×M watch problem</div></div></div>
+    <div class="fr"><span class="fk">The problem</span><span class="fv">Without sharing: Deployment ctrl watches Pods, ReplicaSet ctrl watches Pods, GC ctrl watches Pods… = <b>N watches for the same resource</b>. N×load on apiserver.</span></div>
+    <div class="fr"><span class="fk">The solution</span><span class="fv"><b>One informer per (resource, namespace) pair.</b> All controllers that need Pods get the <b>same Pods informer</b>. One List+Watch to apiserver.</span></div>
+    <div class="fr"><span class="fk">Factory pattern</span><span class="fv"><code>factory.Apps().V1().Deployments().Informer()</code> — first caller creates. Subsequent calls return same instance. Go sync.Once guarantees.</span></div>
+    <div class="fr"><span class="fk">Cache sync</span><span class="fv">At startup, controllers must call <code>cache.WaitForCacheSync()</code> before processing events. <b>Acting on a stale/empty cache causes phantom reconciles and incorrect deletes.</b></span></div>
+    <div class="fr"><span class="fk">Resync</span><span class="fv">Full List resync every <code>resyncPeriod</code>. Re-fires all OnUpdate handlers with current state even without real changes. Forces periodic reconcile of all objects — catches drift.</span></div>
+    <div class="fr"><span class="fk">Event handlers</span><span class="fv">Each controller registers <code>AddEventHandler()</code> on the informer. Multiple controllers can register on the same informer. Handlers just enqueue the object key — fast.</span></div>
+    <div class="code">
+<span class="cm">// Factory setup (once at startup)</span>
+factory := informers.<span class="fn">NewSharedInformerFactory</span>(client, resyncPeriod)
+
+<span class="cm">// Each controller gets SAME informer instance:</span>
+podInformer    := factory.Core().V1().<span class="fn">Pods</span>().<span class="fn">Informer</span>()
+deployInformer := factory.Apps().V1().<span class="fn">Deployments</span>().<span class="fn">Informer</span>()
+
+<span class="cm">// Deployment controller registers on BOTH:</span>
+deployInformer.<span class="fn">AddEventHandler</span>(cache.ResourceEventHandlerFuncs{
+  AddFunc:    ctrl.<span class="fn">enqueue</span>,
+  UpdateFunc: <span class="kw">func</span>(old, new interface{}) { ctrl.<span class="fn">enqueue</span>(new) },
+  DeleteFunc: ctrl.<span class="fn">enqueue</span>,
+})
+<span class="cm">// ReplicaSet controller also registers on podInformer</span>
+<span class="cm">// → same podInformer, different handler → no extra Watch call</span>
+
+factory.<span class="fn">Start</span>(stopCh)                   <span class="cm">// start all List+Watch</span>
+factory.<span class="fn">WaitForCacheSync</span>(stopCh)        <span class="cm">// BLOCK until all synced</span>
+    </div>
+    <div class="trap"><b>Never read from the apiserver directly inside a reconcile loop.</b> Always read from the informer cache (via Lister). Cache reads are fast O(1) in-memory. API reads add latency + load to apiserver and etcd.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card cc">
+      <div class="glow" style="background:var(--sky)"></div>
+      <div class="ch"><div class="ci">🔑</div><div><div class="ct">Indexers — Fast Lookups</div><div class="csub">how controllers find related objects</div></div></div>
+      <div class="fr"><span class="fk">What they are</span><span class="fv">Custom indexes on the in-memory cache. Pre-compute lookup tables at object add/update time. <b>O(1) lookup instead of O(n) linear scan.</b></span></div>
+      <div class="fr"><span class="fk">NamespaceIndex</span><span class="fv">Built-in. <code>cache.MetaNamespaceKeyFunc</code>. List all pods in a namespace instantly. Used by every controller.</span></div>
+      <div class="fr"><span class="fk">Custom index</span><span class="fv">Example: ReplicaSet ctrl indexes pods by <code>ownerReference.uid</code>. Given RS, find all its pods in O(1). Without index: scan all pods.</span></div>
+      <div class="code">
+<span class="cm">// Custom indexer: pods by owner UID</span>
+podInformer.<span class="fn">AddIndexers</span>(cache.Indexers{
+  <span class="st">"ownerUID"</span>: <span class="kw">func</span>(obj interface{}) ([]string, error) {
+    pod := obj.(*v1.Pod)
+    <span class="kw">var</span> keys []string
+    <span class="kw">for</span> _, ref := <span class="kw">range</span> pod.OwnerReferences {
+      keys = <span class="fn">append</span>(keys, string(ref.UID))
+    }
+    <span class="kw">return</span> keys, <span class="re">nil</span>
+  },
+})
+<span class="cm">// Usage: find all pods owned by this RS</span>
+pods, _ := podInformer.<span class="fn">GetIndexer</span>().<span class="fn">ByIndex</span>(<span class="st">"ownerUID"</span>, rs.UID)
+      </div>
+    </div>
+    <div class="card cg">
+      <div class="glow" style="background:var(--gld)"></div>
+      <div class="ch"><div class="ci">⚡</div><div><div class="ct">Work Queue Deep Dive</div><div class="csub">dedup · rate-limit · retry per controller</div></div></div>
+      <div class="fr"><span class="fk">One per controller</span><span class="fv">Each controller has its <b>own isolated work queue</b>. Failures in one controller's queue don't block others.</span></div>
+      <div class="fr"><span class="fk">Dedup window</span><span class="fv">Object X changes 100× in 1 second → only <b>one reconcile triggered</b>. The queue deduplicates by key. You always get the latest state from cache anyway.</span></div>
+      <div class="fr"><span class="fk">Backoff</span><span class="fv">Failed items go to rate-limited queue: 5ms → 10ms → 20ms… → 1000s max. This caps retry rate. <code>NumRequeues(key)</code> tells you how many times an item has failed.</span></div>
+      <div class="fr"><span class="fk">Drain on shutdown</span><span class="fv">Queue is drained on process shutdown. Inflight items complete. Pending items are dropped — they'll be re-queued when new leader starts and cache resyncs.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 4. WORKLOAD CONTROLLERS DEEP DIVE ══ -->
+<div class="sl sb mb">Workload Controllers — Vicious Detail <span>// every decision tree, every edge case</span></div>
+
+<!-- Deployment Controller -->
+<div class="card cb mb">
+  <div class="glow" style="background:var(--amb)"></div>
+  <div class="ch"><div class="ci">🚀</div><div><div class="ct">Deployment Controller</div><div class="csub">manages rollouts via ReplicaSet orchestration — does NOT touch Pods directly</div></div></div>
+  <div class="g3">
+    <div>
+      <div class="fr"><span class="fk">Watches</span><span class="fv"><b>Deployments</b> (primary), <b>ReplicaSets</b> (owned), <b>Pods</b> (via RS owner ref, to update status only)</span></div>
+      <div class="fr"><span class="fk">Creates</span><span class="fv">ReplicaSets only. <b>Never creates Pods.</b> RS controller creates Pods.</span></div>
+      <div class="fr"><span class="fk">RollingUpdate</span><span class="fv">Creates new RS. Scales new RS up. Scales old RS down. Controlled by <code>maxSurge</code> (extra pods allowed) + <code>maxUnavailable</code> (pods can be down). Interleaved.</span></div>
+      <div class="fr"><span class="fk">Recreate</span><span class="fv">Scale old RS to 0. Wait until all old pods gone. Then scale new RS. <b>Downtime guaranteed.</b></span></div>
+      <div class="fr"><span class="fk">Rollback</span><span class="fv">Old RSes kept with <code>spec.template</code> preserved (up to <code>revisionHistoryLimit</code>). Rollback = scale old RS back up, scale new RS down.</span></div>
+    </div>
+    <div>
+      <div class="fr"><span class="fk">Paused state</span><span class="fv"><code>spec.paused: true</code> → controller does nothing. Use for staged rollouts: pause, do canary testing, resume.</span></div>
+      <div class="fr"><span class="fk">Deadline</span><span class="fv"><code>progressDeadlineSeconds</code> (default 600s). If rollout doesn't make progress in that window, Deployment condition <code>Progressing=False</code>. Does NOT roll back automatically.</span></div>
+      <div class="fr"><span class="fk">RS naming</span><span class="fv"><code>deploy-name-{pod-template-hash}</code>. Hash is deterministic from pod template. Same template = same RS. Why: prevents duplicate RS creation on concurrent writes.</span></div>
+      <div class="fr"><span class="fk">Revision</span><span class="fv"><code>deployment.kubernetes.io/revision</code> annotation on Deployment + RS. Monotonically incrementing. Used for rollback targeting.</span></div>
+    </div>
+    <div>
+      <div class="dc">
+        <div class="dc-title" style="color:var(--amb);">Rolling Update Math</div>
+        <div style="font-size:10.5px;color:var(--mid);line-height:1.9;">
+          replicas=10, maxSurge=25%, maxUnavailable=25%<br>
+          → max pods = 10 + ceil(10×0.25) = <b>13</b><br>
+          → min pods = 10 - floor(10×0.25) = <b>7</b><br>
+          → new RS scales: 0→3→6→8→10<br>
+          → old RS scales: 10→7→4→2→0<br>
+          → at no point &lt;7 or &gt;13 running pods
+        </div>
+      </div>
+      <div class="trap">A Deployment with <b>0 old RSes</b> and a failed rollout is stuck — the progress deadline fires but no auto-rollback occurs. You must <code>kubectl rollout undo</code> manually. Or set up your own alerting on <code>Progressing=False</code>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ReplicaSet + StatefulSet + DaemonSet -->
+<div class="g3">
+  <div class="card cb">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">🔢</div><div><div class="ct">ReplicaSet Controller</div><div class="csub">the actual pod factory</div></div></div>
+    <div class="fr"><span class="fk">Core job</span><span class="fv">Keep <code>len(ownedPods)</code> == <code>spec.replicas</code>. Compare actual vs desired. Create or delete to reach desired count.</span></div>
+    <div class="fr"><span class="fk">Pod ownership</span><span class="fv">Finds pods via <b>label selector</b> + <code>ownerReferences</code>. A pod matching selector but without ownerRef can be <b>adopted</b>. Pods with ownerRef to other RS are not touched.</span></div>
+    <div class="fr"><span class="fk">Scale down choice</span><span class="fv">When deleting, prefers: unscheduled pods first, then pending, then least-recently-started. <b>Not random.</b> Minimizes disruption.</span></div>
+    <div class="fr"><span class="fk">Pod creation burst</span><span class="fv"><code>BurstReplicas=500</code> default. At most 500 pods created per sync. Prevents API flooding on large RS scale-up.</span></div>
+    <div class="fr"><span class="fk">Slow start</span><span class="fv">Pod creation uses <b>slow-start algorithm</b>: create 1, then 2, then 4, then 8… up to BurstReplicas. Avoids sending 500 parallel creation requests at once.</span></div>
+    <div class="trap">RS controller <b>cannot roll out</b>. It only counts pods. All rollout logic lives in the Deployment controller. If you use RS directly, updates don't roll out — they're instantaneous (delete all old, create all new).</div>
+  </div>
+
+  <div class="card cb">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">🗃️</div><div><div class="ct">StatefulSet Controller</div><div class="csub">identity-preserving ordered pods</div></div></div>
+    <div class="fr"><span class="fk">Unique identity</span><span class="fv">Each pod gets: <b>stable name</b> (<code>sts-0</code>, <code>sts-1</code>), <b>stable network identity</b> (headless service), <b>stable storage</b> (PVC persisted across pod reschedule).</span></div>
+    <div class="fr"><span class="fk">Ordered creation</span><span class="fv">Default (<code>OrderedReady</code>): pod N must be <code>Running+Ready</code> before pod N+1 starts. <code>Parallel</code> policy: create all at once (like RS).</span></div>
+    <div class="fr"><span class="fk">Ordered deletion</span><span class="fv">Deletes in <b>reverse order</b>: N-1 before N-2 before … 0. For scale-down. Guarantees graceful shutdown of highest-index first.</span></div>
+    <div class="fr"><span class="fk">PVC lifecycle</span><span class="fv">PVCs <b>NOT deleted when pod is deleted</b>. Survive pod restarts, reschedules. Only deleted if StatefulSet itself is deleted (with cascade) or manually.</span></div>
+    <div class="fr"><span class="fk">Update strategy</span><span class="fv"><code>RollingUpdate</code>: updates highest ordinal first, waits for Ready, then next. <code>OnDelete</code>: only update pod when you manually delete it.</span></div>
+    <div class="trap"><b>PVC orphan trap:</b> delete a StatefulSet without <code>--cascade=foreground</code>. Pods deleted, PVCs remain. A new StatefulSet with same name re-attaches the same PVCs. If you want clean slate, delete PVCs explicitly.</div>
+  </div>
+
+  <div class="card cb">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">👾</div><div><div class="ct">DaemonSet Controller</div><div class="csub">one pod per eligible node, auto-tracking</div></div></div>
+    <div class="fr"><span class="fk">Node tracking</span><span class="fv">Watches <b>both</b> DaemonSet objects AND Node objects. When a node is added → controller reconciles → creates pod on new node within seconds.</span></div>
+    <div class="fr"><span class="fk">Eligibility</span><span class="fv">Node must pass DS <code>nodeSelector</code>, <code>nodeAffinity</code>, and <code>tolerations</code>. DS can tolerate <code>node.kubernetes.io/not-ready</code> — useful for network plugins (CNI must run before anything).</span></div>
+    <div class="fr"><span class="fk">Rolling update</span><span class="fv"><code>maxUnavailable</code> controls how many nodes updated at once. No surges — never creates extra pods. Updates in <b>random node order</b> (unlike StatefulSet which is ordered).</span></div>
+    <div class="fr"><span class="fk">Preemption</span><span class="fv">DaemonSet pods are created with <code>schedulerName: default-scheduler</code> but with node name pre-set, bypassing the scheduler's Filter/Score. They <b>can</b> still be placed on unschedulable nodes.</span></div>
+    <div class="fr"><span class="fk">OnDelete strategy</span><span class="fv">For CNI/network plugins: use <code>OnDelete</code> + manual node drain to control exactly when each node gets the new version. Avoids network disruption.</span></div>
+    <div class="trap">DaemonSet pods on control-plane nodes are <b>blocked by default</b> by the <code>node-role.kubernetes.io/control-plane:NoSchedule</code> taint. To run on control-plane too, add explicit toleration in DS spec.</div>
+  </div>
+</div>
+
+<!-- Job + CronJob -->
+<div class="g2">
+  <div class="card cb">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">⚡</div><div><div class="ct">Job Controller</div><div class="csub">run-to-completion semantics — entirely different from Deployment</div></div></div>
+    <div class="g2">
+      <div>
+        <div class="fr"><span class="fk">Completion tracking</span><span class="fv">Tracks <code>status.succeeded</code> and <code>status.failed</code>. Job done when succeeded == <code>spec.completions</code>.</span></div>
+        <div class="fr"><span class="fk">Parallelism</span><span class="fv"><code>spec.parallelism</code>: how many pods run simultaneously. <code>spec.completions</code>: total successes needed. Indexed jobs: each pod gets a unique index (0…N-1) via env var.</span></div>
+        <div class="fr"><span class="fk">backoffLimit</span><span class="fv">Max pod failures before Job is marked <code>Failed</code>. Default 6. Retries use exponential backoff (10s→20s→40s…). Failed pod kept for log inspection.</span></div>
+        <div class="fr"><span class="fk">activeDeadline</span><span class="fv"><code>activeDeadlineSeconds</code>: wall-clock deadline from Job start. If hit, all running pods terminated. Different from backoffLimit (which is failure count, not time).</span></div>
+      </div>
+      <div>
+        <div class="fr"><span class="fk">Pod failure policy</span><span class="fv">Kubernetes 1.27+: <code>podFailurePolicy</code> lets you specify: exit code X = ignore, exit code Y = FailJob (fast fail without retry). Prevents wasting retries on unrecoverable errors.</span></div>
+        <div class="fr"><span class="fk">Cleanup</span><span class="fv"><code>ttlSecondsAfterFinished</code>: auto-delete Job + pods N seconds after completion. Without it, finished Jobs accumulate forever.</span></div>
+        <div class="fr"><span class="fk">Success policy</span><span class="fv">Indexed job with <code>successPolicy</code>: job succeeds when specific set of indexed pods complete. E.g., only need indexes 0,1,2 to succeed in an MPI job.</span></div>
+        <div class="trap"><b>Job pod restart trap:</b> <code>spec.template.spec.restartPolicy</code> must be <code>Never</code> or <code>OnFailure</code>. <b>Never use <code>Always</code></b> — Job controller and kubelet will fight forever, pod restarts infinitely, Job never completes.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cb">
+    <div class="glow" style="background:var(--amb)"></div>
+    <div class="ch"><div class="ci">🕐</div><div><div class="ct">CronJob Controller</div><div class="csub">schedule → Job objects → pods</div></div></div>
+    <div class="fr"><span class="fk">Mechanism</span><span class="fv">Not event-driven. CronJob controller <b>polls every 10s</b>. Checks if any scheduled time passed since last run. If yes, creates a Job object.</span></div>
+    <div class="fr"><span class="fk">Starting deadline</span><span class="fv"><code>startingDeadlineSeconds</code>: if scheduler was down and missed runs, only catch up runs within this window. Without it: all missed runs are backfilled (can flood with Jobs on restart).</span></div>
+    <div class="fr"><span class="fk">Concurrency policy</span><span class="fv"><code>Allow</code> (default): multiple Jobs can run simultaneously. <code>Forbid</code>: skip if previous still running. <code>Replace</code>: kill previous, start new.</span></div>
+    <div class="fr"><span class="fk">History limits</span><span class="fv"><code>successfulJobsHistoryLimit</code> + <code>failedJobsHistoryLimit</code>. Default 3+1. Old Jobs cleaned up automatically. Set to 0 for ephemeral jobs.</span></div>
+    <div class="fr"><span class="fk">Last schedule</span><span class="fv"><code>status.lastScheduleTime</code> is updated after every successful Job creation. Used to compute next run time. If controller crashes, it reads this on restart to resume.</span></div>
+    <div class="trap">CronJob schedule uses <b>controller-manager's timezone</b> by default (UTC). Kubernetes 1.27+: <code>spec.timeZone: "Asia/Jerusalem"</code> is supported. Before that: all cron times were UTC — burning cause of confusion.</div>
+  </div>
+</div>
+
+<!-- ══ 5. INFRASTRUCTURE CONTROLLERS ══ -->
+<div class="sl sf mb">Infrastructure Controllers — The Hidden Machinery <span>// what runs without you thinking about it</span></div>
+
+<div class="g3">
+  <div class="card cf">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">🌐</div><div><div class="ct">NodeLifecycle Controller</div><div class="csub">detecting node failure + eviction policy</div></div></div>
+    <div class="fr"><span class="fk">Health detection</span><span class="fv">Monitors <code>node.status.conditions[Ready]</code>. Updated by kubelet every <code>nodeStatusUpdatePeriod</code> (10s). If no update for <code>node-monitor-grace-period</code> (40s default) → mark <code>Unknown</code>.</span></div>
+    <div class="fr"><span class="fk">Taint manager</span><span class="fv">NodeLifecycle adds <b>taint-based evictions</b>. Node <code>NotReady</code> → add taint <code>node.kubernetes.io/not-ready:NoExecute</code>. Pods without toleration evicted after <code>tolerationSeconds</code>.</span></div>
+    <div class="fr"><span class="fk">Rate limiting</span><span class="fv"><b>Evictions are rate-limited</b>. If &lt;55% of cluster nodes healthy: evictions <b>stop entirely</b>. Prevents entire cluster wipeout on mass network partition. Zone-aware: if only one zone fails, evictions in that zone also stop.</span></div>
+    <div class="fr"><span class="fk">Eviction timeline</span><span class="fv">Node NotReady → 40s → Unknown → 5min → eviction pod1 → pod2 → ... Rate: 0.1 pods/sec per zone by default.</span></div>
+    <div class="fr"><span class="fk">PodDisruptionBudget</span><span class="fv">NodeLifecycle <b>respects PDB</b> during eviction. Won't evict if doing so would violate minAvailable/maxUnavailable. PDB is checked by the eviction API before deletion.</span></div>
+    <div class="trap">Node <code>Unknown</code> status + pods in <code>Terminating</code> for 5+ minutes = <b>node was forcibly removed without draining.</b> Pods are "stuck terminating" until node is deleted from API or forcibly cleaned: <code>kubectl delete pod --force --grace-period=0</code></div>
+  </div>
+
+  <div class="card cf">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">🔗</div><div><div class="ct">EndpointSlice Controller</div><div class="csub">the glue between Services and running Pods</div></div></div>
+    <div class="fr"><span class="fk">What it does</span><span class="fv">Watches <b>Services</b> and <b>Pods</b>. For each Service, creates/updates <b>EndpointSlice</b> objects listing all Ready Pod IPs + ports that match the Service selector.</span></div>
+    <div class="fr"><span class="fk">Slice sizing</span><span class="fv">Each slice holds max <b>100 endpoints</b> (configurable). Prevents one giant Endpoints object causing huge watch events. For 1000-pod Service: 10 EndpointSlices.</span></div>
+    <div class="fr"><span class="fk">Ready filtering</span><span class="fv">Only pods that are: Running, <code>podReady=True</code>, <b>and</b> not have <code>deletionTimestamp</code> set are added to EndpointSlices. This is why pods drain traffic during termination.</span></div>
+    <div class="fr"><span class="fk">Topology hints</span><span class="fv">Can add topology hints to slices so kube-proxy prefers endpoints in the same zone. Requires <code>TopologyAwareHints</code> feature gate + annotation on Service.</span></div>
+    <div class="fr"><span class="fk">kube-proxy</span><span class="fv">kube-proxy watches EndpointSlices → programs iptables/IPVS rules. Service traffic path: ClusterIP hit → iptables/IPVS rule → one of the pod IPs in EndpointSlice. No DNS involved for ClusterIP routing.</span></div>
+    <div class="trap">Service with <code>spec.selector: {}</code> (empty, not absent) matches <b>no pods</b>. EndpointSlice will be empty. Service with <code>spec.selector</code> absent = headless/manual endpoints. Common typo that breaks traffic.</div>
+  </div>
+
+  <div class="card cf">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">🗑️</div><div><div class="ct">GarbageCollector Controller</div><div class="csub">the cascade delete engine</div></div></div>
+    <div class="fr"><span class="fk">What it does</span><span class="fv">Watches ALL resource types. Builds an <b>in-memory owner graph</b>. Detects orphaned objects (owner gone) and deletes them.</span></div>
+    <div class="fr"><span class="fk">GraphBuilder</span><span class="fv">Separate goroutine maintains a DAG of all objects and their ownerReferences. Updated on every watch event. GC runs against this graph.</span></div>
+    <div class="fr"><span class="fk">Propagation</span><span class="fv"><code>Foreground</code>: set <code>foregroundDeletion</code> finalizer on owner → GC deletes dependents → removes finalizer → owner gone. <code>Background</code>: delete owner → GC asynchronously deletes dependents.</span></div>
+    <div class="fr"><span class="fk">Orphan policy</span><span class="fv"><code>--cascade=orphan</code>: removes <code>ownerReferences</code> from all dependents, then deletes owner. Dependents survive as orphans.</span></div>
+    <div class="fr"><span class="fk">CRD deletion</span><span class="fv">Deleting a CRD triggers GC for all CR instances. GC respects finalizers on CRs. If CRs have finalizers, they block deletion. Common source of stuck namespace deletions.</span></div>
+    <div class="trap"><b>GC is eventually consistent.</b> Delete a Deployment: it's gone from etcd immediately, but RS and Pods may persist for seconds. Don't check "are the pods gone yet" in your CI script — wait with <code>kubectl wait</code>.</div>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="card cf">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">💾</div><div><div class="ct">PersistentVolume Controller</div><div class="csub">binding + provisioning + reclaim</div></div></div>
+    <div class="g2">
+      <div>
+        <div class="fr"><span class="fk">Binding loop</span><span class="fv">Watches <b>PVCs</b> (pending) and <b>PVs</b> (available). Finds best-fit PV for PVC. Best-fit = smallest PV that satisfies <b>access modes</b>, <b>capacity</b>, and <b>storageClass</b>. Binds via mutual references.</span></div>
+        <div class="fr"><span class="fk">Dynamic prov.</span><span class="fv">If no matching PV: calls external provisioner via StorageClass <code>provisioner</code> field. Provisioner creates PV + actual storage. PV controller then binds it to PVC.</span></div>
+        <div class="fr"><span class="fk">Phases</span><span class="fv">PVC: <code>Pending</code> → <code>Bound</code>. PV: <code>Available</code> → <code>Bound</code> → on PVC delete: <code>Released</code> → (reclaim) → <code>Available</code> or deleted.</span></div>
+      </div>
+      <div>
+        <div class="fr"><span class="fk">Reclaim policy</span><span class="fv"><code>Retain</code>: PV goes to Released, <b>data preserved</b>, admin must manually reclaim. <code>Delete</code>: PV + storage deleted. <code>Recycle</code>: deprecated (was <code>rm -rf /mountpath/*</code>).</span></div>
+        <div class="fr"><span class="fk">Pre-binding</span><span class="fv"><code>claimRef</code> on PV pre-binds it to a specific PVC. Useful for StatefulSet storage migration — guarantee a specific PV is used for a specific pod.</span></div>
+        <div class="trap"><b>PVC in Terminating forever:</b> finalizer <code>kubernetes.io/pvc-protection</code> is on all PVCs. Removed only when no pod is actively mounting it. If pod is stuck Terminating, PVC stays Terminating too.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cf">
+    <div class="glow" style="background:var(--grn)"></div>
+    <div class="ch"><div class="ci">📊</div><div><div class="ct">HPA Controller</div><div class="csub">metrics-driven pod count adjustment</div></div></div>
+    <div class="g2">
+      <div>
+        <div class="fr"><span class="fk">Poll interval</span><span class="fv">Fetches metrics every <code>--horizontal-pod-autoscaler-sync-period</code> (default 15s). Not event-driven — purely polling.</span></div>
+        <div class="fr"><span class="fk">Metric sources</span><span class="fv"><b>Resource metrics</b> (CPU/mem via metrics-server), <b>Custom metrics</b> (via custom.metrics.k8s.io), <b>External metrics</b> (via external.metrics.k8s.io e.g. Prometheus adapter, KEDA).</span></div>
+        <div class="fr"><span class="fk">Formula</span><span class="fv"><code>desired = ceil(current × currentMetricValue / targetValue)</code>. Across all pods: <code>currentMetricValue = sum(podMetrics) / count(pods)</code>.</span></div>
+      </div>
+      <div>
+        <div class="fr"><span class="fk">Stabilization</span><span class="fv">Downscale: stabilization window = 300s default. Takes <b>max recommended replicas in window</b>. Prevents flapping. Upscale window: 0s (react immediately).</span></div>
+        <div class="fr"><span class="fk">Unready pods</span><span class="fv">Pods not yet Ready are <b>excluded from metric calculations</b>. Prevents double-scaling while new pods spin up. Called "hot pods".</span></div>
+        <div class="trap"><b>KEDA + native HPA conflict:</b> if you deploy KEDA ScaledObject AND a manual HPA on the same target, they fight over <code>.spec.replicas</code>. KEDA creates/manages its own HPA internally — never add a separate one.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 6. RECONCILE PATTERNS ══ -->
+<div class="sl sa mb">Reconciliation Internals — The Loops <span>// code-level patterns used across all controllers</span></div>
+
+<div class="g32">
+  <div class="card ca">
+    <div class="glow" style="background:var(--acc)"></div>
+    <div class="ch"><div class="ci">🔄</div><div><div class="ct">Full Reconcile Loop Anatomy</div><div class="csub">every controller follows this exact pattern</div></div></div>
+    <div class="code">
+<span class="cm">// ─── GENERIC CONTROLLER PATTERN ───</span>
+<span class="cm">// Step 1: SETUP — informers + work queue (run once at startup)</span>
+<span class="kw">func</span> <span class="fn">NewController</span>(factory SharedInformerFactory) *Controller {
+  c := &Controller{queue: workqueue.<span class="fn">NewRateLimitingQueue</span>(...)}
+
+  <span class="cm">// Register event handlers → just enqueue the key</span>
+  factory.Apps().V1().<span class="fn">Deployments</span>().<span class="fn">Informer</span>().<span class="fn">AddEventHandler</span>(
+    cache.ResourceEventHandlerFuncs{
+      AddFunc:    c.<span class="fn">enqueueDeployment</span>,
+      UpdateFunc: <span class="kw">func</span>(_, new interface{}) { c.<span class="fn">enqueueDeployment</span>(new) },
+      DeleteFunc: c.<span class="fn">enqueueDeployment</span>,    <span class="cm">// enqueue even on delete</span>
+    })
+
+  <span class="cm">// Also watch owned RS — reconcile parent Deployment on child change</span>
+  factory.Apps().V1().<span class="fn">ReplicaSets</span>().<span class="fn">Informer</span>().<span class="fn">AddEventHandler</span>(
+    cache.ResourceEventHandlerFuncs{
+      AddFunc: c.<span class="fn">enqueueOwnerDeployment</span>,   <span class="cm">// walk ownerRef → parent</span>
+      UpdateFunc: <span class="kw">func</span>(_, new interface{}) { c.<span class="fn">enqueueOwnerDeployment</span>(new) },
+      DeleteFunc: c.<span class="fn">enqueueOwnerDeployment</span>,
+    })
+  <span class="kw">return</span> c
+}
+
+<span class="cm">// Step 2: RUN — start N worker goroutines</span>
+<span class="kw">func</span> (c *Controller) <span class="fn">Run</span>(workers int, stopCh &lt;-<span class="kw">chan</span> struct{}) {
+  <span class="cm">// Wait for all informer caches to be populated</span>
+  <span class="kw">if</span> !cache.<span class="fn">WaitForCacheSync</span>(stopCh, c.deployListerSynced, c.rsListerSynced) {
+    <span class="fn">panic</span>(<span class="st">"cache sync failed"</span>)   <span class="cm">// fatal — no point running</span>
+  }
+  <span class="kw">for</span> i := 0; i &lt; workers; i++ {
+    <span class="kw">go</span> wait.<span class="fn">Until</span>(c.<span class="fn">runWorker</span>, time.Second, stopCh)
+  }
+  &lt;-stopCh
+}
+
+<span class="cm">// Step 3: WORKER — pop from queue, reconcile, handle errors</span>
+<span class="kw">func</span> (c *Controller) <span class="fn">runWorker</span>() {
+  <span class="kw">for</span> {
+    key, quit := c.queue.<span class="fn">Get</span>()
+    <span class="kw">if</span> quit { <span class="kw">return</span> }
+    err := c.<span class="fn">syncDeployment</span>(key)
+    <span class="kw">if</span> err != <span class="re">nil</span> {
+      c.queue.<span class="fn">AddRateLimited</span>(key)    <span class="cm">// retry with backoff</span>
+    } <span class="kw">else</span> {
+      c.queue.<span class="fn">Forget</span>(key)            <span class="cm">// success → reset backoff</span>
+    }
+    c.queue.<span class="fn">Done</span>(key)                 <span class="cm">// ALWAYS done, even on error</span>
+  }
+}
+
+<span class="cm">// Step 4: SYNC — the actual reconcile logic</span>
+<span class="kw">func</span> (c *Controller) <span class="fn">syncDeployment</span>(key string) error {
+  ns, name, _ := cache.<span class="fn">SplitMetaNamespaceKey</span>(key)
+
+  <span class="cm">// READ from cache (never from API server)</span>
+  deploy, err := c.deployLister.<span class="fn">Deployments</span>(ns).<span class="fn">Get</span>(name)
+  <span class="kw">if</span> errors.<span class="fn">IsNotFound</span>(err) { <span class="kw">return</span> <span class="re">nil</span> }  <span class="cm">// deleted, OK</span>
+
+  <span class="cm">// GET all owned ReplicaSets (from cache, via label selector)</span>
+  allRS, _ := c.rsLister.<span class="fn">ReplicaSets</span>(ns).<span class="fn">List</span>(labels.<span class="fn">Everything</span>())
+  owned := c.<span class="fn">filterActiveRS</span>(allRS, deploy)
+
+  <span class="cm">// COMPUTE desired state (pure, no side effects)</span>
+  desired := c.<span class="fn">computeDesiredReplicas</span>(deploy, owned)
+
+  <span class="cm">// APPLY — only write what needs to change</span>
+  <span class="kw">return</span> c.<span class="fn">scale</span>(deploy, desired, owned)
+}
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="card ca">
+      <div class="glow" style="background:var(--acc)"></div>
+      <div class="ch"><div class="ci">⚠️</div><div><div class="ct">The 6 Reconcile Invariants</div><div class="csub">rules every correct controller must obey</div></div></div>
+      <div class="tl">
+        <div class="tls">
+          <div class="tlv"><div class="tlc" style="border-color:var(--acc);color:var(--acc);">1</div></div>
+          <div class="tlb"><div class="tlt" style="color:var(--acc);">Idempotency</div><div class="tld">Running reconcile 10× on the same state must produce the same result as running it 1×. Never assume "I ran last time."</div></div>
+        </div>
+        <div class="tls">
+          <div class="tlv"><div class="tlc" style="border-color:var(--acc);color:var(--acc);">2</div></div>
+          <div class="tlb"><div class="tlt" style="color:var(--acc);">Read from cache only</div><div class="tld">All reads inside reconcile use the informer Lister, not the API. Lister reads are O(1) in-memory. API reads are N×RPCs that saturate apiserver.</div></div>
+        </div>
+        <div class="tls">
+          <div class="tlv"><div class="tlc" style="border-color:var(--acc);color:var(--acc);">3</div></div>
+          <div class="tlb"><div class="tlt" style="color:var(--acc);">Status ≠ Spec update</div><div class="tld">Use <code>client.Status().Update()</code> for status changes. Regular <code>Update()</code> won't touch status. <b>Mixing them causes resourceVersion conflicts.</b></div></div>
+        </div>
+        <div class="tls">
+          <div class="tlv"><div class="tlc" style="border-color:var(--amb);color:var(--amb);">4</div></div>
+          <div class="tlb"><div class="tlt" style="color:var(--amb);">Handle 409 Conflict</div><div class="tld">Always wrap writes in <code>RetryOnConflict</code>. Re-fetch object with fresh <code>resourceVersion</code>, recompute, retry. Never ignore conflict errors.</div></div>
+        </div>
+        <div class="tls">
+          <div class="tlv"><div class="tlc" style="border-color:var(--amb);color:var(--amb);">5</div></div>
+          <div class="tlb"><div class="tlt" style="color:var(--amb);">Enqueue owner, not child</div><div class="tld">When a child object (Pod) changes, enqueue the <b>parent owner</b> (ReplicaSet), not the Pod itself. The owner's reconcile loop handles everything.</div></div>
+        </div>
+        <div class="tls">
+          <div class="tlv"><div class="tlc" style="border-color:var(--grn);color:var(--grn);">6</div></div>
+          <div class="tlb"><div class="tlt" style="color:var(--grn);">WaitForCacheSync before acting</div><div class="tld">Start worker goroutines only after ALL required informer caches are synced. Acting on empty cache = deleting objects that actually exist.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card ce">
+      <div class="glow" style="background:var(--red)"></div>
+      <div class="ch"><div class="ci">💣</div><div><div class="ct">Controller-Manager Failure Modes</div><div class="csub">what breaks when this process dies</div></div></div>
+      <div class="fr"><span class="fk">New leader takes 15s</span><span class="fv">During failover: <b>no reconciles happen.</b> Pods crash → not replaced. Nodes fail → no taints applied. Endpoints → stale. Scale events → ignored.</span></div>
+      <div class="fr"><span class="fk">Cache rebuild on start</span><span class="fv">New leader must List all objects. On large clusters (100k objects): List can take 10-30s. Reconciles only start after cache is fully populated.</span></div>
+      <div class="fr"><span class="fk">Work queue lost</span><span class="fv">Work queue is in-memory. Not persisted. On restart: queue is empty. Informer resync (within <code>resyncPeriod</code>) will re-queue everything. Nothing permanently lost.</span></div>
+      <div class="fr"><span class="fk">Split brain danger</span><span class="fv">Two leaders simultaneously (Lease bug, clock skew): both reconcile same objects → duplicate RS creations, conflicting patches. The 409 conflict mechanism partially protects but not fully.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 7. RESOURCE QUOTA + NAMESPACE ══ -->
+<div class="sl sd mb">ResourceQuota + Namespace Controllers <span>// admission enforcement + cleanup</span></div>
+
+<div class="g2">
+  <div class="card cd">
+    <div class="glow" style="background:var(--pur)"></div>
+    <div class="ch"><div class="ci">📏</div><div><div class="ct">ResourceQuota Controller</div><div class="csub">usage tracking — enforcement is in admission, not here</div></div></div>
+    <div class="fr"><span class="fk">Role of controller</span><span class="fv"><b>Computes and updates <code>status.used</code></b> on ResourceQuota objects. It does NOT enforce limits — that's the <code>ResourceQuota</code> admission plugin in apiserver.</span></div>
+    <div class="fr"><span class="fk">What it tracks</span><span class="fv">Counts all resources in namespace matching the quota's scope: pods, services, PVCs, ConfigMaps, Secrets, CPU requests/limits, memory requests/limits, etc.</span></div>
+    <div class="fr"><span class="fk">Scopes</span><span class="fv">Quota can be scoped to: <code>BestEffort</code> / <code>NotBestEffort</code>, <code>Terminating</code> / <code>NotTerminating</code> pods. Allows fine-grained limits per QoS class.</span></div>
+    <div class="fr"><span class="fk">LimitRange</span><span class="fv">Different from ResourceQuota. LimitRange (admission plugin) sets <b>defaults and max/min per container</b>. Quota tracks namespace totals. Both needed for full governance.</span></div>
+    <div class="fr"><span class="fk">Priority classes</span><span class="fv"><code>scopeSelector: matchExpressions: [{operator: In, scopeName: PriorityClassName, values: [high-priority]}]</code> — separate quota for system-critical vs batch workloads.</span></div>
+    <div class="trap">ResourceQuota admission check is <b>not transactional</b>. Two concurrent creates can both pass the quota check, then both succeed, exceeding the limit. The controller then notices overuse and updates status.used — but the objects already exist. This is a known eventual consistency limitation.</div>
+  </div>
+
+  <div class="card cd">
+    <div class="glow" style="background:var(--pur)"></div>
+    <div class="ch"><div class="ci">📁</div><div><div class="ct">Namespace Controller</div><div class="csub">cascade deletion — more complex than it looks</div></div></div>
+    <div class="fr"><span class="fk">What triggers it</span><span class="fv"><code>kubectl delete namespace foo</code> → namespace gets <code>deletionTimestamp</code>. Namespace controller takes over.</span></div>
+    <div class="fr"><span class="fk">Deletion sequence</span><span class="fv">1. Set phase to <code>Terminating</code>. 2. List all resource types in namespace. 3. Delete each resource type (in parallel). 4. Wait until all gone. 5. Remove <code>kubernetes</code> finalizer. 6. Namespace deleted.</span></div>
+    <div class="fr"><span class="fk">Discovery</span><span class="fv">Controller uses <b>API discovery</b> (<code>/api</code> + <code>/apis</code>) to find all resource types that are namespace-scoped. Deletes ALL of them. Including your CRDs.</span></div>
+    <div class="fr"><span class="fk">Stuck namespace</span><span class="fv">If any resource in the namespace has a <b>finalizer whose controller is dead</b>, namespace stays Terminating forever. The finalizer must be cleared manually.</span></div>
+    <div class="fr"><span class="fk">Fast-track</span><span class="fv">Resources with <code>ownerReferences</code> to the namespace are deleted by GC controller in parallel with namespace controller. Speeds up large namespace deletion.</span></div>
+    <div class="code">
+<span class="cm"># Find what's blocking namespace deletion</span>
+kubectl <span class="fn">api-resources</span> --verbs=list --namespaced -o name \
+  | xargs -I {} kubectl <span class="fn">get</span> {} -n stuck-ns \
+    --ignore-not-found 2>/dev/null
+
+<span class="cm"># Nuclear option — remove finalizer</span>
+kubectl <span class="fn">get</span> namespace stuck-ns -o json \
+  | jq <span class="st">'.spec.finalizers = []'</span> \
+  | kubectl <span class="fn">replace</span> --raw \
+    /api/v1/namespaces/stuck-ns/finalize -f -
+    </div>
+  </div>
+</div>
+
+<!-- ══ 8. DEBUG ══ -->
+<div class="sl se mb">Debugging the Controller-Manager <span>// what to check when controllers misbehave</span></div>
+
+<div class="g3">
+  <div class="card ce">
+    <div class="glow" style="background:var(--red)"></div>
+    <div class="ch"><div class="ci">🔍</div><div><div class="ct">Controller-Manager Logs</div><div class="csub">reading the stream of reconcile decisions</div></div></div>
+    <div class="code">
+<span class="cm"># Stream logs from controller-manager</span>
+kubectl <span class="fn">logs</span> -n kube-system kube-controller-manager-&lt;node&gt; \
+  --follow --since=5m
+
+<span class="cm"># Filter by specific controller</span>
+kubectl <span class="fn">logs</span> -n kube-system kube-controller-manager-&lt;node&gt; \
+  | grep <span class="st">"deployment-controller"</span>
+
+<span class="cm"># Higher verbosity (if you can set it)</span>
+<span class="cm"># Add to manifest: --v=4 (reconcile decisions)</span>
+<span class="cm">#                  --v=6 (all API calls)</span>
+<span class="cm">#                  --v=9 (request bodies)</span>
+
+<span class="cm"># Check leader identity</span>
+kubectl <span class="fn">get</span> lease kube-controller-manager \
+  -n kube-system \
+  -o jsonpath=<span class="st">'{.spec.holderIdentity}'</span>
+
+<span class="cm"># Watch leader changes in real time</span>
+kubectl <span class="fn">get</span> lease kube-controller-manager \
+  -n kube-system -w
+    </div>
+    <div class="fr" style="margin-top:10px;"><span class="fk">Log levels</span><span class="fv">Level 2: normal operation. Level 4: each reconcile. Level 6: all HTTP calls. Level 9: request + response bodies. Default is 2 in production.</span></div>
+  </div>
+
+  <div class="card ce">
+    <div class="glow" style="background:var(--red)"></div>
+    <div class="ch"><div class="ci">📊</div><div><div class="ct">Controller Metrics</div><div class="csub">Prometheus metrics exposed by the process</div></div></div>
+    <div class="fr"><span class="fk">Endpoint</span><span class="fv">Exposes metrics on <code>https://&lt;host&gt;:10257/metrics</code> (authenticated, or <code>--bind-address</code>). Scraped by Prometheus inside the cluster.</span></div>
+    <div class="fr"><span class="fk">Queue depth</span><span class="fv"><code>workqueue_depth{name="deployment"}</code> — how deep is each controller's queue? High value = controller falling behind.</span></div>
+    <div class="fr"><span class="fk">Queue latency</span><span class="fv"><code>workqueue_queue_duration_seconds</code> — how long items wait in queue before being processed. High latency = workers too slow.</span></div>
+    <div class="fr"><span class="fk">Work duration</span><span class="fv"><code>workqueue_work_duration_seconds</code> — how long each reconcile takes. Slow reconciles → workers busy → queue backs up.</span></div>
+    <div class="fr"><span class="fk">Retries</span><span class="fv"><code>workqueue_retries_total</code> — count of items re-queued after failure. Spike = something consistently failing in reconcile logic.</span></div>
+    <div class="fr"><span class="fk">Cache sync age</span><span class="fv"><code>reflector_last_resource_version</code> per informer. Stuck value = informer watch broken (should auto-reconnect but worth alerting).</span></div>
+    <div class="code">
+<span class="cm"># Alert: deployment controller queue deep for 5m</span>
+<span class="fn">ALERT</span> DeploymentControllerBacklogged
+  <span class="fn">IF</span> workqueue_depth{name=<span class="st">"deployment"</span>} > 50
+  <span class="fn">FOR</span> 5m
+  <span class="fn">ANNOTATIONS</span> { summary = <span class="st">"Deployment reconciles backed up"</span> }
+    </div>
+  </div>
+
+  <div class="card ce">
+    <div class="glow" style="background:var(--red)"></div>
+    <div class="ch"><div class="ci">🩺</div><div><div class="ct">Diagnostic Runbook</div><div class="csub">when controllers aren't acting</div></div></div>
+    <div class="tl">
+      <div class="tls">
+        <div class="tlv"><div class="tlc" style="border-color:var(--red);color:var(--red);">1</div></div>
+        <div class="tlb"><div class="tlt" style="color:var(--red);">Is there a leader?</div><div class="tld"><code>kubectl get lease kube-controller-manager -n kube-system</code>. If <code>holderIdentity</code> is stale (renewTime &gt; 30s ago) — no active leader. Check if pods are running on all control-plane nodes.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlv"><div class="tlc" style="border-color:var(--red);color:var(--red);">2</div></div>
+        <div class="tlb"><div class="tlt" style="color:var(--red);">Is the controller disabled?</div><div class="tld">Check <code>--controllers</code> flag in pod spec. Is your controller in the list? CRD-based controllers (from Operators) run in their own pods — not in kube-controller-manager at all.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlv"><div class="tlc" style="border-color:var(--amb);color:var(--amb);">3</div></div>
+        <div class="tlb"><div class="tlt" style="color:var(--amb);">Is the queue backed up?</div><div class="tld">Check <code>workqueue_depth</code> metric. If depth growing: reconcile is slow or failing. Check <code>workqueue_retries_total</code> — high retries = persistent error in sync logic.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlv"><div class="tlc" style="border-color:var(--amb);color:var(--amb);">4</div></div>
+        <div class="tlb"><div class="tlt" style="color:var(--amb);">RBAC issue?</div><div class="tld">Controller-manager uses <code>system:kube-controller-manager</code> service account. <code>kubectl auth can-i update deployments --as=system:kube-controller-manager -n default</code>. Custom controllers may have missing RBAC.</div></div>
+      </div>
+      <div class="tls">
+        <div class="tlv"><div class="tlc" style="border-color:var(--grn);color:var(--grn);">5</div></div>
+        <div class="tlb"><div class="tlt" style="color:var(--grn);">Admission webhook blocking writes?</div><div class="tld">Controller writes to apiserver go through admission. If a validating webhook rejects controller's create/patch: controller retries forever with backoff, never succeeds. Check <code>--v=4</code> logs for 403/422 responses.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 9. INTERVIEW TRAPS TABLE ══ -->
+<div class="sl se mb">Vicious Interview Traps — Controller Edition <span>// every question that catches people out</span></div>
+
+<div class="card cx mb">
+  <div class="glow" style="background:var(--acc)"></div>
+  <div class="ch"><div class="ci">⚡</div><div><div class="ct">The Questions That Separate Seniors from Juniors</div><div class="csub">verbatim answers for each</div></div></div>
+  <table class="st">
+    <tr><th style="width:35%">Question</th><th>Wrong answer (junior)</th><th>Right answer (senior)</th></tr>
+    <tr>
+      <td>"Does Deployment controller create Pods?"</td>
+      <td class="bad">Yes, it manages pods</td>
+      <td class="good">No. Deployment ctrl creates ReplicaSets. ReplicaSet ctrl creates Pods. Two-step chain.</td>
+    </tr>
+    <tr>
+      <td>"Do controllers in kube-controller-manager have separate leaders?"</td>
+      <td class="bad">Yes, each controller elects its own leader</td>
+      <td class="good">No. The entire binary has ONE Lease. All 30+ controllers start/stop as a unit.</td>
+    </tr>
+    <tr>
+      <td>"How does a controller read object state?"</td>
+      <td class="bad">It calls the Kubernetes API (etcd)</td>
+      <td class="good">From the informer's in-memory cache via Lister. Never directly from apiserver during reconcile.</td>
+    </tr>
+    <tr>
+      <td>"What happens to the work queue when controller-manager crashes?"</td>
+      <td class="bad">Work items are lost forever</td>
+      <td class="good">Queue is in-memory → lost. But informer resync on next leader startup re-queues everything. Idempotent reconcile means nothing is lost permanently.</td>
+    </tr>
+    <tr>
+      <td>"Why does kube-controller-manager need informers instead of polling the API?"</td>
+      <td class="bad">For performance</td>
+      <td class="good">To avoid N×M watch explosion, provide O(1) local reads via in-memory cache, handle reconnects gracefully, and enable event-driven reconciliation with deduplication.</td>
+    </tr>
+    <tr>
+      <td>"A StatefulSet pod is deleted manually. What happens to its PVC?"</td>
+      <td class="bad">PVC is deleted with the pod</td>
+      <td class="good">PVC survives. StatefulSet controller creates a new pod with the same name. New pod reattaches the existing PVC with all data intact.</td>
+    </tr>
+    <tr>
+      <td>"Node goes NotReady. When are its pods evicted?"</td>
+      <td class="bad">Immediately when NotReady</td>
+      <td class="good">After node-monitor-grace-period (40s) → Unknown. Then after tolerationSeconds on NoExecute taint (default 300s) → eviction starts. Rate-limited. Stops if &lt;55% nodes healthy.</td>
+    </tr>
+    <tr>
+      <td>"Can a controller talk directly to etcd?"</td>
+      <td class="bad">Yes, via the etcd client library</td>
+      <td class="good">No. Controllers only talk to apiserver. Apiserver is the sole writer to etcd. Bypassing apiserver would skip admission, RBAC, and all watch subscriptions.</td>
+    </tr>
+    <tr>
+      <td>"What does GarbageCollector controller do that no other controller does?"</td>
+      <td class="bad">It's just like other controllers</td>
+      <td class="good">It watches ALL resource types (not just one), builds an in-memory graph of ALL owner relationships, and manages cross-resource cascade deletion. It's the only controller with cluster-wide object graph awareness.</td>
+    </tr>
+    <tr>
+      <td>"DaemonSet bypasses the scheduler — is that true?"</td>
+      <td class="bad">No, scheduler places DaemonSet pods</td>
+      <td class="good">Partially true. DaemonSet controller sets <code>nodeName</code> directly, bypassing Filter+Score. But the scheduler may still be involved for resource accounting in newer versions (NodeAffinity mode).</td>
+    </tr>
+  </table>
+</div>
+
+<div class="footer">
+  <div class="ft">kube-controller-manager · Vicious Deep Dive</div>
+  <div class="ft" style="color:rgba(0,255,200,0.3);">SharedInformerFactory · WorkQueue · LeaderElection · 30+ controllers</div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,4523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram Gallery — 21 Mermaid diagrams</title>
+<style>
+  :root {
+    --bg:#0a0c10; --surface:#111318; --border:#1e2530; --border2:#2a3444;
+    --fg:#e6edf3; --muted:#8b98a9; --accent:#00d4ff;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans);
+         line-height:1.5; padding-bottom:4rem; }
+  header { position:sticky; top:0; z-index:10; background:rgba(10,12,16,.92);
+           backdrop-filter:blur(8px); border-bottom:1px solid var(--border);
+           padding:1rem 1.5rem; }
+  h1 { margin:0 0 .5rem; font-size:1.3rem; letter-spacing:.5px; }
+  h1 small { color:var(--muted); font-weight:400; font-size:.8rem; margin-left:.5rem; }
+  nav { display:flex; flex-wrap:wrap; gap:.4rem; margin:.4rem 0; }
+  nav a { color:var(--muted); text-decoration:none; font-size:.8rem; padding:.2rem .55rem;
+          border:1px solid var(--border); border-radius:999px; }
+  nav a:hover { color:var(--accent); border-color:var(--accent); }
+  nav a b { color:var(--fg); }
+  #q { width:100%; margin-top:.5rem; padding:.55rem .8rem; background:var(--surface);
+        border:1px solid var(--border2); border-radius:8px; color:var(--fg);
+        font-family:var(--mono); font-size:.9rem; }
+  main { padding:1.5rem; max-width:1500px; margin:0 auto; }
+  h2.domain { font-size:1rem; text-transform:uppercase; letter-spacing:2px;
+              color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:.4rem;
+              margin:2.5rem 0 1rem; }
+  h2 .count { color:var(--muted); font-size:.75rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(440px,1fr)); gap:1.2rem; }
+  .card { margin:0; background:var(--surface); border:1px solid var(--border);
+          border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  figcaption { padding:.8rem 1rem; border-bottom:1px solid var(--border); }
+  .dtitle { font-weight:600; display:block; }
+  .path { font-family:var(--mono); font-size:.72rem; color:var(--muted); }
+  .desc { display:block; color:var(--muted); font-size:.82rem; margin-top:.25rem; }
+  .diagram { padding:1rem; overflow-x:auto; text-align:center; flex:1; }
+  .mermaid { margin:0; }
+  details { border-top:1px solid var(--border); }
+  summary { cursor:pointer; padding:.5rem 1rem; color:var(--muted); font-size:.78rem;
+            font-family:var(--mono); user-select:none; }
+  summary:hover { color:var(--accent); }
+  pre.src { margin:0; padding:1rem; background:#06080b; overflow-x:auto; font-family:var(--mono);
+            font-size:.72rem; color:#9fb4c9; max-height:340px; }
+  .hidden { display:none !important; }
+  .offline-note { color:var(--muted); font-size:.75rem; padding:.4rem 0; }
+  /* --- single-diagram full-page viewer --- */
+  figcaption { position:relative; }
+  .openfull { position:absolute; top:.7rem; right:.8rem; z-index:2; cursor:pointer;
+    font:600 .72rem/1 var(--mono); color:var(--muted); background:var(--bg);
+    border:1px solid var(--border2); border-radius:6px; padding:.35rem .55rem; }
+  .openfull:hover { color:var(--accent); border-color:var(--accent); }
+  #viewer { position:fixed; inset:0; z-index:1000; background:rgba(6,8,11,.985);
+    display:none; flex-direction:column; }
+  #viewer.open { display:flex; }
+  #viewer .vbar { display:flex; align-items:center; gap:.5rem; padding:.6rem .9rem;
+    border-bottom:1px solid var(--border); background:rgba(10,12,16,.92); }
+  #viewer .vtitle { font-family:var(--mono); font-size:.82rem; color:var(--fg); flex:1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #viewer .vbar button { cursor:pointer; font:600 .8rem/1 var(--sans); color:var(--fg);
+    background:var(--surface); border:1px solid var(--border2); border-radius:6px;
+    padding:.4rem .6rem; }
+  #viewer .vbar button:hover { color:var(--accent); border-color:var(--accent); }
+  #viewer .vstage { flex:1; overflow:hidden; position:relative; cursor:grab; touch-action:none; }
+  #viewer .vstage.grab { cursor:grabbing; }
+  #viewer .vwrap { position:absolute; top:0; left:0; transform-origin:0 0; }
+  #viewer .vwrap svg { max-width:none !important; max-height:none !important; display:block; }
+  #viewer .vwrap pre { margin:0; color:#9fb4c9; font-family:var(--mono);
+    font-size:.8rem; white-space:pre; }
+  #viewer .vhint { position:absolute; bottom:.6rem; left:50%; transform:translateX(-50%);
+    font-size:.7rem; color:var(--muted); background:rgba(10,12,16,.85);
+    padding:.25rem .7rem; border-radius:999px; pointer-events:none; }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<header>
+  <h1>Diagram Gallery <small>21 Mermaid diagrams · rendered inline</small></h1>
+  <nav><a href="#kubernetes">Kubernetes <b>7</b></a> <a href="#linux">Linux <b>5</b></a> <a href="#networking-security">Networking &amp; Security <b>4</b></a> <a href="#runtimes-apps">Runtimes &amp; Apps <b>5</b></a></nav>
+  <input id="q" type="search" placeholder="filter diagrams by name or description…" autocomplete="off">
+  <div class="offline-note" id="onote"></div>
+</header>
+<main>
+<h2 id="kubernetes" class="domain">Kubernetes <span class="count">7</span></h2>
+<div class="grid">
+  <figure class="card" data-name="k8s_architecture control plane + data plane component architecture">
+    <figcaption>
+      <span class="dtitle">K8s Architecture</span>
+      <code class="path">kubernetes/k8s_architecture.mermaid</code>
+      <span class="desc">Control plane + data plane component architecture</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: {
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for the entire architecture
+    subgraph K8S[&quot;🚢 Kubernetes Architecture&quot;]
+        direction TB
+        
+        %% User interaction components
+        subgraph UI[&quot;👤 User Interfaces&quot;]
+            direction LR
+            kubectl[&quot;🔧 kubectl CLI&quot;]
+            dashboard[&quot;📊 Dashboard&quot;]
+            api_clients[&quot;🔌 API Clients&quot;]
+        end
+        
+        %% Control Plane components
+        subgraph CONTROL_PLANE[&quot;🧠 Control Plane&quot;]
+            direction TB
+            
+            subgraph MASTER_NODES[&quot;🔐 Master Nodes&quot;]
+                direction TB
+                
+                subgraph MASTER1[&quot;Master Node 1&quot;]
+                    %% API Server - the central hub
+                    api1[&quot;🎮 API Server&quot;]
+                    scheduler1[&quot;🧩 Scheduler&quot;]
+                    controller_manager1[&quot;🔄 Controller Manager&quot;]
+                    etcd1[&quot;💾 etcd&quot;]
+                end
+                
+                subgraph MASTER2[&quot;Master Node 2&quot;]
+                    %% API Server - the central hub for HA
+                    api2[&quot;🎮 API Server&quot;]
+                    scheduler2[&quot;🧩 Scheduler&quot;]
+                    controller_manager2[&quot;🔄 Controller Manager&quot;]
+                    etcd2[&quot;💾 etcd&quot;]
+                end
+                
+                subgraph MASTER3[&quot;Master Node 3&quot;]
+                    %% API Server - the central hub for HA
+                    api3[&quot;🎮 API Server&quot;]
+                    scheduler3[&quot;🧩 Scheduler&quot;]
+                    controller_manager3[&quot;🔄 Controller Manager&quot;]
+                    etcd3[&quot;💾 etcd&quot;]
+                end
+            end
+            
+            %% Logical representation of controllers
+            subgraph CONTROLLERS[&quot;🔄 Controllers&quot;]
+                direction LR
+                replication[&quot;Replication Controller&quot;]
+                endpoint[&quot;Endpoint Controller&quot;]
+                node[&quot;Node Controller&quot;]
+                service_account[&quot;Service Account Controller&quot;]
+                deployment[&quot;Deployment Controller&quot;]
+                job[&quot;Job Controller&quot;]
+            end
+            
+            %% Reference to the API server for connections (logical)
+            api[&quot;🎮 API Server&quot;]
+            
+            %% Reference to the scheduler for connections (logical)
+            scheduler[&quot;🧩 Scheduler&quot;]
+            
+            %% Reference to the data storage for connections (logical)
+            etcd[&quot;💾 etcd&quot;]
+            
+            %% Cloud controller manager
+            cloud_controller[&quot;☁️ Cloud Controller Manager&quot;]
+        end
+        
+        %% Node components
+        subgraph NODES[&quot;🖥️ Worker Nodes&quot;]
+            direction TB
+            
+            subgraph NODE1[&quot;Node 1&quot;]
+                direction TB
+                kubelet1[&quot;🤖 Kubelet&quot;]
+                kube_proxy1[&quot;🔀 Kube Proxy&quot;]
+                
+                %% Container runtime
+                subgraph CONTAINERS1[&quot;🐳 Container Runtime&quot;]
+                    pod1[&quot;Pod&quot;]
+                    pod2[&quot;Pod&quot;]
+                end
+            end
+            
+            subgraph NODE2[&quot;Node 2&quot;]
+                direction TB
+                kubelet2[&quot;🤖 Kubelet&quot;]
+                kube_proxy2[&quot;🔀 Kube Proxy&quot;]
+                
+                %% Container runtime
+                subgraph CONTAINERS2[&quot;🐳 Container Runtime&quot;]
+                    pod3[&quot;Pod&quot;]
+                    pod4[&quot;Pod&quot;]
+                end
+            end
+            
+            %% Add-ons
+            subgraph ADDONS[&quot;📦 Add-ons&quot;]
+                direction LR
+                dns[&quot;CoreDNS&quot;]
+                metrics[&quot;Metrics Server&quot;]
+                ingress[&quot;Ingress Controller&quot;]
+                cni[&quot;CNI Plugin&quot;]
+            end
+        end
+    end
+    
+    %% Connections between components
+    UI --&gt; api
+    
+    %% Master node internal connections
+    api1 &amp; api2 &amp; api3 --- etcd1 &amp; etcd2 &amp; etcd3
+    
+    %% Logical connections for diagram clarity
+    api --&gt; etcd
+    api --&gt; CONTROLLERS
+    CONTROLLERS --&gt; api
+    api --&gt; scheduler
+    scheduler --&gt; api
+    api --&gt; cloud_controller
+    cloud_controller --&gt; api
+    
+    %% Worker node connections to control plane
+    api --&gt; kubelet1 &amp; kubelet2
+    kubelet1 --&gt; CONTAINERS1
+    kubelet2 --&gt; CONTAINERS2
+    kubelet1 &amp; kubelet2 --&gt; api
+    
+    kube_proxy1 &amp; kube_proxy2 --&gt; api
+    
+    %% Add-ons connections
+    ADDONS --&gt; api
+    
+    %% External cloud providers connection
+    cloud_controller -.-&gt; cloud[&quot;☁️ Cloud Provider API&quot;]
+    
+    %% HA connections between master nodes
+    MASTER1 --- MASTER2 --- MASTER3
+    MASTER1 --- MASTER3
+    
+    %% No custom styling for better compatibility</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: {
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for the entire architecture
+    subgraph K8S[&quot;🚢 Kubernetes Architecture&quot;]
+        direction TB
+        
+        %% User interaction components
+        subgraph UI[&quot;👤 User Interfaces&quot;]
+            direction LR
+            kubectl[&quot;🔧 kubectl CLI&quot;]
+            dashboard[&quot;📊 Dashboard&quot;]
+            api_clients[&quot;🔌 API Clients&quot;]
+        end
+        
+        %% Control Plane components
+        subgraph CONTROL_PLANE[&quot;🧠 Control Plane&quot;]
+            direction TB
+            
+            subgraph MASTER_NODES[&quot;🔐 Master Nodes&quot;]
+                direction TB
+                
+                subgraph MASTER1[&quot;Master Node 1&quot;]
+                    %% API Server - the central hub
+                    api1[&quot;🎮 API Server&quot;]
+                    scheduler1[&quot;🧩 Scheduler&quot;]
+                    controller_manager1[&quot;🔄 Controller Manager&quot;]
+                    etcd1[&quot;💾 etcd&quot;]
+                end
+                
+                subgraph MASTER2[&quot;Master Node 2&quot;]
+                    %% API Server - the central hub for HA
+                    api2[&quot;🎮 API Server&quot;]
+                    scheduler2[&quot;🧩 Scheduler&quot;]
+                    controller_manager2[&quot;🔄 Controller Manager&quot;]
+                    etcd2[&quot;💾 etcd&quot;]
+                end
+                
+                subgraph MASTER3[&quot;Master Node 3&quot;]
+                    %% API Server - the central hub for HA
+                    api3[&quot;🎮 API Server&quot;]
+                    scheduler3[&quot;🧩 Scheduler&quot;]
+                    controller_manager3[&quot;🔄 Controller Manager&quot;]
+                    etcd3[&quot;💾 etcd&quot;]
+                end
+            end
+            
+            %% Logical representation of controllers
+            subgraph CONTROLLERS[&quot;🔄 Controllers&quot;]
+                direction LR
+                replication[&quot;Replication Controller&quot;]
+                endpoint[&quot;Endpoint Controller&quot;]
+                node[&quot;Node Controller&quot;]
+                service_account[&quot;Service Account Controller&quot;]
+                deployment[&quot;Deployment Controller&quot;]
+                job[&quot;Job Controller&quot;]
+            end
+            
+            %% Reference to the API server for connections (logical)
+            api[&quot;🎮 API Server&quot;]
+            
+            %% Reference to the scheduler for connections (logical)
+            scheduler[&quot;🧩 Scheduler&quot;]
+            
+            %% Reference to the data storage for connections (logical)
+            etcd[&quot;💾 etcd&quot;]
+            
+            %% Cloud controller manager
+            cloud_controller[&quot;☁️ Cloud Controller Manager&quot;]
+        end
+        
+        %% Node components
+        subgraph NODES[&quot;🖥️ Worker Nodes&quot;]
+            direction TB
+            
+            subgraph NODE1[&quot;Node 1&quot;]
+                direction TB
+                kubelet1[&quot;🤖 Kubelet&quot;]
+                kube_proxy1[&quot;🔀 Kube Proxy&quot;]
+                
+                %% Container runtime
+                subgraph CONTAINERS1[&quot;🐳 Container Runtime&quot;]
+                    pod1[&quot;Pod&quot;]
+                    pod2[&quot;Pod&quot;]
+                end
+            end
+            
+            subgraph NODE2[&quot;Node 2&quot;]
+                direction TB
+                kubelet2[&quot;🤖 Kubelet&quot;]
+                kube_proxy2[&quot;🔀 Kube Proxy&quot;]
+                
+                %% Container runtime
+                subgraph CONTAINERS2[&quot;🐳 Container Runtime&quot;]
+                    pod3[&quot;Pod&quot;]
+                    pod4[&quot;Pod&quot;]
+                end
+            end
+            
+            %% Add-ons
+            subgraph ADDONS[&quot;📦 Add-ons&quot;]
+                direction LR
+                dns[&quot;CoreDNS&quot;]
+                metrics[&quot;Metrics Server&quot;]
+                ingress[&quot;Ingress Controller&quot;]
+                cni[&quot;CNI Plugin&quot;]
+            end
+        end
+    end
+    
+    %% Connections between components
+    UI --&gt; api
+    
+    %% Master node internal connections
+    api1 &amp; api2 &amp; api3 --- etcd1 &amp; etcd2 &amp; etcd3
+    
+    %% Logical connections for diagram clarity
+    api --&gt; etcd
+    api --&gt; CONTROLLERS
+    CONTROLLERS --&gt; api
+    api --&gt; scheduler
+    scheduler --&gt; api
+    api --&gt; cloud_controller
+    cloud_controller --&gt; api
+    
+    %% Worker node connections to control plane
+    api --&gt; kubelet1 &amp; kubelet2
+    kubelet1 --&gt; CONTAINERS1
+    kubelet2 --&gt; CONTAINERS2
+    kubelet1 &amp; kubelet2 --&gt; api
+    
+    kube_proxy1 &amp; kube_proxy2 --&gt; api
+    
+    %% Add-ons connections
+    ADDONS --&gt; api
+    
+    %% External cloud providers connection
+    cloud_controller -.-&gt; cloud[&quot;☁️ Cloud Provider API&quot;]
+    
+    %% HA connections between master nodes
+    MASTER1 --- MASTER2 --- MASTER3
+    MASTER1 --- MASTER3
+    
+    %% No custom styling for better compatibility</pre></details>
+  </figure>
+  <figure class="card" data-name="k8s_journey lifecycle of `kubectl apply` from user to running container">
+    <figcaption>
+      <span class="dtitle">K8s Journey</span>
+      <code class="path">kubernetes/k8s_journey.mermaid</code>
+      <span class="desc">Lifecycle of `kubectl apply` from user to running container</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;fontSize&#x27;: &#x27;20px&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;, 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;secondaryColor&#x27;: &#x27;#FFA630&#x27;, 
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+sequenceDiagram
+    %% 1. Visual Identifiers with Icons
+    participant User as 👤 User
+    participant Kubectl as 🔧 kubectl
+    participant API_Server as 🎮 API Server
+    participant Etcd as 💾 etcd
+    participant Scheduler as 🧩 Scheduler
+    participant Kubelet as 🤖 Kubelet
+    participant Container_Runtime as 🐳 Container Runtime
+    
+    %% No custom styling for better compatibility
+    
+    %% 3. Add Technical Depth with Process Phases
+    rect rgb(20,30,40)
+    note over User,Container_Runtime: &lt;b&gt;Kubernetes Application Deployment Flow&lt;/b&gt;
+    
+    %% Phase 1: User Authentication and Validation
+    Note over User,Kubectl: &lt;b&gt;Phase 1: User Authentication &amp; Validation&lt;/b&gt;
+    User-&gt;&gt;Kubectl: kubectl apply -f &lt;manifest.yaml&gt;
+    Kubectl-&gt;&gt;API_Server: Authenticate &amp; Submit manifest
+    API_Server-&gt;&gt;Etcd: Validate manifest &amp; resource version
+    Etcd--&gt;&gt;API_Server: Confirm no conflicts &amp; store desired state
+    API_Server--&gt;&gt;Kubectl: Confirm receipt (202 Accepted)
+    Kubectl--&gt;&gt;User: &quot;deployment.apps/example created&quot;
+    
+    %% Phase 2: Control Plane Processing
+    Note over API_Server,Scheduler: &lt;b&gt;Phase 2: Control Plane Processing&lt;/b&gt;
+    API_Server-&gt;&gt;Scheduler: Notify of unscheduled pod(s)
+    Scheduler-&gt;&gt;Scheduler: Evaluate node capacity, taints, affinity
+    Scheduler-&gt;&gt;API_Server: Node selection &amp; binding decision
+    API_Server-&gt;&gt;Etcd: Update pod spec with node assignment
+    
+    %% Phase 3: Node Operations
+    Note over Kubelet,Container_Runtime: &lt;b&gt;Phase 3: Node Operations&lt;/b&gt;
+    API_Server-&gt;&gt;Kubelet: Assign pod to node (via watch)
+    Kubelet-&gt;&gt;Kubelet: Validate pod security context
+    Kubelet-&gt;&gt;Container_Runtime: Pull image(s) with auth
+    
+    alt Image Pull Successful
+        Container_Runtime--&gt;&gt;Kubelet: Image(s) pulled successfully
+        Kubelet-&gt;&gt;Container_Runtime: Start container(s)
+        Kubelet-&gt;&gt;Kubelet: Configure pod networking &amp; volumes
+        Container_Runtime--&gt;&gt;Kubelet: Container(s) running
+        Kubelet--&gt;&gt;API_Server: Update pod status to Running
+    else Image Pull Failure
+        Container_Runtime--&gt;&gt;Kubelet: Image pull failed (401/404)
+        Kubelet--&gt;&gt;API_Server: Log error, apply backoff, retry
+    end
+    
+    %% Phase 4: Readiness &amp; Availability
+    Note over API_Server: &lt;b&gt;Phase 4: Readiness &amp; Availability&lt;/b&gt;
+    API_Server--&gt;&gt;User: Deployment status (kubectl get pods)
+    
+    %% Optional: Readiness Probes
+    opt Readiness Checks
+        Kubelet-&gt;&gt;Container_Runtime: Execute readiness probe
+        Container_Runtime--&gt;&gt;Kubelet: Container is ready
+        Kubelet--&gt;&gt;API_Server: Update pod ready condition
+    end
+    end
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;fontSize&#x27;: &#x27;20px&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;, 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;secondaryColor&#x27;: &#x27;#FFA630&#x27;, 
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+sequenceDiagram
+    %% 1. Visual Identifiers with Icons
+    participant User as 👤 User
+    participant Kubectl as 🔧 kubectl
+    participant API_Server as 🎮 API Server
+    participant Etcd as 💾 etcd
+    participant Scheduler as 🧩 Scheduler
+    participant Kubelet as 🤖 Kubelet
+    participant Container_Runtime as 🐳 Container Runtime
+    
+    %% No custom styling for better compatibility
+    
+    %% 3. Add Technical Depth with Process Phases
+    rect rgb(20,30,40)
+    note over User,Container_Runtime: &lt;b&gt;Kubernetes Application Deployment Flow&lt;/b&gt;
+    
+    %% Phase 1: User Authentication and Validation
+    Note over User,Kubectl: &lt;b&gt;Phase 1: User Authentication &amp; Validation&lt;/b&gt;
+    User-&gt;&gt;Kubectl: kubectl apply -f &lt;manifest.yaml&gt;
+    Kubectl-&gt;&gt;API_Server: Authenticate &amp; Submit manifest
+    API_Server-&gt;&gt;Etcd: Validate manifest &amp; resource version
+    Etcd--&gt;&gt;API_Server: Confirm no conflicts &amp; store desired state
+    API_Server--&gt;&gt;Kubectl: Confirm receipt (202 Accepted)
+    Kubectl--&gt;&gt;User: &quot;deployment.apps/example created&quot;
+    
+    %% Phase 2: Control Plane Processing
+    Note over API_Server,Scheduler: &lt;b&gt;Phase 2: Control Plane Processing&lt;/b&gt;
+    API_Server-&gt;&gt;Scheduler: Notify of unscheduled pod(s)
+    Scheduler-&gt;&gt;Scheduler: Evaluate node capacity, taints, affinity
+    Scheduler-&gt;&gt;API_Server: Node selection &amp; binding decision
+    API_Server-&gt;&gt;Etcd: Update pod spec with node assignment
+    
+    %% Phase 3: Node Operations
+    Note over Kubelet,Container_Runtime: &lt;b&gt;Phase 3: Node Operations&lt;/b&gt;
+    API_Server-&gt;&gt;Kubelet: Assign pod to node (via watch)
+    Kubelet-&gt;&gt;Kubelet: Validate pod security context
+    Kubelet-&gt;&gt;Container_Runtime: Pull image(s) with auth
+    
+    alt Image Pull Successful
+        Container_Runtime--&gt;&gt;Kubelet: Image(s) pulled successfully
+        Kubelet-&gt;&gt;Container_Runtime: Start container(s)
+        Kubelet-&gt;&gt;Kubelet: Configure pod networking &amp; volumes
+        Container_Runtime--&gt;&gt;Kubelet: Container(s) running
+        Kubelet--&gt;&gt;API_Server: Update pod status to Running
+    else Image Pull Failure
+        Container_Runtime--&gt;&gt;Kubelet: Image pull failed (401/404)
+        Kubelet--&gt;&gt;API_Server: Log error, apply backoff, retry
+    end
+    
+    %% Phase 4: Readiness &amp; Availability
+    Note over API_Server: &lt;b&gt;Phase 4: Readiness &amp; Availability&lt;/b&gt;
+    API_Server--&gt;&gt;User: Deployment status (kubectl get pods)
+    
+    %% Optional: Readiness Probes
+    opt Readiness Checks
+        Kubelet-&gt;&gt;Container_Runtime: Execute readiness probe
+        Container_Runtime--&gt;&gt;Kubelet: Container is ready
+        Kubelet--&gt;&gt;API_Server: Update pod ready condition
+    end
+    end
+</pre></details>
+  </figure>
+  <figure class="card" data-name="k8s_rbac rbac roles and permissions model">
+    <figcaption>
+      <span class="dtitle">K8s Rbac</span>
+      <code class="path">kubernetes/k8s_rbac.mermaid</code>
+      <span class="desc">RBAC roles and permissions model</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: {
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for RBAC
+    subgraph K8S[&quot;Kubernetes RBAC System&quot;]
+        direction TB
+        
+        %% Authentication section
+        subgraph AUTH[&quot;Authentication&quot;]
+            direction TB
+            
+            subgraph AUTH_METHODS[&quot;Authentication Methods&quot;]
+                direction LR
+                x509[&quot;X.509 Certificates&quot;]
+                token[&quot;Static Tokens&quot;]
+                oidc[&quot;OpenID Connect&quot;]
+                sa[&quot;Service Accounts&quot;]
+            end
+            
+            api_auth[&quot;API Server Authentication&quot;]
+            authn_chain[&quot;Authentication Chain&quot;]
+            
+            subgraph USERS[&quot;Users (External)&quot;]
+                direction LR
+                human[&quot;Human Users&quot;]
+                external[&quot;External Systems&quot;]
+            end
+            
+            subgraph SA_SECTION[&quot;Service Account Details&quot;]
+                direction TB
+                
+                sa_resource[&quot;ServiceAccount
+                namespace: default
+                name: app-sa&quot;]
+                
+                sa_token[&quot;Service Account Token
+                (JWT Token)&quot;]
+                
+                sa_secret[&quot;Secret
+                type: kubernetes.io/service-account-token
+                serviceAccountName: app-sa&quot;]
+                
+                sa_mount[&quot;Mounted in Pod:
+                /var/run/secrets/kubernetes.io/serviceaccount/token&quot;]
+            end
+            
+            AUTH_METHODS --&gt; api_auth
+            api_auth --&gt; authn_chain
+            USERS --&gt; api_auth
+            
+            sa --&gt; SA_SECTION
+            sa_resource --- sa_token
+            sa_token --- sa_secret
+        end
+        
+        %% Authorization section
+        subgraph AUTHZ[&quot;Authorization&quot;]
+            direction TB
+            
+            subgraph RBAC_RESOURCES[&quot;RBAC Resources&quot;]
+                direction TB
+                
+                subgraph ROLE_RESOURCES[&quot;Namespace Scope&quot;]
+                    direction LR
+                    role[&quot;Role&quot;]
+                    role_binding[&quot;RoleBinding&quot;]
+                end
+                
+                subgraph CLUSTER_RESOURCES[&quot;Cluster Scope&quot;]
+                    direction LR
+                    cluster_role[&quot;ClusterRole&quot;]
+                    cluster_role_binding[&quot;ClusterRoleBinding&quot;]
+                end
+                
+                subgraph ROLE_DEFINITION[&quot;Role Definition Example&quot;]
+                    direction TB
+                    role_yaml[&quot;Role YAML:
+                    kind: Role
+                    metadata:
+                      name: pod-reader
+                      namespace: default
+                    rules:
+                    - apiGroups: [&#x27;&#x27;]
+                      resources: [&#x27;pods&#x27;]
+                      verbs: [&#x27;get&#x27;, &#x27;list&#x27;, &#x27;watch&#x27;]&quot;]
+                end
+                
+                subgraph CRB_DEFINITION[&quot;ClusterRoleBinding Example&quot;]
+                    direction TB
+                    crb_yaml[&quot;ClusterRoleBinding YAML:
+                    kind: ClusterRoleBinding
+                    metadata:
+                      name: admin-user
+                    subjects:
+                    - kind: ServiceAccount
+                      name: admin-sa
+                      namespace: kube-system
+                    roleRef:
+                      kind: ClusterRole
+                      name: cluster-admin
+                      apiGroup: rbac.authorization.k8s.io&quot;]
+                end
+            end
+            
+            api_authz[&quot;API Server Authorization&quot;]
+            
+            ROLE_RESOURCES -- &quot;Reference&quot; --&gt; ROLE_DEFINITION
+            CLUSTER_RESOURCES -- &quot;Reference&quot; --&gt; CRB_DEFINITION
+            
+            RBAC_RESOURCES --&gt; api_authz
+        end
+        
+        %% Admin section
+        subgraph ADMIN[&quot;Administration&quot;]
+            direction TB
+            
+            subgraph BEST_PRACTICES[&quot;Best Practices&quot;]
+                direction TB
+                principle_lp[&quot;Principle of Least Privilege&quot;]
+                ns_separation[&quot;Namespace Separation&quot;]
+                sa_isolation[&quot;Service Account Isolation&quot;]
+                no_wildcards[&quot;Avoid Wildcard Permissions&quot;]
+            end
+            
+            kubectl_rbac[&quot;kubectl RBAC Commands:
+            - kubectl create role
+            - kubectl create rolebinding
+            - kubectl create clusterrole
+            - kubectl create clusterrolebinding
+            - kubectl auth can-i &lt;verb&gt; &lt;resource&gt;&quot;]
+            
+            subgraph DEFAULT_ROLES[&quot;Default ClusterRoles&quot;]
+                direction LR
+                view[&quot;view&quot;]
+                edit[&quot;edit&quot;]
+                admin[&quot;admin&quot;]
+                cluster_admin[&quot;cluster-admin&quot;]
+            end
+        end
+        
+        %% Resources and Permissions section
+        subgraph RESOURCES[&quot;K8s Resources &amp; Permissions&quot;]
+            direction TB
+            
+            subgraph API_GROUPS[&quot;API Groups&quot;]
+                direction LR
+                core[&quot;core (&#x27;&#x27;)&quot;]
+                apps[&quot;apps&quot;]
+                batch[&quot;batch&quot;]
+                rbac[&quot;rbac.authorization.k8s.io&quot;]
+                networking[&quot;networking.k8s.io&quot;]
+            end
+            
+            subgraph RESOURCE_TYPES[&quot;Common Resource Types&quot;]
+                direction LR
+                pods[&quot;pods&quot;]
+                deployments[&quot;deployments&quot;]
+                services[&quot;services&quot;]
+                configmaps[&quot;configmaps&quot;]
+                secrets[&quot;secrets&quot;]
+            end
+            
+            subgraph VERBS[&quot;Permission Verbs&quot;]
+                direction TB
+                read[&quot;Read operations:
+                - get
+                - list
+                - watch&quot;]
+                
+                write[&quot;Write operations:
+                - create
+                - update
+                - patch
+                - delete&quot;]
+                
+                special[&quot;Special operations:
+                - deletecollection
+                - impersonate&quot;]
+            end
+        end
+        
+        %% Access Review section
+        subgraph PROCESS[&quot;Access Review Process&quot;]
+            direction LR
+            
+            request[&quot;Request:
+            1. User/SA
+            2. Verb
+            3. Resource
+            4. Namespace&quot;]
+            
+            auth_check[&quot;Authentication &amp; 
+            Authorization Check&quot;]
+            
+            decision[&quot;Decision:
+            Allow or Deny&quot;]
+            
+            request --&gt; auth_check --&gt; decision
+        end
+    end
+    
+    %% Flow between components
+    AUTH --&gt; AUTHZ
+    AUTHZ --&gt; PROCESS
+    RESOURCES --&gt; PROCESS
+    ADMIN -.-&gt; AUTHZ
+    
+    %% Detailed connections
+    authn_chain -- &quot;Authenticated Identity&quot; --&gt; api_authz
+    role_binding -- &quot;References Role&quot; --&gt; role
+    role_binding -- &quot;References Subjects&quot; --&gt; human &amp; sa_resource
+    cluster_role_binding -- &quot;References ClusterRole&quot; --&gt; cluster_role
+    cluster_role_binding -- &quot;References Subjects&quot; --&gt; human &amp; sa_resource
+    
+    %% Cross-namespace binding
+    role_binding -- &quot;Can reference ClusterRole (namespace-scoped)&quot; --&gt; cluster_role
+    
+    %% Resource and Permission relations
+    API_GROUPS -- &quot;Contains&quot; --&gt; RESOURCE_TYPES
+    RESOURCE_TYPES -- &quot;Controlled by&quot; --&gt; VERBS
+    
+    %% Practical example flow
+    subgraph EXAMPLE[&quot;Example: Pod Access Flow&quot;]
+        direction TB
+        
+        user_req[&quot;User request to list pods&quot;]
+        auth_flow[&quot;Authentication &amp; 
+        Authorization flow&quot;]
+        rbac_check[&quot;RBAC check:
+        - Is user authenticated?
+        - Does user have &#x27;list&#x27; permission on &#x27;pods&#x27;?
+        - In the target namespace?&quot;]
+        
+        result[&quot;Result: 
+        Allow or Deny Access&quot;]
+        
+        user_req --&gt; auth_flow --&gt; rbac_check --&gt; result
+    end
+    
+    PROCESS -- &quot;Follows&quot; --&gt; EXAMPLE</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: {
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for RBAC
+    subgraph K8S[&quot;Kubernetes RBAC System&quot;]
+        direction TB
+        
+        %% Authentication section
+        subgraph AUTH[&quot;Authentication&quot;]
+            direction TB
+            
+            subgraph AUTH_METHODS[&quot;Authentication Methods&quot;]
+                direction LR
+                x509[&quot;X.509 Certificates&quot;]
+                token[&quot;Static Tokens&quot;]
+                oidc[&quot;OpenID Connect&quot;]
+                sa[&quot;Service Accounts&quot;]
+            end
+            
+            api_auth[&quot;API Server Authentication&quot;]
+            authn_chain[&quot;Authentication Chain&quot;]
+            
+            subgraph USERS[&quot;Users (External)&quot;]
+                direction LR
+                human[&quot;Human Users&quot;]
+                external[&quot;External Systems&quot;]
+            end
+            
+            subgraph SA_SECTION[&quot;Service Account Details&quot;]
+                direction TB
+                
+                sa_resource[&quot;ServiceAccount
+                namespace: default
+                name: app-sa&quot;]
+                
+                sa_token[&quot;Service Account Token
+                (JWT Token)&quot;]
+                
+                sa_secret[&quot;Secret
+                type: kubernetes.io/service-account-token
+                serviceAccountName: app-sa&quot;]
+                
+                sa_mount[&quot;Mounted in Pod:
+                /var/run/secrets/kubernetes.io/serviceaccount/token&quot;]
+            end
+            
+            AUTH_METHODS --&gt; api_auth
+            api_auth --&gt; authn_chain
+            USERS --&gt; api_auth
+            
+            sa --&gt; SA_SECTION
+            sa_resource --- sa_token
+            sa_token --- sa_secret
+        end
+        
+        %% Authorization section
+        subgraph AUTHZ[&quot;Authorization&quot;]
+            direction TB
+            
+            subgraph RBAC_RESOURCES[&quot;RBAC Resources&quot;]
+                direction TB
+                
+                subgraph ROLE_RESOURCES[&quot;Namespace Scope&quot;]
+                    direction LR
+                    role[&quot;Role&quot;]
+                    role_binding[&quot;RoleBinding&quot;]
+                end
+                
+                subgraph CLUSTER_RESOURCES[&quot;Cluster Scope&quot;]
+                    direction LR
+                    cluster_role[&quot;ClusterRole&quot;]
+                    cluster_role_binding[&quot;ClusterRoleBinding&quot;]
+                end
+                
+                subgraph ROLE_DEFINITION[&quot;Role Definition Example&quot;]
+                    direction TB
+                    role_yaml[&quot;Role YAML:
+                    kind: Role
+                    metadata:
+                      name: pod-reader
+                      namespace: default
+                    rules:
+                    - apiGroups: [&#x27;&#x27;]
+                      resources: [&#x27;pods&#x27;]
+                      verbs: [&#x27;get&#x27;, &#x27;list&#x27;, &#x27;watch&#x27;]&quot;]
+                end
+                
+                subgraph CRB_DEFINITION[&quot;ClusterRoleBinding Example&quot;]
+                    direction TB
+                    crb_yaml[&quot;ClusterRoleBinding YAML:
+                    kind: ClusterRoleBinding
+                    metadata:
+                      name: admin-user
+                    subjects:
+                    - kind: ServiceAccount
+                      name: admin-sa
+                      namespace: kube-system
+                    roleRef:
+                      kind: ClusterRole
+                      name: cluster-admin
+                      apiGroup: rbac.authorization.k8s.io&quot;]
+                end
+            end
+            
+            api_authz[&quot;API Server Authorization&quot;]
+            
+            ROLE_RESOURCES -- &quot;Reference&quot; --&gt; ROLE_DEFINITION
+            CLUSTER_RESOURCES -- &quot;Reference&quot; --&gt; CRB_DEFINITION
+            
+            RBAC_RESOURCES --&gt; api_authz
+        end
+        
+        %% Admin section
+        subgraph ADMIN[&quot;Administration&quot;]
+            direction TB
+            
+            subgraph BEST_PRACTICES[&quot;Best Practices&quot;]
+                direction TB
+                principle_lp[&quot;Principle of Least Privilege&quot;]
+                ns_separation[&quot;Namespace Separation&quot;]
+                sa_isolation[&quot;Service Account Isolation&quot;]
+                no_wildcards[&quot;Avoid Wildcard Permissions&quot;]
+            end
+            
+            kubectl_rbac[&quot;kubectl RBAC Commands:
+            - kubectl create role
+            - kubectl create rolebinding
+            - kubectl create clusterrole
+            - kubectl create clusterrolebinding
+            - kubectl auth can-i &lt;verb&gt; &lt;resource&gt;&quot;]
+            
+            subgraph DEFAULT_ROLES[&quot;Default ClusterRoles&quot;]
+                direction LR
+                view[&quot;view&quot;]
+                edit[&quot;edit&quot;]
+                admin[&quot;admin&quot;]
+                cluster_admin[&quot;cluster-admin&quot;]
+            end
+        end
+        
+        %% Resources and Permissions section
+        subgraph RESOURCES[&quot;K8s Resources &amp; Permissions&quot;]
+            direction TB
+            
+            subgraph API_GROUPS[&quot;API Groups&quot;]
+                direction LR
+                core[&quot;core (&#x27;&#x27;)&quot;]
+                apps[&quot;apps&quot;]
+                batch[&quot;batch&quot;]
+                rbac[&quot;rbac.authorization.k8s.io&quot;]
+                networking[&quot;networking.k8s.io&quot;]
+            end
+            
+            subgraph RESOURCE_TYPES[&quot;Common Resource Types&quot;]
+                direction LR
+                pods[&quot;pods&quot;]
+                deployments[&quot;deployments&quot;]
+                services[&quot;services&quot;]
+                configmaps[&quot;configmaps&quot;]
+                secrets[&quot;secrets&quot;]
+            end
+            
+            subgraph VERBS[&quot;Permission Verbs&quot;]
+                direction TB
+                read[&quot;Read operations:
+                - get
+                - list
+                - watch&quot;]
+                
+                write[&quot;Write operations:
+                - create
+                - update
+                - patch
+                - delete&quot;]
+                
+                special[&quot;Special operations:
+                - deletecollection
+                - impersonate&quot;]
+            end
+        end
+        
+        %% Access Review section
+        subgraph PROCESS[&quot;Access Review Process&quot;]
+            direction LR
+            
+            request[&quot;Request:
+            1. User/SA
+            2. Verb
+            3. Resource
+            4. Namespace&quot;]
+            
+            auth_check[&quot;Authentication &amp; 
+            Authorization Check&quot;]
+            
+            decision[&quot;Decision:
+            Allow or Deny&quot;]
+            
+            request --&gt; auth_check --&gt; decision
+        end
+    end
+    
+    %% Flow between components
+    AUTH --&gt; AUTHZ
+    AUTHZ --&gt; PROCESS
+    RESOURCES --&gt; PROCESS
+    ADMIN -.-&gt; AUTHZ
+    
+    %% Detailed connections
+    authn_chain -- &quot;Authenticated Identity&quot; --&gt; api_authz
+    role_binding -- &quot;References Role&quot; --&gt; role
+    role_binding -- &quot;References Subjects&quot; --&gt; human &amp; sa_resource
+    cluster_role_binding -- &quot;References ClusterRole&quot; --&gt; cluster_role
+    cluster_role_binding -- &quot;References Subjects&quot; --&gt; human &amp; sa_resource
+    
+    %% Cross-namespace binding
+    role_binding -- &quot;Can reference ClusterRole (namespace-scoped)&quot; --&gt; cluster_role
+    
+    %% Resource and Permission relations
+    API_GROUPS -- &quot;Contains&quot; --&gt; RESOURCE_TYPES
+    RESOURCE_TYPES -- &quot;Controlled by&quot; --&gt; VERBS
+    
+    %% Practical example flow
+    subgraph EXAMPLE[&quot;Example: Pod Access Flow&quot;]
+        direction TB
+        
+        user_req[&quot;User request to list pods&quot;]
+        auth_flow[&quot;Authentication &amp; 
+        Authorization flow&quot;]
+        rbac_check[&quot;RBAC check:
+        - Is user authenticated?
+        - Does user have &#x27;list&#x27; permission on &#x27;pods&#x27;?
+        - In the target namespace?&quot;]
+        
+        result[&quot;Result: 
+        Allow or Deny Access&quot;]
+        
+        user_req --&gt; auth_flow --&gt; rbac_check --&gt; result
+    end
+    
+    PROCESS -- &quot;Follows&quot; --&gt; EXAMPLE</pre></details>
+  </figure>
+  <figure class="card" data-name="k8s_rbac_auth_flow how an api request is authenticated and authorized">
+    <figcaption>
+      <span class="dtitle">K8s Rbac Auth Flow</span>
+      <code class="path">kubernetes/k8s_rbac_auth_flow.mermaid</code>
+      <span class="desc">How an API request is authenticated and authorized</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main title
+    title[&quot;Kubernetes RBAC: Authorization Flow and Decision Process&quot;]
+    
+    %% Request entry point
+    request[&quot;API Request
+    User: john@example.com
+    Verb: list
+    Resource: pods
+    Namespace: production&quot;]
+    
+    %% Kubernetes API Server
+    subgraph API_SERVER[&quot;API Server&quot;]
+        direction TB
+        
+        subgraph AUTHENTICATION[&quot;Authentication&quot;]
+            direction TB
+            
+            auth_modules[&quot;Authentication Modules:
+            - X.509 Client Certs
+            - Bearer Tokens
+            - OpenID Connect
+            - Webhook Token Auth&quot;]
+            
+            user_info[&quot;User Info:
+            - Username: john@example.com
+            - UID: john-123
+            - Groups: dev-team, operations&quot;]
+        end
+        
+        subgraph AUTHORIZATION[&quot;Authorization&quot;]
+            direction TB
+            
+            auth_modules2[&quot;Authorization Modules:
+            - Node
+            - ABAC
+            - RBAC (Focus)
+            - Webhook&quot;]
+            
+            rbac_check[&quot;RBAC Check:
+            1. Find all RoleBindings and ClusterRoleBindings
+               that reference the user/groups
+            2. Collect all referenced Roles and ClusterRoles
+            3. Check if any role permits the requested action&quot;]
+            
+            decision[&quot;Decision:
+            - Allowed or Denied
+            - Caching for performance&quot;]
+        end
+        
+        subgraph ADMISSION[&quot;Admission Control&quot;]
+            direction TB
+            
+            admission_modules[&quot;Admission Webhooks
+            (after authorization)&quot;]
+        end
+        
+        AUTHENTICATION --&gt; AUTHORIZATION --&gt; ADMISSION
+    end
+    
+    %% RBAC rules storage
+    subgraph RBAC_RULES[&quot;RBAC Rules in etcd&quot;]
+        direction TB
+        
+        subgraph ROLES_DB[&quot;Roles&quot;]
+            role1[&quot;Role: pod-viewer
+            namespace: production
+            resources: pods
+            verbs: get, list, watch&quot;]
+            
+            role2[&quot;Role: pod-editor
+            namespace: production
+            resources: pods
+            verbs: create, update, patch, delete&quot;]
+        end
+        
+        subgraph CLUSTERROLES_DB[&quot;ClusterRoles&quot;]
+            cr1[&quot;ClusterRole: view
+            resources: many, incl. pods
+            verbs: get, list, watch&quot;]
+            
+            cr2[&quot;ClusterRole: edit
+            resources: many, incl. pods
+            verbs: get, list, watch, create, update,
+            patch, delete&quot;]
+            
+            cr3[&quot;ClusterRole: cluster-admin
+            resources: *
+            verbs: *&quot;]
+        end
+        
+        subgraph BINDINGS_DB[&quot;Bindings&quot;]
+            rb1[&quot;RoleBinding: dev-pod-viewers
+            namespace: production
+            subjects: 
+              - group: dev-team
+            roleRef: pod-viewer&quot;]
+            
+            rb2[&quot;RoleBinding: ops-pod-editors
+            namespace: production
+            subjects: 
+              - group: operations
+            roleRef: pod-editor&quot;]
+            
+            crb1[&quot;ClusterRoleBinding: john-view
+            subjects:
+              - user: john@example.com
+            roleRef: view&quot;]
+        end
+    end
+    
+    %% Detailed authorization process
+    subgraph AUTH_PROCESS[&quot;Authorization Process Details&quot;]
+        direction TB
+        
+        step1[&quot;1. Identify Subject:
+        - Username: john@example.com
+        - Groups: dev-team, operations&quot;]
+        
+        step2[&quot;2. Find applicable bindings:
+        - RoleBinding: dev-pod-viewers (via dev-team group)
+        - RoleBinding: ops-pod-editors (via operations group)
+        - ClusterRoleBinding: john-view (via username)&quot;]
+        
+        step3[&quot;3. Collect relevant roles:
+        - Role: pod-viewer (from dev-pod-viewers)
+        - Role: pod-editor (from ops-pod-editors)
+        - ClusterRole: view (from john-view)&quot;]
+        
+        step4[&quot;4. Evaluate permissions:
+        Check if any role allows:
+        - Verb: list
+        - Resource: pods
+        - Namespace: production&quot;]
+        
+        step5[&quot;5. Make decision:
+        - All three roles allow list pods
+        - Result: ALLOW&quot;]
+        
+        step1 --&gt; step2 --&gt; step3 --&gt; step4 --&gt; step5
+    end
+    
+    %% Flow examples
+    subgraph EXAMPLES[&quot;Authorization Flow Examples&quot;]
+        direction TB
+        
+        allowed[&quot;Allowed Request:
+        - User: john@example.com
+        - Verb: list
+        - Resource: pods
+        - Namespace: production
+        - Result: ALLOW (via pod-viewer role)&quot;]
+        
+        denied[&quot;Denied Request:
+        - User: john@example.com
+        - Verb: delete
+        - Resource: pods
+        - Namespace: kube-system
+        - Result: DENY (no binding gives this permission)&quot;]
+        
+        cluster_wide[&quot;Cluster-Wide Request:
+        - User: admin@example.com
+        - Verb: list
+        - Resource: nodes
+        - Result: ALLOW (via cluster-admin role)&quot;]
+    end
+    
+    %% Connection illustration
+    subgraph RESOURCE_RULES[&quot;Resource Rules Structure&quot;]
+        direction TB
+        
+        rule_structure[&quot;Rule Structure in Role/ClusterRole:
+        
+        rules:
+        - apiGroups: [&#x27;&#x27;]
+          resources: [&#x27;pods&#x27;]
+          verbs: [&#x27;get&#x27;, &#x27;list&#x27;, &#x27;watch&#x27;]
+          
+        - apiGroups: [&#x27;apps&#x27;]
+          resources: [&#x27;deployments&#x27;]
+          verbs: [&#x27;get&#x27;, &#x27;list&#x27;]
+          
+        - apiGroups: [&#x27;&#x27;]
+          resources: [&#x27;pods/log&#x27;]
+          verbs: [&#x27;get&#x27;]&quot;]
+        
+        resource_scope[&quot;Resource Scopes:
+        
+        - Namespaced Resources:
+          pods, services, configmaps, secrets,
+          deployments, statefulsets, etc.
+          
+        - Cluster-scoped Resources:
+          nodes, persistentvolumes, 
+          namespaces, clusterroles, etc.&quot;]
+    end
+    
+    %% Policy tips
+    subgraph POLICY_TIPS[&quot;RBAC Policy Best Practices&quot;]
+        direction TB
+        
+        least_privilege[&quot;Least Privilege:
+        - Grant minimal permissions needed
+        - Avoid wildcards (* resources, * verbs)
+        - Regularly audit permissions&quot;]
+        
+        separation[&quot;Separation by Namespace:
+        - Isolate teams in separate namespaces
+        - Use namespace admins for delegation&quot;]
+        
+        sa_scope[&quot;ServiceAccount Scope:
+        - One ServiceAccount per workload
+        - Don&#x27;t share ServiceAccounts
+        - Scope permissions tightly&quot;]
+        
+        default_roles[&quot;Use Default Roles:
+        - view: read-only access
+        - edit: modify resources but not RBAC
+        - admin: full control within namespace
+        - cluster-admin: full control of cluster&quot;]
+    end
+    
+    %% Logical connections
+    request --&gt; API_SERVER
+    RBAC_RULES --&gt; rbac_check
+    rbac_check --&gt; AUTH_PROCESS
+    AUTH_PROCESS --&gt; EXAMPLES
+    RESOURCE_RULES -.-&gt; rbac_check
+    POLICY_TIPS -.-&gt; RBAC_RULES</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main title
+    title[&quot;Kubernetes RBAC: Authorization Flow and Decision Process&quot;]
+    
+    %% Request entry point
+    request[&quot;API Request
+    User: john@example.com
+    Verb: list
+    Resource: pods
+    Namespace: production&quot;]
+    
+    %% Kubernetes API Server
+    subgraph API_SERVER[&quot;API Server&quot;]
+        direction TB
+        
+        subgraph AUTHENTICATION[&quot;Authentication&quot;]
+            direction TB
+            
+            auth_modules[&quot;Authentication Modules:
+            - X.509 Client Certs
+            - Bearer Tokens
+            - OpenID Connect
+            - Webhook Token Auth&quot;]
+            
+            user_info[&quot;User Info:
+            - Username: john@example.com
+            - UID: john-123
+            - Groups: dev-team, operations&quot;]
+        end
+        
+        subgraph AUTHORIZATION[&quot;Authorization&quot;]
+            direction TB
+            
+            auth_modules2[&quot;Authorization Modules:
+            - Node
+            - ABAC
+            - RBAC (Focus)
+            - Webhook&quot;]
+            
+            rbac_check[&quot;RBAC Check:
+            1. Find all RoleBindings and ClusterRoleBindings
+               that reference the user/groups
+            2. Collect all referenced Roles and ClusterRoles
+            3. Check if any role permits the requested action&quot;]
+            
+            decision[&quot;Decision:
+            - Allowed or Denied
+            - Caching for performance&quot;]
+        end
+        
+        subgraph ADMISSION[&quot;Admission Control&quot;]
+            direction TB
+            
+            admission_modules[&quot;Admission Webhooks
+            (after authorization)&quot;]
+        end
+        
+        AUTHENTICATION --&gt; AUTHORIZATION --&gt; ADMISSION
+    end
+    
+    %% RBAC rules storage
+    subgraph RBAC_RULES[&quot;RBAC Rules in etcd&quot;]
+        direction TB
+        
+        subgraph ROLES_DB[&quot;Roles&quot;]
+            role1[&quot;Role: pod-viewer
+            namespace: production
+            resources: pods
+            verbs: get, list, watch&quot;]
+            
+            role2[&quot;Role: pod-editor
+            namespace: production
+            resources: pods
+            verbs: create, update, patch, delete&quot;]
+        end
+        
+        subgraph CLUSTERROLES_DB[&quot;ClusterRoles&quot;]
+            cr1[&quot;ClusterRole: view
+            resources: many, incl. pods
+            verbs: get, list, watch&quot;]
+            
+            cr2[&quot;ClusterRole: edit
+            resources: many, incl. pods
+            verbs: get, list, watch, create, update,
+            patch, delete&quot;]
+            
+            cr3[&quot;ClusterRole: cluster-admin
+            resources: *
+            verbs: *&quot;]
+        end
+        
+        subgraph BINDINGS_DB[&quot;Bindings&quot;]
+            rb1[&quot;RoleBinding: dev-pod-viewers
+            namespace: production
+            subjects: 
+              - group: dev-team
+            roleRef: pod-viewer&quot;]
+            
+            rb2[&quot;RoleBinding: ops-pod-editors
+            namespace: production
+            subjects: 
+              - group: operations
+            roleRef: pod-editor&quot;]
+            
+            crb1[&quot;ClusterRoleBinding: john-view
+            subjects:
+              - user: john@example.com
+            roleRef: view&quot;]
+        end
+    end
+    
+    %% Detailed authorization process
+    subgraph AUTH_PROCESS[&quot;Authorization Process Details&quot;]
+        direction TB
+        
+        step1[&quot;1. Identify Subject:
+        - Username: john@example.com
+        - Groups: dev-team, operations&quot;]
+        
+        step2[&quot;2. Find applicable bindings:
+        - RoleBinding: dev-pod-viewers (via dev-team group)
+        - RoleBinding: ops-pod-editors (via operations group)
+        - ClusterRoleBinding: john-view (via username)&quot;]
+        
+        step3[&quot;3. Collect relevant roles:
+        - Role: pod-viewer (from dev-pod-viewers)
+        - Role: pod-editor (from ops-pod-editors)
+        - ClusterRole: view (from john-view)&quot;]
+        
+        step4[&quot;4. Evaluate permissions:
+        Check if any role allows:
+        - Verb: list
+        - Resource: pods
+        - Namespace: production&quot;]
+        
+        step5[&quot;5. Make decision:
+        - All three roles allow list pods
+        - Result: ALLOW&quot;]
+        
+        step1 --&gt; step2 --&gt; step3 --&gt; step4 --&gt; step5
+    end
+    
+    %% Flow examples
+    subgraph EXAMPLES[&quot;Authorization Flow Examples&quot;]
+        direction TB
+        
+        allowed[&quot;Allowed Request:
+        - User: john@example.com
+        - Verb: list
+        - Resource: pods
+        - Namespace: production
+        - Result: ALLOW (via pod-viewer role)&quot;]
+        
+        denied[&quot;Denied Request:
+        - User: john@example.com
+        - Verb: delete
+        - Resource: pods
+        - Namespace: kube-system
+        - Result: DENY (no binding gives this permission)&quot;]
+        
+        cluster_wide[&quot;Cluster-Wide Request:
+        - User: admin@example.com
+        - Verb: list
+        - Resource: nodes
+        - Result: ALLOW (via cluster-admin role)&quot;]
+    end
+    
+    %% Connection illustration
+    subgraph RESOURCE_RULES[&quot;Resource Rules Structure&quot;]
+        direction TB
+        
+        rule_structure[&quot;Rule Structure in Role/ClusterRole:
+        
+        rules:
+        - apiGroups: [&#x27;&#x27;]
+          resources: [&#x27;pods&#x27;]
+          verbs: [&#x27;get&#x27;, &#x27;list&#x27;, &#x27;watch&#x27;]
+          
+        - apiGroups: [&#x27;apps&#x27;]
+          resources: [&#x27;deployments&#x27;]
+          verbs: [&#x27;get&#x27;, &#x27;list&#x27;]
+          
+        - apiGroups: [&#x27;&#x27;]
+          resources: [&#x27;pods/log&#x27;]
+          verbs: [&#x27;get&#x27;]&quot;]
+        
+        resource_scope[&quot;Resource Scopes:
+        
+        - Namespaced Resources:
+          pods, services, configmaps, secrets,
+          deployments, statefulsets, etc.
+          
+        - Cluster-scoped Resources:
+          nodes, persistentvolumes, 
+          namespaces, clusterroles, etc.&quot;]
+    end
+    
+    %% Policy tips
+    subgraph POLICY_TIPS[&quot;RBAC Policy Best Practices&quot;]
+        direction TB
+        
+        least_privilege[&quot;Least Privilege:
+        - Grant minimal permissions needed
+        - Avoid wildcards (* resources, * verbs)
+        - Regularly audit permissions&quot;]
+        
+        separation[&quot;Separation by Namespace:
+        - Isolate teams in separate namespaces
+        - Use namespace admins for delegation&quot;]
+        
+        sa_scope[&quot;ServiceAccount Scope:
+        - One ServiceAccount per workload
+        - Don&#x27;t share ServiceAccounts
+        - Scope permissions tightly&quot;]
+        
+        default_roles[&quot;Use Default Roles:
+        - view: read-only access
+        - edit: modify resources but not RBAC
+        - admin: full control within namespace
+        - cluster-admin: full control of cluster&quot;]
+    end
+    
+    %% Logical connections
+    request --&gt; API_SERVER
+    RBAC_RULES --&gt; rbac_check
+    rbac_check --&gt; AUTH_PROCESS
+    AUTH_PROCESS --&gt; EXAMPLES
+    RESOURCE_RULES -.-&gt; rbac_check
+    POLICY_TIPS -.-&gt; RBAC_RULES</pre></details>
+  </figure>
+  <figure class="card" data-name="k8s_rbac_binding rolebinding / clusterrolebinding wiring">
+    <figcaption>
+      <span class="dtitle">K8s Rbac Binding</span>
+      <code class="path">kubernetes/k8s_rbac_binding.mermaid</code>
+      <span class="desc">RoleBinding / ClusterRoleBinding wiring</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main title
+    title[&quot;Kubernetes RBAC: Role Binding Relationships&quot;]
+    
+    %% Subject types
+    subgraph SUBJECTS[&quot;Subjects (Who)&quot;]
+        direction TB
+        
+        subgraph USER_TYPES[&quot;User Types&quot;]
+            direction LR
+            sa[&quot;ServiceAccount
+            (In-cluster identities)&quot;]
+            user[&quot;User
+            (External identities)&quot;]
+            group[&quot;Group
+            (Collection of users)&quot;]
+        end
+        
+        subgraph EXAMPLES[&quot;Subject Examples&quot;]
+            direction TB
+            
+            sa_example[&quot;ServiceAccount:
+            - name: app-sa
+              namespace: default&quot;]
+            
+            user_example[&quot;User:
+            - name: jane@example.com&quot;]
+            
+            group_example[&quot;Group:
+            - name: system:masters
+            - name: dev-team&quot;]
+        end
+        
+        USER_TYPES --- EXAMPLES
+    end
+    
+    %% Role types
+    subgraph ROLES[&quot;Roles (What)&quot;]
+        direction TB
+        
+        subgraph ROLE_TYPES[&quot;Role Types&quot;]
+            direction LR
+            
+            role[&quot;Role
+            (Namespace-scoped permissions)&quot;]
+            
+            cluster_role[&quot;ClusterRole
+            (Cluster-wide permissions)&quot;]
+        end
+        
+        subgraph ROLE_EXAMPLES[&quot;Role Examples&quot;]
+            direction TB
+            
+            role_example[&quot;Role: pod-reader
+            namespace: default
+            - Allows read-only access to pods
+              in the default namespace&quot;]
+            
+            cr_example[&quot;ClusterRole: admin
+            - Allows full access to most resources
+              across all namespaces&quot;]
+            
+            cr_example2[&quot;ClusterRole: system:node
+            - Allows node-specific API access
+              for kubelet operations&quot;]
+        end
+        
+        ROLE_TYPES --- ROLE_EXAMPLES
+    end
+    
+    %% Binding types
+    subgraph BINDINGS[&quot;Bindings (How)&quot;]
+        direction TB
+        
+        subgraph BINDING_TYPES[&quot;Binding Types&quot;]
+            direction LR
+            
+            rb[&quot;RoleBinding
+            (Namespace-scoped binding)&quot;]
+            
+            crb[&quot;ClusterRoleBinding
+            (Cluster-wide binding)&quot;]
+        end
+        
+        subgraph BINDING_EXAMPLES[&quot;Binding Examples&quot;]
+            direction TB
+            
+            rb_example[&quot;RoleBinding: pod-reader-binding
+            namespace: default
+            - Grants pod-reader role
+              to subjects in default namespace&quot;]
+            
+            crb_example[&quot;ClusterRoleBinding: global-admin
+            - Grants admin clusterrole
+              to subjects across all namespaces&quot;]
+        end
+        
+        BINDING_TYPES --- BINDING_EXAMPLES
+    end
+    
+    %% Binding patterns
+    subgraph PATTERNS[&quot;Binding Patterns&quot;]
+        direction TB
+        
+        pattern1[&quot;Pattern 1:
+        RoleBinding → Role
+        (Namespace-scoped permissions)&quot;]
+        
+        pattern2[&quot;Pattern 2:
+        RoleBinding → ClusterRole
+        (Namespace-scoped permissions
+        using cluster-wide role definition)&quot;]
+        
+        pattern3[&quot;Pattern 3:
+        ClusterRoleBinding → ClusterRole
+        (Cluster-wide permissions)&quot;]
+    end
+    
+    %% Examples
+    subgraph CONCRETE[&quot;Concrete Examples&quot;]
+        direction TB
+        
+        ex1[&quot;Example 1:
+        - ServiceAccount: frontend-sa
+        - RoleBinding: view-pods
+        - Role: pod-viewer
+        - Scope: default namespace
+        - Effect: frontend-sa can view pods in default namespace&quot;]
+        
+        ex2[&quot;Example 2:
+        - User: jane@example.com
+        - ClusterRoleBinding: jane-admin
+        - ClusterRole: admin
+        - Scope: All namespaces
+        - Effect: Jane has admin access across the cluster&quot;]
+        
+        ex3[&quot;Example 3:
+        - ServiceAccount: monitoring-sa
+        - RoleBinding: metrics-viewer
+        - ClusterRole: metrics-reader
+        - Scope: monitoring namespace only
+        - Effect: monitoring-sa can read metrics in monitoring namespace&quot;]
+    end
+    
+    %% Visual connections
+    SUBJECTS --&gt; BINDINGS
+    ROLES --&gt; BINDINGS
+    BINDINGS --&gt; PATTERNS
+    PATTERNS --&gt; CONCRETE
+    
+    subgraph VISUALIZATION[&quot;Visualization of RBAC Relationships&quot;]
+        direction TB
+        
+        %% Define the subjects
+        subject1[&quot;User: bob@example.com&quot;]
+        subject2[&quot;ServiceAccount: app-sa
+        namespace: default&quot;]
+        subject3[&quot;Group: dev-team&quot;]
+        
+        %% Define the roles
+        role1[&quot;Role: pod-reader
+        namespace: default
+        resources: pods
+        verbs: get, list, watch&quot;]
+        
+        crole1[&quot;ClusterRole: log-reader
+        resources: pods/log
+        verbs: get, list&quot;]
+        
+        crole2[&quot;ClusterRole: view
+        resources: many read-only
+        verbs: get, list, watch&quot;]
+        
+        %% Define bindings
+        rbind1[&quot;RoleBinding: bob-pod-reader
+        namespace: default&quot;]
+        
+        rbind2[&quot;RoleBinding: sa-logs
+        namespace: default&quot;]
+        
+        crbind1[&quot;ClusterRoleBinding: 
+        dev-team-view&quot;]
+        
+        %% Connect them
+        subject1 -- &quot;subject reference&quot; --&gt; rbind1
+        rbind1 -- &quot;roleRef&quot; --&gt; role1
+        
+        subject2 -- &quot;subject reference&quot; --&gt; rbind2
+        rbind2 -- &quot;roleRef&quot; --&gt; crole1
+        
+        subject3 -- &quot;subject reference&quot; --&gt; crbind1
+        crbind1 -- &quot;roleRef&quot; --&gt; crole2
+    end
+    
+    %% Show special cases
+    subgraph SPECIAL[&quot;Special Cases&quot;]
+        direction TB
+        
+        subgraph DEFAULT_SA[&quot;Default ServiceAccount&quot;]
+            direction TB
+            
+            default_sa[&quot;ServiceAccount: default
+            namespace: &lt;each namespace&gt;
+            - Created automatically
+            - No special permissions by default&quot;]
+        end
+        
+        subgraph SYSTEM_SA[&quot;System ServiceAccounts&quot;]
+            direction TB
+            
+            system_sa[&quot;ServiceAccounts in kube-system:
+            - kube-proxy
+            - coredns
+            - etc.
+            
+            Each has specific ClusterRoles
+            bound via ClusterRoleBindings&quot;]
+        end
+        
+        subgraph AGGREGATED[&quot;Aggregated ClusterRoles&quot;]
+            direction TB
+            
+            agg_role[&quot;ClusterRoles can be aggregated:
+            
+            ClusterRole with: 
+            aggregationRule:
+              clusterRoleSelectors:
+                - matchLabels:
+                    rbac.example.com/aggregate-to-monitoring: &#x27;true&#x27;
+            
+            Automatically includes all permissions from
+            ClusterRoles with matching labels&quot;]
+        end
+    end</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main title
+    title[&quot;Kubernetes RBAC: Role Binding Relationships&quot;]
+    
+    %% Subject types
+    subgraph SUBJECTS[&quot;Subjects (Who)&quot;]
+        direction TB
+        
+        subgraph USER_TYPES[&quot;User Types&quot;]
+            direction LR
+            sa[&quot;ServiceAccount
+            (In-cluster identities)&quot;]
+            user[&quot;User
+            (External identities)&quot;]
+            group[&quot;Group
+            (Collection of users)&quot;]
+        end
+        
+        subgraph EXAMPLES[&quot;Subject Examples&quot;]
+            direction TB
+            
+            sa_example[&quot;ServiceAccount:
+            - name: app-sa
+              namespace: default&quot;]
+            
+            user_example[&quot;User:
+            - name: jane@example.com&quot;]
+            
+            group_example[&quot;Group:
+            - name: system:masters
+            - name: dev-team&quot;]
+        end
+        
+        USER_TYPES --- EXAMPLES
+    end
+    
+    %% Role types
+    subgraph ROLES[&quot;Roles (What)&quot;]
+        direction TB
+        
+        subgraph ROLE_TYPES[&quot;Role Types&quot;]
+            direction LR
+            
+            role[&quot;Role
+            (Namespace-scoped permissions)&quot;]
+            
+            cluster_role[&quot;ClusterRole
+            (Cluster-wide permissions)&quot;]
+        end
+        
+        subgraph ROLE_EXAMPLES[&quot;Role Examples&quot;]
+            direction TB
+            
+            role_example[&quot;Role: pod-reader
+            namespace: default
+            - Allows read-only access to pods
+              in the default namespace&quot;]
+            
+            cr_example[&quot;ClusterRole: admin
+            - Allows full access to most resources
+              across all namespaces&quot;]
+            
+            cr_example2[&quot;ClusterRole: system:node
+            - Allows node-specific API access
+              for kubelet operations&quot;]
+        end
+        
+        ROLE_TYPES --- ROLE_EXAMPLES
+    end
+    
+    %% Binding types
+    subgraph BINDINGS[&quot;Bindings (How)&quot;]
+        direction TB
+        
+        subgraph BINDING_TYPES[&quot;Binding Types&quot;]
+            direction LR
+            
+            rb[&quot;RoleBinding
+            (Namespace-scoped binding)&quot;]
+            
+            crb[&quot;ClusterRoleBinding
+            (Cluster-wide binding)&quot;]
+        end
+        
+        subgraph BINDING_EXAMPLES[&quot;Binding Examples&quot;]
+            direction TB
+            
+            rb_example[&quot;RoleBinding: pod-reader-binding
+            namespace: default
+            - Grants pod-reader role
+              to subjects in default namespace&quot;]
+            
+            crb_example[&quot;ClusterRoleBinding: global-admin
+            - Grants admin clusterrole
+              to subjects across all namespaces&quot;]
+        end
+        
+        BINDING_TYPES --- BINDING_EXAMPLES
+    end
+    
+    %% Binding patterns
+    subgraph PATTERNS[&quot;Binding Patterns&quot;]
+        direction TB
+        
+        pattern1[&quot;Pattern 1:
+        RoleBinding → Role
+        (Namespace-scoped permissions)&quot;]
+        
+        pattern2[&quot;Pattern 2:
+        RoleBinding → ClusterRole
+        (Namespace-scoped permissions
+        using cluster-wide role definition)&quot;]
+        
+        pattern3[&quot;Pattern 3:
+        ClusterRoleBinding → ClusterRole
+        (Cluster-wide permissions)&quot;]
+    end
+    
+    %% Examples
+    subgraph CONCRETE[&quot;Concrete Examples&quot;]
+        direction TB
+        
+        ex1[&quot;Example 1:
+        - ServiceAccount: frontend-sa
+        - RoleBinding: view-pods
+        - Role: pod-viewer
+        - Scope: default namespace
+        - Effect: frontend-sa can view pods in default namespace&quot;]
+        
+        ex2[&quot;Example 2:
+        - User: jane@example.com
+        - ClusterRoleBinding: jane-admin
+        - ClusterRole: admin
+        - Scope: All namespaces
+        - Effect: Jane has admin access across the cluster&quot;]
+        
+        ex3[&quot;Example 3:
+        - ServiceAccount: monitoring-sa
+        - RoleBinding: metrics-viewer
+        - ClusterRole: metrics-reader
+        - Scope: monitoring namespace only
+        - Effect: monitoring-sa can read metrics in monitoring namespace&quot;]
+    end
+    
+    %% Visual connections
+    SUBJECTS --&gt; BINDINGS
+    ROLES --&gt; BINDINGS
+    BINDINGS --&gt; PATTERNS
+    PATTERNS --&gt; CONCRETE
+    
+    subgraph VISUALIZATION[&quot;Visualization of RBAC Relationships&quot;]
+        direction TB
+        
+        %% Define the subjects
+        subject1[&quot;User: bob@example.com&quot;]
+        subject2[&quot;ServiceAccount: app-sa
+        namespace: default&quot;]
+        subject3[&quot;Group: dev-team&quot;]
+        
+        %% Define the roles
+        role1[&quot;Role: pod-reader
+        namespace: default
+        resources: pods
+        verbs: get, list, watch&quot;]
+        
+        crole1[&quot;ClusterRole: log-reader
+        resources: pods/log
+        verbs: get, list&quot;]
+        
+        crole2[&quot;ClusterRole: view
+        resources: many read-only
+        verbs: get, list, watch&quot;]
+        
+        %% Define bindings
+        rbind1[&quot;RoleBinding: bob-pod-reader
+        namespace: default&quot;]
+        
+        rbind2[&quot;RoleBinding: sa-logs
+        namespace: default&quot;]
+        
+        crbind1[&quot;ClusterRoleBinding: 
+        dev-team-view&quot;]
+        
+        %% Connect them
+        subject1 -- &quot;subject reference&quot; --&gt; rbind1
+        rbind1 -- &quot;roleRef&quot; --&gt; role1
+        
+        subject2 -- &quot;subject reference&quot; --&gt; rbind2
+        rbind2 -- &quot;roleRef&quot; --&gt; crole1
+        
+        subject3 -- &quot;subject reference&quot; --&gt; crbind1
+        crbind1 -- &quot;roleRef&quot; --&gt; crole2
+    end
+    
+    %% Show special cases
+    subgraph SPECIAL[&quot;Special Cases&quot;]
+        direction TB
+        
+        subgraph DEFAULT_SA[&quot;Default ServiceAccount&quot;]
+            direction TB
+            
+            default_sa[&quot;ServiceAccount: default
+            namespace: &lt;each namespace&gt;
+            - Created automatically
+            - No special permissions by default&quot;]
+        end
+        
+        subgraph SYSTEM_SA[&quot;System ServiceAccounts&quot;]
+            direction TB
+            
+            system_sa[&quot;ServiceAccounts in kube-system:
+            - kube-proxy
+            - coredns
+            - etc.
+            
+            Each has specific ClusterRoles
+            bound via ClusterRoleBindings&quot;]
+        end
+        
+        subgraph AGGREGATED[&quot;Aggregated ClusterRoles&quot;]
+            direction TB
+            
+            agg_role[&quot;ClusterRoles can be aggregated:
+            
+            ClusterRole with: 
+            aggregationRule:
+              clusterRoleSelectors:
+                - matchLabels:
+                    rbac.example.com/aggregate-to-monitoring: &#x27;true&#x27;
+            
+            Automatically includes all permissions from
+            ClusterRoles with matching labels&quot;]
+        end
+    end</pre></details>
+  </figure>
+  <figure class="card" data-name="k8s_service_networking service networking and kube-proxy data path">
+    <figcaption>
+      <span class="dtitle">K8s Service Networking</span>
+      <code class="path">kubernetes/k8s_service_networking.mermaid</code>
+      <span class="desc">Service networking and kube-proxy data path</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for service networking
+    subgraph K8S[&quot;Kubernetes Service Networking&quot;]
+        direction TB
+        
+        %% External traffic section
+        subgraph EXTERNAL[&quot;External Traffic&quot;]
+            direction LR
+            internet[&quot;🌐 Internet&quot;]
+            cloud_lb[&quot;☁️ Cloud Load Balancer
+            104.198.14.52&quot;]
+        end
+        
+        %% Node section with kube-proxy
+        subgraph NODES[&quot;Kubernetes Nodes&quot;]
+            direction TB
+            
+            subgraph NODE1[&quot;Node 1 (192.168.1.10)&quot;]
+                direction TB
+                
+                kube_proxy1[&quot;kube-proxy
+                (iptables/IPVS)&quot;]
+                
+                subgraph PODS1[&quot;Pods&quot;]
+                    direction LR
+                    client_pod[&quot;Client Pod
+                    10.1.0.5&quot;]
+                    service_pod1[&quot;Service Pod 1
+                    10.1.0.7
+                    Label: app=backend&quot;]
+                end
+            end
+            
+            subgraph NODE2[&quot;Node 2 (192.168.1.11)&quot;]
+                direction TB
+                
+                kube_proxy2[&quot;kube-proxy
+                (iptables/IPVS)&quot;]
+                
+                subgraph PODS2[&quot;Pods&quot;]
+                    direction LR
+                    service_pod2[&quot;Service Pod 2
+                    10.2.0.3
+                    Label: app=backend&quot;]
+                    service_pod3[&quot;Service Pod 3
+                    10.2.0.4
+                    Label: app=backend&quot;]
+                end
+            end
+        end
+        
+        %% Control plane
+        subgraph CONTROL[&quot;Control Plane&quot;]
+            direction TB
+            
+            api_server[&quot;API Server&quot;]
+            
+            endpoint_controller[&quot;Endpoint Controller&quot;]
+            
+            service_controller[&quot;Service Controller&quot;]
+            
+            coredns[&quot;CoreDNS&quot;]
+            
+            subgraph SVC_RESOURCES[&quot;Service Resources&quot;]
+                direction LR
+                svc_def[&quot;Service: backend
+                Type: LoadBalancer
+                Selector: app=backend
+                ClusterIP: 10.96.0.10
+                Port: 80&quot;]
+                
+                endpoints[&quot;Endpoints: backend
+                - 10.1.0.7:80
+                - 10.2.0.3:80
+                - 10.2.0.4:80&quot;]
+            end
+        end
+        
+        %% Networking flow explanation
+        subgraph FLOW[&quot;Service Traffic Flow&quot;]
+            direction TB
+            flow1[&quot;1. Client requests service 
+            via ClusterIP or DNS name 
+            (backend.default.svc.cluster.local)&quot;]
+            
+            flow2[&quot;2. kube-proxy rules intercept 
+            traffic to ClusterIP&quot;]
+            
+            flow3[&quot;3. Packet is redirected to 
+            a randomly selected endpoint&quot;]
+            
+            flow4[&quot;4. Return traffic follows 
+            direct path to the client&quot;]
+            
+            flow5[&quot;5. External LoadBalancer traffic
+            gets distributed across nodes&quot;]
+            
+            flow1 --&gt; flow2 --&gt; flow3 --&gt; flow4
+            flow5 --&gt; flow2
+        end
+    end
+    
+    %% Connect the components to show the flow
+    internet --&gt; cloud_lb
+    cloud_lb --&gt; NODE1 &amp; NODE2
+    
+    client_pod -- &quot;1. Request to: backend.default.svc.cluster.local&quot; --&gt; coredns
+    coredns -- &quot;Returns 10.96.0.10&quot; --&gt; client_pod
+    
+    client_pod -- &quot;2. Request to: 10.96.0.10:80&quot; --&gt; kube_proxy1
+    kube_proxy1 -- &quot;3. Redirects to random pod&quot; --&gt; service_pod1 &amp; service_pod2 &amp; service_pod3
+    
+    api_server --&gt; endpoint_controller
+    endpoint_controller -- &quot;Watches pod changes&quot; --&gt; SVC_RESOURCES
+    endpoint_controller -- &quot;Updates endpoints&quot; --&gt; endpoints
+    
+    service_controller -- &quot;Creates load balancer&quot; --&gt; cloud_lb
+    service_controller -- &quot;Updates service status&quot; --&gt; svc_def
+    
+    %% iptables/IPVS updates
+    SVC_RESOURCES -- &quot;Updates rules&quot; --&gt; kube_proxy1 &amp; kube_proxy2</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for service networking
+    subgraph K8S[&quot;Kubernetes Service Networking&quot;]
+        direction TB
+        
+        %% External traffic section
+        subgraph EXTERNAL[&quot;External Traffic&quot;]
+            direction LR
+            internet[&quot;🌐 Internet&quot;]
+            cloud_lb[&quot;☁️ Cloud Load Balancer
+            104.198.14.52&quot;]
+        end
+        
+        %% Node section with kube-proxy
+        subgraph NODES[&quot;Kubernetes Nodes&quot;]
+            direction TB
+            
+            subgraph NODE1[&quot;Node 1 (192.168.1.10)&quot;]
+                direction TB
+                
+                kube_proxy1[&quot;kube-proxy
+                (iptables/IPVS)&quot;]
+                
+                subgraph PODS1[&quot;Pods&quot;]
+                    direction LR
+                    client_pod[&quot;Client Pod
+                    10.1.0.5&quot;]
+                    service_pod1[&quot;Service Pod 1
+                    10.1.0.7
+                    Label: app=backend&quot;]
+                end
+            end
+            
+            subgraph NODE2[&quot;Node 2 (192.168.1.11)&quot;]
+                direction TB
+                
+                kube_proxy2[&quot;kube-proxy
+                (iptables/IPVS)&quot;]
+                
+                subgraph PODS2[&quot;Pods&quot;]
+                    direction LR
+                    service_pod2[&quot;Service Pod 2
+                    10.2.0.3
+                    Label: app=backend&quot;]
+                    service_pod3[&quot;Service Pod 3
+                    10.2.0.4
+                    Label: app=backend&quot;]
+                end
+            end
+        end
+        
+        %% Control plane
+        subgraph CONTROL[&quot;Control Plane&quot;]
+            direction TB
+            
+            api_server[&quot;API Server&quot;]
+            
+            endpoint_controller[&quot;Endpoint Controller&quot;]
+            
+            service_controller[&quot;Service Controller&quot;]
+            
+            coredns[&quot;CoreDNS&quot;]
+            
+            subgraph SVC_RESOURCES[&quot;Service Resources&quot;]
+                direction LR
+                svc_def[&quot;Service: backend
+                Type: LoadBalancer
+                Selector: app=backend
+                ClusterIP: 10.96.0.10
+                Port: 80&quot;]
+                
+                endpoints[&quot;Endpoints: backend
+                - 10.1.0.7:80
+                - 10.2.0.3:80
+                - 10.2.0.4:80&quot;]
+            end
+        end
+        
+        %% Networking flow explanation
+        subgraph FLOW[&quot;Service Traffic Flow&quot;]
+            direction TB
+            flow1[&quot;1. Client requests service 
+            via ClusterIP or DNS name 
+            (backend.default.svc.cluster.local)&quot;]
+            
+            flow2[&quot;2. kube-proxy rules intercept 
+            traffic to ClusterIP&quot;]
+            
+            flow3[&quot;3. Packet is redirected to 
+            a randomly selected endpoint&quot;]
+            
+            flow4[&quot;4. Return traffic follows 
+            direct path to the client&quot;]
+            
+            flow5[&quot;5. External LoadBalancer traffic
+            gets distributed across nodes&quot;]
+            
+            flow1 --&gt; flow2 --&gt; flow3 --&gt; flow4
+            flow5 --&gt; flow2
+        end
+    end
+    
+    %% Connect the components to show the flow
+    internet --&gt; cloud_lb
+    cloud_lb --&gt; NODE1 &amp; NODE2
+    
+    client_pod -- &quot;1. Request to: backend.default.svc.cluster.local&quot; --&gt; coredns
+    coredns -- &quot;Returns 10.96.0.10&quot; --&gt; client_pod
+    
+    client_pod -- &quot;2. Request to: 10.96.0.10:80&quot; --&gt; kube_proxy1
+    kube_proxy1 -- &quot;3. Redirects to random pod&quot; --&gt; service_pod1 &amp; service_pod2 &amp; service_pod3
+    
+    api_server --&gt; endpoint_controller
+    endpoint_controller -- &quot;Watches pod changes&quot; --&gt; SVC_RESOURCES
+    endpoint_controller -- &quot;Updates endpoints&quot; --&gt; endpoints
+    
+    service_controller -- &quot;Creates load balancer&quot; --&gt; cloud_lb
+    service_controller -- &quot;Updates service status&quot; --&gt; svc_def
+    
+    %% iptables/IPVS updates
+    SVC_RESOURCES -- &quot;Updates rules&quot; --&gt; kube_proxy1 &amp; kube_proxy2</pre></details>
+  </figure>
+  <figure class="card" data-name="k8s_services service types and how they expose pods">
+    <figcaption>
+      <span class="dtitle">K8s Services</span>
+      <code class="path">kubernetes/k8s_services.mermaid</code>
+      <span class="desc">Service types and how they expose pods</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for services architecture
+    subgraph K8S[&quot;Kubernetes Service Types&quot;]
+        direction TB
+        
+        %% ClusterIP section
+        subgraph CLUSTERIP[&quot;ClusterIP Service&quot;]
+            direction TB
+            
+            cluster_service[&quot;Service: ClusterIP
+            Type: ClusterIP
+            IP: 10.96.0.10&quot;]
+            
+            subgraph CLUSTER_PODS[&quot;Target Pods&quot;]
+                direction LR
+                cp1[&quot;Pod 1
+                10.1.0.4&quot;]
+                cp2[&quot;Pod 2
+                10.1.0.5&quot;]
+                cp3[&quot;Pod 3
+                10.1.0.6&quot;]
+            end
+            
+            cluster_service --&gt; cp1 &amp; cp2 &amp; cp3
+            
+            subgraph CLUSTER_CLIENTS[&quot;Clients&quot;]
+                direction LR
+                cc1[&quot;Pod A
+                (Internal)&quot;]
+            end
+            
+            cc1 --&gt; cluster_service
+        end
+        
+        %% NodePort section
+        subgraph NODEPORT[&quot;NodePort Service&quot;]
+            direction TB
+            
+            node_service[&quot;Service: MyApp
+            Type: NodePort
+            ClusterIP: 10.96.0.20
+            NodePort: 30080&quot;]
+            
+            subgraph NODES[&quot;Kubernetes Nodes&quot;]
+                direction LR
+                node1[&quot;Node 1
+                IP: 192.168.1.10
+                Port: 30080&quot;]
+                node2[&quot;Node 2
+                IP: 192.168.1.11
+                Port: 30080&quot;]
+            end
+            
+            subgraph NODE_PODS[&quot;Target Pods&quot;]
+                direction LR
+                np1[&quot;Pod 1
+                10.1.0.7&quot;]
+                np2[&quot;Pod 2
+                10.1.0.8&quot;]
+            end
+            
+            node_service --&gt; np1 &amp; np2
+            node1 &amp; node2 --&gt; node_service
+            
+            external_client1[&quot;External Client&quot;] --&gt; node1
+            external_client1 --&gt; node2
+        end
+        
+        %% LoadBalancer section
+        subgraph LOADBALANCER[&quot;LoadBalancer Service&quot;]
+            direction TB
+            
+            lb_service[&quot;Service: WebApp
+            Type: LoadBalancer
+            ClusterIP: 10.96.0.30
+            NodePort: 30443
+            External IP: 35.200.100.10&quot;]
+            
+            subgraph LBNODES[&quot;Kubernetes Nodes&quot;]
+                direction LR
+                lbnode1[&quot;Node 1
+                IP: 192.168.1.10
+                Port: 30443&quot;]
+                lbnode2[&quot;Node 2
+                IP: 192.168.1.11
+                Port: 30443&quot;]
+            end
+            
+            subgraph LB_PODS[&quot;Target Pods&quot;]
+                direction LR
+                lbp1[&quot;Pod 1
+                10.1.0.9&quot;]
+                lbp2[&quot;Pod 2
+                10.1.0.10&quot;]
+                lbp3[&quot;Pod 3
+                10.1.0.11&quot;]
+            end
+            
+            cloud_lb[&quot;Cloud Load Balancer
+            IP: 35.200.100.10&quot;]
+            
+            lb_service --&gt; lbp1 &amp; lbp2 &amp; lbp3
+            cloud_lb --&gt; lbnode1 &amp; lbnode2
+            lbnode1 &amp; lbnode2 --&gt; lb_service
+            
+            external_clients[&quot;Internet Clients&quot;] --&gt; cloud_lb
+        end
+        
+        %% Ingress section
+        subgraph INGRESS[&quot;Ingress&quot;]
+            direction TB
+            
+            ingress_controller[&quot;Ingress Controller&quot;]
+            ingress_resource[&quot;Ingress Resource
+            host: myapp.example.com → service: myapp
+            host: api.example.com → service: api&quot;]
+            
+            subgraph INGRESS_SERVICES[&quot;Backend Services&quot;]
+                direction LR
+                svc1[&quot;Service: myapp
+                Type: ClusterIP&quot;]
+                svc2[&quot;Service: api
+                Type: ClusterIP&quot;]
+            end
+            
+            subgraph INGRESS_PODS[&quot;Backend Pods&quot;]
+                direction TB
+                ip1[&quot;myapp Pods&quot;]
+                ip2[&quot;api Pods&quot;]
+            end
+            
+            cloud_lb2[&quot;Cloud Load Balancer
+            IP: 35.200.100.20&quot;]
+            
+            external_clients2[&quot;Internet Clients&quot;] --&gt; cloud_lb2
+            cloud_lb2 --&gt; ingress_controller
+            ingress_controller --&gt; ingress_resource
+            ingress_resource --&gt; svc1 &amp; svc2
+            svc1 --&gt; ip1
+            svc2 --&gt; ip2
+        end
+    end
+    
+    %% Explainer Section
+    subgraph LEGEND[&quot;Service Types Explanation&quot;]
+        direction TB
+        
+        clusterip_ex[&quot;ClusterIP:
+        - Internal access only
+        - Stable internal IP address
+        - Load balances to pods
+        - Default service type&quot;]
+        
+        nodeport_ex[&quot;NodePort:
+        - Exposes service on each node&#x27;s IP
+        - Fixed port on each node
+        - Routes to ClusterIP service
+        - Port range: 30000-32767&quot;]
+        
+        lb_ex[&quot;LoadBalancer:
+        - External load balancer
+        - Exposes service externally
+        - Routes to NodePort service
+        - Cloud provider specific&quot;]
+        
+        ingress_ex[&quot;Ingress:
+        - HTTP/HTTPS routing
+        - SSL termination
+        - Path-based routing
+        - Name-based virtual hosting&quot;]
+    end
+        
+    %% Connections between components
+    CLUSTERIP ~~~ NODEPORT
+    NODEPORT ~~~ LOADBALANCER
+    LOADBALANCER ~~~ INGRESS
+    
+    CLUSTERIP --- clusterip_ex
+    NODEPORT --- nodeport_ex
+    LOADBALANCER --- lb_ex
+    INGRESS --- ingress_ex</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;,
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TB
+    %% Main container for services architecture
+    subgraph K8S[&quot;Kubernetes Service Types&quot;]
+        direction TB
+        
+        %% ClusterIP section
+        subgraph CLUSTERIP[&quot;ClusterIP Service&quot;]
+            direction TB
+            
+            cluster_service[&quot;Service: ClusterIP
+            Type: ClusterIP
+            IP: 10.96.0.10&quot;]
+            
+            subgraph CLUSTER_PODS[&quot;Target Pods&quot;]
+                direction LR
+                cp1[&quot;Pod 1
+                10.1.0.4&quot;]
+                cp2[&quot;Pod 2
+                10.1.0.5&quot;]
+                cp3[&quot;Pod 3
+                10.1.0.6&quot;]
+            end
+            
+            cluster_service --&gt; cp1 &amp; cp2 &amp; cp3
+            
+            subgraph CLUSTER_CLIENTS[&quot;Clients&quot;]
+                direction LR
+                cc1[&quot;Pod A
+                (Internal)&quot;]
+            end
+            
+            cc1 --&gt; cluster_service
+        end
+        
+        %% NodePort section
+        subgraph NODEPORT[&quot;NodePort Service&quot;]
+            direction TB
+            
+            node_service[&quot;Service: MyApp
+            Type: NodePort
+            ClusterIP: 10.96.0.20
+            NodePort: 30080&quot;]
+            
+            subgraph NODES[&quot;Kubernetes Nodes&quot;]
+                direction LR
+                node1[&quot;Node 1
+                IP: 192.168.1.10
+                Port: 30080&quot;]
+                node2[&quot;Node 2
+                IP: 192.168.1.11
+                Port: 30080&quot;]
+            end
+            
+            subgraph NODE_PODS[&quot;Target Pods&quot;]
+                direction LR
+                np1[&quot;Pod 1
+                10.1.0.7&quot;]
+                np2[&quot;Pod 2
+                10.1.0.8&quot;]
+            end
+            
+            node_service --&gt; np1 &amp; np2
+            node1 &amp; node2 --&gt; node_service
+            
+            external_client1[&quot;External Client&quot;] --&gt; node1
+            external_client1 --&gt; node2
+        end
+        
+        %% LoadBalancer section
+        subgraph LOADBALANCER[&quot;LoadBalancer Service&quot;]
+            direction TB
+            
+            lb_service[&quot;Service: WebApp
+            Type: LoadBalancer
+            ClusterIP: 10.96.0.30
+            NodePort: 30443
+            External IP: 35.200.100.10&quot;]
+            
+            subgraph LBNODES[&quot;Kubernetes Nodes&quot;]
+                direction LR
+                lbnode1[&quot;Node 1
+                IP: 192.168.1.10
+                Port: 30443&quot;]
+                lbnode2[&quot;Node 2
+                IP: 192.168.1.11
+                Port: 30443&quot;]
+            end
+            
+            subgraph LB_PODS[&quot;Target Pods&quot;]
+                direction LR
+                lbp1[&quot;Pod 1
+                10.1.0.9&quot;]
+                lbp2[&quot;Pod 2
+                10.1.0.10&quot;]
+                lbp3[&quot;Pod 3
+                10.1.0.11&quot;]
+            end
+            
+            cloud_lb[&quot;Cloud Load Balancer
+            IP: 35.200.100.10&quot;]
+            
+            lb_service --&gt; lbp1 &amp; lbp2 &amp; lbp3
+            cloud_lb --&gt; lbnode1 &amp; lbnode2
+            lbnode1 &amp; lbnode2 --&gt; lb_service
+            
+            external_clients[&quot;Internet Clients&quot;] --&gt; cloud_lb
+        end
+        
+        %% Ingress section
+        subgraph INGRESS[&quot;Ingress&quot;]
+            direction TB
+            
+            ingress_controller[&quot;Ingress Controller&quot;]
+            ingress_resource[&quot;Ingress Resource
+            host: myapp.example.com → service: myapp
+            host: api.example.com → service: api&quot;]
+            
+            subgraph INGRESS_SERVICES[&quot;Backend Services&quot;]
+                direction LR
+                svc1[&quot;Service: myapp
+                Type: ClusterIP&quot;]
+                svc2[&quot;Service: api
+                Type: ClusterIP&quot;]
+            end
+            
+            subgraph INGRESS_PODS[&quot;Backend Pods&quot;]
+                direction TB
+                ip1[&quot;myapp Pods&quot;]
+                ip2[&quot;api Pods&quot;]
+            end
+            
+            cloud_lb2[&quot;Cloud Load Balancer
+            IP: 35.200.100.20&quot;]
+            
+            external_clients2[&quot;Internet Clients&quot;] --&gt; cloud_lb2
+            cloud_lb2 --&gt; ingress_controller
+            ingress_controller --&gt; ingress_resource
+            ingress_resource --&gt; svc1 &amp; svc2
+            svc1 --&gt; ip1
+            svc2 --&gt; ip2
+        end
+    end
+    
+    %% Explainer Section
+    subgraph LEGEND[&quot;Service Types Explanation&quot;]
+        direction TB
+        
+        clusterip_ex[&quot;ClusterIP:
+        - Internal access only
+        - Stable internal IP address
+        - Load balances to pods
+        - Default service type&quot;]
+        
+        nodeport_ex[&quot;NodePort:
+        - Exposes service on each node&#x27;s IP
+        - Fixed port on each node
+        - Routes to ClusterIP service
+        - Port range: 30000-32767&quot;]
+        
+        lb_ex[&quot;LoadBalancer:
+        - External load balancer
+        - Exposes service externally
+        - Routes to NodePort service
+        - Cloud provider specific&quot;]
+        
+        ingress_ex[&quot;Ingress:
+        - HTTP/HTTPS routing
+        - SSL termination
+        - Path-based routing
+        - Name-based virtual hosting&quot;]
+    end
+        
+    %% Connections between components
+    CLUSTERIP ~~~ NODEPORT
+    NODEPORT ~~~ LOADBALANCER
+    LOADBALANCER ~~~ INGRESS
+    
+    CLUSTERIP --- clusterip_ex
+    NODEPORT --- nodeport_ex
+    LOADBALANCER --- lb_ex
+    INGRESS --- ingress_ex</pre></details>
+  </figure>
+</div>
+<h2 id="linux" class="domain">Linux <span class="count">5</span></h2>
+<div class="grid">
+  <figure class="card" data-name="container_linux_journey container lifecycle from image to running process">
+    <figcaption>
+      <span class="dtitle">Container Linux Journey</span>
+      <code class="path">linux/container_linux_journey.mermaid</code>
+      <span class="desc">Container lifecycle from image to running process</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant User as User/Orchestration System
+    participant CLI as Docker/OCI CLI
+    participant Daemon as Docker Daemon/Container Runtime
+    participant Registry as Image Registry
+    participant Kernel as Linux Kernel
+    participant FS as File System
+    participant Container as Running Container
+
+    User-&gt;&gt;CLI: Create Dockerfile/OCI Instruction File
+    CLI-&gt;&gt;Daemon: Build Image Command
+    Daemon-&gt;&gt;Registry: Pull Base Image (if not local)
+    Registry-&gt;&gt;Daemon: Return Base Image
+    Daemon-&gt;&gt;FS: Create Union FS Layers
+    Daemon-&gt;&gt;Daemon: Execute Build Instructions (Layers)
+    Daemon-&gt;&gt;Registry: Store Final Image
+    User-&gt;&gt;Daemon: Request Start Container
+    Daemon-&gt;&gt;Kernel: Create PID Namespace
+    Daemon-&gt;&gt;Kernel: Create NET Namespace
+    Daemon-&gt;&gt;Kernel: Create IPC Namespace
+    Daemon-&gt;&gt;Kernel: Create MNT Namespace
+    Daemon-&gt;&gt;Kernel: Create UTS Namespace
+    Daemon-&gt;&gt;Kernel: Create USER Namespace
+    Daemon-&gt;&gt;Kernel: Create CGROUP Namespace
+    Daemon-&gt;&gt;Kernel: Create cgroups (Resource Limits)
+    Kernel-&gt;&gt;FS: Setup Union FS for Container
+    Daemon-&gt;&gt;Container: Start Container&#x27;s Init Process
+    Kernel-&gt;&gt;Container: Isolate Container in Namespaces
+    Container-&gt;&gt;Container: Execute Application in Isolation
+    User-&gt;&gt;Daemon: Request Stop Container
+    Container-&gt;&gt;Daemon: Signal Container Stop
+    Daemon-&gt;&gt;Kernel: Reclaim cgroups Resources
+    FS-&gt;&gt;Daemon: Cleanup Union FS Layers
+    Daemon-&gt;&gt;User: Confirm Container Stopped
+
+    %% Note
+    Note over User,Container: Linux Container Lifecycle with Namespace Detail
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant User as User/Orchestration System
+    participant CLI as Docker/OCI CLI
+    participant Daemon as Docker Daemon/Container Runtime
+    participant Registry as Image Registry
+    participant Kernel as Linux Kernel
+    participant FS as File System
+    participant Container as Running Container
+
+    User-&gt;&gt;CLI: Create Dockerfile/OCI Instruction File
+    CLI-&gt;&gt;Daemon: Build Image Command
+    Daemon-&gt;&gt;Registry: Pull Base Image (if not local)
+    Registry-&gt;&gt;Daemon: Return Base Image
+    Daemon-&gt;&gt;FS: Create Union FS Layers
+    Daemon-&gt;&gt;Daemon: Execute Build Instructions (Layers)
+    Daemon-&gt;&gt;Registry: Store Final Image
+    User-&gt;&gt;Daemon: Request Start Container
+    Daemon-&gt;&gt;Kernel: Create PID Namespace
+    Daemon-&gt;&gt;Kernel: Create NET Namespace
+    Daemon-&gt;&gt;Kernel: Create IPC Namespace
+    Daemon-&gt;&gt;Kernel: Create MNT Namespace
+    Daemon-&gt;&gt;Kernel: Create UTS Namespace
+    Daemon-&gt;&gt;Kernel: Create USER Namespace
+    Daemon-&gt;&gt;Kernel: Create CGROUP Namespace
+    Daemon-&gt;&gt;Kernel: Create cgroups (Resource Limits)
+    Kernel-&gt;&gt;FS: Setup Union FS for Container
+    Daemon-&gt;&gt;Container: Start Container&#x27;s Init Process
+    Kernel-&gt;&gt;Container: Isolate Container in Namespaces
+    Container-&gt;&gt;Container: Execute Application in Isolation
+    User-&gt;&gt;Daemon: Request Stop Container
+    Container-&gt;&gt;Daemon: Signal Container Stop
+    Daemon-&gt;&gt;Kernel: Reclaim cgroups Resources
+    FS-&gt;&gt;Daemon: Cleanup Union FS Layers
+    Daemon-&gt;&gt;User: Confirm Container Stopped
+
+    %% Note
+    Note over User,Container: Linux Container Lifecycle with Namespace Detail
+</pre></details>
+  </figure>
+  <figure class="card" data-name="linux_boot boot sequence from bios/uefi to user login">
+    <figcaption>
+      <span class="dtitle">Linux Boot</span>
+      <code class="path">linux/linux_boot.mermaid</code>
+      <span class="desc">Boot sequence from BIOS/UEFI to user login</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;, 
+    &#x27;tertiaryBorderColor&#x27;: &#x27;#176127&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    %% === LINUX BOOT PROCESS DIAGRAM ===
+    %% Title: Linux Boot Sequence
+    %% Description: Detailed flow of Linux system startup from power-on to user login
+
+    %% Component Definitions with Icons
+    participant Power as 🔌 Power On
+    participant BIOS as 🔧 BIOS/UEFI
+    participant Disk as 💽 Boot Device
+    participant Bootloader as 🥾 GRUB/LILO
+    participant Kernel as 🐧 Linux Kernel
+    participant Init as ⚙️ Init/Systemd
+    participant Services as 🔄 Services
+    participant Display as 🖥️ Display Manager
+
+    %% No custom styling for better compatibility
+    
+    %% Phase 1: Hardware Initialization
+    rect rgb(40,20,15)
+    note over Power,Display: &lt;b&gt;Phase 1: Hardware Initialization&lt;/b&gt;
+    
+    Power-&gt;&gt;+BIOS: System power activated
+    note right of Power: POST begins
+    
+    BIOS--&gt;&gt;BIOS: Power-On Self Test (POST)
+    BIOS--&gt;&gt;BIOS: Initialize core hardware
+    BIOS-&gt;&gt;-Disk: Locate boot device
+    
+    note left of BIOS: Check boot sequence&lt;br/&gt;in CMOS settings
+    end
+
+    %% Phase 2: Bootloader Stage
+    rect rgb(40,30,15)
+    note over Power,Display: &lt;b&gt;Phase 2: Bootloader Stage&lt;/b&gt;
+    
+    Disk-&gt;&gt;+Bootloader: Load bootloader from MBR/GPT
+    
+    alt UEFI System
+        note over Bootloader: Load from EFI System Partition
+    else Legacy BIOS
+        note over Bootloader: Load from Master Boot Record
+    end
+    
+    Bootloader--&gt;&gt;Bootloader: Display boot menu
+    Bootloader--&gt;&gt;Bootloader: Load boot parameters
+    Bootloader-&gt;&gt;-Kernel: Load kernel &amp; initramfs
+    
+    note right of Bootloader: Pass kernel parameters&lt;br/&gt;like root device location
+    end
+    
+    %% Phase 3: Kernel Initialization
+    rect rgb(15,40,15)
+    note over Power,Display: &lt;b&gt;Phase 3: Kernel Initialization&lt;/b&gt;
+    
+    Kernel--&gt;&gt;Kernel: Decompress itself
+    Kernel--&gt;&gt;Kernel: Initialize memory management
+    Kernel--&gt;&gt;Kernel: Mount root filesystem (read-only)
+    Kernel--&gt;&gt;Kernel: Load essential drivers
+    
+    alt Using initramfs/initrd
+        Kernel--&gt;&gt;Kernel: Load drivers needed to&lt;br/&gt;mount actual root filesystem
+        Kernel--&gt;&gt;Kernel: Switch to actual root filesystem
+    end
+    
+    Kernel-&gt;&gt;+Init: Start first process (PID 1)
+    end
+    
+    %% Phase 4: System Initialization
+    rect rgb(15,25,40)
+    note over Power,Display: &lt;b&gt;Phase 4: System Initialization&lt;/b&gt;
+    
+    alt SystemD Init System
+        Init--&gt;&gt;Init: Parse /etc/systemd/system
+        Init-&gt;&gt;+Services: Start target units in dependency order
+    else SysVinit
+        Init--&gt;&gt;Init: Parse /etc/inittab
+        Init-&gt;&gt;+Services: Execute runlevel scripts in /etc/rc.d/
+    end
+    
+    Services--&gt;&gt;Services: Start system services
+    Services--&gt;&gt;Services: Configure network
+    Services--&gt;&gt;Services: Mount filesystems
+    Services-&gt;&gt;-Init: Core services started
+    
+    Init-&gt;&gt;+Display: Start display manager
+    end
+    
+    %% Phase 5: User Session
+    rect rgb(30,15,40)
+    note over Power,Display: &lt;b&gt;Phase 5: User Session&lt;/b&gt;
+    
+    Display--&gt;&gt;Display: Show login screen
+    Display-&gt;&gt;Display: Authenticate user
+    Display-&gt;&gt;-Init: Start user session
+    
+    note right of Display: Launch desktop environment&lt;br/&gt;or shell based on user profile
+    end
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;, 
+    &#x27;tertiaryBorderColor&#x27;: &#x27;#176127&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    %% === LINUX BOOT PROCESS DIAGRAM ===
+    %% Title: Linux Boot Sequence
+    %% Description: Detailed flow of Linux system startup from power-on to user login
+
+    %% Component Definitions with Icons
+    participant Power as 🔌 Power On
+    participant BIOS as 🔧 BIOS/UEFI
+    participant Disk as 💽 Boot Device
+    participant Bootloader as 🥾 GRUB/LILO
+    participant Kernel as 🐧 Linux Kernel
+    participant Init as ⚙️ Init/Systemd
+    participant Services as 🔄 Services
+    participant Display as 🖥️ Display Manager
+
+    %% No custom styling for better compatibility
+    
+    %% Phase 1: Hardware Initialization
+    rect rgb(40,20,15)
+    note over Power,Display: &lt;b&gt;Phase 1: Hardware Initialization&lt;/b&gt;
+    
+    Power-&gt;&gt;+BIOS: System power activated
+    note right of Power: POST begins
+    
+    BIOS--&gt;&gt;BIOS: Power-On Self Test (POST)
+    BIOS--&gt;&gt;BIOS: Initialize core hardware
+    BIOS-&gt;&gt;-Disk: Locate boot device
+    
+    note left of BIOS: Check boot sequence&lt;br/&gt;in CMOS settings
+    end
+
+    %% Phase 2: Bootloader Stage
+    rect rgb(40,30,15)
+    note over Power,Display: &lt;b&gt;Phase 2: Bootloader Stage&lt;/b&gt;
+    
+    Disk-&gt;&gt;+Bootloader: Load bootloader from MBR/GPT
+    
+    alt UEFI System
+        note over Bootloader: Load from EFI System Partition
+    else Legacy BIOS
+        note over Bootloader: Load from Master Boot Record
+    end
+    
+    Bootloader--&gt;&gt;Bootloader: Display boot menu
+    Bootloader--&gt;&gt;Bootloader: Load boot parameters
+    Bootloader-&gt;&gt;-Kernel: Load kernel &amp; initramfs
+    
+    note right of Bootloader: Pass kernel parameters&lt;br/&gt;like root device location
+    end
+    
+    %% Phase 3: Kernel Initialization
+    rect rgb(15,40,15)
+    note over Power,Display: &lt;b&gt;Phase 3: Kernel Initialization&lt;/b&gt;
+    
+    Kernel--&gt;&gt;Kernel: Decompress itself
+    Kernel--&gt;&gt;Kernel: Initialize memory management
+    Kernel--&gt;&gt;Kernel: Mount root filesystem (read-only)
+    Kernel--&gt;&gt;Kernel: Load essential drivers
+    
+    alt Using initramfs/initrd
+        Kernel--&gt;&gt;Kernel: Load drivers needed to&lt;br/&gt;mount actual root filesystem
+        Kernel--&gt;&gt;Kernel: Switch to actual root filesystem
+    end
+    
+    Kernel-&gt;&gt;+Init: Start first process (PID 1)
+    end
+    
+    %% Phase 4: System Initialization
+    rect rgb(15,25,40)
+    note over Power,Display: &lt;b&gt;Phase 4: System Initialization&lt;/b&gt;
+    
+    alt SystemD Init System
+        Init--&gt;&gt;Init: Parse /etc/systemd/system
+        Init-&gt;&gt;+Services: Start target units in dependency order
+    else SysVinit
+        Init--&gt;&gt;Init: Parse /etc/inittab
+        Init-&gt;&gt;+Services: Execute runlevel scripts in /etc/rc.d/
+    end
+    
+    Services--&gt;&gt;Services: Start system services
+    Services--&gt;&gt;Services: Configure network
+    Services--&gt;&gt;Services: Mount filesystems
+    Services-&gt;&gt;-Init: Core services started
+    
+    Init-&gt;&gt;+Display: Start display manager
+    end
+    
+    %% Phase 5: User Session
+    rect rgb(30,15,40)
+    note over Power,Display: &lt;b&gt;Phase 5: User Session&lt;/b&gt;
+    
+    Display--&gt;&gt;Display: Show login screen
+    Display-&gt;&gt;Display: Authenticate user
+    Display-&gt;&gt;-Init: Start user session
+    
+    note right of Display: Launch desktop environment&lt;br/&gt;or shell based on user profile
+    end
+</pre></details>
+  </figure>
+  <figure class="card" data-name="linux_process_journey process lifecycle in the linux kernel">
+    <figcaption>
+      <span class="dtitle">Linux Process Journey</span>
+      <code class="path">linux/linux_process_journey.mermaid</code>
+      <span class="desc">Process lifecycle in the Linux kernel</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant S as Start
+    participant P as Parent Process
+    participant C as Child Process
+    participant SCH as Scheduler
+    participant SYS as System Calls
+
+    S-&gt;&gt;P: Process Creation
+    P-&gt;&gt;C: fork() called
+    Note over C: Child Process Created
+    C-&gt;&gt;C: exec() to load new program
+    C-&gt;&gt;SCH: Enters Scheduler
+    SCH-&gt;&gt;C: Running
+    alt Interruptible Sleep
+        C-&gt;&gt;SYS: Sleep on I/O
+        SYS-&gt;&gt;C: Woken by event/signal
+    else Uninterruptible Sleep
+        C-&gt;&gt;SYS: Sleep on condition
+        SYS-&gt;&gt;C: Condition met
+    end
+    C-&gt;&gt;C: Continues Execution
+    C-&gt;&gt;C: Checks for termination
+    C-&gt;&gt;P: exit() called
+    P-&gt;&gt;P: wait()/waitpid() for C
+    P-&gt;&gt;SYS: Reaping and cleanup
+    Note over C: If not reaped
+    C-&gt;&gt;C: Becomes Zombie
+    Note over C: If parent exits first
+    C-&gt;&gt;P: Becomes Orphan
+    P-&gt;&gt;C: Adopted by init process
+
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant S as Start
+    participant P as Parent Process
+    participant C as Child Process
+    participant SCH as Scheduler
+    participant SYS as System Calls
+
+    S-&gt;&gt;P: Process Creation
+    P-&gt;&gt;C: fork() called
+    Note over C: Child Process Created
+    C-&gt;&gt;C: exec() to load new program
+    C-&gt;&gt;SCH: Enters Scheduler
+    SCH-&gt;&gt;C: Running
+    alt Interruptible Sleep
+        C-&gt;&gt;SYS: Sleep on I/O
+        SYS-&gt;&gt;C: Woken by event/signal
+    else Uninterruptible Sleep
+        C-&gt;&gt;SYS: Sleep on condition
+        SYS-&gt;&gt;C: Condition met
+    end
+    C-&gt;&gt;C: Continues Execution
+    C-&gt;&gt;C: Checks for termination
+    C-&gt;&gt;P: exit() called
+    P-&gt;&gt;P: wait()/waitpid() for C
+    P-&gt;&gt;SYS: Reaping and cleanup
+    Note over C: If not reaped
+    C-&gt;&gt;C: Becomes Zombie
+    Note over C: If parent exits first
+    C-&gt;&gt;P: Becomes Orphan
+    P-&gt;&gt;C: Adopted by init process
+
+</pre></details>
+  </figure>
+  <figure class="card" data-name="linux_process_w_threads_journey thread management within a process">
+    <figcaption>
+      <span class="dtitle">Linux Process W Threads Journey</span>
+      <code class="path">linux/linux_process_w_threads_journey.mermaid</code>
+      <span class="desc">Thread management within a process</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant S as Start
+    participant P as Parent Process
+    participant T1 as Thread 1
+    participant Tn as Thread N
+    participant SCH as Scheduler
+    participant SYS as System Calls
+
+    S-&gt;&gt;P: Process Creation
+    P-&gt;&gt;P: fork() called
+    Note over P: Process with multiple threads
+    P-&gt;&gt;T1: pthread_create()
+    P-&gt;&gt;Tn: pthread_create()
+    Note over T1,Tn: Threads Created
+    T1-&gt;&gt;SCH: Enters Scheduler
+    Tn-&gt;&gt;SCH: Enters Scheduler
+    SCH-&gt;&gt;T1: Running
+    SCH-&gt;&gt;Tn: Running
+    alt Thread 1 Sleep
+        T1-&gt;&gt;SYS: Sleep on I/O
+        SYS-&gt;&gt;T1: Woken by event/signal
+    else Thread N Sleep
+        Tn-&gt;&gt;SYS: Sleep on condition
+        SYS-&gt;&gt;Tn: Condition met
+    end
+    T1-&gt;&gt;T1: Continues Execution
+    Tn-&gt;&gt;Tn: Continues Execution
+    T1-&gt;&gt;P: pthread_exit()
+    Tn-&gt;&gt;P: pthread_exit()
+    P-&gt;&gt;P: wait() for threads to exit
+    Note over T1,Tn: Threads can synchronize with mutexes, semaphores, etc.
+    P-&gt;&gt;P: exit() called
+    P-&gt;&gt;SYS: Reaping and cleanup
+    Note over P: Process terminates
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant S as Start
+    participant P as Parent Process
+    participant T1 as Thread 1
+    participant Tn as Thread N
+    participant SCH as Scheduler
+    participant SYS as System Calls
+
+    S-&gt;&gt;P: Process Creation
+    P-&gt;&gt;P: fork() called
+    Note over P: Process with multiple threads
+    P-&gt;&gt;T1: pthread_create()
+    P-&gt;&gt;Tn: pthread_create()
+    Note over T1,Tn: Threads Created
+    T1-&gt;&gt;SCH: Enters Scheduler
+    Tn-&gt;&gt;SCH: Enters Scheduler
+    SCH-&gt;&gt;T1: Running
+    SCH-&gt;&gt;Tn: Running
+    alt Thread 1 Sleep
+        T1-&gt;&gt;SYS: Sleep on I/O
+        SYS-&gt;&gt;T1: Woken by event/signal
+    else Thread N Sleep
+        Tn-&gt;&gt;SYS: Sleep on condition
+        SYS-&gt;&gt;Tn: Condition met
+    end
+    T1-&gt;&gt;T1: Continues Execution
+    Tn-&gt;&gt;Tn: Continues Execution
+    T1-&gt;&gt;P: pthread_exit()
+    Tn-&gt;&gt;P: pthread_exit()
+    P-&gt;&gt;P: wait() for threads to exit
+    Note over T1,Tn: Threads can synchronize with mutexes, semaphores, etc.
+    P-&gt;&gt;P: exit() called
+    P-&gt;&gt;SYS: Reaping and cleanup
+    Note over P: Process terminates
+</pre></details>
+  </figure>
+  <figure class="card" data-name="linux_scheduler kernel scheduler operation (cfs)">
+    <figcaption>
+      <span class="dtitle">Linux Scheduler</span>
+      <code class="path">linux/linux_scheduler.mermaid</code>
+      <span class="desc">Kernel scheduler operation (CFS)</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant T as Task
+    participant SC as System Call Interface
+    participant S as Scheduler
+    participant C as CPU
+
+    T-&gt;&gt;SC: sleep() / sched_yield()
+    SC-&gt;&gt;S: Invoke schedule()
+    Note over S: Scheduler selects next task
+    S-&gt;&gt;T: Context switch
+    T-&gt;&gt;C: Executes on CPU
+    T-&gt;&gt;SC: sleep() / wait() / exit()
+    SC-&gt;&gt;S: Update task state
+    S-&gt;&gt;S: Load balancing
+    S-&gt;&gt;T: Context switch (if required)
+    T-&gt;&gt;C: Resumes execution
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant T as Task
+    participant SC as System Call Interface
+    participant S as Scheduler
+    participant C as CPU
+
+    T-&gt;&gt;SC: sleep() / sched_yield()
+    SC-&gt;&gt;S: Invoke schedule()
+    Note over S: Scheduler selects next task
+    S-&gt;&gt;T: Context switch
+    T-&gt;&gt;C: Executes on CPU
+    T-&gt;&gt;SC: sleep() / wait() / exit()
+    SC-&gt;&gt;S: Update task state
+    S-&gt;&gt;S: Load balancing
+    S-&gt;&gt;T: Context switch (if required)
+    T-&gt;&gt;C: Resumes execution
+</pre></details>
+  </figure>
+</div>
+<h2 id="networking-security" class="domain">Networking &amp; Security <span class="count">4</span></h2>
+<div class="grid">
+  <figure class="card" data-name="dhcp_dns address configuration and name resolution">
+    <figcaption>
+      <span class="dtitle">Dhcp Dns</span>
+      <code class="path">networking-security/dhcp_dns.mermaid</code>
+      <span class="desc">Address configuration and name resolution</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: {
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant C as Client
+    participant DH as DHCP Server
+    participant DNS as DNS Server
+
+    Note over C,DH: Connection starts
+    C-&gt;&gt;+DH: DHCPDISCOVER (UDP, src=68, dst=67)
+    Note over DH: DHCP Server selects IP
+    DH-&gt;&gt;+C: DHCPOFFER (Offered IP, Lease Time, DNS Info)
+    C-&gt;&gt;+DH: DHCPREQUEST (Requested IP, Server ID)
+    DH-&gt;&gt;+C: DHCPACK (IP, Lease Time, DNS Info)
+    Note over C: IP Configuration Complete
+
+    Note over DH,DNS: DNS Update Begins
+    DH-&gt;&gt;+DNS: DNS Update Request (A Record for Client FQDN)
+    alt DNS Secure Update
+        DNS-&gt;&gt;DH: Challenge for Authentication
+        DH-&gt;&gt;DNS: Response with Credentials
+    end
+    DNS-&gt;&gt;DH: DNS Update Response (Success)
+    opt Reverse DNS Update
+        DH-&gt;&gt;+DNS: DNS Update Request (PTR Record)
+        DNS-&gt;&gt;DH: DNS Update Response (Success)
+    end
+    Note over C,DNS: FQDN and IP Resolution Ready
+
+    opt Client Verifies DNS Update
+        C-&gt;&gt;+DNS: DNS Query (FQDN)
+        DNS-&gt;&gt;+C: DNS Response (Client IP)
+    end
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: {
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant C as Client
+    participant DH as DHCP Server
+    participant DNS as DNS Server
+
+    Note over C,DH: Connection starts
+    C-&gt;&gt;+DH: DHCPDISCOVER (UDP, src=68, dst=67)
+    Note over DH: DHCP Server selects IP
+    DH-&gt;&gt;+C: DHCPOFFER (Offered IP, Lease Time, DNS Info)
+    C-&gt;&gt;+DH: DHCPREQUEST (Requested IP, Server ID)
+    DH-&gt;&gt;+C: DHCPACK (IP, Lease Time, DNS Info)
+    Note over C: IP Configuration Complete
+
+    Note over DH,DNS: DNS Update Begins
+    DH-&gt;&gt;+DNS: DNS Update Request (A Record for Client FQDN)
+    alt DNS Secure Update
+        DNS-&gt;&gt;DH: Challenge for Authentication
+        DH-&gt;&gt;DNS: Response with Credentials
+    end
+    DNS-&gt;&gt;DH: DNS Update Response (Success)
+    opt Reverse DNS Update
+        DH-&gt;&gt;+DNS: DNS Update Request (PTR Record)
+        DNS-&gt;&gt;DH: DNS Update Response (Success)
+    end
+    Note over C,DNS: FQDN and IP Resolution Ready
+
+    opt Client Verifies DNS Update
+        C-&gt;&gt;+DNS: DNS Query (FQDN)
+        DNS-&gt;&gt;+C: DNS Response (Client IP)
+    end
+</pre></details>
+  </figure>
+  <figure class="card" data-name="saml saml authentication and authorization sequence">
+    <figcaption>
+      <span class="dtitle">Saml</span>
+      <code class="path">networking-security/saml.mermaid</code>
+      <span class="desc">SAML authentication and authorization sequence</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant User as User
+    participant Browser as User&#x27;s Browser
+    participant SP as Service Provider
+    participant IdP as Identity Provider
+
+    %% Initial User Request for Service
+    User-&gt;&gt;Browser: Navigate to Service
+    Browser-&gt;&gt;SP: Access Service Request
+
+    %% SP Initiates SAML Authentication Process
+    SP-&gt;&gt;Browser: Redirect with SAML Authentication Request
+    Browser-&gt;&gt;IdP: Forward SAML Authentication Request
+
+    %% User Authenticates with IdP
+    IdP-&gt;&gt;Browser: Display Login Page
+    Browser-&gt;&gt;User: Prompt for Credentials
+    User-&gt;&gt;Browser: Enter Credentials
+    Browser-&gt;&gt;IdP: Submit Credentials
+    IdP-&gt;&gt;IdP: Validate Credentials
+
+    %% IdP Generates SAML Assertion
+    alt Credentials Valid
+        IdP-&gt;&gt;IdP: Generate SAML Assertion (User Info &amp; Authn Statement)
+    else Credentials Invalid
+        IdP-&gt;&gt;Browser: Display Error
+        Browser-&gt;&gt;User: Show Authentication Failure
+        end
+
+    %% Assertion Sent to SP Through Browser
+    IdP-&gt;&gt;Browser: Redirect with SAML Assertion
+    Browser-&gt;&gt;SP: Forward SAML Assertion
+
+    %% SP Processes the Assertion
+    SP-&gt;&gt;SP: Extract Assertion
+    SP-&gt;&gt;SP: Validate Signature &amp; Assertion Content
+    alt Signature and Assertion Valid
+        SP-&gt;&gt;SP: Create/Update User Session
+    else Signature or Assertion Invalid
+        SP-&gt;&gt;Browser: Display Error
+        Browser-&gt;&gt;User: Show Access Denied
+        end
+
+    %% Grant Access if Valid
+    alt User Session Created/Updated Successfully
+        SP-&gt;&gt;Browser: Grant Access to Service
+        Browser-&gt;&gt;User: Display Service Content
+    end
+
+    %% Note
+    Note over User,IdP: Authentication Phase
+    Note over SP,User: Authorization &amp; Session Creation Phase
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant User as User
+    participant Browser as User&#x27;s Browser
+    participant SP as Service Provider
+    participant IdP as Identity Provider
+
+    %% Initial User Request for Service
+    User-&gt;&gt;Browser: Navigate to Service
+    Browser-&gt;&gt;SP: Access Service Request
+
+    %% SP Initiates SAML Authentication Process
+    SP-&gt;&gt;Browser: Redirect with SAML Authentication Request
+    Browser-&gt;&gt;IdP: Forward SAML Authentication Request
+
+    %% User Authenticates with IdP
+    IdP-&gt;&gt;Browser: Display Login Page
+    Browser-&gt;&gt;User: Prompt for Credentials
+    User-&gt;&gt;Browser: Enter Credentials
+    Browser-&gt;&gt;IdP: Submit Credentials
+    IdP-&gt;&gt;IdP: Validate Credentials
+
+    %% IdP Generates SAML Assertion
+    alt Credentials Valid
+        IdP-&gt;&gt;IdP: Generate SAML Assertion (User Info &amp; Authn Statement)
+    else Credentials Invalid
+        IdP-&gt;&gt;Browser: Display Error
+        Browser-&gt;&gt;User: Show Authentication Failure
+        end
+
+    %% Assertion Sent to SP Through Browser
+    IdP-&gt;&gt;Browser: Redirect with SAML Assertion
+    Browser-&gt;&gt;SP: Forward SAML Assertion
+
+    %% SP Processes the Assertion
+    SP-&gt;&gt;SP: Extract Assertion
+    SP-&gt;&gt;SP: Validate Signature &amp; Assertion Content
+    alt Signature and Assertion Valid
+        SP-&gt;&gt;SP: Create/Update User Session
+    else Signature or Assertion Invalid
+        SP-&gt;&gt;Browser: Display Error
+        Browser-&gt;&gt;User: Show Access Denied
+        end
+
+    %% Grant Access if Valid
+    alt User Session Created/Updated Successfully
+        SP-&gt;&gt;Browser: Grant Access to Service
+        Browser-&gt;&gt;User: Display Service Content
+    end
+
+    %% Note
+    Note over User,IdP: Authentication Phase
+    Note over SP,User: Authorization &amp; Session Creation Phase
+</pre></details>
+  </figure>
+  <figure class="card" data-name="ssl tls/ssl handshake flow">
+    <figcaption>
+      <span class="dtitle">Ssl</span>
+      <code class="path">networking-security/ssl.mermaid</code>
+      <span class="desc">TLS/SSL handshake flow</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;, 
+    &#x27;tertiaryBorderColor&#x27;: &#x27;#176127&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    %% === TLS/SSL HANDSHAKE DIAGRAM ===
+    %% Title: TLS/SSL Handshake and Secure Communication
+    %% Description: Shows the TLS 1.2 handshake process and subsequent encrypted communication
+
+    %% Component Definitions
+    participant Client as 💻 Client
+    participant Server as 🖥️ Server
+    
+    %% No custom styling for better compatibility
+    
+    %% Handshake Phase
+    rect rgb(15,25,40)
+    note over Client,Server: &lt;b&gt;Phase 1: Handshake&lt;/b&gt;
+
+    %% Initial Hello Messages
+    Client-&gt;&gt;Server: ClientHello&lt;br/&gt;(TLS versions, cipher suites, random)
+    note right of Client: Supports TLS 1.0-1.3&lt;br/&gt;Offers modern ciphers
+    Server-&gt;&gt;Client: ServerHello&lt;br/&gt;(Selected TLS version, cipher suite, random)
+    note left of Server: Selects highest&lt;br/&gt;supported version
+
+    %% Certificate Exchange
+    Server-&gt;&gt;Client: Certificate&lt;br/&gt;(Server&#x27;s X.509 certificate chain)
+    note left of Server: Contains public key&lt;br/&gt;and digital signature
+    
+    %% Key Exchange
+    alt ECDHE/DHE Key Exchange (Forward Secrecy)
+        Server-&gt;&gt;Client: ServerKeyExchange&lt;br/&gt;(DH/ECDH parameters signed by server)
+        note left of Server: Enables perfect&lt;br/&gt;forward secrecy
+    else RSA Key Exchange
+        note over Client,Server: No ServerKeyExchange&lt;br/&gt;(Using RSA direct encryption)
+    end
+    
+    Server-&gt;&gt;Client: ServerHelloDone
+    
+    %% Client Response
+    Client-&gt;&gt;Server: ClientKeyExchange&lt;br/&gt;(Pre-master secret)
+    note right of Client: Key material protected&lt;br/&gt;by server&#x27;s public key&lt;br/&gt;or ECDHE/DHE
+    
+    %% Switch to Encrypted Communication
+    Client-&gt;&gt;Server: ChangeCipherSpec
+    Client-&gt;&gt;Server: Finished (Encrypted with session keys)
+    Server-&gt;&gt;Client: ChangeCipherSpec
+    Server-&gt;&gt;Client: Finished (Encrypted with session keys)
+    
+    note over Client,Server: &lt;b&gt;Session Keys Established&lt;/b&gt;
+    end
+    
+    %% Encrypted Communication Phase
+    rect rgb(15,40,15)
+    note over Client,Server: &lt;b&gt;Phase 2: Encrypted Communication&lt;/b&gt;
+    
+    Client-&gt;&gt;Server: Encrypted Application Data
+    Server-&gt;&gt;Client: Encrypted Application Data
+    
+    opt Session Resumption
+        note over Client,Server: For future connections:&lt;br/&gt;TLS Session ID or Tickets&lt;br/&gt;enable faster reconnection
+    end
+    end
+    
+    %% TLS 1.3 Handshake (Optional)
+    note over Client,Server: &lt;b&gt;TLS 1.3 Handshake (Improved)&lt;/b&gt;
+    note over Client,Server: TLS 1.3 reduces handshake to 1-RTT&lt;br/&gt;by combining ClientHello and key share&lt;br/&gt;and requires perfect forward secrecy
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#326CE5&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#2857A4&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#28A745&#x27;, 
+    &#x27;tertiaryBorderColor&#x27;: &#x27;#176127&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    %% === TLS/SSL HANDSHAKE DIAGRAM ===
+    %% Title: TLS/SSL Handshake and Secure Communication
+    %% Description: Shows the TLS 1.2 handshake process and subsequent encrypted communication
+
+    %% Component Definitions
+    participant Client as 💻 Client
+    participant Server as 🖥️ Server
+    
+    %% No custom styling for better compatibility
+    
+    %% Handshake Phase
+    rect rgb(15,25,40)
+    note over Client,Server: &lt;b&gt;Phase 1: Handshake&lt;/b&gt;
+
+    %% Initial Hello Messages
+    Client-&gt;&gt;Server: ClientHello&lt;br/&gt;(TLS versions, cipher suites, random)
+    note right of Client: Supports TLS 1.0-1.3&lt;br/&gt;Offers modern ciphers
+    Server-&gt;&gt;Client: ServerHello&lt;br/&gt;(Selected TLS version, cipher suite, random)
+    note left of Server: Selects highest&lt;br/&gt;supported version
+
+    %% Certificate Exchange
+    Server-&gt;&gt;Client: Certificate&lt;br/&gt;(Server&#x27;s X.509 certificate chain)
+    note left of Server: Contains public key&lt;br/&gt;and digital signature
+    
+    %% Key Exchange
+    alt ECDHE/DHE Key Exchange (Forward Secrecy)
+        Server-&gt;&gt;Client: ServerKeyExchange&lt;br/&gt;(DH/ECDH parameters signed by server)
+        note left of Server: Enables perfect&lt;br/&gt;forward secrecy
+    else RSA Key Exchange
+        note over Client,Server: No ServerKeyExchange&lt;br/&gt;(Using RSA direct encryption)
+    end
+    
+    Server-&gt;&gt;Client: ServerHelloDone
+    
+    %% Client Response
+    Client-&gt;&gt;Server: ClientKeyExchange&lt;br/&gt;(Pre-master secret)
+    note right of Client: Key material protected&lt;br/&gt;by server&#x27;s public key&lt;br/&gt;or ECDHE/DHE
+    
+    %% Switch to Encrypted Communication
+    Client-&gt;&gt;Server: ChangeCipherSpec
+    Client-&gt;&gt;Server: Finished (Encrypted with session keys)
+    Server-&gt;&gt;Client: ChangeCipherSpec
+    Server-&gt;&gt;Client: Finished (Encrypted with session keys)
+    
+    note over Client,Server: &lt;b&gt;Session Keys Established&lt;/b&gt;
+    end
+    
+    %% Encrypted Communication Phase
+    rect rgb(15,40,15)
+    note over Client,Server: &lt;b&gt;Phase 2: Encrypted Communication&lt;/b&gt;
+    
+    Client-&gt;&gt;Server: Encrypted Application Data
+    Server-&gt;&gt;Client: Encrypted Application Data
+    
+    opt Session Resumption
+        note over Client,Server: For future connections:&lt;br/&gt;TLS Session ID or Tickets&lt;br/&gt;enable faster reconnection
+    end
+    end
+    
+    %% TLS 1.3 Handshake (Optional)
+    note over Client,Server: &lt;b&gt;TLS 1.3 Handshake (Improved)&lt;/b&gt;
+    note over Client,Server: TLS 1.3 reduces handshake to 1-RTT&lt;br/&gt;by combining ClientHello and key share&lt;br/&gt;and requires perfect forward secrecy
+</pre></details>
+  </figure>
+  <figure class="card" data-name="vpn vpn tunneling and encapsulation">
+    <figcaption>
+      <span class="dtitle">Vpn</span>
+      <code class="path">networking-security/vpn.mermaid</code>
+      <span class="desc">VPN tunneling and encapsulation</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant User as User Device
+    participant Client as VPN Client
+    participant Internet as Internet
+    participant Server as VPN Server
+    participant Kernel as Destination Kernel
+    participant App as Destination Application
+
+    %% VPN Connection Establishment
+    User-&gt;&gt;Client: Initiate VPN connection
+    Client-&gt;&gt;Server: Request connection
+    Server-&gt;&gt;Client: Authenticate user
+    Client-&gt;&gt;Server: Establish encryption
+    Note over Client,Server: VPN Tunnel Established
+
+    %% Data Transmission from User to Destination
+    User-&gt;&gt;Client: Send data to App
+    Client-&gt;&gt;Client: Encrypt and encapsulate data
+    Client-&gt;&gt;Internet: Transmit data
+    Internet-&gt;&gt;Server: Route data
+    Server-&gt;&gt;Server: Decrypt and decapsulate data
+    Server-&gt;&gt;Kernel: Send to App
+    Kernel-&gt;&gt;App: Receive data
+
+    %% Data Transmission from Destination to User
+    App-&gt;&gt;Kernel: Send data to User
+    Kernel-&gt;&gt;Server: Encapsulate and encrypt data
+    Server-&gt;&gt;Internet: Transmit data
+    Internet-&gt;&gt;Client: Route data
+    Client-&gt;&gt;Client: Decrypt and decapsulate data
+    Client-&gt;&gt;User: Deliver data
+
+    %% VPN Tunnel Teardown (Optional)
+    User-&gt;&gt;Client: Disconnect VPN
+    Client-&gt;&gt;Server: Terminate session
+    Note over Client,Server: VPN Tunnel Closed
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+sequenceDiagram
+    participant User as User Device
+    participant Client as VPN Client
+    participant Internet as Internet
+    participant Server as VPN Server
+    participant Kernel as Destination Kernel
+    participant App as Destination Application
+
+    %% VPN Connection Establishment
+    User-&gt;&gt;Client: Initiate VPN connection
+    Client-&gt;&gt;Server: Request connection
+    Server-&gt;&gt;Client: Authenticate user
+    Client-&gt;&gt;Server: Establish encryption
+    Note over Client,Server: VPN Tunnel Established
+
+    %% Data Transmission from User to Destination
+    User-&gt;&gt;Client: Send data to App
+    Client-&gt;&gt;Client: Encrypt and encapsulate data
+    Client-&gt;&gt;Internet: Transmit data
+    Internet-&gt;&gt;Server: Route data
+    Server-&gt;&gt;Server: Decrypt and decapsulate data
+    Server-&gt;&gt;Kernel: Send to App
+    Kernel-&gt;&gt;App: Receive data
+
+    %% Data Transmission from Destination to User
+    App-&gt;&gt;Kernel: Send data to User
+    Kernel-&gt;&gt;Server: Encapsulate and encrypt data
+    Server-&gt;&gt;Internet: Transmit data
+    Internet-&gt;&gt;Client: Route data
+    Client-&gt;&gt;Client: Decrypt and decapsulate data
+    Client-&gt;&gt;User: Deliver data
+
+    %% VPN Tunnel Teardown (Optional)
+    User-&gt;&gt;Client: Disconnect VPN
+    Client-&gt;&gt;Server: Terminate session
+    Note over Client,Server: VPN Tunnel Closed
+</pre></details>
+  </figure>
+</div>
+<h2 id="runtimes-apps" class="domain">Runtimes &amp; Apps <span class="count">5</span></h2>
+<div class="grid">
+  <figure class="card" data-name="compiler compilation phases from source to executable">
+    <figcaption>
+      <span class="dtitle">Compiler</span>
+      <code class="path">runtimes-apps/compiler.mermaid</code>
+      <span class="desc">Compilation phases from source to executable</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD;
+    A(Start: Source Code) --&gt; B(Preprocessing)
+    B --&gt; C(Lexical Analysis)
+    C --&gt; D(Syntax Analysis)
+    D --&gt; E(Semantic Analysis)
+    E --&gt; F(Intermediate Code Generation)
+    F --&gt; G(Optimization)
+    G --&gt; H(Code Generation)
+    H --&gt; I(Assembly)
+    I --&gt; J(Linking)
+    J --&gt; K(Executable Program)
+    %% Optional Details
+    B -.-&gt; L{Macros Expansion}
+    B -.-&gt; M{Conditional Compilation}
+    B -.-&gt; N{File Inclusion}
+    D -.-&gt; O{&quot;Abstract Syntax Tree (AST) Construction&quot;}
+    E -.-&gt; P{Type Checking}
+    E -.-&gt; Q{Scope Resolution}
+    G -.-&gt; R{Machine-Independent Optimizations}
+    G -.-&gt; S{Machine-Dependent Optimizations}
+    H -.-&gt; T{Register Allocation}
+    H -.-&gt; U{Instruction Selection}
+    I -.-&gt; V{Translate to Machine Code}
+    J -.-&gt; W{Resolve External References}
+
+    %% No custom styling for better compatibility
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD;
+    A(Start: Source Code) --&gt; B(Preprocessing)
+    B --&gt; C(Lexical Analysis)
+    C --&gt; D(Syntax Analysis)
+    D --&gt; E(Semantic Analysis)
+    E --&gt; F(Intermediate Code Generation)
+    F --&gt; G(Optimization)
+    G --&gt; H(Code Generation)
+    H --&gt; I(Assembly)
+    I --&gt; J(Linking)
+    J --&gt; K(Executable Program)
+    %% Optional Details
+    B -.-&gt; L{Macros Expansion}
+    B -.-&gt; M{Conditional Compilation}
+    B -.-&gt; N{File Inclusion}
+    D -.-&gt; O{&quot;Abstract Syntax Tree (AST) Construction&quot;}
+    E -.-&gt; P{Type Checking}
+    E -.-&gt; Q{Scope Resolution}
+    G -.-&gt; R{Machine-Independent Optimizations}
+    G -.-&gt; S{Machine-Dependent Optimizations}
+    H -.-&gt; T{Register Allocation}
+    H -.-&gt; U{Instruction Selection}
+    I -.-&gt; V{Translate to Machine Code}
+    J -.-&gt; W{Resolve External References}
+
+    %% No custom styling for better compatibility
+</pre></details>
+  </figure>
+  <figure class="card" data-name="complex_web_app enterprise cloud architecture">
+    <figcaption>
+      <span class="dtitle">Complex Web App</span>
+      <code class="path">runtimes-apps/complex_web_app.mermaid</code>
+      <span class="desc">Enterprise cloud architecture</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#FF9900&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#E88A00&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#232F3E&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#527FFF&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;clusterBkg&#x27;: &#x27;#1E1E1E&#x27;,
+    &#x27;clusterBorder&#x27;: &#x27;#444444&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD
+    Client(Client) --&gt;|Resolves domain| DNS(DNS)
+    Client --&gt;|Fetches static content| CDN(CDN)
+    Client --&gt;|Connects to| WAF(Web Application Firewall)
+
+    WAF --&gt;|Protects &amp; Rate Limits| APIGWS(API Gateway)
+    APIGWS --&gt;|Routes requests to| LB
+    CDN --&gt;|Serves static assets from S3|S3AWS
+
+    subgraph LoadBalancer
+        LB(&quot;Load Balancer&quot;)
+    end
+
+    subgraph WS[Web Services]
+        direction TB
+        WebServer1[Web Servers]
+    end
+
+    subgraph Auth[Auth Services]
+        direction TB
+        AuthWorkers[Auth Workers] --&gt; IDP[Auth0]
+    end
+
+    subgraph AS[Async Services]
+        direction TB
+        AsyncWorkerServiceNamespace[Async Worker Service]
+    end
+
+    subgraph API[API Services]
+        direction TB
+        DBWriteAPI[DB Write API Services]
+        DBReadAPI[DB Read API Services]
+        S3ReadAPI[S3 Read API]
+        S3WriteAPI[S3 Write API]
+    end
+
+    subgraph RDS[&quot;RDS &amp; NoSQL&quot;]
+        direction TB
+        MemoryCache(Memory Cache) -.-&gt; SQLMasterSlave(SQL Master-Slave)
+        SQLMasterSlave -.-&gt; SQLReadReplicas[SQL Read Replicas]
+        MemoryCache --&gt; Elasticache[&quot;Elasticache&quot;]
+        NoSQLDB[&quot;NoSQL (Redis)&quot;]
+    end
+
+    subgraph Queue
+        direction TB
+        q[&quot;Message Queue&quot;] --&gt; DLQ[Dead Letter Queue]
+    end
+
+    subgraph S3AWS[&quot;AWS S3 Object Store&quot;]
+        direction TB
+        S3[&quot;Static &amp; Data Buckets&quot;] --&gt; staticContents(AWS S3 Static Contents Bucket)
+        S3 --&gt; dataBucket(AWS S3 Data Bucket)
+    end
+    LB--&gt;|Web Requests| WS[Web Services]
+    LB --&gt;|Auth Requests| Auth[Auth Services]
+    LB --&gt;|Async Requests| AS[Async Services]
+    LB --&gt;|API Requests| API[API Services]
+    AS --&gt;|Utilizes NoSQL| NoSQLDB
+    AS --&gt; |Writes to| Queue
+    Queue --&gt; |Reads from| AS
+    DLQ --&gt; |Manages Failed Messages| AS
+    DBReadAPI --&gt; |Reads from| SQLReadReplicas
+    DBReadAPI --&gt; |Reads from| Elasticache
+    DBWriteAPI --&gt;|Writes to| SQLMasterSlave
+    S3ReadAPI --&gt;|Reads from| S3AWS
+    S3WriteAPI --&gt;|Writes to| S3AWS
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#FF9900&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#E88A00&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#232F3E&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#527FFF&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;clusterBkg&#x27;: &#x27;#1E1E1E&#x27;,
+    &#x27;clusterBorder&#x27;: &#x27;#444444&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD
+    Client(Client) --&gt;|Resolves domain| DNS(DNS)
+    Client --&gt;|Fetches static content| CDN(CDN)
+    Client --&gt;|Connects to| WAF(Web Application Firewall)
+
+    WAF --&gt;|Protects &amp; Rate Limits| APIGWS(API Gateway)
+    APIGWS --&gt;|Routes requests to| LB
+    CDN --&gt;|Serves static assets from S3|S3AWS
+
+    subgraph LoadBalancer
+        LB(&quot;Load Balancer&quot;)
+    end
+
+    subgraph WS[Web Services]
+        direction TB
+        WebServer1[Web Servers]
+    end
+
+    subgraph Auth[Auth Services]
+        direction TB
+        AuthWorkers[Auth Workers] --&gt; IDP[Auth0]
+    end
+
+    subgraph AS[Async Services]
+        direction TB
+        AsyncWorkerServiceNamespace[Async Worker Service]
+    end
+
+    subgraph API[API Services]
+        direction TB
+        DBWriteAPI[DB Write API Services]
+        DBReadAPI[DB Read API Services]
+        S3ReadAPI[S3 Read API]
+        S3WriteAPI[S3 Write API]
+    end
+
+    subgraph RDS[&quot;RDS &amp; NoSQL&quot;]
+        direction TB
+        MemoryCache(Memory Cache) -.-&gt; SQLMasterSlave(SQL Master-Slave)
+        SQLMasterSlave -.-&gt; SQLReadReplicas[SQL Read Replicas]
+        MemoryCache --&gt; Elasticache[&quot;Elasticache&quot;]
+        NoSQLDB[&quot;NoSQL (Redis)&quot;]
+    end
+
+    subgraph Queue
+        direction TB
+        q[&quot;Message Queue&quot;] --&gt; DLQ[Dead Letter Queue]
+    end
+
+    subgraph S3AWS[&quot;AWS S3 Object Store&quot;]
+        direction TB
+        S3[&quot;Static &amp; Data Buckets&quot;] --&gt; staticContents(AWS S3 Static Contents Bucket)
+        S3 --&gt; dataBucket(AWS S3 Data Bucket)
+    end
+    LB--&gt;|Web Requests| WS[Web Services]
+    LB --&gt;|Auth Requests| Auth[Auth Services]
+    LB --&gt;|Async Requests| AS[Async Services]
+    LB --&gt;|API Requests| API[API Services]
+    AS --&gt;|Utilizes NoSQL| NoSQLDB
+    AS --&gt; |Writes to| Queue
+    Queue --&gt; |Reads from| AS
+    DLQ --&gt; |Manages Failed Messages| AS
+    DBReadAPI --&gt; |Reads from| SQLReadReplicas
+    DBReadAPI --&gt; |Reads from| Elasticache
+    DBWriteAPI --&gt;|Writes to| SQLMasterSlave
+    S3ReadAPI --&gt;|Reads from| S3AWS
+    S3WriteAPI --&gt;|Writes to| S3AWS
+</pre></details>
+  </figure>
+  <figure class="card" data-name="java_program_journey java execution flow through the jvm">
+    <figcaption>
+      <span class="dtitle">Java Program Journey</span>
+      <code class="path">runtimes-apps/java_program_journey.mermaid</code>
+      <span class="desc">Java execution flow through the JVM</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD;
+    A(Start: Run Java Program) --&gt; B(Write Java Source Code)
+    B --&gt; C(Compile Source Code)
+    C --&gt; D{Compilation Success?}
+    D -- Yes --&gt; E(Generate Bytecode)
+    D -- No --&gt; F(Report Compilation Errors)
+    E --&gt; G(Load Class into JVM)
+    G --&gt; H(Verify Bytecode)
+    H --&gt; I{Bytecode Verification Passed?}
+    I -- Yes --&gt; J(Execute Bytecode)
+    I -- No --&gt; K(Report Verification Error)
+    J --&gt; L{System/Library Calls?}
+    L -- Yes --&gt; M(Invoke System/Library Calls)
+    L -- No --&gt; N{New Objects?}
+    N -- Yes --&gt; O(Allocate Memory)
+    N -- No --&gt; P{Garbage Collection Needed?}
+    P -- Yes --&gt; Q(Perform Garbage Collection)
+    P -- No --&gt; R{End of Program?}
+    R -- Yes --&gt; S(Cleanup and Exit)
+    R -- No --&gt; J
+    M --&gt; J
+    O --&gt; J
+    Q --&gt; J
+
+    %% No custom styling for better compatibility
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD;
+    A(Start: Run Java Program) --&gt; B(Write Java Source Code)
+    B --&gt; C(Compile Source Code)
+    C --&gt; D{Compilation Success?}
+    D -- Yes --&gt; E(Generate Bytecode)
+    D -- No --&gt; F(Report Compilation Errors)
+    E --&gt; G(Load Class into JVM)
+    G --&gt; H(Verify Bytecode)
+    H --&gt; I{Bytecode Verification Passed?}
+    I -- Yes --&gt; J(Execute Bytecode)
+    I -- No --&gt; K(Report Verification Error)
+    J --&gt; L{System/Library Calls?}
+    L -- Yes --&gt; M(Invoke System/Library Calls)
+    L -- No --&gt; N{New Objects?}
+    N -- Yes --&gt; O(Allocate Memory)
+    N -- No --&gt; P{Garbage Collection Needed?}
+    P -- Yes --&gt; Q(Perform Garbage Collection)
+    P -- No --&gt; R{End of Program?}
+    R -- Yes --&gt; S(Cleanup and Exit)
+    R -- No --&gt; J
+    M --&gt; J
+    O --&gt; J
+    Q --&gt; J
+
+    %% No custom styling for better compatibility
+</pre></details>
+  </figure>
+  <figure class="card" data-name="python_program_journey python program execution">
+    <figcaption>
+      <span class="dtitle">Python Program Journey</span>
+      <code class="path">runtimes-apps/python_program_journey.mermaid</code>
+      <span class="desc">Python program execution</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD;
+    A(Start: Run Python Script) --&gt; B(Parse Source Code)
+    B --&gt; C(Syntax Check)
+    C --&gt; D{Syntax Error?}
+    D -- Yes --&gt; E[Report Syntax Error and Exit]
+    D -- No --&gt; F(Compile to Bytecode)
+    F --&gt; G(Bytecode Up-to-Date Check)
+    G --&gt; H{Is Bytecode Up-to-Date?}
+    H -- No --&gt; I(Recompile Source to Bytecode)
+    H -- Yes --&gt; J(Load Bytecode into PVM)
+    I --&gt; J
+    J --&gt; K(Execute Bytecode in PVM)
+    K --&gt; L{System Calls Needed?}
+    L -- Yes --&gt; M(Perform System Calls)
+    L -- No --&gt; N{API Calls Needed?}
+    M --&gt; N
+    N -- Yes --&gt; O(Invoke Python/C API)
+    N -- No --&gt; P{End of Program?}
+    O --&gt; P
+    P -- Yes --&gt; Q(Cleanup and Free Resources)
+    P -- No --&gt; K
+    Q --&gt; R(Return Exit Code to OS)
+    R --&gt; S(End)
+
+    %% No custom styling for better compatibility
+</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#E95420&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#C4441C&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#F58220&#x27;, 
+    &#x27;secondaryBorderColor&#x27;: &#x27;#C25D06&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;, 
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+graph TD;
+    A(Start: Run Python Script) --&gt; B(Parse Source Code)
+    B --&gt; C(Syntax Check)
+    C --&gt; D{Syntax Error?}
+    D -- Yes --&gt; E[Report Syntax Error and Exit]
+    D -- No --&gt; F(Compile to Bytecode)
+    F --&gt; G(Bytecode Up-to-Date Check)
+    G --&gt; H{Is Bytecode Up-to-Date?}
+    H -- No --&gt; I(Recompile Source to Bytecode)
+    H -- Yes --&gt; J(Load Bytecode into PVM)
+    I --&gt; J
+    J --&gt; K(Execute Bytecode in PVM)
+    K --&gt; L{System Calls Needed?}
+    L -- Yes --&gt; M(Perform System Calls)
+    L -- No --&gt; N{API Calls Needed?}
+    M --&gt; N
+    N -- Yes --&gt; O(Invoke Python/C API)
+    N -- No --&gt; P{End of Program?}
+    O --&gt; P
+    P -- Yes --&gt; Q(Cleanup and Free Resources)
+    P -- No --&gt; K
+    Q --&gt; R(Return Exit Code to OS)
+    R --&gt; S(End)
+
+    %% No custom styling for better compatibility
+</pre></details>
+  </figure>
+  <figure class="card" data-name="simple_webapp three-tier web application architecture with aws components">
+    <figcaption>
+      <span class="dtitle">Simple Webapp</span>
+      <code class="path">runtimes-apps/simple_webapp.mermaid</code>
+      <span class="desc">Three-tier web application architecture with AWS components</span>
+    </figcaption>
+    <div class="diagram"><pre class="mermaid">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#FF9900&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#E88A00&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#232F3E&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#527FFF&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;clusterBkg&#x27;: &#x27;#1E1E1E&#x27;,
+    &#x27;clusterBorder&#x27;: &#x27;#444444&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TD
+    %% === AWS SIMPLE WEB APPLICATION ARCHITECTURE ===
+    %% Title: AWS-Based Web Application Architecture
+    %% Description: Basic three-tier web application architecture in AWS VPC
+
+    %% External User Connection
+    User([&quot;👤 Internet Users&quot;]) -- &quot;HTTPS (443)&quot; --&gt; CloudFront[&quot;📡 CloudFront CDN&quot;]
+    CloudFront -- &quot;Origin Requests&quot; --&gt; WAF
+    
+    %% VPC Architecture
+    subgraph VPC [&quot;☁️ Virtual Private Cloud&quot;]
+        direction TB
+        
+        %% Public Tier
+        subgraph PublicSubnets [&quot;🌐 Public Subnets&quot;]
+            direction LR
+            WAF[&quot;🛡️ WAF&quot;]
+            LB[&quot;⚖️ Load Balancer&quot;]
+            NAT[&quot;🔀 NAT Gateway&quot;]
+            Bastion[&quot;🔒 Bastion Host&quot;]
+        end
+        
+        %% Application Tier
+        subgraph PrivateSubnets [&quot;🔒 Private Subnets&quot;]
+            direction TB
+            
+            subgraph AppLayer [&quot;Application Layer&quot;]
+                direction LR
+                TG_FE[&quot;🎯 Target Group - FE&quot;]
+                TG_BE[&quot;🎯 Target Group - BE&quot;]
+                FE[&quot;🖥️ Front End (EC2/ECS)&quot;]
+                BE[&quot;⚙️ Back End (EC2/ECS)&quot;]
+            end
+            
+            subgraph DataLayer [&quot;Data Layer&quot;]
+                direction LR
+                RDS[&quot;💾 Aurora/RDS&quot;]
+                ElastiCache[&quot;⚡ ElastiCache&quot;]
+            end
+        end
+        
+        %% VPC Flow
+        WAF --&gt; LB
+        LB -- &quot;Route: /api/*&quot; --&gt; TG_BE
+        LB -- &quot;Route: /*&quot; --&gt; TG_FE
+        TG_FE --&gt; FE
+        TG_BE --&gt; BE
+        
+        %% Private Resources Communication
+        FE -- &quot;API Calls&quot; --&gt; BE
+        BE -- &quot;CRUD Operations&quot; --&gt; RDS
+        BE -- &quot;Cache Operations&quot; --&gt; ElastiCache
+        FE -- &quot;Cache Reads&quot; --&gt; ElastiCache
+        
+        %% Outbound Internet Access
+        FE &amp; BE -.-&gt; NAT
+        NAT -.-&gt; Internet([&quot;🌎 Internet&quot;])
+    end
+    
+    %% Supporting Services
+    subgraph SupportingServices [&quot;Supporting Services&quot;]
+        direction LR
+        CW[&quot;📊 CloudWatch&quot;]
+        S3[&quot;📦 S3 Buckets&quot;]
+        SecretsManager[&quot;🔑 Secrets Manager&quot;]
+    end
+    
+    %% Supporting Services Integration
+    FE &amp; BE --&gt; CW
+    FE &amp; BE --&gt; S3
+    BE --&gt; SecretsManager
+    SecretsManager -..-&gt; RDS
+    
+    %% No custom styling for better compatibility</pre></div>
+    <details><summary>source</summary><pre class="src">%%{init: {&#x27;theme&#x27;:&#x27;dark&#x27;, &#x27;themeVariables&#x27;: { 
+    &#x27;primaryColor&#x27;: &#x27;#FF9900&#x27;, 
+    &#x27;primaryBorderColor&#x27;: &#x27;#E88A00&#x27;, 
+    &#x27;primaryTextColor&#x27;: &#x27;#fff&#x27;,
+    &#x27;secondaryColor&#x27;: &#x27;#232F3E&#x27;,
+    &#x27;tertiaryColor&#x27;: &#x27;#527FFF&#x27;,
+    &#x27;lineColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;textColor&#x27;: &#x27;#CCCCCC&#x27;,
+    &#x27;clusterBkg&#x27;: &#x27;#1E1E1E&#x27;,
+    &#x27;clusterBorder&#x27;: &#x27;#444444&#x27;,
+    &#x27;background&#x27;: &#x27;#282a36&#x27;
+}}}%%
+
+flowchart TD
+    %% === AWS SIMPLE WEB APPLICATION ARCHITECTURE ===
+    %% Title: AWS-Based Web Application Architecture
+    %% Description: Basic three-tier web application architecture in AWS VPC
+
+    %% External User Connection
+    User([&quot;👤 Internet Users&quot;]) -- &quot;HTTPS (443)&quot; --&gt; CloudFront[&quot;📡 CloudFront CDN&quot;]
+    CloudFront -- &quot;Origin Requests&quot; --&gt; WAF
+    
+    %% VPC Architecture
+    subgraph VPC [&quot;☁️ Virtual Private Cloud&quot;]
+        direction TB
+        
+        %% Public Tier
+        subgraph PublicSubnets [&quot;🌐 Public Subnets&quot;]
+            direction LR
+            WAF[&quot;🛡️ WAF&quot;]
+            LB[&quot;⚖️ Load Balancer&quot;]
+            NAT[&quot;🔀 NAT Gateway&quot;]
+            Bastion[&quot;🔒 Bastion Host&quot;]
+        end
+        
+        %% Application Tier
+        subgraph PrivateSubnets [&quot;🔒 Private Subnets&quot;]
+            direction TB
+            
+            subgraph AppLayer [&quot;Application Layer&quot;]
+                direction LR
+                TG_FE[&quot;🎯 Target Group - FE&quot;]
+                TG_BE[&quot;🎯 Target Group - BE&quot;]
+                FE[&quot;🖥️ Front End (EC2/ECS)&quot;]
+                BE[&quot;⚙️ Back End (EC2/ECS)&quot;]
+            end
+            
+            subgraph DataLayer [&quot;Data Layer&quot;]
+                direction LR
+                RDS[&quot;💾 Aurora/RDS&quot;]
+                ElastiCache[&quot;⚡ ElastiCache&quot;]
+            end
+        end
+        
+        %% VPC Flow
+        WAF --&gt; LB
+        LB -- &quot;Route: /api/*&quot; --&gt; TG_BE
+        LB -- &quot;Route: /*&quot; --&gt; TG_FE
+        TG_FE --&gt; FE
+        TG_BE --&gt; BE
+        
+        %% Private Resources Communication
+        FE -- &quot;API Calls&quot; --&gt; BE
+        BE -- &quot;CRUD Operations&quot; --&gt; RDS
+        BE -- &quot;Cache Operations&quot; --&gt; ElastiCache
+        FE -- &quot;Cache Reads&quot; --&gt; ElastiCache
+        
+        %% Outbound Internet Access
+        FE &amp; BE -.-&gt; NAT
+        NAT -.-&gt; Internet([&quot;🌎 Internet&quot;])
+    end
+    
+    %% Supporting Services
+    subgraph SupportingServices [&quot;Supporting Services&quot;]
+        direction LR
+        CW[&quot;📊 CloudWatch&quot;]
+        S3[&quot;📦 S3 Buckets&quot;]
+        SecretsManager[&quot;🔑 Secrets Manager&quot;]
+    end
+    
+    %% Supporting Services Integration
+    FE &amp; BE --&gt; CW
+    FE &amp; BE --&gt; S3
+    BE --&gt; SecretsManager
+    SecretsManager -..-&gt; RDS
+    
+    %% No custom styling for better compatibility</pre></details>
+  </figure>
+</div>
+</main>
+
+<script src="vendor/mermaid.min.js"
+        onerror="document.getElementById('onote').textContent='⚠ Mermaid CDN unreachable (offline) — showing raw source below each diagram instead.'"></script>
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'loose', maxTextSize: 200000 });
+  }
+  // Live filter
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const term = q.value.trim().toLowerCase();
+    document.querySelectorAll('.card').forEach(c => {
+      c.classList.toggle('hidden', term && !c.dataset.name.includes(term));
+    });
+    document.querySelectorAll('h2.domain').forEach(h => {
+      let n = h.nextElementSibling;
+      const any = n && [...n.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
+      h.classList.toggle('hidden', !any);
+      if (n) n.classList.toggle('hidden', !any);
+    });
+  });
+
+  // ---- single-diagram full-page viewer (zoom/pan overlay) ----
+  (function(){
+    const viewer = document.createElement('div');
+    viewer.id = 'viewer';
+    viewer.innerHTML =
+      '<div class="vbar">'
+      + '<span class="vtitle"></span>'
+      + '<button data-a="out" title="Zoom out">\u2212</button>'
+      + '<button data-a="in" title="Zoom in">+</button>'
+      + '<button data-a="fit" title="Fit to screen (0)">Fit</button>'
+      + '<button data-a="reset" title="Actual size">1:1</button>'
+      + '<button data-a="close" title="Close (Esc)">\u2715 Close</button>'
+      + '</div>'
+      + '<div class="vstage"><div class="vwrap"></div>'
+      + '<div class="vhint">scroll to zoom \u00b7 drag to pan \u00b7 Esc to close</div></div>';
+    document.body.appendChild(viewer);
+    const stage = viewer.querySelector('.vstage');
+    const wrap  = viewer.querySelector('.vwrap');
+    const vtitle= viewer.querySelector('.vtitle');
+    let scale=1, tx=0, ty=0, baseFit=1;
+    const apply = () => { wrap.style.transform =
+      'translate('+tx+'px,'+ty+'px) scale('+scale+')'; };
+    function fit(){
+      const cw = wrap.offsetWidth, ch = wrap.offsetHeight;
+      if(!cw || !ch) return;
+      const sw = stage.clientWidth, sh = stage.clientHeight;
+      baseFit = Math.min(sw/cw, sh/ch) * 0.94;
+      scale = baseFit; tx = (sw-cw*scale)/2; ty = (sh-ch*scale)/2; apply();
+    }
+    function zoomAt(cx,cy,k){
+      const ns = Math.min(Math.max(scale*k, baseFit*0.15), 16);
+      tx = cx-(cx-tx)*(ns/scale); ty = cy-(cy-ty)*(ns/scale); scale = ns; apply();
+    }
+    function open(card){
+      const src = card.querySelector('.diagram svg') || card.querySelector('.diagram pre');
+      if(!src) return;
+      wrap.innerHTML=''; wrap.style.width=''; wrap.style.height='';
+      const node = src.cloneNode(true);
+      if(node.tagName && node.tagName.toLowerCase()==='svg'){
+        const vb = node.viewBox && node.viewBox.baseVal;
+        const r = src.getBoundingClientRect();
+        const w = (vb && vb.width) || r.width || 900;
+        const h = (vb && vb.height) || r.height || 600;
+        node.removeAttribute('style');
+        node.setAttribute('width', w); node.setAttribute('height', h);
+        wrap.style.width = w+'px'; wrap.style.height = h+'px';
+      }
+      wrap.appendChild(node);
+      const t = card.querySelector('.dtitle');
+      vtitle.textContent = t ? t.textContent : 'Diagram';
+      viewer.classList.add('open');
+      document.body.style.overflow='hidden';
+      requestAnimationFrame(fit);
+    }
+    function close(){
+      viewer.classList.remove('open'); wrap.innerHTML='';
+      document.body.style.overflow='';
+    }
+    viewer.querySelector('.vbar').addEventListener('click', e=>{
+      const b = e.target.closest('button'); if(!b) return;
+      const a = b.dataset.a;
+      if(a==='close') return close();
+      if(a==='fit') return fit();
+      if(a==='reset'){ scale=1; tx=(stage.clientWidth-wrap.offsetWidth)/2; ty=24; return apply(); }
+      zoomAt(stage.clientWidth/2, stage.clientHeight/2, a==='in'?1.25:0.8);
+    });
+    stage.addEventListener('wheel', e=>{
+      e.preventDefault(); const r=stage.getBoundingClientRect();
+      zoomAt(e.clientX-r.left, e.clientY-r.top, e.deltaY<0?1.12:0.89);
+    }, {passive:false});
+    let drag=false, px=0, py=0;
+    stage.addEventListener('pointerdown', e=>{ drag=true; px=e.clientX; py=e.clientY;
+      stage.classList.add('grab'); stage.setPointerCapture(e.pointerId); });
+    stage.addEventListener('pointermove', e=>{ if(!drag) return;
+      tx+=e.clientX-px; ty+=e.clientY-py; px=e.clientX; py=e.clientY; apply(); });
+    const endDrag = ()=>{ drag=false; stage.classList.remove('grab'); };
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+    document.addEventListener('keydown', e=>{
+      if(!viewer.classList.contains('open')) return;
+      if(e.key==='Escape') close();
+      else if(e.key==='+'||e.key==='=') zoomAt(stage.clientWidth/2, stage.clientHeight/2, 1.25);
+      else if(e.key==='-') zoomAt(stage.clientWidth/2, stage.clientHeight/2, 0.8);
+      else if(e.key==='0') fit();
+    });
+    window.addEventListener('resize', ()=>{ if(viewer.classList.contains('open')) fit(); });
+    document.querySelectorAll('.card').forEach(card=>{
+      const cap = card.querySelector('figcaption'); if(!cap) return;
+      const b = document.createElement('button');
+      b.className='openfull'; b.type='button'; b.textContent='\u2922 Full page';
+      b.addEventListener('click', ()=>open(card));
+      cap.appendChild(b);
+    });
+  })();
+</script>
+</body>
+</html>

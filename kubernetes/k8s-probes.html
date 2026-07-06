@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K8s Probes — Engine Level</title>
+<link href="../assets/fonts/font-set-7.css" rel="stylesheet">
+<style>
+:root {
+  --bg:   #050709;
+  --s1:   #080b10;
+  --s2:   #0b0f16;
+  --bd:   #131d2a;
+
+  --live:  #f87171;  /* red    - liveness */
+  --read:  #4ade80;  /* green  - readiness */
+  --strt:  #f59e0b;  /* amber  - startup */
+  --http:  #60a5fa;  /* blue   - http probe */
+  --tcp:   #a78bfa;  /* violet - tcp probe */
+  --exec:  #34d399;  /* emerald - exec probe */
+  --grpc:  #fb923c;  /* orange  - grpc probe */
+
+  --text: #c8d8e8;
+  --dim:  #1a2a3a;
+  --mid:  #405060;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%,rgba(248,113,113,.07) 0%,transparent 50%),
+    radial-gradient(ellipse 30% 20% at 5%  60%,rgba(74,222,128,.04) 0%,transparent 45%),
+    radial-gradient(ellipse 25% 20% at 95% 70%,rgba(245,158,11,.04) 0%,transparent 45%),
+    repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(248,113,113,.018) 40px),
+    repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(248,113,113,.018) 40px);
+}
+.page{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:28px 20px 60px;}
+
+/* ── HEADER ── */
+.header{display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:20px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.hl h1{font-family:'Barlow Condensed',sans-serif;font-size:78px;font-weight:900;letter-spacing:-3px;line-height:.88;text-transform:uppercase;}
+.t1{background:linear-gradient(90deg,var(--live) 0%,var(--read) 40%,var(--strt) 70%,#fff 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.t2{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(248,113,113,.22);}
+.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
+.probe-pills{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.pill{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 14px;border-radius:4px;border:1px solid;font-weight:700;text-transform:uppercase;}
+.pill-l{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.4);color:var(--live);}
+.pill-r{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.35);color:var(--read);}
+.pill-s{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.4);color:var(--strt);}
+
+/* ── SECTION ── */
+.sh{display:flex;align-items:center;gap:12px;margin:22px 0 11px;}
+.sh-icon{font-size:18px;}
+.sh-label{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh::after{content:'';flex:1;height:1px;}
+.sl .sh-label{color:var(--live);} .sl .sh::after{background:linear-gradient(90deg,rgba(248,113,113,.3),transparent);}
+.sr .sh-label{color:var(--read);} .sr .sh::after{background:linear-gradient(90deg,rgba(74,222,128,.3),transparent);}
+.ss .sh-label{color:var(--strt);} .ss .sh::after{background:linear-gradient(90deg,rgba(245,158,11,.3),transparent);}
+.sm .sh-label{color:var(--http);} .sm .sh::after{background:linear-gradient(90deg,rgba(96,165,250,.3),transparent);}
+.se .sh-label{color:var(--mid);}  .se .sh::after{background:linear-gradient(90deg,rgba(255,255,255,.08),transparent);}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cl::before{background:linear-gradient(90deg,var(--live),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--read),transparent);}
+.cs::before{background:linear-gradient(90deg,var(--strt),transparent);}
+.ch::before{background:linear-gradient(90deg,var(--http),transparent);}
+.ct-v::before{background:linear-gradient(90deg,var(--tcp),transparent);}
+.ce::before{background:linear-gradient(90deg,var(--exec),transparent);}
+.cg::before{background:linear-gradient(90deg,var(--grpc),transparent);}
+
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.5;}
+.fv b{color:var(--text);}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--strt);}
+
+/* code */
+.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
+.kw{color:#a78bfa;} .ky{color:var(--exec);} .st{color:var(--strt);}
+.nu{color:var(--http);} .cm{color:#1a2a3a;} .re{color:var(--live);}
+
+/* trap / note */
+.trap{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
+.trap::before{content:'⚡ ';color:var(--live);}
+.trap b{color:var(--text);}
+.trap code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--strt);}
+.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.note b{color:var(--text);}
+.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--strt);}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+.st th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--strt);}
+.good{color:var(--read)!important;} .warn{color:var(--strt)!important;} .bad{color:var(--live)!important;}
+
+/* ── INTERACTIVE SIMULATOR ── */
+.sim-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:14px;}
+.sim-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+
+.sim-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.sim-field{display:flex;flex-direction:column;gap:5px;}
+.sim-label{font-family:'Share Tech Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--mid);}
+.sim-input{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:6px 10px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:11px;width:100%;outline:none;transition:.2s;}
+.sim-input:focus{border-color:rgba(248,113,113,.4);}
+
+.timeline-wrap{position:relative;height:200px;background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px;}
+.timeline-track{position:absolute;inset:0;padding:10px 20px;}
+
+/* time ruler */
+.ruler{position:absolute;top:0;left:20px;right:20px;height:24px;display:flex;align-items:flex-end;}
+.tick{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.tick-line{width:1px;height:8px;background:var(--dim);}
+.tick-label{font-family:'Share Tech Mono',monospace;font-size:7.5px;color:var(--mid);}
+
+/* probe rows */
+.probe-rows{position:absolute;top:28px;left:20px;right:20px;bottom:10px;display:flex;flex-direction:column;gap:0;}
+.probe-row{display:flex;align-items:center;flex:1;position:relative;}
+.probe-row-label{font-family:'Share Tech Mono',monospace;font-size:8.5px;font-weight:700;width:72px;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px;}
+.probe-track{flex:1;height:28px;position:relative;background:rgba(255,255,255,.02);border-radius:3px;}
+
+/* timeline blocks */
+.tblock{position:absolute;top:3px;bottom:3px;border-radius:3px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;}
+.tblock:hover{opacity:.9;transform:scaleY(1.1);}
+.tblock span{font-family:'Share Tech Mono',monospace;font-size:7px;font-weight:700;color:rgba(0,0,0,.7);white-space:nowrap;}
+.tb-wait{background:rgba(255,255,255,.08);}
+.tb-ok{background:rgba(74,222,128,.55);}
+.tb-fail{background:rgba(248,113,113,.6);}
+.tb-init{background:rgba(245,158,11,.4);}
+.tb-disabled{background:rgba(255,255,255,.04);}
+
+/* vertical lines */
+.vline{position:absolute;top:0;bottom:0;width:1px;pointer-events:none;}
+.vline-restart{background:rgba(248,113,113,.5);border-left:1px dashed rgba(248,113,113,.4);}
+.vline-remove{background:rgba(245,158,11,.5);border-left:1px dashed rgba(245,158,11,.4);}
+.vline-label{position:absolute;top:2px;font-family:'Share Tech Mono',monospace;font-size:7px;font-weight:700;white-space:nowrap;padding:1px 4px;border-radius:2px;}
+
+/* sim buttons */
+.sim-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.sbtn{font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:1px;font-weight:700;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.sbtn-run{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.4);color:var(--read);}
+.sbtn-run:hover{background:rgba(74,222,128,.2);}
+.sbtn-fail{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3);color:var(--live);}
+.sbtn-fail:hover{background:rgba(248,113,113,.18);}
+.sbtn-reset{background:rgba(255,255,255,.04);border-color:var(--bd);color:var(--mid);}
+.sbtn-reset:hover{background:rgba(255,255,255,.08);color:var(--text);}
+.sim-status{font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px 12px;border-radius:4px;border:1px solid;align-self:center;transition:.3s;}
+.ss-ok{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.3);color:var(--read);}
+.ss-fail{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3);color:var(--live);}
+.ss-warn{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3);color:var(--strt);}
+.ss-neutral{background:rgba(255,255,255,.04);border-color:var(--bd);color:var(--mid);}
+
+/* ── STATE MACHINE ── */
+.fsm-wrap{position:relative;}
+.fsm-svg{width:100%;overflow:visible;}
+
+/* ── FORMULA CARDS ── */
+.formula{background:rgba(0,0,0,.35);border:1px solid var(--bd);border-radius:6px;padding:12px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:2;color:var(--mid);margin-top:8px;}
+.formula .var{color:var(--http);font-weight:700;}
+.formula .eq{color:rgba(255,255,255,.3);}
+.formula .val{color:var(--strt);}
+.formula .comment{color:var(--dim);font-size:9px;}
+
+/* ── PARAMETER EXPLORER ── */
+.param-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.param-card{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:14px;cursor:pointer;transition:.2s;position:relative;}
+.param-card:hover,.param-card.active{border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.04);}
+.param-name{font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;color:var(--http);margin-bottom:4px;}
+.param-default{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--mid);margin-bottom:6px;}
+.param-default span{color:var(--strt);}
+.param-desc{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.param-desc b{color:var(--text);}
+.param-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);}
+.param-card.active .param-detail{display:block;}
+.param-card.active .param-name::after{content:' ▲';font-size:9px;color:rgba(96,165,250,.5);}
+.param-card:not(.active) .param-name::after{content:' ▼';font-size:9px;color:var(--dim);}
+
+/* ── ENGINE INTERNALS ── */
+.engine-block{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:18px;margin-bottom:12px;}
+.eb-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;color:var(--http);}
+
+/* goroutine visual */
+.goroutine-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:5px;border:1px solid var(--dim);margin-bottom:6px;font-size:10.5px;transition:.2s;}
+.goroutine-row:hover{border-color:rgba(96,165,250,.25);background:rgba(96,165,250,.03);}
+.gr-icon{font-size:16px;flex-shrink:0;}
+.gr-name{font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;color:var(--http);width:140px;flex-shrink:0;}
+.gr-desc{color:var(--mid);flex:1;line-height:1.5;}
+.gr-desc b{color:var(--text);}
+.gr-desc code{font-family:'Share Tech Mono',monospace;font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--strt);}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fi .38s ease both;}
+.page>*:nth-child(1){animation-delay:.00s}.page>*:nth-child(2){animation-delay:.04s}
+.page>*:nth-child(3){animation-delay:.07s}.page>*:nth-child(4){animation-delay:.10s}
+.page>*:nth-child(5){animation-delay:.13s}.page>*:nth-child(6){animation-delay:.16s}
+.page>*:nth-child(7){animation-delay:.19s}.page>*:nth-child(8){animation-delay:.22s}
+.page>*:nth-child(9){animation-delay:.25s}.page>*:nth-child(10){animation-delay:.28s}
+.page>*:nth-child(11){animation-delay:.31s}.page>*:nth-child(12){animation-delay:.34s}
+.page>*:nth-child(13){animation-delay:.37s}.page>*:nth-child(14){animation-delay:.40s}
+
+.footer{margin-top:32px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hl">
+    <h1><span class="t1">K8S PROBES</span><br><span class="t2">ENGINE LEVEL</span></h1>
+    <div class="sub">// liveness · readiness · startup · kubelet goroutines · http · tcp · exec · grpc</div>
+  </div>
+  <div class="probe-pills">
+    <div class="pill pill-l">🔴 Liveness — restarts container</div>
+    <div class="pill pill-r">🟢 Readiness — gates traffic (EndpointSlice)</div>
+    <div class="pill pill-s">🟡 Startup — disables other probes until ready</div>
+  </div>
+</div>
+
+<!-- ══ THREE PROBES OVERVIEW ══ -->
+<div class="sh sm"><div class="sh-icon">🔬</div><div class="sh-label">The Three Probes</div><div class="sh-sub">// what each one does · what happens on failure · independence</div></div>
+
+<div class="g3">
+  <div class="card cl">
+    <div class="ctitle" style="color:var(--live);">🔴 livenessProbe</div>
+    <div class="fr"><span class="fk">Question</span><span class="fv"><b>"Is this container still alive and functional?"</b> Detects deadlocks, infinite loops, corrupted state that process hasn't exited from.</span></div>
+    <div class="fr"><span class="fk">On failure</span><span class="fv"><b>Kubelet kills and restarts the container.</b> RestartPolicy applies. Pod stays on the same node. Container restart count increments.</span></div>
+    <div class="fr"><span class="fk">On success</span><span class="fv">Nothing happens — normal operation. The probe result is recorded but causes no action. Only failures trigger action.</span></div>
+    <div class="fr"><span class="fk">Affects Endpoints?</span><span class="fv"><b>No.</b> Liveness failure → container restart → brief period of <code>Running</code> but not <code>Ready</code> → briefly removed from EndpointSlice. But liveness itself doesn't gate traffic.</span></div>
+    <div class="fr"><span class="fk">Threshold</span><span class="fv"><code>failureThreshold</code> consecutive failures required before action. Default = 3. Each success resets the failure counter.</span></div>
+    <div class="trap"><b>Liveness probes that are too aggressive kill healthy containers.</b> If your app spikes under load and the probe times out → restart → more load → cascade. Set <code>timeoutSeconds</code> generously. Never probe a shared resource (DB) in liveness — DB down ≠ container needs restart.</span></div>
+  </div>
+
+  <div class="card cr">
+    <div class="ctitle" style="color:var(--read);">🟢 readinessProbe</div>
+    <div class="fr"><span class="fk">Question</span><span class="fv"><b>"Is this container ready to receive traffic?"</b> Warm-up after start, temporary unavailability (cache loading, circuit breaker open).</span></div>
+    <div class="fr"><span class="fk">On failure</span><span class="fv"><b>Pod IP removed from EndpointSlice.</b> No container restart. No pod kill. Traffic stops flowing to this pod. Container keeps running.</span></div>
+    <div class="fr"><span class="fk">Recovery</span><span class="fv">When readiness probe succeeds again (after <code>successThreshold</code> consecutive successes), pod IP is re-added to EndpointSlice. Traffic resumes.</span></div>
+    <div class="fr"><span class="fk">Affects Endpoints?</span><span class="fv"><b>Yes — this is the only probe that gates Service traffic.</b> EndpointSlice controller watches pod <code>Ready</code> condition. Kubelet sets it based on readiness result.</span></div>
+    <div class="fr"><span class="fk">successThreshold</span><span class="fv">Default = 1 for readiness. Liveness/startup successThreshold is always 1 (cannot be changed — spec rejects values > 1).</span></div>
+    <div class="trap"><b>readinessProbe failing = pod invisible to Service, NOT removed.</b> The pod still exists, still Running, but gets zero traffic. Use this intentionally for graceful shutdown: fail readiness first, then drain, then exit. kube-proxy takes ~seconds to update iptables after EndpointSlice change.</div>
+  </div>
+
+  <div class="card cs">
+    <div class="ctitle" style="color:var(--strt);">🟡 startupProbe</div>
+    <div class="fr"><span class="fk">Question</span><span class="fv"><b>"Has the application finished starting up?"</b> For slow-starting apps (JVM warmup, large config load, DB migration).</span></div>
+    <div class="fr"><span class="fk">On success</span><span class="fv"><b>Disables itself.</b> Liveness and readiness probes are then activated. Until startup succeeds, liveness and readiness are completely disabled — they don't run at all.</span></div>
+    <div class="fr"><span class="fk">On failure</span><span class="fv">Same as liveness: container killed and restarted. The maximum startup time = <code>failureThreshold × periodSeconds</code>. After that, kubelet kills the container.</span></div>
+    <div class="fr"><span class="fk">Why it exists</span><span class="fv">Before startupProbe (1.16), you had to set <code>initialDelaySeconds</code> on liveness to the maximum possible startup time. Startup probe separates "startup budget" from "running health check frequency".</span></div>
+    <div class="fr"><span class="fk">Max startup time</span><span class="fv"><code>failureThreshold × periodSeconds</code>. Example: 30 × 10s = 300s = 5 min budget before kubelet gives up and kills.</span></div>
+    <div class="trap"><b>startupProbe replaces initialDelaySeconds for slow apps.</b> Don't use both. If startupProbe is set, <code>initialDelaySeconds</code> on liveness/readiness is measured from after startup succeeds, not from container start. Actually — kubelet doesn't even run them until after startup passes.</div>
+  </div>
+</div>
+
+<!-- ══ INTERACTIVE TIMELINE SIMULATOR ══ -->
+<div class="sh sm"><div class="sh-icon">⏱️</div><div class="sh-label">Timeline Simulator</div><div class="sh-sub">// visualize probe timing across container lifecycle</div></div>
+
+<div class="sim-wrap">
+  <div class="sim-title">
+    <span style="color:var(--http);">Probe Timeline</span>
+    <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--mid);" id="simTime">t = 0s</span>
+  </div>
+
+  <div class="sim-controls">
+    <div class="sim-field">
+      <div class="sim-label">initialDelay (s)</div>
+      <input class="sim-input" id="si-delay" type="number" value="0" min="0" max="60" step="1">
+    </div>
+    <div class="sim-field">
+      <div class="sim-label">period (s)</div>
+      <input class="sim-input" id="si-period" type="number" value="10" min="1" max="60" step="1">
+    </div>
+    <div class="sim-field">
+      <div class="sim-label">failThreshold</div>
+      <input class="sim-input" id="si-fail" type="number" value="3" min="1" max="10" step="1">
+    </div>
+    <div class="sim-field">
+      <div class="sim-label">timeout (s)</div>
+      <input class="sim-input" id="si-timeout" type="number" value="1" min="1" max="30" step="1">
+    </div>
+  </div>
+
+  <div class="timeline-wrap" id="timelineWrap">
+    <canvas id="timelineCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+  </div>
+
+  <div class="sim-btns">
+    <button class="sbtn sbtn-run" onclick="simRun('success')">▶ Healthy Run</button>
+    <button class="sbtn sbtn-fail" onclick="simRun('fail-live')">💀 Liveness Fail at t=40</button>
+    <button class="sbtn sbtn-fail" onclick="simRun('fail-read')">🚫 Readiness Fail at t=30</button>
+    <button class="sbtn sbtn-fail" onclick="simRun('startup')">🐢 Slow Startup (30s)</button>
+    <button class="sbtn sbtn-reset" onclick="simReset()">↺ Reset</button>
+    <div class="sim-status ss-neutral" id="simStatus">Configure params and run a scenario</div>
+  </div>
+</div>
+
+<!-- ══ PROBE MECHANICS ══ -->
+<div class="sh sm"><div class="sh-icon">🔧</div><div class="sh-label">Probe Mechanics (4 Types)</div><div class="sh-sub">// HTTP · TCP · exec · gRPC — what kubelet actually does at the kernel level</div></div>
+
+<div class="g2">
+  <div class="card ch">
+    <div class="ctitle" style="color:var(--http);">🌐 httpGet</div>
+    <div class="fr"><span class="fk">What kubelet does</span><span class="fv">Kubelet makes an <b>HTTP GET request</b> from the node (not from inside the pod). It opens a TCP connection to <code>podIP:port</code> and sends a GET request. Uses Go's <code>net/http</code>.</span></div>
+    <div class="fr"><span class="fk">Success</span><span class="fv">Response code <b>≥ 200 and &lt; 400</b>. Any 2xx or 3xx is success. 4xx and 5xx = failure. The body is ignored.</span></div>
+    <div class="fr"><span class="fk">Timeout</span><span class="fv">Kubelet sets a <code>timeoutSeconds</code> deadline on the HTTP client. If no response in time: failure (not retry). Counted as one failure toward <code>failureThreshold</code>.</span></div>
+    <div class="fr"><span class="fk">Headers</span><span class="fv">Custom <code>httpHeaders</code> can be set. Kubelet adds default <code>User-Agent: kube-probe/1.x</code>. You can filter probes from real traffic via this header.</span></div>
+    <div class="fr"><span class="fk">HTTPS</span><span class="fv"><code>scheme: HTTPS</code> — kubelet uses TLS but <b>skips certificate verification</b> (<code>InsecureSkipVerify: true</code>). Certificates are not checked. No way to provide a CA cert to kubelet for probes.</span></div>
+    <div class="code"><span class="ky">livenessProbe</span>:
+  <span class="ky">httpGet</span>:
+    <span class="ky">path</span>: <span class="st">/healthz</span>
+    <span class="ky">port</span>: <span class="nu">8080</span>
+    <span class="ky">scheme</span>: <span class="st">HTTP</span>        <span class="cm"># or HTTPS (no cert verify)</span>
+    <span class="ky">httpHeaders</span>:
+    - <span class="ky">name</span>: <span class="st">X-Custom-Header</span>
+      <span class="ky">value</span>: <span class="st">probe</span>
+  <span class="ky">initialDelaySeconds</span>: <span class="nu">5</span>
+  <span class="ky">periodSeconds</span>: <span class="nu">10</span>
+  <span class="ky">timeoutSeconds</span>: <span class="nu">3</span>
+  <span class="ky">failureThreshold</span>: <span class="nu">3</span></div>
+    <div class="trap"><b>httpGet probe comes from node IP, not pod IP.</b> If your app checks the client IP (rate limiting, auth) it will see the node's IP. NetworkPolicy must allow node IP → pod port. Check with <code>X-Forwarded-For</code> or by checking logs — probe requests show <code>User-Agent: kube-probe</code>.</div>
+  </div>
+
+  <div class="card ct-v">
+    <div class="ctitle" style="color:var(--tcp);">🔌 tcpSocket</div>
+    <div class="fr"><span class="fk">What kubelet does</span><span class="fv">Kubelet attempts to open a <b>TCP connection</b> to <code>podIP:port</code> from the node. If the 3-way handshake completes (SYN + SYN-ACK + ACK): success. No data is sent.</span></div>
+    <div class="fr"><span class="fk">Success</span><span class="fv">TCP connection established. Kubelet immediately closes it with RST. The port is open and listening.</span></div>
+    <div class="fr"><span class="fk">Failure</span><span class="fv">Connection refused (RST in response to SYN) or timeout (no SYN-ACK within <code>timeoutSeconds</code>). Port is not open or host unreachable.</span></div>
+    <div class="fr"><span class="fk">Use case</span><span class="fv">Databases, message brokers, custom TCP servers. Anything that doesn't speak HTTP. Verifies the port is bound and accepting connections — but not that the app is functionally healthy.</span></div>
+    <div class="fr"><span class="fk">Host field</span><span class="fv"><code>host</code> field optional — defaults to pod IP. Can be set to a hostname but <b>resolves from node's DNS</b>, not the pod's. Rarely needed.</span></div>
+    <div class="code"><span class="ky">readinessProbe</span>:
+  <span class="ky">tcpSocket</span>:
+    <span class="ky">port</span>: <span class="nu">5432</span>    <span class="cm"># postgres port</span>
+  <span class="ky">initialDelaySeconds</span>: <span class="nu">10</span>
+  <span class="ky">periodSeconds</span>: <span class="nu">5</span>
+  <span class="ky">timeoutSeconds</span>: <span class="nu">2</span></div>
+    <div class="note"><b>tcpSocket is a weak healthcheck.</b> A port can accept TCP connections while the app behind it is deadlocked. The probe confirms the port is open — not that queries return results. For databases, prefer an exec probe running a lightweight query.</div>
+    <div class="trap"><b>RST vs timeout are different failures.</b> RST = app refused connection (nothing listening). Timeout = network issue, firewall, or app overloaded and not accepting. Both count as one failure — but the cause differs. Check <code>kubectl describe pod</code> Events for the error message.</div>
+  </div>
+
+  <div class="card ce">
+    <div class="ctitle" style="color:var(--exec);">💻 exec</div>
+    <div class="fr"><span class="fk">What kubelet does</span><span class="fv">Kubelet calls <b>containerd CRI ExecSync RPC</b> → containerd → <code>runc exec</code> → runs command inside the container's existing namespaces. Shares PID NS, mount NS, network NS with container.</span></div>
+    <div class="fr"><span class="fk">Success</span><span class="fv">Command exits with <b>exit code 0</b>. Any nonzero exit = failure. stdout/stderr output is ignored (not logged by kubelet unless debug verbosity).</span></div>
+    <div class="fr"><span class="fk">Process tree</span><span class="fv">The exec command runs as a <b>child process of the container's PID 1</b>. It inherits the container's environment variables, working directory, and user context.</span></div>
+    <div class="fr"><span class="fk">Resource cost</span><span class="fv"><b>exec probes consume CPU and memory.</b> For every probe execution: a process is forked, the binary loaded, and run. For high-frequency probes or large binaries: measurable overhead. Prefer HTTP when possible.</span></div>
+    <div class="fr"><span class="fk">Timeout enforcement</span><span class="fv">Kubelet kills the exec process after <code>timeoutSeconds</code> via SIGKILL to the container's cgroup. Not a graceful kill — can leave side effects if probe does I/O.</span></div>
+    <div class="code"><span class="ky">livenessProbe</span>:
+  <span class="ky">exec</span>:
+    <span class="ky">command</span>:
+    - <span class="st">sh</span>
+    - <span class="st">-c</span>
+    - <span class="st">|
+        redis-cli ping | grep -q PONG</span>
+  <span class="ky">periodSeconds</span>: <span class="nu">10</span>
+  <span class="ky">timeoutSeconds</span>: <span class="nu">5</span>
+
+<span class="cm"># Postgres readiness check:</span>
+<span class="ky">readinessProbe</span>:
+  <span class="ky">exec</span>:
+    <span class="ky">command</span>: [<span class="st">pg_isready</span>, <span class="st">-U</span>, <span class="st">postgres</span>]</div>
+    <div class="trap"><b>exec probe shell injection risk.</b> If <code>command</code> includes env vars (<code>$MY_VAR</code>) evaluated at probe time, an attacker controlling that env var can inject shell commands. Use full binary paths and avoid shell expansion in probe commands.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctitle" style="color:var(--grpc);">📡 gRPC</div>
+    <div class="fr"><span class="fk">What kubelet does</span><span class="fv">Kubelet makes a <b>gRPC Health Check Protocol</b> (grpc.health.v1) call to <code>podIP:port</code>. Calls <code>Check()</code> on the Health service. No TLS by default.</span></div>
+    <div class="fr"><span class="fk">Success</span><span class="fv">gRPC response status is <code>SERVING</code>. Any other status (<code>NOT_SERVING</code>, <code>UNKNOWN</code>, <code>SERVICE_UNKNOWN</code>) = failure. gRPC error (connection refused, deadline exceeded) = failure.</span></div>
+    <div class="fr"><span class="fk">Service field</span><span class="fv"><code>service</code> field (optional) — passed as the service name in the health check request. Allows checking health of a specific gRPC service in a multi-service server.</span></div>
+    <div class="fr"><span class="fk">App requirement</span><span class="fv"><b>App must implement grpc.health.v1 Health service.</b> Not automatic. Add <code>google.golang.org/grpc/health</code> package. If your app doesn't implement it, all gRPC probes fail with "unimplemented".</span></div>
+    <div class="fr"><span class="fk">Version</span><span class="fv">GA in K8s 1.27. Requires feature gate <code>GRPCContainerProbe=true</code> on older clusters (1.24–1.26 were alpha/beta).</span></div>
+    <div class="code"><span class="ky">readinessProbe</span>:
+  <span class="ky">grpc</span>:
+    <span class="ky">port</span>: <span class="nu">50051</span>
+    <span class="ky">service</span>: <span class="st">my.grpc.Service</span>  <span class="cm"># optional</span>
+  <span class="ky">periodSeconds</span>: <span class="nu">10</span>
+  <span class="ky">timeoutSeconds</span>: <span class="nu">5</span></div>
+    <div class="note">gRPC probe is the cleanest option for gRPC services. Beats exec (no process fork overhead) and avoids TCP probe's shallowness. Implement the health service in all gRPC apps.</div>
+  </div>
+</div>
+
+<!-- ══ PARAMETERS ══ -->
+<div class="sh sm"><div class="sh-icon">⚙️</div><div class="sh-label">All Parameters</div><div class="sh-sub">// click each param to expand · defaults · tradeoffs</div></div>
+
+<div class="param-grid">
+  <div class="param-card" onclick="toggleParam(this)">
+    <div class="param-name">initialDelaySeconds</div>
+    <div class="param-default">default: <span>0</span></div>
+    <div class="param-desc">Wait before running the <b>first probe</b> after container start.</div>
+    <div class="param-detail">
+      <div class="fr"><span class="fk">When to use</span><span class="fv">When app needs time to start before any probe runs. But prefer <code>startupProbe</code> for slow apps — <code>initialDelaySeconds</code> wastes time on fast-starting containers.</span></div>
+      <div class="fr"><span class="fk">Applied when</span><span class="fv">Clock starts when container state transitions to <code>Running</code>. Not when pod is created. Not when image pull starts.</span></div>
+      <div class="fr"><span class="fk">Anti-pattern</span><span class="fv"><b>Setting a large initialDelay "to be safe"</b> delays readiness detection. A container that never becomes healthy wastes time before kubelet discovers the problem. Use startupProbe instead.</span></div>
+    </div>
+  </div>
+  <div class="param-card" onclick="toggleParam(this)">
+    <div class="param-name">periodSeconds</div>
+    <div class="param-default">default: <span>10</span> · min: <span>1</span></div>
+    <div class="param-desc">How often kubelet runs the probe.</div>
+    <div class="param-detail">
+      <div class="fr"><span class="fk">Tradeoff</span><span class="fv">Lower = faster failure detection, more overhead. Higher = less overhead, slower detection. For liveness: 10–30s fine. For readiness that guards traffic: 5–10s.</span></div>
+      <div class="fr"><span class="fk">At scale</span><span class="fv">1000 pods × periodSeconds=1 = 1000 probe requests/second from node kubelet processes. This is real load on your app. Don't set to 1 unless absolutely needed.</span></div>
+      <div class="fr"><span class="fk">Min value</span><span class="fv">Minimum is 1 second. Setting <code>periodSeconds: 0</code> causes a validation error. The spec doesn't allow sub-second probing.</span></div>
+    </div>
+  </div>
+  <div class="param-card" onclick="toggleParam(this)">
+    <div class="param-name">timeoutSeconds</div>
+    <div class="param-default">default: <span>1</span> · min: <span>1</span></div>
+    <div class="param-desc">Probe must respond within this many seconds or it counts as a failure.</div>
+    <div class="param-detail">
+      <div class="fr"><span class="fk">Default danger</span><span class="fv"><b>Default is 1 second — extremely aggressive.</b> A GC pause, load spike, or slow DNS lookup can cause your probe to time out. For JVM apps, set to 5–10s.</span></div>
+      <div class="fr"><span class="fk">HTTP behavior</span><span class="fv">For HTTP probes: <code>net/http</code> deadline set to <code>timeoutSeconds</code>. If server sends headers slowly, the deadline applies to receiving the full response, not just headers.</span></div>
+      <div class="fr"><span class="fk">exec behavior</span><span class="fv">Kubelet sends SIGKILL to the exec process's cgroup after timeout. Not SIGTERM. Immediate kill.</span></div>
+    </div>
+  </div>
+  <div class="param-card" onclick="toggleParam(this)">
+    <div class="param-name">failureThreshold</div>
+    <div class="param-default">default: <span>3</span> · min: <span>1</span></div>
+    <div class="param-desc">Number of consecutive failures before kubelet takes action.</div>
+    <div class="param-detail">
+      <div class="fr"><span class="fk">Reset on success</span><span class="fv"><b>The failure counter resets on any success.</b> 2 failures + 1 success = counter back to 0. Must be <code>failureThreshold</code> consecutive failures to trigger action.</span></div>
+      <div class="fr"><span class="fk">Liveness action</span><span class="fv">Container killed (SIGTERM + SIGKILL after terminationGracePeriodSeconds). Then restarted per RestartPolicy.</span></div>
+      <div class="fr"><span class="fk">Readiness action</span><span class="fv">Pod marked <code>Ready=False</code>. EndpointSlice controller removes pod IP. No container kill. Can recover.</span></div>
+      <div class="fr"><span class="fk">Startup action</span><span class="fv">Container killed. Pod restarts. Note: startup probe has its own threshold independent of liveness.</span></div>
+    </div>
+  </div>
+  <div class="param-card" onclick="toggleParam(this)">
+    <div class="param-name">successThreshold</div>
+    <div class="param-default">default: <span>1</span> · liveness/startup: fixed <span>1</span></div>
+    <div class="param-desc">Consecutive successes required to mark probe as passing.</div>
+    <div class="param-detail">
+      <div class="fr"><span class="fk">Readiness only</span><span class="fv"><b>Only meaningful for readiness.</b> <code>successThreshold > 1</code> on liveness or startup is rejected by the API Server with a validation error. This is by design — liveness success always resets immediately.</span></div>
+      <div class="fr"><span class="fk">Use case</span><span class="fv">Readiness: require 2-3 consecutive successes before adding back to EndpointSlice. Prevents flapping where a marginal app oscillates in/out of endpoints.</span></div>
+      <div class="fr"><span class="fk">Re-add delay</span><span class="fv">With <code>successThreshold: 2</code> and <code>periodSeconds: 5</code>: pod removed from endpoints requires 10s of success before re-added. Prevents briefly healthy pods from getting traffic.</span></div>
+    </div>
+  </div>
+  <div class="param-card" onclick="toggleParam(this)">
+    <div class="param-name">terminationGracePeriodSeconds</div>
+    <div class="param-default">per-probe default: <span>pod-level value</span></div>
+    <div class="param-desc">Override pod-level termination grace period specifically for probe failures. K8s 1.25+.</div>
+    <div class="param-detail">
+      <div class="fr"><span class="fk">Per-probe override</span><span class="fv">Set on the probe spec itself (not pod-level). When liveness fails and triggers restart: uses this value instead of pod's <code>spec.terminationGracePeriodSeconds</code>.</span></div>
+      <div class="fr"><span class="fk">Use case</span><span class="fv">Short grace for liveness-triggered restarts (you want fast recovery), longer grace for normal <code>kubectl delete pod</code> (you want graceful draining). Set probe-level to 5s, pod-level to 60s.</span></div>
+      <div class="fr"><span class="fk">Version</span><span class="fv">Alpha in 1.21, beta in 1.25, GA in 1.28. Feature gate <code>ProbeTerminationGracePeriod</code>.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TIMING FORMULAS ══ -->
+<div class="sh sm"><div class="sh-icon">📐</div><div class="sh-label">Timing Formulas</div><div class="sh-sub">// when does action happen · worst case · best case</div></div>
+
+<div class="g3">
+  <div class="card ch">
+    <div class="ctitle" style="color:var(--http);">⏰ First probe fires at</div>
+    <div class="formula">
+      <span class="var">T_first</span> <span class="eq">=</span> <span class="var">initialDelaySeconds</span> <span class="eq">+</span> <span class="var">periodSeconds</span><br>
+      <span class="comment">// initialDelay: wait after container Running</span><br>
+      <span class="comment">// then: first period before first check</span><br>
+      <br>
+      <span class="comment">Example: delay=5, period=10 → first probe at t=15s</span>
+    </div>
+    <div class="note" style="margin-top:10px;">If startupProbe is configured, liveness/readiness don't start their <code>initialDelaySeconds</code> clock until startup probe succeeds. The formula becomes: <b>T_startup_success + initialDelaySeconds + periodSeconds</b>.</div>
+  </div>
+  <div class="card cl">
+    <div class="ctitle" style="color:var(--live);">💀 Liveness kills container at</div>
+    <div class="formula">
+      <span class="var">T_kill</span> <span class="eq">=</span> <span class="var">T_first</span> <span class="eq">+</span> (<span class="var">failureThreshold</span> <span class="eq">-</span> <span class="val">1</span>) <span class="eq">×</span> <span class="var">periodSeconds</span><br>
+      <br>
+      <span class="comment">// worst case from first probe to kill:</span><br>
+      <span class="var">T_worst</span> <span class="eq">=</span> <span class="var">failureThreshold</span> <span class="eq">×</span> <span class="var">periodSeconds</span> <span class="eq">+</span> <span class="var">timeoutSeconds</span><br>
+      <br>
+      <span class="comment">Example: period=10, fail=3, timeout=1</span><br>
+      <span class="comment">→ 3×10 + 1 = 31s from first failure to kill</span>
+    </div>
+    <div class="trap"><b>Actual time includes timeoutSeconds × failureThreshold.</b> If probe times out each time: each check takes <code>timeoutSeconds</code>. Total: <code>(period - timeout) × (fail-1) + timeout × fail</code>. Worst case when probe is always timing out.</div>
+  </div>
+  <div class="card cs">
+    <div class="ctitle" style="color:var(--strt);">🚀 Max startup budget</div>
+    <div class="formula">
+      <span class="var">T_max_startup</span> <span class="eq">=</span> <span class="var">failureThreshold</span> <span class="eq">×</span> <span class="var">periodSeconds</span><br>
+      <br>
+      <span class="comment">// app must succeed within this window</span><br>
+      <span class="comment">// if not: container killed (same as liveness)</span><br>
+      <br>
+      <span class="comment">Example for 5-minute app:</span><br>
+      <span class="var">failureThreshold</span> <span class="eq">=</span> <span class="val">30</span><span class="eq">,</span> <span class="var">periodSeconds</span> <span class="eq">=</span> <span class="val">10</span><br>
+      <span class="comment">→ 30 × 10 = 300s = 5 minute budget</span>
+    </div>
+    <div class="note"><b>Pattern for slow-start apps:</b> Set <code>startupProbe.failureThreshold × periodSeconds</code> to your worst-case startup time. Then set liveness/readiness to aggressive values (period=5, threshold=3) safe in the knowledge they won't fire during startup.</div>
+  </div>
+</div>
+
+<!-- ══ ENGINE INTERNALS ══ -->
+<div class="sh sm"><div class="sh-icon">⚙️</div><div class="sh-label">Kubelet Engine Internals</div><div class="sh-sub">// goroutines · prober manager · workers · how it actually runs</div></div>
+
+<div class="g32">
+  <div class="engine-block">
+    <div class="eb-title">🔬 Prober Manager Architecture</div>
+
+    <div class="goroutine-row">
+      <div class="gr-icon">🧵</div>
+      <div class="gr-name">ProberManager</div>
+      <div class="gr-desc"><b>Central goroutine manager.</b> Maintains a map of <code>probeKey → worker</code>. Each probe (liveness/readiness/startup) per container gets its own worker. On pod add: spawns workers. On pod delete: signals workers to stop via channel close.</div>
+    </div>
+    <div class="goroutine-row">
+      <div class="gr-icon">🔴</div>
+      <div class="gr-name">liveness worker</div>
+      <div class="gr-desc"><b>One goroutine per container with a liveness probe.</b> Runs <code>time.NewTicker(periodSeconds)</code>. On tick: calls <code>prober.probe()</code>. Result sent to <code>livenessManager</code> channel. If <code>failureThreshold</code> consecutive failures → writes to container kill channel.</div>
+    </div>
+    <div class="goroutine-row">
+      <div class="gr-icon">🟢</div>
+      <div class="gr-name">readiness worker</div>
+      <div class="gr-desc"><b>Same structure as liveness worker.</b> Results sent to <code>readinessManager</code>. The readiness result is stored in a <code>sync.Map</code> keyed by <code>podUID/containerName</code>. Kubelet reads this map when building pod status to set the <code>Ready</code> condition.</div>
+    </div>
+    <div class="goroutine-row">
+      <div class="gr-icon">🟡</div>
+      <div class="gr-name">startup worker</div>
+      <div class="gr-desc"><b>Startup worker has a special flag:</b> once probe returns success, it signals the other workers to start, then the startup worker goroutine exits cleanly. It never runs again for that container's lifecycle.</div>
+    </div>
+    <div class="goroutine-row">
+      <div class="gr-icon">📊</div>
+      <div class="gr-name">statusManager</div>
+      <div class="gr-desc"><b>Separate goroutine that syncs pod status to API Server.</b> Probe results don't immediately call API Server — they update an in-memory cache. StatusManager batches updates and patches <code>pods/status</code> subresource. Prevents probe-induced API Server storms.</div>
+    </div>
+
+    <div class="code" style="margin-top:14px;"><span class="cm">// Simplified kubelet prober execution path:</span>
+
+<span class="kw">func</span> <span class="ky">(pb *prober) probe(probeType, pod, container)</span> {
+  <span class="cm">// 1. Check if container is running (skip if not)</span>
+  <span class="cm">// 2. Enforce initialDelaySeconds</span>
+  <span class="cm">// 3. Call the specific probe mechanism:</span>
+  result, output = pb.runProbe(probeType, pod, container)
+
+  <span class="cm">// 4. Send result to appropriate manager</span>
+  pb.resultsManager.Set(containerID, result)
+
+  <span class="cm">// 5. Update failure/success counters</span>
+  <span class="cm">// 6. If liveness fails threshold → kill container</span>
+  <span class="cm">// 7. If readiness → update Ready condition</span>
+}
+
+<span class="cm">// HTTP probe implementation:</span>
+<span class="kw">func</span> <span class="ky">DoHTTPProbe(url, headers, timeout)</span> {
+  client = &http.Client{
+    Timeout: timeout,
+    <span class="cm">// TLS: InsecureSkipVerify = true always</span>
+    <span class="cm">// Follows redirects by default</span>
+  }
+  resp = client.Do(req)
+  <span class="cm">// 200-399 = success, all else = failure</span>
+}</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card ch">
+      <div class="ctitle" style="color:var(--http);">🔄 Probe Result → Pod Status Flow</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;color:var(--mid);background:#020406;border:1px solid var(--bd);border-radius:5px;padding:12px;">
+        <div style="color:var(--exec);">probe goroutine fires</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ sets resultsManager[containerID]</div>
+        <div style="color:var(--exec);">syncLoopIteration()</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ reads resultsManager</div>
+        <div style="color:var(--exec);">generateAPIPodStatus()</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ builds conditions[]</div>
+        <div style="color:var(--exec);">Ready condition = True/False</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ statusManager sees diff</div>
+        <div style="color:var(--exec);">PATCH pods/status → API Server</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ EndpointSlice controller watches</div>
+        <div style="color:var(--exec);">EndpointSlice updated</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ kube-proxy watches EndpointSlice</div>
+        <div style="color:var(--exec);">iptables/IPVS updated on all nodes</div>
+      </div>
+      <div class="note" style="margin-top:8px;"><b>Total latency from probe failure to traffic stop:</b> probe period + statusManager batch interval (~several seconds) + EndpointSlice propagation + kube-proxy iptables sync. Not instantaneous. Plan for 5–15s of continued traffic after readiness fails.</div>
+    </div>
+    <div class="card cl">
+      <div class="ctitle" style="color:var(--live);">💥 Liveness Kill Sequence</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2;color:var(--mid);background:#020406;border:1px solid var(--bd);border-radius:5px;padding:12px;">
+        <div style="color:var(--live);">liveness threshold exceeded</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ killContainer(container)</div>
+        <div style="color:var(--live);">SIGTERM → container PID 1</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ wait terminationGracePeriodSeconds</div>
+        <div style="color:var(--live);">SIGKILL if still running</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ container stops</div>
+        <div style="color:var(--live);">containerRestartCount++</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ RestartPolicy: Always → restart</div>
+        <div style="color:var(--strt);">container restarts (same pod, same node)</div>
+        <div style="padding-left:14px;color:var(--mid);">↓ startupProbe (if set) runs first</div>
+        <div style="color:var(--read);">readiness/liveness resume after startup</div>
+      </div>
+      <div class="trap"><b>CrashLoopBackOff is exponential.</b> Restart delays: 10s → 20s → 40s → 80s → 160s → 300s (cap). Each restart counts even if caused by liveness probe. A misconfigured liveness probe can trap your app in CrashLoopBackOff.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ INTERACTION MATRIX ══ -->
+<div class="sh se"><div class="sh-icon">📊</div><div class="sh-label">Probe Interaction Matrix</div><div class="sh-sub">// how they interact · ordering · mutual effects</div></div>
+
+<div class="g2">
+  <div class="card">
+    <div class="ctitle" style="color:var(--http);">⚡ Probe Ordering & Mutual Disable</div>
+    <table class="st">
+      <tr><th>Scenario</th><th>Behavior</th></tr>
+      <tr><td>Only startupProbe set</td><td>Until startup passes: container can be killed. After: nothing gates traffic or restarts. Pod stays Running permanently (even if deadlocked).</td></tr>
+      <tr><td>startupProbe + livenessProbe</td><td>Startup runs first. Liveness <b>completely disabled</b> until startup succeeds. After: liveness runs on its own schedule.</td></tr>
+      <tr><td>startupProbe + readinessProbe</td><td>Pod stays NotReady (no traffic) until startup passes. Then readiness runs. Traffic flows only when both startup passed AND readiness succeeds.</td></tr>
+      <tr><td>All three probes</td><td>Startup first → disables liveness+readiness. After startup: liveness independently restarts, readiness independently gates traffic. They don't interact with each other.</td></tr>
+      <tr><td>No probes at all</td><td class="warn">Pod is Ready immediately when container is Running. Liveness never kills. Traffic flows even if app is deadlocked or still initializing.</td></tr>
+      <tr><td>Only readinessProbe failing</td><td>Pod stays Running, not restarted, not killed. Zero traffic. Stays like this indefinitely until probe passes or pod is deleted.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="ctitle" style="color:var(--http);">🧠 What to probe — per app type</div>
+    <table class="st">
+      <tr><th>App type</th><th>Liveness</th><th>Readiness</th><th>Startup</th></tr>
+      <tr><td>HTTP API</td><td class="good">httpGet /healthz (local-only check, no DB)</td><td class="good">httpGet /ready (include DB check)</td><td class="warn">Only if startup > 10s</td></tr>
+      <tr><td>JVM app</td><td class="good">httpGet + timeout 5s</td><td class="good">httpGet</td><td class="good">Required — JVM warm-up</td></tr>
+      <tr><td>PostgreSQL</td><td class="good">exec: pg_isready</td><td class="good">exec: pg_isready -q</td><td class="warn">Only if slow init</td></tr>
+      <tr><td>Redis</td><td class="good">exec: redis-cli ping</td><td class="good">tcpSocket: 6379</td><td class="bad">Rarely needed</td></tr>
+      <tr><td>gRPC service</td><td class="good">grpc probe</td><td class="good">grpc probe</td><td class="warn">If slow init</td></tr>
+      <tr><td>Worker/daemon</td><td class="good">exec: check pid file / queue depth</td><td class="warn">Often not needed</td><td class="warn">If slow init</td></tr>
+      <tr><td>Batch/Job</td><td class="bad">Usually no liveness</td><td class="bad">No readiness needed</td><td class="bad">No startup needed</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- TRAPS -->
+<div class="g3" style="margin-top:0;">
+  <div class="card cl" style="padding:12px;">
+    <div style="font-size:10.5px;color:var(--mid);line-height:1.6;">
+      <div style="color:var(--live);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:7px;">⚡ LIVENESS TRAPS</div>
+      <div style="margin-bottom:5px;"><b style="color:var(--text);">Never probe shared resources.</b> DB down ≠ container needs restart. Liveness should check only <i>this container's</i> health — not external dependencies. Use readiness for dependency checks.</div>
+      <div style="margin-bottom:5px;"><b style="color:var(--text);">Timeout default (1s) is too aggressive</b> for most apps. GC pause, slow disk flush, momentary load spike → liveness kills healthy app. Set 3–10s.</div>
+      <div><b style="color:var(--text);">liveness + CrashLoopBackOff spiral:</b> liveness kills → restart → liveness kills again before app warms up → CrashLoopBackOff. Fix: add startupProbe, increase initialDelaySeconds, or remove liveness entirely.</div>
+    </div>
+  </div>
+  <div class="card cr" style="padding:12px;">
+    <div style="font-size:10.5px;color:var(--mid);line-height:1.6;">
+      <div style="color:var(--read);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:7px;">⚡ READINESS TRAPS</div>
+      <div style="margin-bottom:5px;"><b style="color:var(--text);">Traffic doesn't stop immediately on readiness failure.</b> EndpointSlice propagation + kube-proxy sync = 5–15s lag. Don't rely on instant traffic stop for circuit breaking.</div>
+      <div style="margin-bottom:5px;"><b style="color:var(--text);">readiness failure ≠ pod removed.</b> Pod keeps Running. <code>kubectl get pods</code> shows <code>0/1 Running</code> — the "0/1" means 0 ready containers. Often confused with CrashLoopBackOff.</div>
+      <div><b style="color:var(--text);">Graceful shutdown pattern:</b> use a <code>preStop</code> hook to sleep 5–10s. This ensures kube-proxy has time to update rules before the process exits. Without this: in-flight requests get RST.</div>
+    </div>
+  </div>
+  <div class="card cs" style="padding:12px;">
+    <div style="font-size:10.5px;color:var(--mid);line-height:1.6;">
+      <div style="color:var(--strt);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:7px;">⚡ STARTUP TRAPS</div>
+      <div style="margin-bottom:5px;"><b style="color:var(--text);">startupProbe failure threshold must budget for worst-case startup.</b> If app can take 90s to start, set <code>failureThreshold × periodSeconds ≥ 90</code>. Undershooting = random kills during cold start.</div>
+      <div style="margin-bottom:5px;"><b style="color:var(--text);">Don't use startupProbe + large initialDelaySeconds together.</b> initialDelay on liveness/readiness is from after startup success. The combination is confusing and wasteful.</div>
+      <div><b style="color:var(--text);">startupProbe uses same mechanism as liveness.</b> Failure = container killed, not traffic-blocked. Make the startup probe check the simplest possible thing (port open, pid file exists).</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="ft">K8s Probes · Engine Level · liveness · readiness · startup · kubelet prober goroutines</div>
+  <div class="ft" style="color:rgba(248,113,113,.3);">liveness=restart · readiness=traffic gate · startup=disables others · httpGet TLS skips cert verify</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ─── PARAM TOGGLE ──────────────────────────────────────
+function toggleParam(el) {
+  el.classList.toggle('active');
+}
+
+// ─── TIMELINE SIMULATOR ────────────────────────────────
+const canvas = document.getElementById('timelineCanvas');
+const ctx = canvas.getContext('2d');
+let simAnim = null;
+
+function getParams() {
+  return {
+    delay:   parseInt(document.getElementById('si-delay').value)   || 0,
+    period:  parseInt(document.getElementById('si-period').value)  || 10,
+    fail:    parseInt(document.getElementById('si-fail').value)    || 3,
+    timeout: parseInt(document.getElementById('si-timeout').value) || 1,
+  };
+}
+
+function setStatus(txt, cls) {
+  const el = document.getElementById('simStatus');
+  el.textContent = txt;
+  el.className = 'sim-status ' + cls;
+}
+
+function simReset() {
+  if (simAnim) { clearInterval(simAnim); simAnim = null; }
+  const wrap = document.getElementById('timelineWrap');
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  setStatus('Configure params and run a scenario', 'ss-neutral');
+  document.getElementById('simTime').textContent = 't = 0s';
+}
+
+function drawTimeline(events, totalTime, scenario) {
+  const wrap = document.getElementById('timelineWrap');
+  canvas.width  = wrap.clientWidth  * window.devicePixelRatio;
+  canvas.height = wrap.clientHeight * window.devicePixelRatio;
+  canvas.style.width  = wrap.clientWidth  + 'px';
+  canvas.style.height = wrap.clientHeight + 'px';
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  const LEFT = 80, RIGHT = 20, TOP = 28, BOTTOM = 16;
+  const tw = W - LEFT - RIGHT;
+  const th = H - TOP - BOTTOM;
+  const tScale = tw / totalTime;
+
+  // Clear
+  ctx.fillStyle = 'rgba(0,0,0,.3)';
+  ctx.fillRect(0, 0, W, H);
+
+  // Time ruler
+  ctx.strokeStyle = 'rgba(255,255,255,.08)';
+  ctx.lineWidth = 1;
+  const tickStep = totalTime <= 60 ? 10 : totalTime <= 120 ? 20 : 30;
+  for (let t = 0; t <= totalTime; t += tickStep) {
+    const x = LEFT + t * tScale;
+    ctx.beginPath();
+    ctx.moveTo(x, TOP - 10);
+    ctx.lineTo(x, H - BOTTOM);
+    ctx.strokeStyle = 'rgba(255,255,255,.06)';
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(100,130,160,.7)';
+    ctx.font = '9px Share Tech Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(t + 's', x, TOP - 2);
+  }
+
+  // Row definitions
+  const rows = [
+    { label: 'STARTUP',  color: '#f59e0b', key: 'startup'  },
+    { label: 'LIVENESS', color: '#f87171', key: 'liveness' },
+    { label: 'READINESS',color: '#4ade80', key: 'readiness'},
+    { label: 'POD STATE',color: '#60a5fa', key: 'pod'      },
+  ];
+  const rowH = (th - 8) / rows.length;
+
+  rows.forEach((row, ri) => {
+    const y0 = TOP + ri * rowH + 4;
+    const rh = rowH - 6;
+
+    // Label
+    ctx.fillStyle = row.color;
+    ctx.font = 'bold 8px Share Tech Mono';
+    ctx.textAlign = 'right';
+    ctx.fillText(row.label, LEFT - 6, y0 + rh * 0.65);
+
+    // Track background
+    ctx.fillStyle = 'rgba(255,255,255,.025)';
+    ctx.beginPath();
+    ctx.roundRect(LEFT, y0, tw, rh, 3);
+    ctx.fill();
+
+    // Draw blocks for this row
+    const rowEvents = events.filter(e => e.row === row.key);
+    rowEvents.forEach(e => {
+      const x = LEFT + e.t0 * tScale;
+      const w = Math.max(2, (e.t1 - e.t0) * tScale);
+
+      let fillColor;
+      if (e.type === 'wait')     fillColor = 'rgba(255,255,255,.06)';
+      else if (e.type === 'ok')  fillColor = 'rgba(74,222,128,.5)';
+      else if (e.type === 'fail')fillColor = 'rgba(248,113,113,.6)';
+      else if (e.type === 'init')fillColor = 'rgba(245,158,11,.4)';
+      else if (e.type === 'off') fillColor = 'rgba(255,255,255,.03)';
+      else if (e.type === 'run') fillColor = 'rgba(96,165,250,.4)';
+      else if (e.type === 'down')fillColor = 'rgba(248,113,113,.35)';
+      else fillColor = 'rgba(100,100,100,.3)';
+
+      ctx.fillStyle = fillColor;
+      ctx.beginPath();
+      ctx.roundRect(x, y0 + 2, w, rh - 4, 2);
+      ctx.fill();
+
+      // Label in block
+      if (w > 30 && e.label) {
+        ctx.fillStyle = 'rgba(0,0,0,.75)';
+        ctx.font = 'bold 8px Share Tech Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(e.label, x + w / 2, y0 + rh * 0.6);
+      }
+    });
+  });
+
+  // Draw vertical event lines
+  events.filter(e => e.vline).forEach(e => {
+    const x = LEFT + e.t * tScale;
+    ctx.beginPath();
+    ctx.moveTo(x, TOP - 8);
+    ctx.lineTo(x, H - BOTTOM);
+    ctx.strokeStyle = e.vline === 'kill' ? 'rgba(248,113,113,.7)' :
+                      e.vline === 'remove' ? 'rgba(245,158,11,.7)' :
+                      'rgba(74,222,128,.5)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = e.vline === 'kill' ? '#f87171' :
+                    e.vline === 'remove' ? '#f59e0b' : '#4ade80';
+    ctx.font = 'bold 8px Share Tech Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(e.vlabel || '', x, TOP - 10);
+  });
+}
+
+function buildScenario(scenario) {
+  const p = getParams();
+  const events = [];
+  let totalTime;
+
+  const addBlock = (row, t0, t1, type, label) => events.push({row, t0, t1, type, label});
+  const addVLine = (t, type, label) => events.push({row:'_', t, vline: type, vlabel: label});
+
+  if (scenario === 'success') {
+    totalTime = Math.max(80, p.delay + p.period * 6 + 20);
+    // startup: off (not configured)
+    addBlock('startup', 0, totalTime, 'off', '');
+    // liveness: initial delay then successful checks
+    addBlock('liveness', 0, p.delay, 'wait', 'delay');
+    for (let i = 0; i * p.period < totalTime - p.delay; i++) {
+      const t0 = p.delay + i * p.period;
+      const t1 = Math.min(t0 + p.period, totalTime);
+      addBlock('liveness', t0, t1, 'ok', i === 0 ? '✓' : '✓');
+    }
+    // readiness: same
+    addBlock('readiness', 0, p.delay, 'wait', 'delay');
+    for (let i = 0; i * p.period < totalTime - p.delay; i++) {
+      const t0 = p.delay + i * p.period;
+      const t1 = Math.min(t0 + p.period, totalTime);
+      addBlock('readiness', t0, t1, 'ok', i === 0 ? 'ready' : '✓');
+    }
+    addBlock('pod', 0, 2, 'init', 'Starting');
+    addBlock('pod', 2, totalTime, 'run', 'Running + Ready ✓');
+    setStatus('✓ All probes passing — pod healthy and receiving traffic', 'ss-ok');
+  }
+  else if (scenario === 'fail-live') {
+    const failStart = 40;
+    const killTime  = failStart + p.fail * p.period + p.timeout;
+    totalTime = Math.max(killTime + 25, 90);
+    addBlock('startup', 0, totalTime, 'off', '');
+    addBlock('liveness', 0, p.delay, 'wait', 'delay');
+    // ok probes until failStart
+    let t = p.delay;
+    while (t + p.period <= failStart) {
+      addBlock('liveness', t, t + p.period, 'ok', '✓');
+      t += p.period;
+    }
+    // fail probes
+    for (let i = 0; i < p.fail; i++) {
+      addBlock('liveness', t, t + p.period, 'fail', '✗ '+(i+1));
+      t += p.period;
+    }
+    addVLine(t, 'kill', '💀 KILL');
+    addBlock('liveness', t, Math.min(t+8, totalTime), 'init', 'Restarting');
+    // ok after restart
+    t += 8;
+    while (t < totalTime) {
+      addBlock('liveness', t, Math.min(t + p.period, totalTime), 'ok', '✓');
+      t += p.period;
+    }
+    addBlock('readiness', 0, p.delay, 'wait', 'delay');
+    t = p.delay;
+    while (t < failStart) { addBlock('readiness', t, Math.min(t+p.period, failStart), 'ok', '✓'); t+=p.period; }
+    addBlock('readiness', failStart, killTime, 'fail', 'NotReady');
+    addVLine(failStart, 'remove', '🚫 Remove');
+    addBlock('readiness', killTime, Math.min(killTime+10,totalTime), 'init', 'Restart');
+    addBlock('readiness', killTime+10, totalTime, 'ok', '✓ ready');
+    addBlock('pod', 0, 2, 'init', 'Start');
+    addBlock('pod', 2, failStart, 'run', 'Running ✓');
+    addBlock('pod', failStart, killTime, 'down', 'Failing');
+    addBlock('pod', killTime, killTime+10, 'init', 'Restart');
+    addBlock('pod', killTime+10, totalTime, 'run', 'Running ✓');
+    setStatus(`💀 Liveness failed ${p.fail}× at t=40 → container killed at t=${Math.round(killTime)}s → restarted`, 'ss-fail');
+  }
+  else if (scenario === 'fail-read') {
+    const failStart = 30;
+    const failEnd   = 70;
+    totalTime = 100;
+    addBlock('startup', 0, totalTime, 'off', '');
+    addBlock('liveness', 0, p.delay, 'wait', 'delay');
+    let t = p.delay;
+    while (t < totalTime) { addBlock('liveness', t, Math.min(t+p.period,totalTime), 'ok', '✓'); t+=p.period; }
+    addBlock('readiness', 0, p.delay, 'wait', 'delay');
+    t = p.delay;
+    while (t + p.period <= failStart) { addBlock('readiness', t, t+p.period, 'ok', '✓'); t+=p.period; }
+    addBlock('readiness', failStart, failEnd, 'fail', '✗ Not Ready');
+    addVLine(failStart, 'remove', '🚫 Removed');
+    addVLine(failEnd, 'ok', '✓ Re-added');
+    addBlock('readiness', failEnd, totalTime, 'ok', '✓ Ready');
+    addBlock('pod', 0, 2, 'init', 'Start');
+    addBlock('pod', 2, failStart, 'run', 'Running ✓ Ready');
+    addBlock('pod', failStart, failEnd, 'down', 'Running / NOT Ready');
+    addBlock('pod', failEnd, totalTime, 'run', 'Running ✓ Ready');
+    setStatus(`🚫 Readiness failed t=30–70s → removed from endpoints, NO restart → re-added at t=70s`, 'ss-warn');
+  }
+  else if (scenario === 'startup') {
+    const startupBudget = 30;
+    const startupDone   = 28;
+    totalTime = 80;
+    // startup probe
+    addBlock('startup', 0, startupDone, 'fail', '⏳ starting...');
+    addBlock('startup', startupDone, startupDone+p.period, 'ok', '✓ done');
+    addVLine(startupDone, 'ok', '🚀 Startup OK');
+    // liveness disabled during startup
+    addBlock('liveness', 0, startupDone, 'off', 'DISABLED');
+    let t = startupDone;
+    while (t < totalTime) { addBlock('liveness', t, Math.min(t+p.period,totalTime), 'ok', '✓'); t+=p.period; }
+    // readiness disabled during startup
+    addBlock('readiness', 0, startupDone, 'off', 'DISABLED');
+    t = startupDone + p.delay;
+    while (t < totalTime) { addBlock('readiness', t, Math.min(t+p.period,totalTime), 'ok', '✓'); t+=p.period; }
+    addBlock('pod', 0, startupDone, 'init', '⏳ Startup (NotReady)');
+    addBlock('pod', startupDone, 80, 'run', 'Running ✓ Ready');
+    setStatus(`🐢 Slow startup: liveness+readiness disabled until t=${startupDone}s → then both activate`, 'ss-warn');
+  }
+
+  return { events, totalTime };
+}
+
+function simRun(scenario) {
+  simReset();
+  const { events, totalTime } = buildScenario(scenario);
+  drawTimeline(events, totalTime, scenario);
+
+  // Animate time cursor
+  let elapsed = 0;
+  const step = totalTime / 120;
+  simAnim = setInterval(() => {
+    elapsed += step;
+    if (elapsed >= totalTime) { clearInterval(simAnim); simAnim = null; }
+    document.getElementById('simTime').textContent = `t = ${Math.round(elapsed)}s`;
+  }, 40);
+}
+
+// Init canvas size
+window.addEventListener('load', simReset);
+window.addEventListener('resize', () => { if (!simAnim) simReset(); });
+</script>
+</body>
+</html>

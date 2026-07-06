@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K8s Visual Cheatsheet</title>
+<link href="../assets/fonts/font-set-4.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #060810;
+  --surface: #0d1117;
+  --surface2: #131920;
+  --border: #1c2535;
+  --border2: #243044;
+  --c1: #00e5ff;   /* cyan - apiserver */
+  --c2: #7c3aed;   /* purple - etcd */
+  --c3: #22c55e;   /* green - scheduler */
+  --c4: #f59e0b;   /* amber - controller */
+  --c5: #ef4444;   /* red - kubelet */
+  --c6: #e879f9;   /* pink - admission */
+  --text: #e2e8f0;
+  --dim: #64748b;
+  --muted: #334155;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+
+/* ─── HEADER ─── */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 48px;
+}
+.header-left h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  letter-spacing: 3px;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--c1) 0%, #fff 40%, var(--c1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header-left p {
+  color: var(--dim);
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-family: 'Space Mono', monospace;
+}
+.header-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+.hbadge {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  border: 1px solid;
+}
+.hbadge.c1 { border-color: var(--c1); color: var(--c1); background: rgba(0,229,255,0.05); }
+.hbadge.c2 { border-color: var(--c2); color: var(--c2); background: rgba(124,58,237,0.05); }
+.hbadge.c3 { border-color: var(--c3); color: var(--c3); background: rgba(34,197,94,0.05); }
+
+/* ─── SECTION LABELS ─── */
+.sec-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--c1);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.sec-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--c1), transparent);
+  opacity: 0.3;
+}
+.sec-label span {
+  font-size: 12px;
+  color: var(--dim);
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 1px;
+}
+
+/* ─── ARCHITECTURE DIAGRAM ─── */
+.arch-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.arch-container::before {
+  content: 'CONTROL PLANE';
+  position: absolute;
+  top: 16px; left: 20px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--dim);
+}
+
+.arch-svg-wrapper {
+  width: 100%;
+  overflow: visible;
+}
+
+/* Node boxes */
+.node-box {
+  cursor: default;
+  transition: all 0.2s;
+}
+.node-box:hover .node-rect { filter: brightness(1.3); }
+.node-rect {
+  transition: filter 0.2s;
+}
+.node-label {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  fill: white;
+}
+.node-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  fill: rgba(255,255,255,0.5);
+}
+.node-icon {
+  font-size: 20px;
+}
+
+/* Animated connection lines */
+@keyframes dash-flow {
+  from { stroke-dashoffset: 24; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
+.conn-line {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+  animation: dash-flow 1.2s linear infinite;
+}
+.conn-arrow {
+  stroke-width: 1.5;
+}
+
+/* ─── MANIFEST FLOW ─── */
+.flow-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px 32px 28px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: visible;
+}
+
+.flow-svg-wrap {
+  width: 100%;
+  overflow: visible;
+}
+
+/* ─── CARDS GRID ─── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.cards-grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+.vcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.vcard:hover {
+  border-color: var(--border2);
+  box-shadow: 0 0 24px rgba(0,0,0,0.4);
+}
+.vcard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.vcard:hover::after { opacity: 1; }
+
+.vcard .corner-glow {
+  position: absolute;
+  top: -30px; left: -30px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  opacity: 0.12;
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.vcard-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.vcard-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.vcard-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.vcard-subtitle {
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+.fact-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 4px 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid #13192500;
+  font-size: 11px;
+  align-items: baseline;
+}
+.fact-row + .fact-row { border-top: 1px solid rgba(255,255,255,0.04); }
+.fact-key {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.fact-val {
+  color: var(--dim);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.fact-val b, .fact-val strong { color: var(--text); font-weight: 500; }
+.fact-val code {
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--c1);
+}
+
+/* color schemes per component */
+.vc-api  { --cc: var(--c1); }
+.vc-etcd { --cc: var(--c2); }
+.vc-sched{ --cc: var(--c3); }
+.vc-kcm  { --cc: var(--c4); }
+.vc-kube { --cc: var(--c5); }
+.vc-net  { --cc: #38bdf8; }
+
+.vcard .vcard-icon { background: rgba(var(--cc-rgb),0.12); }
+.vc-api  .vcard-icon  { background: rgba(0,229,255,0.1);   }
+.vc-etcd .vcard-icon  { background: rgba(124,58,237,0.1);  }
+.vc-sched .vcard-icon { background: rgba(34,197,94,0.1);   }
+.vc-kcm  .vcard-icon  { background: rgba(245,158,11,0.1);  }
+.vc-kube .vcard-icon  { background: rgba(239,68,68,0.1);   }
+.vc-net  .vcard-icon  { background: rgba(56,189,248,0.1);  }
+
+.vc-api  .vcard-title { color: var(--c1); }
+.vc-etcd .vcard-title { color: var(--c2); }
+.vc-sched .vcard-title{ color: var(--c3); }
+.vc-kcm  .vcard-title { color: var(--c4); }
+.vc-kube .vcard-title { color: var(--c5); }
+.vc-net  .vcard-title { color: #38bdf8;   }
+
+.vc-api  .fact-key { color: rgba(0,229,255,0.7);   }
+.vc-etcd .fact-key { color: rgba(124,58,237,0.8);  }
+.vc-sched .fact-key{ color: rgba(34,197,94,0.8);   }
+.vc-kcm  .fact-key { color: rgba(245,158,11,0.8);  }
+.vc-kube .fact-key { color: rgba(239,68,68,0.8);   }
+.vc-net  .fact-key { color: rgba(56,189,248,0.8);  }
+
+.vc-api  .corner-glow { background: var(--c1); }
+.vc-etcd .corner-glow { background: var(--c2); }
+.vc-sched .corner-glow{ background: var(--c3); }
+.vc-kcm  .corner-glow { background: var(--c4); }
+.vc-kube .corner-glow { background: var(--c5); }
+.vc-net  .corner-glow { background: #38bdf8;   }
+
+/* ─── CALLOUT ─── */
+.callout {
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 12px;
+  border-left: 3px solid;
+  line-height: 1.6;
+}
+.callout strong { color: var(--text); }
+.vc-api  .callout { background: rgba(0,229,255,0.05);   border-color: var(--c1); }
+.vc-etcd .callout { background: rgba(124,58,237,0.05);  border-color: var(--c2); }
+.vc-sched .callout{ background: rgba(34,197,94,0.05);   border-color: var(--c3); }
+.vc-kcm  .callout { background: rgba(245,158,11,0.05);  border-color: var(--c4); }
+.vc-kube .callout { background: rgba(239,68,68,0.05);   border-color: var(--c5); }
+.vc-net  .callout { background: rgba(56,189,248,0.05);  border-color: #38bdf8;   }
+
+/* ─── GOTCHAS TABLE ─── */
+.gotcha-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.gotcha-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  transition: border-color 0.2s;
+}
+.gotcha-item:hover { border-color: var(--border2); }
+.gotcha-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.gotcha-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.gotcha-body {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+.gotcha-body code {
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--c1);
+}
+
+/* ─── QOS ─── */
+.qos-row {
+  display: flex;
+  gap: 12px;
+}
+.qos-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.qos-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.qos-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  width: 90px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.qos-bar {
+  height: 24px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+/* ─── CODE ─── */
+.code-block {
+  background: #070b10;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--dim);
+  margin-top: 8px;
+  overflow-x: auto;
+}
+.code-block .kw  { color: #c792ea; }
+.code-block .fn  { color: var(--c3); }
+.code-block .str { color: var(--c4); }
+.code-block .cmt { color: #445060; }
+.code-block .key { color: var(--c1); }
+.code-block .num { color: var(--c5); }
+
+/* ─── FOOTER ─── */
+.footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page > * {
+  animation: fade-up 0.5s ease both;
+}
+.page > *:nth-child(1) { animation-delay: 0.0s; }
+.page > *:nth-child(2) { animation-delay: 0.05s; }
+.page > *:nth-child(3) { animation-delay: 0.1s; }
+.page > *:nth-child(4) { animation-delay: 0.15s; }
+.page > *:nth-child(5) { animation-delay: 0.2s; }
+.page > *:nth-child(6) { animation-delay: 0.25s; }
+.page > *:nth-child(7) { animation-delay: 0.3s; }
+
+@keyframes travel {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+.traveling-dot {
+  offset-path: var(--path);
+  animation: travel var(--dur, 2s) var(--delay, 0s) linear infinite;
+  offset-rotate: 0deg;
+}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ─── HEADER ─── -->
+<div class="header">
+  <div class="header-left">
+    <h1>Kubernetes</h1>
+    <p>Interview Cheatsheet · Control Plane &amp; Internals</p>
+  </div>
+  <div class="header-badges">
+    <div class="hbadge c1">v1.29+ compatible</div>
+    <div class="hbadge c2">etcd · raft · cri · cni</div>
+    <div class="hbadge c3">reconciliation loops</div>
+  </div>
+</div>
+
+<!-- ─── SECTION 1: ARCHITECTURE DIAGRAM ─── -->
+<div class="sec-label">Control Plane Architecture <span>// visual topology</span></div>
+
+<div class="arch-container">
+  <svg class="arch-svg-wrapper" viewBox="0 0 1100 420" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Glows -->
+      <filter id="glow-c1" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="glow-c2" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="6" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <!-- Arrow markers -->
+      <marker id="arr-c1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#00e5ff" opacity="0.7"/>
+      </marker>
+      <marker id="arr-c2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#7c3aed" opacity="0.7"/>
+      </marker>
+      <marker id="arr-c3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#22c55e" opacity="0.7"/>
+      </marker>
+      <marker id="arr-c4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#f59e0b" opacity="0.7"/>
+      </marker>
+      <marker id="arr-c5" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#ef4444" opacity="0.7"/>
+      </marker>
+      <!-- Linear gradients for nodes -->
+      <linearGradient id="grad-api" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="grad-etcd" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="grad-sched" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#22c55e" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#22c55e" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="grad-kcm" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="grad-kubelet" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ef4444" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#ef4444" stop-opacity="0.05"/>
+      </linearGradient>
+      <linearGradient id="grad-kp" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.04"/>
+      </linearGradient>
+      <linearGradient id="grad-kubectl" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#e879f9" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#e879f9" stop-opacity="0.05"/>
+      </linearGradient>
+      <!-- Node highlight -->
+      <radialGradient id="node-shine" cx="0%" cy="0%" r="100%">
+        <stop offset="0%" stop-color="white" stop-opacity="0.08"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- ── BACKGROUND ZONES ── -->
+    <!-- Control Plane zone -->
+    <rect x="20" y="40" width="720" height="340" rx="8" fill="rgba(0,229,255,0.02)" stroke="rgba(0,229,255,0.08)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="34" y="60" font-family="Space Mono" font-size="9" fill="rgba(0,229,255,0.4)" letter-spacing="3" text-anchor="start">CONTROL PLANE</text>
+
+    <!-- Node zone -->
+    <rect x="760" y="40" width="320" height="340" rx="8" fill="rgba(239,68,68,0.02)" stroke="rgba(239,68,68,0.08)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="774" y="60" font-family="Space Mono" font-size="9" fill="rgba(239,68,68,0.4)" letter-spacing="3">WORKER NODE</text>
+
+    <!-- ── CONNECTIONS (drawn before nodes so nodes appear on top) ── -->
+
+    <!-- kubectl → apiserver -->
+    <line x1="110" y1="370" x2="110" y2="310" stroke="#e879f9" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6" marker-end="url(#arr-c1)">
+      <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/>
+    </line>
+    <text x="116" y="345" font-family="Space Mono" font-size="8" fill="#e879f9" opacity="0.6">REST</text>
+
+    <!-- apiserver ↔ etcd -->
+    <line x1="270" y1="196" x2="385" y2="196" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.7" marker-end="url(#arr-c2)">
+      <animate attributeName="stroke-dashoffset" from="16" to="0" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <line x1="385" y1="206" x2="270" y2="206" stroke="#00e5ff" stroke-width="1" stroke-dasharray="5 3" opacity="0.4" marker-end="url(#arr-c1)">
+      <animate attributeName="stroke-dashoffset" from="0" to="16" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <text x="298" y="190" font-family="Space Mono" font-size="8" fill="rgba(255,255,255,0.3)">protobuf</text>
+
+    <!-- scheduler ← apiserver watch -->
+    <path d="M 270 170 C 320 140, 430 130, 480 150" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6" marker-end="url(#arr-c3)">
+      <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1.1s" repeatCount="indefinite"/>
+    </path>
+    <text x="358" y="128" font-family="Space Mono" font-size="8" fill="#22c55e" opacity="0.6">watch Pods</text>
+
+    <!-- scheduler → apiserver (bind) -->
+    <path d="M 480 180 C 430 200, 330 210, 270 200" fill="none" stroke="#22c55e" stroke-width="1" stroke-dasharray="3 4" opacity="0.4" marker-end="url(#arr-c1)">
+      <animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.1s" repeatCount="indefinite"/>
+    </path>
+    <text x="340" y="218" font-family="Space Mono" font-size="8" fill="#22c55e" opacity="0.4">bind</text>
+
+    <!-- kcm ← apiserver watch -->
+    <path d="M 270 230 C 310 280, 420 300, 475 270" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6" marker-end="url(#arr-c4)">
+      <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1.3s" repeatCount="indefinite"/>
+    </path>
+    <text x="344" y="300" font-family="Space Mono" font-size="8" fill="#f59e0b" opacity="0.6">watch + reconcile</text>
+
+    <!-- kcm → apiserver -->
+    <path d="M 475 250 C 430 220, 330 215, 270 218" fill="none" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3 4" opacity="0.4" marker-end="url(#arr-c1)">
+      <animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.3s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- apiserver → kubelet (via network) -->
+    <line x1="270" y1="200" x2="820" y2="190" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 3" opacity="0.5" marker-end="url(#arr-c5)">
+      <animate attributeName="stroke-dashoffset" from="18" to="0" dur="1.5s" repeatCount="indefinite"/>
+    </line>
+    <text x="520" y="182" font-family="Space Mono" font-size="8" fill="#ef4444" opacity="0.5">watch + status</text>
+
+    <!-- kubelet ↔ kube-proxy (internal node) -->
+    <line x1="900" y1="290" x2="900" y2="250" stroke="rgba(56,189,248,0.4)" stroke-width="1" stroke-dasharray="4 3">
+      <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.2s" repeatCount="indefinite"/>
+    </line>
+
+    <!-- kubelet → CRI -->
+    <line x1="900" y1="160" x2="900" y2="100" stroke="rgba(239,68,68,0.4)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-c5)">
+      <animate attributeName="stroke-dashoffset" from="0" to="14" dur="1s" repeatCount="indefinite"/>
+    </line>
+    <text x="906" y="132" font-family="Space Mono" font-size="8" fill="rgba(239,68,68,0.5)">CRI gRPC</text>
+
+    <!-- ── NODES ── -->
+
+    <!-- kubectl (bottom left) -->
+    <g class="node-box" transform="translate(30, 340)">
+      <rect class="node-rect" x="0" y="0" width="160" height="60" rx="6" fill="url(#grad-kubectl)" stroke="#e879f9" stroke-width="1.2" opacity="0.85"/>
+      <rect x="0" y="0" width="160" height="60" rx="6" fill="url(#node-shine)"/>
+      <text x="12" y="22" class="node-label" font-family="Space Mono" font-size="12" fill="#e879f9" font-weight="700">kubectl</text>
+      <text x="12" y="38" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">CLI client</text>
+      <text x="12" y="51" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.3)">REST / strategic-merge-patch</text>
+    </g>
+
+    <!-- kube-apiserver (center) -->
+    <g class="node-box" transform="translate(30, 130)">
+      <rect class="node-rect" x="0" y="0" width="240" height="140" rx="8" fill="url(#grad-api)" stroke="#00e5ff" stroke-width="1.5" filter="url(#glow-c1)"/>
+      <rect x="0" y="0" width="240" height="140" rx="8" fill="url(#node-shine)"/>
+      <rect x="0" y="0" width="240" height="26" rx="8" fill="rgba(0,229,255,0.1)"/>
+      <rect x="0" y="18" width="240" height="8" fill="rgba(0,229,255,0.05)"/>
+      <text x="12" y="18" class="node-label" font-family="Space Mono" font-size="12" fill="#00e5ff" font-weight="700" letter-spacing="1">kube-apiserver</text>
+      <text x="12" y="44" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Authn → Authz → Admission → etcd</text>
+      <text x="12" y="62" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Only component writing to etcd</text>
+      <text x="12" y="80" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Fans watch events to all clients</text>
+      <text x="12" y="98" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Stateless — HA via LB</text>
+      <text x="12" y="116" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Validates OpenAPI schema</text>
+      <text x="12" y="132" font-family="DM Sans" font-size="9" fill="rgba(0,229,255,0.35)">:6443  REST + gRPC</text>
+    </g>
+
+    <!-- etcd -->
+    <g class="node-box" transform="translate(390, 130)">
+      <rect class="node-rect" x="0" y="0" width="200" height="140" rx="8" fill="url(#grad-etcd)" stroke="#7c3aed" stroke-width="1.5" filter="url(#glow-c2)"/>
+      <rect x="0" y="0" width="200" height="140" rx="8" fill="url(#node-shine)"/>
+      <rect x="0" y="0" width="200" height="26" rx="8" fill="rgba(124,58,237,0.15)"/>
+      <rect x="0" y="18" width="200" height="8" fill="rgba(124,58,237,0.05)"/>
+      <text x="12" y="18" class="node-label" font-family="Space Mono" font-size="12" fill="#7c3aed" font-weight="700" letter-spacing="1">etcd</text>
+      <text x="12" y="44" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Raft distributed consensus</text>
+      <text x="12" y="62" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● /registry/&lt;resource&gt;/&lt;ns&gt;/&lt;name&gt;</text>
+      <text x="12" y="80" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Protobuf serialized objects</text>
+      <text x="12" y="98" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Quorum = ⌊N/2⌋ + 1</text>
+      <text x="12" y="116" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Sole source of truth</text>
+      <text x="12" y="132" font-family="DM Sans" font-size="9" fill="rgba(124,58,237,0.45)">:2379 client  :2380 peer</text>
+    </g>
+
+    <!-- kube-scheduler -->
+    <g class="node-box" transform="translate(480, 96)">
+      <rect class="node-rect" x="0" y="0" width="200" height="80" rx="8" fill="url(#grad-sched)" stroke="#22c55e" stroke-width="1.2"/>
+      <rect x="0" y="0" width="200" height="80" rx="8" fill="url(#node-shine)"/>
+      <rect x="0" y="0" width="200" height="22" rx="8" fill="rgba(34,197,94,0.1)"/>
+      <rect x="0" y="14" width="200" height="8" fill="rgba(34,197,94,0.05)"/>
+      <text x="10" y="15" class="node-label" font-family="Space Mono" font-size="11" fill="#22c55e" font-weight="700">kube-scheduler</text>
+      <text x="10" y="36" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">Filter → Score → Bind</text>
+      <text x="10" y="52" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">Writes nodeName only</text>
+      <text x="10" y="68" font-family="DM Sans" font-size="9" fill="rgba(34,197,94,0.4)">Leader Election via Lease</text>
+    </g>
+
+    <!-- kube-controller-manager -->
+    <g class="node-box" transform="translate(476, 228)">
+      <rect class="node-rect" x="0" y="0" width="210" height="110" rx="8" fill="url(#grad-kcm)" stroke="#f59e0b" stroke-width="1.2"/>
+      <rect x="0" y="0" width="210" height="110" rx="8" fill="url(#node-shine)"/>
+      <rect x="0" y="0" width="210" height="22" rx="8" fill="rgba(245,158,11,0.1)"/>
+      <rect x="0" y="14" width="210" height="8" fill="rgba(245,158,11,0.05)"/>
+      <text x="10" y="15" class="node-label" font-family="Space Mono" font-size="9.5" fill="#f59e0b" font-weight="700">kube-controller-manager</text>
+      <text x="10" y="36" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">Node, Deployment, ReplicaSet</text>
+      <text x="10" y="52" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">DaemonSet, Job, EndpointSlice</text>
+      <text x="10" y="68" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">GC, ResourceQuota, Namespace</text>
+      <text x="10" y="84" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">Shared informer factory</text>
+      <text x="10" y="100" font-family="DM Sans" font-size="9" fill="rgba(245,158,11,0.4)">Leader Election via Lease</text>
+    </g>
+
+    <!-- kubelet (worker node) -->
+    <g class="node-box" transform="translate(820, 120)">
+      <rect class="node-rect" x="0" y="0" width="230" height="120" rx="8" fill="url(#grad-kubelet)" stroke="#ef4444" stroke-width="1.5" filter="url(#glow-c1)"/>
+      <rect x="0" y="0" width="230" height="120" rx="8" fill="url(#node-shine)"/>
+      <rect x="0" y="0" width="230" height="24" rx="8" fill="rgba(239,68,68,0.12)"/>
+      <rect x="0" y="16" width="230" height="8" fill="rgba(239,68,68,0.05)"/>
+      <text x="12" y="17" class="node-label" font-family="Space Mono" font-size="12" fill="#ef4444" font-weight="700" letter-spacing="1">kubelet</text>
+      <text x="12" y="40" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Watches Pods with spec.nodeName</text>
+      <text x="12" y="58" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Calls CRI gRPC → containerd</text>
+      <text x="12" y="76" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Mounts volumes, CNI via pause</text>
+      <text x="12" y="94" font-family="DM Sans" font-size="10" fill="rgba(255,255,255,0.45)">● Runs probes, reports status</text>
+      <text x="12" y="112" font-family="DM Sans" font-size="9" fill="rgba(239,68,68,0.4)">:10250  HTTPS</text>
+    </g>
+
+    <!-- kube-proxy + CRI (worker node) -->
+    <g class="node-box" transform="translate(820, 260)">
+      <rect class="node-rect" x="0" y="0" width="107" height="60" rx="6" fill="url(#grad-kp)" stroke="#38bdf8" stroke-width="1"/>
+      <text x="10" y="18" font-family="Space Mono" font-size="10" fill="#38bdf8" font-weight="700">kube-proxy</text>
+      <text x="10" y="34" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">iptables/IPVS</text>
+      <text x="10" y="48" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.3)">Service → Pod DNAT</text>
+    </g>
+    <g class="node-box" transform="translate(937, 260)">
+      <rect class="node-rect" x="0" y="0" width="103" height="60" rx="6" fill="rgba(34,197,94,0.06)" stroke="#22c55e" stroke-width="1" opacity="0.8"/>
+      <text x="10" y="18" font-family="Space Mono" font-size="10" fill="#22c55e" font-weight="700">containerd</text>
+      <text x="10" y="34" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">CRI runtime</text>
+      <text x="10" y="48" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.3)">OCI → runc</text>
+    </g>
+
+    <!-- CRI gRPC label on arrow -->
+
+  </svg>
+</div>
+
+<!-- ─── SECTION 2: MANIFEST APPLY FLOW ─── -->
+<div class="sec-label">kubectl apply → Pod Running <span>// full event chain</span></div>
+
+<div class="flow-container">
+  <svg class="flow-svg-wrap" viewBox="0 0 1220 180" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="fa1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+        <path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(255,255,255,0.3)"/>
+      </marker>
+      <filter id="step-glow" x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <!-- Step colors: c1 cyan, c6 pink, c2 purple, c4 amber, c5 red, c3 green, c4 amber, c5 red, c3 green -->
+    <!-- Connecting arrows -->
+    <g opacity="0.4">
+      <line x1="114" y1="80" x2="130" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="242" y1="80" x2="258" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="374" y1="80" x2="390" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="506" y1="80" x2="522" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="638" y1="80" x2="654" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="770" y1="80" x2="786" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="902" y1="80" x2="918" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+      <line x1="1034" y1="80" x2="1050" y2="80" stroke="white" stroke-width="1" marker-end="url(#fa1)"/>
+    </g>
+
+    <!-- Step definitions: x, color, num, top-label, main, sub -->
+    <!-- Step 1: kubectl -->
+    <g transform="translate(6,20)">
+      <rect x="0" y="36" width="108" height="90" rx="7" fill="rgba(232,121,249,0.08)" stroke="#e879f9" stroke-width="1.2" filter="url(#step-glow)"/>
+      <circle cx="54" cy="24" r="18" fill="rgba(232,121,249,0.12)" stroke="#e879f9" stroke-width="1.5"/>
+      <text x="54" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#e879f9" font-weight="700">1</text>
+      <text x="54" y="62" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#e879f9" font-weight="700">kubectl</text>
+      <text x="54" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Compute patch</text>
+      <text x="54" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">strategic-merge</text>
+      <text x="54" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">PATCH → apiserver</text>
+    </g>
+
+    <!-- Step 2: Authn/Authz -->
+    <g transform="translate(134,20)">
+      <rect x="0" y="36" width="108" height="90" rx="7" fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="1.2"/>
+      <circle cx="54" cy="24" r="18" fill="rgba(0,229,255,0.12)" stroke="#00e5ff" stroke-width="1.5"/>
+      <text x="54" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#00e5ff" font-weight="700">2</text>
+      <text x="54" y="62" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00e5ff" font-weight="700">Authn + Authz</text>
+      <text x="54" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Cert / token / OIDC</text>
+      <text x="54" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">RBAC: verb</text>
+      <text x="54" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">on resource/ns</text>
+    </g>
+
+    <!-- Step 3: Mutating Webhooks -->
+    <g transform="translate(262,20)">
+      <rect x="0" y="36" width="112" height="90" rx="7" fill="rgba(232,121,249,0.07)" stroke="#c084fc" stroke-width="1.2"/>
+      <circle cx="56" cy="24" r="18" fill="rgba(192,132,252,0.12)" stroke="#c084fc" stroke-width="1.5"/>
+      <text x="56" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#c084fc" font-weight="700">3</text>
+      <text x="56" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#c084fc" font-weight="700">Mutating WHK</text>
+      <text x="56" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Can modify object</text>
+      <text x="56" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">Inject sidecars</text>
+      <text x="56" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">Run in parallel</text>
+    </g>
+
+    <!-- Step 4: Schema + Defaulting -->
+    <g transform="translate(393,20)">
+      <rect x="0" y="36" width="112" height="90" rx="7" fill="rgba(245,158,11,0.07)" stroke="#f59e0b" stroke-width="1.2"/>
+      <circle cx="56" cy="24" r="18" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="56" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#f59e0b" font-weight="700">4</text>
+      <text x="56" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#f59e0b" font-weight="700">Schema + Default</text>
+      <text x="56" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">OpenAPI validate</text>
+      <text x="56" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">LimitRanger injects</text>
+      <text x="56" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">PodSecurity check</text>
+    </g>
+
+    <!-- Step 5: Validating Webhooks -->
+    <g transform="translate(524,20)">
+      <rect x="0" y="36" width="112" height="90" rx="7" fill="rgba(239,68,68,0.07)" stroke="#ef4444" stroke-width="1.2"/>
+      <circle cx="56" cy="24" r="18" fill="rgba(239,68,68,0.12)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="56" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#ef4444" font-weight="700">5</text>
+      <text x="56" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#ef4444" font-weight="700">Validating WHK</text>
+      <text x="56" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Reject only — no edit</text>
+      <text x="56" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">OPA / Kyverno</text>
+      <text x="56" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">Run in parallel</text>
+    </g>
+
+    <!-- Step 6: etcd Write -->
+    <g transform="translate(655,20)">
+      <rect x="0" y="36" width="112" height="90" rx="7" fill="rgba(124,58,237,0.1)" stroke="#7c3aed" stroke-width="1.5"/>
+      <circle cx="56" cy="24" r="18" fill="rgba(124,58,237,0.15)" stroke="#7c3aed" stroke-width="1.5" filter="url(#step-glow)"/>
+      <text x="56" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#7c3aed" font-weight="700">6</text>
+      <text x="56" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#a78bfa" font-weight="700">etcd Write</text>
+      <text x="56" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Raft commit</text>
+      <text x="56" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">201 Created</text>
+      <text x="56" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">resourceVersion set</text>
+    </g>
+
+    <!-- Step 7: Watch Fan-out -->
+    <g transform="translate(786,20)">
+      <rect x="0" y="36" width="112" height="90" rx="7" fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="1.2"/>
+      <circle cx="56" cy="24" r="18" fill="rgba(0,229,255,0.12)" stroke="#00e5ff" stroke-width="1.5"/>
+      <text x="56" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#00e5ff" font-weight="700">7</text>
+      <text x="56" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#00e5ff" font-weight="700">Watch Fan-out</text>
+      <text x="56" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">apiserver streams</text>
+      <text x="56" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">Controllers update</text>
+      <text x="56" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">informer caches</text>
+    </g>
+
+    <!-- Step 8: Controller Reconcile -->
+    <g transform="translate(916,20)">
+      <rect x="0" y="36" width="112" height="90" rx="7" fill="rgba(245,158,11,0.07)" stroke="#f59e0b" stroke-width="1.2"/>
+      <circle cx="56" cy="24" r="18" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="56" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#f59e0b" font-weight="700">8</text>
+      <text x="56" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#f59e0b" font-weight="700">Ctrl Reconcile</text>
+      <text x="56" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Dep → RS → Pods</text>
+      <text x="56" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">Each write re-triggers</text>
+      <text x="56" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">watch chain</text>
+    </g>
+
+    <!-- Step 9: Scheduler + kubelet -->
+    <g transform="translate(1048,20)">
+      <rect x="0" y="36" width="160" height="90" rx="7" fill="rgba(34,197,94,0.08)" stroke="#22c55e" stroke-width="1.5"/>
+      <circle cx="80" cy="24" r="18" fill="rgba(34,197,94,0.14)" stroke="#22c55e" stroke-width="1.5" filter="url(#step-glow)"/>
+      <text x="80" y="30" text-anchor="middle" font-family="Space Mono" font-size="13" fill="#22c55e" font-weight="700">9</text>
+      <text x="80" y="62" text-anchor="middle" font-family="Space Mono" font-size="8.5" fill="#22c55e" font-weight="700">Sched + kubelet</text>
+      <text x="80" y="78" text-anchor="middle" font-family="DM Sans" font-size="9.5" fill="rgba(255,255,255,0.55)">Filter→Score→Bind</text>
+      <text x="80" y="93" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">kubelet CRI pull+start</text>
+      <text x="80" y="107" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">Status → apiserver</text>
+    </g>
+
+    <!-- Admission phases label -->
+    <rect x="262" y="158" width="374" height="16" rx="3" fill="rgba(192,132,252,0.06)" stroke="rgba(192,132,252,0.2)" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="449" y="169" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(192,132,252,0.6)" letter-spacing="2">ADMISSION PIPELINE</text>
+  </svg>
+</div>
+
+<!-- ─── SECTION 3: COMPONENT DEEP DIVES ─── -->
+<div class="sec-label">Component Deep Dives <span>// key internals</span></div>
+
+<div class="cards-grid">
+  <!-- kube-apiserver -->
+  <div class="vcard vc-api">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">⚡</div>
+      <div>
+        <div class="vcard-title">kube-apiserver</div>
+        <div class="vcard-subtitle">Single front-door · Stateless · :6443</div>
+      </div>
+    </div>
+    <div class="fact-row"><span class="fact-key">Role</span><span class="fact-val"><strong>Only</strong> component that reads/writes etcd. Everything else talks <em>to it</em>.</span></div>
+    <div class="fact-row"><span class="fact-key">HA mode</span><span class="fact-val">Stateless — run N replicas behind a load balancer. No leader election needed.</span></div>
+    <div class="fact-row"><span class="fact-key">Watch</span><span class="fact-val">HTTP/2 chunked streaming. etcd → apiserver → all watchers (fan-out pattern).</span></div>
+    <div class="fact-row"><span class="fact-key">Admission</span><span class="fact-val"><code>Mutating</code> → defaulting → <code>Validating</code>. Order is enforced by apiserver.</span></div>
+    <div class="callout"><strong>Interview trap:</strong> kube-proxy, kubelet, controllers do NOT talk to etcd. They watch/update via apiserver only.</div>
+  </div>
+
+  <!-- etcd -->
+  <div class="vcard vc-etcd">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🗃️</div>
+      <div>
+        <div class="vcard-title">etcd</div>
+        <div class="vcard-subtitle">Raft consensus · Key-value · Source of truth</div>
+      </div>
+    </div>
+    <div class="fact-row"><span class="fact-key">Key format</span><span class="fact-val"><code>/registry/pods/default/my-pod</code> → protobuf</span></div>
+    <div class="fact-row"><span class="fact-key">Raft writes</span><span class="fact-val">Leader replicates to followers. Commit after <strong>majority ack</strong>. ⌊N/2⌋+1 quorum.</span></div>
+    <div class="fact-row"><span class="fact-key">Linearizable</span><span class="fact-val">Reads always reflect committed state. Enables optimistic concurrency via <code>resourceVersion</code>.</span></div>
+    <div class="fact-row"><span class="fact-key">Sizing</span><span class="fact-val">3 or 5 members. Fast SSDs only. Often the #1 cluster bottleneck at scale.</span></div>
+    <div class="callout"><strong>Compaction:</strong> etcd grows unbounded without compaction. Set <code>--auto-compaction-retention</code>.</div>
+  </div>
+
+  <!-- kube-scheduler -->
+  <div class="vcard vc-sched">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🎯</div>
+      <div>
+        <div class="vcard-title">kube-scheduler</div>
+        <div class="vcard-subtitle">Filter → Score → Bind · Lease HA</div>
+      </div>
+    </div>
+    <div class="fact-row"><span class="fact-key">Trigger</span><span class="fact-val">Watches Pods with <code>spec.nodeName == ""</code>. That's it — unbound pods only.</span></div>
+    <div class="fact-row"><span class="fact-key">Filtering</span><span class="fact-val">Remove infeasible nodes: resources, taints, nodeSelector, affinity, PV topology, Pod anti-affinity.</span></div>
+    <div class="fact-row"><span class="fact-key">Scoring</span><span class="fact-val">Rank remaining nodes. Top scorer wins. Writes <strong>Binding</strong> subresource (not a full update).</span></div>
+    <div class="fact-row"><span class="fact-key">Does NOT</span><span class="fact-val">Start containers. Only writes nodeName. kubelet does the rest after seeing the binding.</span></div>
+    <div class="callout"><strong>Scheduling framework:</strong> Plugin extension points at PreFilter, Filter, PostFilter, Score, Bind. Replaces old predicates/priorities.</div>
+  </div>
+</div>
+
+<div class="cards-grid">
+  <!-- kube-controller-manager -->
+  <div class="vcard vc-kcm">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🔄</div>
+      <div>
+        <div class="vcard-title">kube-controller-manager</div>
+        <div class="vcard-subtitle">Single binary · Shared informers · Per-binary leader election</div>
+      </div>
+    </div>
+    <div class="fact-row"><span class="fact-key">Pattern</span><span class="fact-val">Watch → enqueue key → dequeue → reconcile → API write. <strong>Idempotent</strong> by design.</span></div>
+    <div class="fact-row"><span class="fact-key">Shared factory</span><span class="fact-val">All controllers for same resource type share one informer cache. One Watch per resource to apiserver.</span></div>
+    <div class="fact-row"><span class="fact-key">HA gotcha</span><span class="fact-val">Leader election is <strong>per binary</strong>, not per controller. One active instance runs ALL controllers.</span></div>
+    <div class="fact-row"><span class="fact-key">Dep → Pods</span><span class="fact-val">Deployment ctrl → creates ReplicaSet. <strong>ReplicaSet ctrl</strong> → creates Pods. Two-step chain!</span></div>
+    <div class="callout"><strong>Interview trap:</strong> Does Deployment controller create Pods? <strong>No</strong> — it creates/updates ReplicaSets. ReplicaSet ctrl makes Pods.</div>
+  </div>
+
+  <!-- kubelet -->
+  <div class="vcard vc-kube">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🖥️</div>
+      <div>
+        <div class="vcard-title">kubelet</div>
+        <div class="vcard-subtitle">Node agent · CRI gRPC · :10250</div>
+      </div>
+    </div>
+    <div class="fact-row"><span class="fact-key">Trigger</span><span class="fact-val">Watches Pods where <code>spec.nodeName == thisNode</code>. Sees binding written by scheduler.</span></div>
+    <div class="fact-row"><span class="fact-key">CRI stack</span><span class="fact-val">kubelet → <strong>CRI gRPC</strong> → containerd → OCI runtime (runc) → namespaces + cgroups</span></div>
+    <div class="fact-row"><span class="fact-key">Pause container</span><span class="fact-val">Infra container holds the <strong>network namespace</strong>. App containers join it via PID 1 model.</span></div>
+    <div class="fact-row"><span class="fact-key">CNI</span><span class="fact-val">Called after container create. Sets up veth pair, assigns Pod IP (Cilium/Calico/Flannel).</span></div>
+    <div class="callout"><strong>Probes:</strong> Liveness (restart), Readiness (remove from endpoints), Startup (delay liveness). All run on kubelet.</div>
+  </div>
+
+  <!-- networking -->
+  <div class="vcard vc-net">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🌐</div>
+      <div>
+        <div class="vcard-title">Service Networking</div>
+        <div class="vcard-subtitle">kube-proxy · ClusterIP · iptables / IPVS</div>
+      </div>
+    </div>
+    <div class="fact-row"><span class="fact-key">ClusterIP</span><span class="fact-val">Virtual IP — exists only in <strong>iptables/IPVS rules</strong>, not on any real interface. Pure kernel construct.</span></div>
+    <div class="fact-row"><span class="fact-key">Flow</span><span class="fact-val">EndpointSlice ctrl (kcm) → watches Pods+Services → kube-proxy watches EndpointSlices → programs DNAT.</span></div>
+    <div class="fact-row"><span class="fact-key">IPVS mode</span><span class="fact-val">Kernel load balancer. O(1) rule lookup vs O(n) iptables chains. Better at 10k+ Services.</span></div>
+    <div class="fact-row"><span class="fact-key">Cilium eBPF</span><span class="fact-val">Replaces kube-proxy. Socket-level DNAT via eBPF maps. Lower latency, no iptables.</span></div>
+    <div class="callout"><strong>DNS:</strong> CoreDNS resolves <code>svc.ns.svc.cluster.local</code> → ClusterIP. Lives in kube-system, watched by kubelet.</div>
+  </div>
+</div>
+
+<!-- ─── SECTION 4: QOS + GOTCHAS ─── -->
+<div class="sec-label">QoS Classes + Common Gotchas <span>// interview favorites</span></div>
+
+<div class="cards-grid cards-grid-2">
+  <!-- QoS visual -->
+  <div class="vcard" style="border-color: var(--border2);">
+    <div class="vcard-header">
+      <div class="vcard-icon" style="background:rgba(255,255,255,0.05);">⚖️</div>
+      <div>
+        <div class="vcard-title" style="color:var(--text)">Pod QoS Classes</div>
+        <div class="vcard-subtitle">Eviction order under node memory pressure</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <!-- BestEffort -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:#ef4444;font-weight:700;text-transform:uppercase;">BestEffort</span>
+          <span style="font-size:10px;color:var(--dim)">No requests/limits set</span>
+        </div>
+        <div style="height:28px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:4px;display:flex;align-items:center;padding:0 12px;justify-content:space-between;">
+          <span style="font-size:10px;color:#ef4444;font-weight:600;">Evicted FIRST</span>
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);">OOM score: 1000</span>
+        </div>
+      </div>
+      <!-- Burstable -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:#f59e0b;font-weight:700;text-transform:uppercase;">Burstable</span>
+          <span style="font-size:10px;color:var(--dim)">Requests &lt; Limits (or partial)</span>
+        </div>
+        <div style="height:28px;background:rgba(245,158,11,0.10);border:1px solid rgba(245,158,11,0.3);border-radius:4px;display:flex;align-items:center;padding:0 12px;justify-content:space-between;">
+          <span style="font-size:10px;color:#f59e0b;font-weight:600;">Evicted second</span>
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);">OOM score: 2–999</span>
+        </div>
+      </div>
+      <!-- Guaranteed -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:#22c55e;font-weight:700;text-transform:uppercase;">Guaranteed</span>
+          <span style="font-size:10px;color:var(--dim)">requests == limits for ALL containers</span>
+        </div>
+        <div style="height:28px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:4px;display:flex;align-items:center;padding:0 12px;justify-content:space-between;">
+          <span style="font-size:10px;color:#22c55e;font-weight:600;">Evicted LAST</span>
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);">OOM score: &lt;10</span>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="background:rgba(255,255,255,0.03);border-left-color:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.1);margin-top:14px;">
+      <strong>CPU throttling vs OOM:</strong> CPU over-limit → throttled (cgroups). Memory over-limit → OOM killed by kernel.
+    </div>
+  </div>
+
+  <!-- Gotchas -->
+  <div class="vcard" style="border-color: var(--border2);">
+    <div class="vcard-header">
+      <div class="vcard-icon" style="background:rgba(255,255,255,0.05);">⚠️</div>
+      <div>
+        <div class="vcard-title" style="color:var(--text)">Common Interview Gotchas</div>
+        <div class="vcard-subtitle">Things that trip people up</div>
+      </div>
+    </div>
+    <div class="gotcha-grid">
+      <div class="gotcha-item">
+        <div class="gotcha-tag" style="background:rgba(0,229,255,0.08);color:var(--c1);border:1px solid rgba(0,229,255,0.2);">finalizers</div>
+        <div class="gotcha-title" style="font-size:11px;">Deletion Blocked?</div>
+        <div class="gotcha-body">Object gets <code>deletionTimestamp</code> but won't delete until controller removes all finalizers from the array.</div>
+      </div>
+      <div class="gotcha-item">
+        <div class="gotcha-tag" style="background:rgba(245,158,11,0.08);color:var(--c4);border:1px solid rgba(245,158,11,0.2);">ownerRef</div>
+        <div class="gotcha-title" style="font-size:11px;">Cascade Delete</div>
+        <div class="gotcha-body">GC traverses ownerReference graph. Foreground: wait for dependents. Background: owner deleted first.</div>
+      </div>
+      <div class="gotcha-item">
+        <div class="gotcha-tag" style="background:rgba(239,68,68,0.08);color:var(--c5);border:1px solid rgba(239,68,68,0.2);">CrashLoop</div>
+        <div class="gotcha-title" style="font-size:11px;">Backoff Resets</div>
+        <div class="gotcha-body">kubelet exponential backoff: 10s→20s→40s→… max 5m. Resets after 10m of stable running.</div>
+      </div>
+      <div class="gotcha-item">
+        <div class="gotcha-tag" style="background:rgba(124,58,237,0.08);color:var(--c2);border:1px solid rgba(124,58,237,0.2);">resourceVer</div>
+        <div class="gotcha-title" style="font-size:11px;">Optimistic Lock</div>
+        <div class="gotcha-body">Write with stale resourceVersion → 409 Conflict. Re-read, get fresh version, retry. etcd linearizability.</div>
+      </div>
+      <div class="gotcha-item">
+        <div class="gotcha-tag" style="background:rgba(34,197,94,0.08);color:var(--c3);border:1px solid rgba(34,197,94,0.2);">SSA</div>
+        <div class="gotcha-title" style="font-size:11px;">Server-Side Apply</div>
+        <div class="gotcha-body">apiserver tracks field managers. Conflict if two managers own same field. Use <code>--force-conflicts</code> carefully.</div>
+      </div>
+      <div class="gotcha-item">
+        <div class="gotcha-tag" style="background:rgba(56,189,248,0.08);color:#38bdf8;border:1px solid rgba(56,189,248,0.2);">informer</div>
+        <div class="gotcha-title" style="font-size:11px;">Cache Sync</div>
+        <div class="gotcha-body">Controllers must call <code>WaitForCacheSync()</code> on start. Acting on stale cache = incorrect reconcile.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION 5: RECONCILE LOOP ─── -->
+<div class="sec-label">Reconciliation Pattern <span>// all controllers follow this</span></div>
+
+<div class="cards-grid cards-grid-2">
+  <div class="vcard vc-kcm">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🔁</div>
+      <div>
+        <div class="vcard-title">The Control Loop</div>
+        <div class="vcard-subtitle">Desired state ← → Actual state</div>
+      </div>
+    </div>
+    <div class="code-block">
+<span class="cmt">// Every Kubernetes controller is this loop</span>
+<span class="kw">func</span> (<span class="key">r</span> *Reconciler) <span class="fn">Reconcile</span>(ctx, req) (Result, error) {
+  <span class="cmt">// 1. Read from LOCAL INFORMER CACHE (not API server)</span>
+  obj := <span class="fn">r.cache.Get</span>(req.NamespacedName)
+  <span class="kw">if</span> obj == <span class="num">nil</span> { <span class="kw">return</span> Done }
+
+  <span class="cmt">// 2. Compute desired state (pure business logic)</span>
+  desired := <span class="fn">computeDesired</span>(obj)
+
+  <span class="cmt">// 3. Compare with actual (may call API for owned objects)</span>
+  actual := <span class="fn">r.getActualState</span>(ctx, obj)
+
+  <span class="cmt">// 4. Apply the diff via API server (may trigger more events)</span>
+  <span class="kw">if</span> <span class="fn">diff</span>(actual, desired) != <span class="num">nil</span> {
+    <span class="fn">r.applyDesired</span>(ctx, desired)  <span class="cmt">// write via apiserver</span>
+  }
+
+  <span class="cmt">// 5. Return: requeue after X, or Done</span>
+  <span class="kw">return</span> ctrl.Result{RequeueAfter: <span class="str">30s</span>}, <span class="num">nil</span>
+}
+    </div>
+    <div class="callout"><strong>Idempotency is mandatory.</strong> Reconcile may run 10× for one event (retries, requeues, restarts). It must always produce the same result for the same inputs.</div>
+  </div>
+
+  <div class="vcard vc-api">
+    <div class="corner-glow"></div>
+    <div class="vcard-header">
+      <div class="vcard-icon">🔍</div>
+      <div>
+        <div class="vcard-title">Debug Commands</div>
+        <div class="vcard-subtitle">First things to run in an interview scenario</div>
+      </div>
+    </div>
+    <div class="code-block">
+<span class="cmt"># Always start here — events tell the story</span>
+<span class="key">kubectl</span> describe pod &lt;name&gt; | tail -30
+
+<span class="cmt"># Events sorted by time (namespace-wide)</span>
+<span class="key">kubectl</span> get events --sort-by=<span class="str">'.lastTimestamp'</span> -A
+
+<span class="cmt"># Previous crash container logs</span>
+<span class="key">kubectl</span> logs &lt;pod&gt; <span class="kw">--previous -c</span> &lt;container&gt;
+
+<span class="cmt"># Check what controller sees (Dep → RS → Pods)</span>
+<span class="key">kubectl</span> get deploy,rs,pods -l app=&lt;label&gt; -o wide
+
+<span class="cmt"># Node allocatable vs requested</span>
+<span class="key">kubectl</span> describe node &lt;n&gt; | grep -A8 Allocated
+
+<span class="cmt"># Force-clear stuck namespace finalizers</span>
+<span class="key">kubectl</span> patch ns &lt;ns&gt; \
+  -p <span class="str">'{"metadata":{"finalizers":[]}}'</span> \
+  --type=merge
+
+<span class="cmt"># Dry-run to check admission without writing</span>
+<span class="key">kubectl</span> apply -f manifest.yaml <span class="kw">--dry-run=server</span>
+    </div>
+    <div class="callout"><strong>Tip:</strong> <code>--dry-run=server</code> runs the full admission pipeline without writing to etcd. Great for debugging webhook issues.</div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<div class="footer">
+  <div class="footer-text">Kubernetes Control Plane · Interview Reference · v1.29+</div>
+  <div style="display:flex;gap:12px;">
+    <span class="footer-text" style="color:#00e5ff40;">apiserver · etcd · scheduler · kcm · kubelet</span>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terraform Trap Sheet — Senior DevOps Interview</title>
+<link href="../assets/fonts/font-set-14.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #07080b;
+  --s1: #0c0d12;
+  --s2: #10111a;
+  --bd: #1a1c28;
+  --b2: #22253a;
+  --wrong: #ff2d55;
+  --right: #39ff14;
+  /* terraform purple spectrum */
+  --tf:    #844fba;
+  --tf2:   #a06cd5;
+  --tf3:   #c49be8;
+  --tfhi:  #bd93f9;
+  /* domain accent colors */
+  --state:  #00d4ff;
+  --plan:   #a855f7;
+  --mod:    #ff9500;
+  --prov:   #50fa7b;
+  --sec:    #ff6b6b;
+  --adv:    #f1fa8c;
+  --text: #d0d8e8;
+  --dim:  #353850;
+  --mid:  #606888;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Barlow',sans-serif;
+  font-size:12px;
+  line-height:1.45;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -5%, rgba(132,79,186,0.09) 0%,transparent 55%),
+    repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(132,79,186,0.025) 25px),
+    repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(132,79,186,0.025) 25px);
+  pointer-events:none;
+}
+.page{position:relative;z-index:1;max-width:1420px;margin:0 auto;padding:30px 20px 60px;}
+
+/* ── HEADER ── */
+.header{
+  margin-bottom:30px;
+  border-bottom:1px solid var(--bd);
+  padding-bottom:18px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:flex-end;
+  gap:20px;
+}
+.hl h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:88px;font-weight:900;
+  letter-spacing:-3px;line-height:.88;
+  text-transform:uppercase;
+}
+.hl h1 .t1{
+  background:linear-gradient(90deg,var(--tf2) 0%,var(--tfhi) 50%,#fff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hl h1 .t2{
+  color:rgba(255,255,255,0.06);
+  -webkit-text-stroke:1px rgba(132,79,186,0.3);
+}
+.hl .sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;letter-spacing:3px;color:var(--dim);
+  text-transform:uppercase;margin-top:8px;
+}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.legend{display:flex;gap:10px;}
+.leg{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.leg-sq{width:8px;height:8px;border-radius:2px;}
+.domains{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.dtag{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid;}
+.d-st{border-color:rgba(0,212,255,.4);color:var(--state);background:rgba(0,212,255,.05);}
+.d-pl{border-color:rgba(168,85,247,.4);color:var(--plan);background:rgba(168,85,247,.05);}
+.d-mo{border-color:rgba(255,149,0,.4);color:var(--mod);background:rgba(255,149,0,.05);}
+.d-pr{border-color:rgba(80,250,123,.4);color:var(--prov);background:rgba(80,250,123,.05);}
+.d-se{border-color:rgba(255,107,107,.4);color:var(--sec);background:rgba(255,107,107,.05);}
+.d-ad{border-color:rgba(241,250,140,.4);color:var(--adv);background:rgba(241,250,140,.05);}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:14px;margin:22px 0 11px;}
+.sh-icon{font-size:20px;}
+.sh-label{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;letter-spacing:3px;text-transform:uppercase;}
+.sh-count{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px;}
+.sh::after{content:'';flex:1;height:1px;}
+.s-st .sh-label{color:var(--state);} .s-st .sh::after{background:linear-gradient(90deg,rgba(0,212,255,.3),transparent);}
+.s-pl .sh-label{color:var(--plan);} .s-pl .sh::after{background:linear-gradient(90deg,rgba(168,85,247,.3),transparent);}
+.s-mo .sh-label{color:var(--mod);}  .s-mo .sh::after{background:linear-gradient(90deg,rgba(255,149,0,.3),transparent);}
+.s-pr .sh-label{color:var(--prov);} .s-pr .sh::after{background:linear-gradient(90deg,rgba(80,250,123,.3),transparent);}
+.s-se .sh-label{color:var(--sec);}  .s-se .sh::after{background:linear-gradient(90deg,rgba(255,107,107,.3),transparent);}
+.s-ad .sh-label{color:var(--adv);}  .s-ad .sh::after{background:linear-gradient(90deg,rgba(241,250,140,.3),transparent);}
+
+/* ── GRID ── */
+.tgrid  {display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:9px;}
+.tgrid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:9px;}
+.tgrid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:9px;}
+
+/* ── TRAP CARD ── */
+.trap{
+  background:var(--s1);
+  border:1px solid var(--bd);
+  border-radius:6px;
+  overflow:hidden;
+  position:relative;
+}
+.trap::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+}
+.t-st::before{background:var(--state);}
+.t-pl::before{background:var(--plan);}
+.t-mo::before{background:var(--mod);}
+.t-pr::before{background:var(--prov);}
+.t-se::before{background:var(--sec);}
+.t-ad::before{background:var(--adv);}
+
+.trap-inner{padding:11px 11px 11px 14px;}
+
+.tq{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:700;
+  color:var(--text);line-height:1.2;
+  margin-bottom:8px;padding-bottom:7px;
+  border-bottom:1px solid var(--bd);
+}
+.tq .num{
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;font-weight:400;color:var(--dim);
+  display:block;margin-bottom:2px;letter-spacing:1px;
+}
+
+.tw,.tr{display:flex;gap:7px;margin-bottom:4px;align-items:flex-start;}
+.tw-badge,.tr-badge{
+  font-family:'Share Tech Mono',monospace;font-size:7.5px;font-weight:700;
+  letter-spacing:1px;padding:2px 5px;border-radius:2px;flex-shrink:0;margin-top:1px;
+}
+.tw-badge{background:rgba(255,45,85,.13);color:var(--wrong);border:1px solid rgba(255,45,85,.28);}
+.tr-badge{background:rgba(57,255,20,.08);color:var(--right);border:1px solid rgba(57,255,20,.22);}
+.tw-text{font-size:11px;color:rgba(255,45,85,.8);line-height:1.45;}
+.tr-text{font-size:11px;color:rgba(57,255,20,.82);line-height:1.45;}
+.tr-text b{color:#7fff5a;font-weight:600;}
+.tr-text code{
+  font-family:'Share Tech Mono',monospace;font-size:9.5px;
+  background:rgba(57,255,20,.07);padding:1px 4px;border-radius:2px;color:#39ff14;
+}
+
+.tnote{
+  font-size:10px;color:var(--mid);background:var(--s2);
+  border-top:1px solid var(--bd);padding:5px 11px 5px 14px;line-height:1.5;
+}
+.tnote b{color:var(--text);}
+.tnote code{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  background:rgba(255,255,255,.05);padding:1px 4px;border-radius:2px;color:var(--tfhi);
+}
+
+.sev{
+  position:absolute;top:7px;right:7px;
+  font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:1px;
+  text-transform:uppercase;padding:2px 5px;border-radius:2px;
+}
+.sev-crit{background:rgba(255,45,85,.18);color:var(--wrong);border:1px solid rgba(255,45,85,.32);}
+.sev-high{background:rgba(255,149,0,.13);color:var(--mod);border:1px solid rgba(255,149,0,.28);}
+.sev-med{background:rgba(241,250,140,.08);color:var(--adv);border:1px solid rgba(241,250,140,.22);}
+
+.trap-mega .tq{font-size:15.5px;}
+.trap-mega .tw-text,.trap-mega .tr-text{font-size:11.5px;}
+
+/* summary banner */
+.banner{
+  background:rgba(132,79,186,0.06);
+  border:1px solid rgba(132,79,186,.18);
+  border-radius:6px;padding:11px 16px;margin-bottom:9px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--mid);display:flex;gap:18px;flex-wrap:wrap;align-items:center;
+}
+.banner b{color:var(--tfhi);}
+.bsep{color:var(--dim);}
+.bitem{display:flex;align-items:center;gap:5px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fi .38s ease both;}
+.page>*:nth-child(1){animation-delay:.00s}.page>*:nth-child(2){animation-delay:.03s}
+.page>*:nth-child(3){animation-delay:.06s}.page>*:nth-child(4){animation-delay:.09s}
+.page>*:nth-child(5){animation-delay:.12s}.page>*:nth-child(6){animation-delay:.15s}
+.page>*:nth-child(7){animation-delay:.18s}.page>*:nth-child(8){animation-delay:.21s}
+.page>*:nth-child(9){animation-delay:.24s}.page>*:nth-child(10){animation-delay:.27s}
+.page>*:nth-child(11){animation-delay:.30s}.page>*:nth-child(12){animation-delay:.33s}
+.page>*:nth-child(13){animation-delay:.36s}
+
+.footer{
+  margin-top:28px;padding-top:12px;border-top:1px solid var(--bd);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft-count{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--tf2);}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hl">
+    <h1><span class="t1">TERRA</span><br><span class="t2">FORM</span></h1>
+    <div class="sub">// trap sheet · state · plan/apply · modules · providers · security · advanced · 52 traps</div>
+  </div>
+  <div class="hright">
+    <div class="legend">
+      <div class="leg"><div class="leg-sq" style="background:var(--wrong)"></div><span style="color:var(--wrong)">Wrong</span></div>
+      <div class="leg"><div class="leg-sq" style="background:var(--right)"></div><span style="color:var(--right)">Right</span></div>
+    </div>
+    <div class="domains">
+      <div class="dtag d-st">State</div>
+      <div class="dtag d-pl">Plan / Apply</div>
+      <div class="dtag d-mo">Modules</div>
+      <div class="dtag d-pr">Providers</div>
+      <div class="dtag d-se">Security</div>
+      <div class="dtag d-ad">Advanced</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ STATE ══════════════════ -->
+<div class="s-st sh"><div class="sh-icon">🗄️</div><div class="sh-label">State</div><div class="sh-count">11 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-st trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-01</span>Does <code>terraform destroy</code> destroy resources not in the state file?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — it destroys everything defined in your .tf files.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Terraform only knows about resources tracked in state.</b> Resources created outside Terraform (console, CLI, other tools) are invisible and will never be touched — until you <code>import</code> them.</span></div>
+    </div>
+    <div class="tnote">This is the fundamental trap. Terraform's world = state file. Reality can diverge silently. <code>terraform plan -refresh-only</code> detects drift without changing anything.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-02</span>Is it safe to manually edit the <code>terraform.tfstate</code> file to fix issues?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — the state is just JSON, edit it carefully.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Use <code>terraform state</code> subcommands.</b> Direct edits corrupt the serial number and MD5, break state locking semantics, and bypass validation. Use <code>state mv</code>, <code>state rm</code>, <code>state replace-provider</code>.</span></div>
+    </div>
+    <div class="tnote">If you must edit raw state: <code>terraform state pull > backup.tfstate</code> first. Never edit the remote state file directly — it bypasses the lock. Only use <code>terraform state push</code> to restore.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-03</span>Does storing state in S3 automatically provide state locking?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — S3 backend handles locking natively with zero configuration.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No, locking must be enabled — but as of Terraform 1.11 (Feb 2025), you no longer need DynamoDB.</b> Set <code>use_lockfile = true</code> in the S3 backend block to get native locking via S3 conditional writes. The older <code>dynamodb_table</code> param still works but is now deprecated/legacy, not required for new configs.</span></div>
+    </div>
+    <div class="tnote">Terraform 1.11+: prefer <code>use_lockfile = true</code> for native S3 locking (no separate lock table to provision or pay for). DynamoDB-based locking still works and remains fine for existing setups, but is legacy going forward. Without either mechanism enabled: two CI jobs apply simultaneously → state corruption, duplicate resources, or destructive race conditions.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-04</span>Does <code>terraform state rm</code> delete the actual cloud resource?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — removing from state destroys the resource.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>state rm</code> removes the resource from Terraform's tracking only.</b> The real resource keeps running untouched. Use this to "orphan" a resource from TF management — e.g., before deleting a module you want to keep.</span></div>
+    </div>
+    <div class="tnote">Workflow for escaping TF management: <code>terraform state rm aws_instance.foo</code> → resource still exists, TF forgets it. Next <code>plan</code> will show it as a new resource to create (if still in .tf) or nothing (if removed from .tf).</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-05</span>Can two workspaces in the same backend share a state file?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes, workspaces share state — that's the point.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Each workspace has its own isolated state file.</b> In S3: <code>env:/workspace-name/path/to/terraform.tfstate</code>. Resources in workspace A are completely invisible to workspace B.</span></div>
+    </div>
+    <div class="tnote">Workspace ≠ environment best practice. Workspaces are for ephemeral environments or minor variations of same config. Different environments (prod/staging) should use <b>separate state files and backends</b> entirely.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-06</span>After renaming a resource block in .tf, will <code>plan</code> update it in place?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — Terraform tracks by content, not by name.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. It will destroy the old name and create a new one.</b> Resource address in state = <code>type.name</code>. Rename = new address = destroy+create. Use <code>terraform state mv aws_instance.old aws_instance.new</code> first.</span></div>
+    </div>
+    <div class="tnote">Always run <code>terraform plan</code> after any rename. Seeing a destroy+create for a prod database is the moment you realize you needed <code>state mv</code> first. Especially dangerous with <code>prevent_destroy = true</code> — it won't save you here.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-07</span>Does <code>prevent_destroy = true</code> in lifecycle block prevent <code>terraform destroy</code> on that resource?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — it protects the resource from any destroy operation.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>It only prevents destroy when the resource is in a config that TF is applying.</b> Remove the block from .tf entirely (or remove the whole resource), then <code>apply</code> — now TF will happily destroy it.</span></div>
+    </div>
+    <div class="tnote"><code>prevent_destroy</code> stops accidental <b>in-plan</b> destroys, not a security measure. It's a lint guard, not a lock. For true protection, use IAM deny policies on the underlying cloud resource.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-08</span>Does <code>terraform refresh</code> update your .tf config files with real cloud state?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — refresh syncs .tf files with what's in the cloud.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>refresh</code> only updates the state file, never .tf files.</b> It reads actual cloud resource attributes → writes them to state. Your .tf is source of truth for desired state; state is TF's map of reality.</span></div>
+    </div>
+    <div class="tnote"><code>terraform refresh</code> is deprecated in favor of <code>terraform apply -refresh-only</code> which shows a plan before changing state. Never use standalone <code>refresh</code> in automation — it modifies state without a plan review.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-09</span>Can you use <code>terraform import</code> to import multiple resources at once?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — pass multiple IDs to import them all.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Classic <code>terraform import</code> = one resource per command.</b> Terraform 1.5+ <code>import</code> block in .tf imports multiple resources in one <code>apply</code>. Also <code>terraform plan -generate-config-out=generated.tf</code> can scaffold the config.</span></div>
+    </div>
+    <div class="tnote">Bulk import for pre-existing infra: use <code>terraformer</code> or <code>tf-import</code> tools to generate both state entries and .tf config from existing cloud resources. Classic import requires you to write the .tf config manually first.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-10</span>Does the state file serial number matter?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — it's just a version counter, doesn't affect operations.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Critical for conflict detection.</b> Each apply increments the serial. If two applies start from the same serial, the second write is rejected (stale state). This is how Terraform detects concurrent modifications without DynamoDB.</span></div>
+    </div>
+    <div class="tnote">When force-pushing state (<code>terraform state push -force</code>): you override the serial check. This can overwrite a concurrent apply's changes. Only use <code>-force</code> when you're 100% certain no other apply is running.</div>
+  </div>
+
+  <div class="trap t-st">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">ST-11</span>Does moving to a new backend automatically migrate the existing state?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — you have to manually copy the state file to the new backend.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes — <code>terraform init</code> after changing backend config prompts to migrate state automatically.</b> It copies state from old backend to new and optionally deletes from old. Safe if done correctly.</span></div>
+    </div>
+    <div class="tnote">Best practice: always take a manual backup before backend migration. <code>terraform state pull > backup-$(date +%s).tfstate</code>. Verify new backend has the state before deleting from old.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ PLAN / APPLY ══════════════════ -->
+<div class="s-pl sh"><div class="sh-icon">📋</div><div class="sh-label">Plan &amp; Apply</div><div class="sh-count">10 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-pl trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-01</span>Does a saved plan file (<code>terraform plan -out=plan.tfplan</code>) guarantee the apply is identical?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — cloud state can drift between plan and apply.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes — applying a saved plan file re-executes exactly the same operations, no refresh.</b> This is the correct CI/CD pattern: plan in PR review → save plan → apply approved plan. Prevents "plan drift" between review and apply.</span></div>
+    </div>
+    <div class="tnote"><code>terraform apply plan.tfplan</code> skips the interactive approval and executes the exact saved plan. The plan file is binary, not human-readable — use <code>terraform show plan.tfplan</code> to inspect it.</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-02</span>Will changing a resource argument always show as an in-place update in the plan?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — Terraform updates resources in place when possible.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Depends on whether the argument is "ForceNew" in the provider schema.</b> Some attributes (e.g., EC2 AMI, RDS engine version) trigger destroy+recreate. Look for <code># forces replacement</code> in the plan output — easy to miss.</span></div>
+    </div>
+    <div class="tnote">Always scan plan output for the words <b>"must be replaced"</b> or <b>"forces replacement"</b>. An innocent-looking change to a tag or name can silently trigger recreation of a stateful resource (RDS, ElastiCache, etc.).</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-03</span>Does <code>terraform apply -auto-approve</code> skip the plan phase entirely?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — auto-approve means no planning, just apply.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>-auto-approve</code> only skips the interactive confirmation prompt.</b> It still runs a full plan internally before applying. The danger: you can't review the plan before it executes. Never use in prod without a saved plan file workflow.</span></div>
+    </div>
+    <div class="tnote">Safe CI pattern: <code>terraform plan -out=plan.tfplan</code> (reviewable) → approval gate → <code>terraform apply plan.tfplan</code> (no -auto-approve needed, saved plan is already approved).</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-04</span>Does <code>-target</code> flag apply changes only to the targeted resource with no side effects?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — targeted apply is surgical with no unintended changes.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b><code>-target</code> skips dependency resolution and can create state inconsistencies.</b> TF may apply the target without updating dependent resources, leaving state partially inconsistent. Use only for emergency triage, never routine ops.</span></div>
+    </div>
+    <div class="tnote">HashiCorp themselves recommend against regular <code>-target</code> use. After any targeted apply, run a full <code>terraform plan</code> to verify state is consistent. Treat it like <code>kubectl delete pod --force</code>.</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-05</span>Does <code>terraform plan</code> guarantee that <code>apply</code> will succeed?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — plan validates everything, apply just executes the plan.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Plan checks syntax, logic, and state — not cloud-side constraints.</b> Apply can fail due to: IAM quota limits, cloud service quotas, API errors, race conditions, or resources that exist in cloud but not in state.</span></div>
+    </div>
+    <div class="tnote">Common apply-only failures: <b>resource already exists</b> (manual creation bypassed TF), <b>quota exceeded</b> (plan doesn't check account quotas), <b>dependency ordering</b> (provider-side, not TF-side).</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-06</span>Can you use <code>count</code> and <code>for_each</code> on the same resource block?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — combine them for more complex resource generation.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. They are mutually exclusive.</b> <code>count</code> creates resources addressed as <code>resource[0]</code>, <code>resource[1]</code>. <code>for_each</code> creates resources addressed as <code>resource["key"]</code>. Using both on one block is a parse error.</span></div>
+    </div>
+    <div class="tnote">Prefer <code>for_each</code> over <code>count</code> for anything non-trivial. With <code>count</code>: removing item from middle of list shifts indexes → destroys+recreates all subsequent resources. <code>for_each</code> addresses by key → stable.</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-07</span>Switching a resource from <code>count</code> to <code>for_each</code> — is it safe without a state migration?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — TF figures out the mapping automatically.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. It will destroy all count-indexed resources and recreate them with for_each keys.</b> Use <code>terraform state mv 'aws_instance.web[0]' 'aws_instance.web["server-a"]'</code> to migrate addresses before switching.</span></div>
+    </div>
+    <div class="tnote">This is a common refactor trap. The resource is identical in the cloud — only the state address changes. <code>state mv</code> updates the address in state without touching the real resource.</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-08</span>Does <code>terraform validate</code> catch all configuration errors?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — validate confirms the config is correct and will apply cleanly.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Validate checks syntax and internal references only — no provider API calls, no state access.</b> It won't catch: invalid AMI IDs, wrong region names, missing IAM permissions, or resource attribute conflicts.</span></div>
+    </div>
+    <div class="tnote"><code>validate</code> → <code>plan</code> → <code>apply</code> is the hierarchy of confidence. Each step catches more classes of errors. <code>validate</code> is fast and suitable for pre-commit hooks. <code>plan</code> needs provider credentials.</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-09</span>Does <code>depends_on</code> only affect ordering of resource creation?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — depends_on just sets the creation order.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b><code>depends_on</code> affects destroy order too (reversed), and forces full plan re-evaluation of the dependent resource whenever the dependency changes.</b> Over-using it on modules slows plans dramatically.</span></div>
+    </div>
+    <div class="tnote">Prefer implicit dependencies (reference expressions) over explicit <code>depends_on</code>. Implicit deps are precise. <code>depends_on</code> on a module forces re-plan of everything inside that module whenever anything in the dependency changes.</div>
+  </div>
+
+  <div class="trap t-pl">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PL-10</span>Is a <code>null_resource</code> with <code>triggers</code> guaranteed to re-run its provisioner on every apply?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — null_resource runs its provisioner on every apply.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Only when a trigger value changes.</b> If triggers map is static (no values change), the provisioner never re-runs. Use <code>triggers = { always = timestamp() }</code> for every-apply execution — but this forces replacement every time.</span></div>
+    </div>
+    <div class="tnote"><code>null_resource</code> is deprecated in favor of <code>terraform_data</code> (1.4+) which has the same trigger semantics without the null provider dependency. Both are escape hatches — prefer native resources where possible.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ MODULES ══════════════════ -->
+<div class="s-mo sh"><div class="sh-icon">📦</div><div class="sh-label">Modules</div><div class="sh-count">9 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-mo trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-01</span>Can a child module access variables from its grandparent module directly?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — variables propagate down the module tree automatically.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Variables are only passed explicitly from parent to immediate child.</b> Each module is a black box. Grandparent → parent → child: values must be threaded down manually at each level. No implicit inheritance.</span></div>
+    </div>
+    <div class="tnote">This forces explicit, visible interfaces between modules — which is the design intent. Globals/environment don't exist in TF module scope. Only <code>terraform.workspace</code> and <code>path.*</code> are implicitly available.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-02</span>Does updating a module source version cause a <code>.terraform.lock.hcl</code> mismatch?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — changing the module version requires <code>terraform init -upgrade</code> to fix a lock mismatch.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. The lock file doesn't track modules at all.</b> <code>.terraform.lock.hcl</code> records only provider dependencies (versions + hashes). Module version changes are resolved at <code>terraform init</code> / <code>terraform get</code> and never produce a lock mismatch.</span></div>
+    </div>
+    <div class="tnote">Lock file (<code>.terraform.lock.hcl</code>) locks provider versions only, for reproducible runs — commit it to git. Modules are recorded separately in <code>.terraform/modules/modules.json</code>, a runtime manifest (not a committed lock file). Just run <code>terraform init</code> after changing a module's source or version — nothing to reconcile.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-03</span>Can a module output a sensitive value without marking it <code>sensitive = true</code>?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — sensitivity is only needed for variables, not outputs.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>The output will be shown in plaintext in <code>terraform output</code> and logs.</b> Mark outputs containing secrets with <code>sensitive = true</code>. The value is still in state (in plaintext) — sensitive just suppresses display.</span></div>
+    </div>
+    <div class="tnote"><code>sensitive = true</code> prevents display in CLI output and logs but <b>does not encrypt the value in state</b>. State still contains the plaintext secret. Encrypt your state backend (S3 SSE + KMS) to protect sensitive values.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-04</span>Can you call a module multiple times without issues using <code>count</code> inside the module?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — count inside the module handles multiple instances.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Use <code>count</code> or <code>for_each</code> on the module call, not inside the module.</b> Multiple module calls without count/for_each create naming conflicts (duplicate resource addresses). <code>for_each</code> on the call creates distinct instances.</span></div>
+    </div>
+    <div class="tnote"><code>module.vpc[0]</code>, <code>module.vpc[1]</code> (count) or <code>module.vpc["prod"]</code>, <code>module.vpc["staging"]</code> (for_each). Each call gets an isolated scope with no resource address collision.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-05</span>Does <code>source = "git::https://github.com/org/module.git"</code> pin a specific version?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — the git URL is a stable reference.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Without a ref/tag it tracks HEAD — your infra can change on the next <code>init</code>.</b> Always pin: <code>git::https://...?ref=v1.2.3</code> or use the Terraform Registry with <code>version = "~> 1.2"</code>.</span></div>
+    </div>
+    <div class="tnote">Unpinned module sources in production are a ticking time bomb. A breaking change merged to the module's main branch deploys on your next <code>terraform init</code>. Always pin. Always.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-06</span>Can a module create resources in a different provider region than the root module?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — modules inherit the root provider configuration.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes, via provider aliases.</b> Define <code>provider "aws" { alias = "us_east" region = "us-east-1" }</code> in root. Pass it to module: <code>providers = { aws = aws.us_east }</code>. Module declares <code>required_providers</code> and accepts it.</span></div>
+    </div>
+    <div class="tnote">Multi-region deployments (Route53 + CloudFront + ACM in us-east-1, resources in eu-west-1) require provider aliases passed down to modules. Modules cannot create their own provider configurations — must receive them from caller.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-07</span>Does removing a module block from your .tf files remove the resources it managed?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — resources stay until you explicitly delete them in cloud console.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes — next <code>terraform apply</code> will destroy all resources the module managed.</b> TF sees resources in state with no corresponding config → destroy. Use <code>removed</code> block (TF 1.7+) to detach without destroying.</span></div>
+    </div>
+    <div class="tnote">Safe module removal workflow: <code>terraform state mv</code> resources to root module (or a new module) before deleting the old module block. Or use TF 1.7+ <code>removed { from = module.old lifecycle { destroy = false } }</code>.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-08</span>Is it a good practice to put all resources in a single large module?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — one module = simple, everything in one place.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Large monolithic root modules mean one <code>plan</code> locks everything, any error blocks all deployments, blast radius is entire infra.</b> Separate by lifecycle: networking, databases, applications — each with own state.</span></div>
+    </div>
+    <div class="tnote">At scale: VPC (rarely changes), RDS (changes per sprint), EKS apps (changes per hour) should have completely separate state files. Coupling them means deploying apps requires locking the VPC state.</div>
+  </div>
+
+  <div class="trap t-mo">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">MO-09</span>Can module outputs reference resources that use <code>count</code> without index?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — TF resolves the count automatically in output references.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. You must specify the index or use <code>*</code> splat.</b> <code>output "ids" { value = aws_subnet.this[*].id }</code> returns a list. <code>aws_subnet.this.id</code> without index is an error when count > 1.</span></div>
+    </div>
+    <div class="tnote">Splat syntax: <code>aws_subnet.this[*].id</code> = list of all IDs. <code>aws_subnet.this[0].id</code> = first one. For <code>for_each</code>: <code>{ for k, v in aws_subnet.this : k => v.id }</code> to output a map.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ PROVIDERS ══════════════════ -->
+<div class="s-pr sh"><div class="sh-icon">🔌</div><div class="sh-label">Providers</div><div class="sh-count">9 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-pr trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-01</span>Should you hardcode AWS credentials in the provider block for simplicity?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — it's explicit and avoids environment variable confusion.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Never. Credentials in .tf files are committed to git and end up in state.</b> Use: IAM roles (EC2/ECS/Lambda instance profile), IRSA (EKS), environment variables, or AWS profiles. Provider block should have no credentials at all.</span></div>
+    </div>
+    <div class="tnote">Even if you gitignore .tf files: state file contains all resource attributes including any passed credentials. State is stored in S3 — needs encryption and strict access control regardless.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-02</span>Does upgrading a Terraform provider version always work without config changes?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — providers are backwards compatible within major versions.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Minor and patch bumps are usually safe but can still change default attribute values or introduce new required arguments.</b> Patch bumps can also change ForceNew attributes. Always read the provider changelog and run <code>plan</code> after upgrading.</span></div>
+    </div>
+    <div class="tnote">AWS provider upgrades are notorious for unexpected plan changes: new required attributes with no defaults, resources that now ForceNew on a previously in-place attribute, new resources that shadow old ones.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-03</span>Can you use <code>terraform {required_providers {}}</code> in a child module to override the provider version?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — each module can independently require its own provider version.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Modules declare version constraints as hints, not requirements.</b> The root module's <code>required_providers</code> controls the actual version used. Child module constraints are checked for compatibility but can't override root. One provider instance shared.</span></div>
+    </div>
+    <div class="tnote">If a child module requires <code>aws >= 5.0</code> and root pins <code>aws = 4.x</code>: error at init time. Module constraints narrow the acceptable range; the root must select a version satisfying all constraints in the tree.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-04</span>Does the <code>kubernetes</code> provider need the cluster to exist before you can plan EKS + k8s resources in the same config?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — TF resolves dependencies and connects to the cluster after it's created.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes. Provider config is evaluated at plan time, before resources are created.</b> The cluster endpoint must exist when TF initializes the k8s provider. Standard solution: two separate applies, or use a <code>data</code> source + <code>depends_on</code> hack.</span></div>
+    </div>
+    <div class="tnote">Best pattern: module 1 (EKS cluster) → separate state → module 2 (k8s resources) reads cluster endpoint via <code>terraform_remote_state</code> or data source. Trying to do both in one apply is a classic ordering failure.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-05</span>Does the <code>helm</code> provider manage Helm chart upgrades the same way <code>helm upgrade</code> does?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — same behavior, just declarative.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>The Helm provider has different rollback semantics.</b> TF doesn't know about Helm release history — it only sees the current desired state. A failed TF apply mid-upgrade can leave the release in a broken state that requires <code>helm rollback</code> manually.</span></div>
+    </div>
+    <div class="tnote">Helm provider is convenient but consider: Helm manages its own state (releases in cluster), TF manages its own state. Two sources of truth. For complex Helm deployments, ArgoCD or Helmfile gives better lifecycle management.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-06</span>Does a <code>data</code> source run at <code>plan</code> time or <code>apply</code> time?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Always at plan time — that's why it's called a data source.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Normally at plan time. But if it depends on a resource not yet created, it runs at apply time after that resource exists.</b> This means its value is unknown during plan, shown as <code>(known after apply)</code>.</span></div>
+    </div>
+    <div class="tnote">This causes cascading "known after apply" unknowns. A data source depending on a new resource makes all resources that use the data source also show unknown during plan. Plan output becomes less informative.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-07</span>Does <code>terraform init</code> always download providers from the public Terraform Registry?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — registry.terraform.io is always the source.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>You can configure provider mirrors.</b> <code>terraform providers mirror</code> caches to local dir. <code>network_mirror</code> or <code>filesystem_mirror</code> in <code>~/.terraformrc</code> for air-gapped environments. Critical for enterprise/regulated infra.</span></div>
+    </div>
+    <div class="tnote">Air-gapped CI: pre-cache providers with <code>terraform providers mirror ./vendor</code>, configure <code>filesystem_mirror</code> pointing to that path, set <code>TERRAFORM_PLUGIN_CACHE_DIR</code>. Providers won't need internet on init.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-08</span>Is it safe to run multiple <code>terraform apply</code> commands in parallel against different workspaces on the same backend?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — workspaces share a lock so parallel applies will block.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Workspaces use separate lock keys — parallel applies against different workspaces are safe and common.</b> Lock contention only occurs within the same workspace. This is why workspaces enable parallel environment deployments.</span></div>
+    </div>
+    <div class="tnote">Each workspace in S3/DynamoDB backend has its own state path and its own DynamoDB lock entry. <code>workspace-dev</code> and <code>workspace-prod</code> can apply simultaneously without blocking each other.</div>
+  </div>
+
+  <div class="trap t-pr">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">PR-09</span>Does the <code>random_password</code> resource generate a new password on every <code>apply</code>?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — it's random, so it generates a new value each time.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. The result is stored in state and reused on subsequent applies.</b> A new password is only generated if you taint the resource or its <code>keepers</code> input changes. The random value is deterministic once created.</span></div>
+    </div>
+    <div class="tnote">The random provider is idempotent by design. <code>random_password.db.result</code> is stable across applies. To rotate: update a keeper value or <code>terraform taint random_password.db</code> (or <code>terraform apply -replace</code> in newer TF).</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ SECURITY ══════════════════ -->
+<div class="s-se sh"><div class="sh-icon">🔐</div><div class="sh-label">Security</div><div class="sh-count">7 TRAPS</div></div>
+
+<div class="tgrid">
+
+  <div class="trap t-se trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-01</span>Is the Terraform state file safe to store in a public S3 bucket with encryption enabled?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — server-side encryption makes it unreadable without the key.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. SSE encrypts at rest but S3 decrypts for any authenticated AWS caller.</b> Anyone with S3 GetObject permission reads the state in plaintext. State contains: passwords, private keys, connection strings. Block all public access + strict bucket policy.</span></div>
+    </div>
+    <div class="tnote">State bucket should have: <b>Block Public Access</b> enabled, <b>bucket policy</b> denying access except specific IAM roles, <b>SSE-KMS</b> (not SSE-S3) for key rotation control, <b>versioning</b> enabled for state recovery, <b>access logging</b> for audit.</div>
+  </div>
+
+  <div class="trap t-se">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-02</span>Does marking a variable as <code>sensitive = true</code> protect it from appearing in state?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — sensitive variables are redacted from all TF output including state.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. Sensitive only suppresses CLI display.</b> The value is stored <b>in plaintext in state</b>. Anyone with state read access sees it. Use a secrets manager (Vault, AWS Secrets Manager) + <code>data</code> source instead of passing secrets as variables.</span></div>
+    </div>
+    <div class="tnote">Pattern: store secret in AWS Secrets Manager → <code>data "aws_secretsmanager_secret_version"</code> fetches it at apply time → pass to resource. Secret never appears in .tf files or CI logs. Still in state though — encrypt state with KMS.</div>
+  </div>
+
+  <div class="trap t-se">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-03</span>Can you use the same Terraform IAM role for both plan and apply in a CI/CD pipeline?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — simpler to have one role for the whole pipeline.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>You should use separate roles: read-only for plan, write permissions for apply.</b> Plan role: read infra + state. Apply role: assumed only after approval gate. Reduces blast radius of a compromised plan step.</span></div>
+    </div>
+    <div class="tnote">Pattern: plan stage assumes <code>TerraformPlanRole</code> (S3:GetObject, ec2:Describe*, iam:Get*). After PR approval: apply stage assumes <code>TerraformApplyRole</code> (full write). Apply role never triggered on PRs from forks.</div>
+  </div>
+
+  <div class="trap t-se">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-04</span>Is committing <code>.terraform/</code> directory to git harmful?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Committing it speeds up CI — no need to re-init.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>The <code>.terraform/</code> directory contains provider binaries and potentially cached credentials.</b> Always gitignore it. CI should run <code>terraform init</code> fresh. Provider binaries are large, platform-specific, and potentially tampered if committed.</span></div>
+    </div>
+    <div class="tnote">Gitignore: <code>.terraform/</code>, <code>*.tfstate</code>, <code>*.tfstate.backup</code>, <code>*.tfplan</code> (binary, platform-specific), <code>.terraform.tfstate</code>. Commit: <code>.terraform.lock.hcl</code> (provider version pins).</div>
+  </div>
+
+  <div class="trap t-se">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-05</span>Does Terraform Cloud / Enterprise encrypt secrets in its own state storage?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — Terraform Cloud state has the same plaintext issue as S3.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes — HCP Terraform encrypts state at rest and in transit, and supports fine-grained access controls per workspace.</b> But sensitive values are still accessible to workspace members with state read permission. Least-privilege workspace ACLs still required.</span></div>
+    </div>
+    <div class="tnote">HCP Terraform also provides ephemeral run credentials (no long-lived keys), audit logging, Sentinel policy as code, and run triggers between workspaces. Self-managed S3 backends require all this to be built manually.</div>
+  </div>
+
+  <div class="trap t-se">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-06</span>Is it safe to output an RDS password from a Terraform module to pass to an application?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — mark it sensitive and pass it as an env variable.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Avoid. Passing secrets through TF outputs means they're in state and potentially CI logs.</b> Create the RDS instance with TF, but store the password directly in Secrets Manager and let the app fetch it at runtime — never route it through TF outputs.</span></div>
+    </div>
+    <div class="tnote">Pattern: <code>aws_db_instance</code> with <code>manage_master_user_password = true</code> (RDS manages secret in Secrets Manager automatically). App reads from Secrets Manager directly. Password never touches TF state or CI output.</div>
+  </div>
+
+  <div class="trap t-se">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">SE-07</span>Does <code>terraform fmt</code> fix security issues in your config?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — fmt validates and formats for security compliance.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b><code>fmt</code> only normalizes whitespace and formatting. No security checks.</b> Use <code>tfsec</code>, <code>checkov</code>, or <code>terrascan</code> for security scanning. These catch open security groups, unencrypted buckets, missing logging, public RDS instances.</span></div>
+    </div>
+    <div class="tnote">Security scanning pipeline: <code>tfsec .</code> or <code>checkov -d .</code> → block PRs with HIGH/CRITICAL findings → <code>terraform validate</code> → <code>terraform plan</code>. Run tfsec in pre-commit hooks for instant feedback.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ ADVANCED ══════════════════ -->
+<div class="s-ad sh"><div class="sh-icon">⚡</div><div class="sh-label">Advanced</div><div class="sh-count">6 TRAPS</div></div>
+
+<div class="tgrid-2">
+
+  <div class="trap t-ad trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AD-01</span>Can a <code>for_each</code> use a value that is only known after apply (e.g., an output from a resource being created)?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — TF resolves the value during apply when it becomes known.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>for_each</code> key set must be known at plan time.</b> TF needs to enumerate all resource instances before apply starts. Using a dynamic/unknown set causes: "The 'for_each' map includes keys derived from resource attributes that cannot be determined until apply." The classic blocker.</span></div>
+    </div>
+    <div class="tnote">Solutions: (1) Use a static local set as the for_each key, reference the dynamic value inside the resource body. (2) Use <code>count</code> with a known length instead. (3) Split into two applies: first create the source resource, then use its output as for_each in the next apply.</div>
+  </div>
+
+  <div class="trap t-ad trap-mega">
+    <div class="sev sev-crit">CRITICAL</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AD-02</span>Is <code>terraform taint</code> the correct way to force resource recreation in modern Terraform?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — taint marks a resource for recreation on next apply.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b><code>taint</code> is deprecated since Terraform 1.0.</b> Use <code>terraform apply -replace="aws_instance.web"</code> instead. It shows the replacement in the plan for review before executing. <code>taint</code> modified state without showing a plan.</span></div>
+    </div>
+    <div class="tnote"><code>-replace</code> is superior: it generates a proper plan showing the destroy+create, which you review before applying. <code>taint</code> mutated state immediately with no preview. The <code>-replace</code> flag is available from TF 0.15.2+.</div>
+  </div>
+
+  <div class="trap t-ad">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AD-03</span>Does <code>terraform output</code> always return the current real-world value?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — output queries the live cloud resource.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>terraform output</code> reads from the state file, not the cloud.</b> If the real resource was changed outside Terraform, the state is stale and output returns the old value. Run <code>terraform apply -refresh-only</code> first to sync state.</span></div>
+    </div>
+    <div class="tnote">State = TF's last known snapshot of reality. It drifts whenever someone touches infra outside TF. <code>-refresh-only</code> is the safe way to sync: it shows you what drifted before updating state.</div>
+  </div>
+
+  <div class="trap t-ad">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AD-04</span>Can you use <code>lifecycle { ignore_changes = all }</code> to let another tool manage a resource while keeping it in TF state?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">No — ignore_changes only applies to specific listed attributes.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>Yes. <code>ignore_changes = all</code> makes TF adopt the resource into state without ever modifying it.</b> TF created it (or imported it), another tool manages changes, TF tracks it for dependency graph but never diffs or modifies.</span></div>
+    </div>
+    <div class="tnote">Use case: EKS managed node group where ASG scaling is managed by Karpenter/KEDA but you still want TF to track the resource and manage destroy. <code>ignore_changes = [desired_size]</code> for partial — <code>all</code> for full ownership handoff.</div>
+  </div>
+
+  <div class="trap t-ad">
+    <div class="sev sev-high">HIGH</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AD-05</span>Does <code>terraform graph</code> show the dependency graph of resources as they exist in the cloud?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — it reflects the current cloud infrastructure dependencies.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>terraform graph</code> shows the dependency graph from your .tf configuration, not cloud reality.</b> Output is DOT format. Pipe to Graphviz: <code>terraform graph | dot -Tsvg > graph.svg</code>. Useful for debugging complex dependency cycles.</span></div>
+    </div>
+    <div class="tnote">Dependency cycle errors are notoriously hard to debug. <code>terraform graph | grep -v provider | dot -Tpng > deps.png</code> visualizes the cycle. Also shows why a <code>-target</code> might miss dependent resources.</div>
+  </div>
+
+  <div class="trap t-ad">
+    <div class="sev sev-med">MED</div>
+    <div class="trap-inner">
+      <div class="tq"><span class="num">AD-06</span>Is <code>toset()</code> interchangeable with <code>tolist()</code> when using <code>for_each</code>?</div>
+      <div class="tw"><span class="tw-badge">✗ WRONG</span><span class="tw-text">Yes — both convert to a collection, for_each handles either.</span></div>
+      <div class="tr"><span class="tr-badge">✓ RIGHT</span><span class="tr-text"><b>No. <code>for_each</code> requires a <b>set</b> (unique keys) or <b>map</b>. A list has integer indexes, not string keys.</b> <code>for_each = toset(var.names)</code> works. <code>for_each = var.names</code> (list) → error. Sets also deduplicate automatically.</span></div>
+    </div>
+    <div class="tnote">The error message is confusing: "The given value is not suitable for use as for_each argument." — it means you passed a list, not a set/map. Fix: wrap with <code>toset()</code>. Or use a map with meaningful keys for clearer resource addresses.</div>
+  </div>
+
+</div>
+
+<!-- SUMMARY BANNER -->
+<div class="banner">
+  <div class="bitem"><b>52 TRAPS</b></div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--state);">11 State</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--plan);">10 Plan/Apply</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--mod);">9 Modules</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--prov);">9 Providers</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--sec);">7 Security</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--adv);">6 Advanced</div>
+  <span class="bsep">·</span>
+  <div class="bitem"><span style="color:var(--wrong)">CRITICAL</span> = instant disqualifier</div>
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--mod);">HIGH</div> = expected at senior level
+  <span class="bsep">·</span>
+  <div class="bitem" style="color:var(--adv);">MED</div> = separates strong candidates
+</div>
+
+<div class="footer">
+  <div class="ft">Terraform Trap Sheet · Senior DevOps Interview</div>
+  <div><span class="ft-count">52</span> <span class="ft" style="display:inline;">traps</span></div>
+  <div class="ft">State · Plan/Apply · Modules · Providers · Security · Advanced</div>
+</div>
+
+</div>
+</body>
+</html>

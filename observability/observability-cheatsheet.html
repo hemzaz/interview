@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Observability — Metrics / Logs / Traces</title>
+<style>
+  :root{
+    --bg:#0a0c10; --surface:#111318; --surface2:#161a21; --border:#232833;
+    --text:#e6edf3; --muted:#8b98a9; --accent:#4dabf7; --accent2:#63e6be;
+    --warn:#ffab70; --warn-bg:#2a1e12; --warn-border:#5a3d20;
+    --qa:#b197fc; --qa-bg:#1a1626; --qa-border:#3a2f5a;
+    --code-bg:#0d1117; --kw:#79c0ff; --fn:#d2a8ff; --str:#a5d6ff; --num:#ffab70; --cmt:#8b949e;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100% }
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6; font-size:16px;
+    padding:0 16px 80px;
+  }
+  .wrap{ max-width:1100px; margin:0 auto; }
+  header.page{
+    padding:56px 0 24px; border-bottom:1px solid var(--border); margin-bottom:8px;
+  }
+  header.page h1{ font-size:2rem; margin:0 0 6px; letter-spacing:-.02em; }
+  header.page p{ color:var(--muted); margin:0; font-size:1.02rem; }
+  section{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:22px 24px; margin:22px 0;
+  }
+  section > h2{
+    margin:0 0 14px; font-size:1.35rem; letter-spacing:-.01em;
+    padding-bottom:10px; border-bottom:1px solid var(--border);
+  }
+  h3{ font-size:1.08rem; margin:22px 0 8px; color:var(--accent2); }
+  h4{ font-size:.98rem; margin:16px 0 6px; color:var(--text); }
+  p{ margin:10px 0; }
+  a{ color:var(--accent); }
+  strong{ color:#fff; }
+  code{
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    background:var(--surface2); border:1px solid var(--border);
+    padding:1px 5px; border-radius:5px; font-size:.86em; color:#e9d8a6;
+  }
+  .scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; border-radius:10px; }
+  pre{
+    margin:0; background:var(--code-bg); border:1px solid var(--border);
+    border-radius:10px; padding:14px 16px; min-width:min-content;
+  }
+  pre code{
+    background:none; border:none; padding:0; color:#c9d1d9;
+    font-size:.86rem; line-height:1.55; white-space:pre; display:block;
+  }
+  .k{color:var(--kw)} .f{color:var(--fn)} .s{color:var(--str)} .n{color:var(--num)} .c{color:var(--cmt)} .lbl{color:#7ee787}
+  table{ border-collapse:collapse; width:100%; min-width:520px; font-size:.9rem; }
+  .scroll table{ margin:0; }
+  th,td{ text-align:left; padding:9px 12px; border:1px solid var(--border); vertical-align:top; }
+  th{ background:var(--surface2); color:#fff; font-weight:600; white-space:nowrap; }
+  td code{ white-space:nowrap; }
+  tr:nth-child(even) td{ background:rgba(255,255,255,.015); }
+  ul,ol{ margin:10px 0; padding-left:22px; }
+  li{ margin:5px 0; }
+  .callout{
+    border-radius:10px; padding:14px 16px; margin:16px 0; border:1px solid;
+    font-size:.95rem;
+  }
+  .trap{ background:var(--warn-bg); border-color:var(--warn-border); }
+  .trap .t{ color:var(--warn); font-weight:700; display:block; margin-bottom:4px; }
+  .qa{ background:var(--qa-bg); border-color:var(--qa-border); }
+  .qa .t{ color:var(--qa); font-weight:700; display:block; margin-bottom:4px; }
+  .qa .a{ color:var(--text); }
+  .grid{ display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .card{ background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .card h4{ margin-top:0; color:var(--accent); }
+  .pill{ display:inline-block; font-size:.72rem; font-weight:700; padding:2px 8px; border-radius:20px;
+    background:rgba(77,171,247,.14); color:var(--accent); border:1px solid rgba(77,171,247,.3); margin-left:6px; }
+  .muted{ color:var(--muted); }
+  .toc{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .toc a{ font-size:.85rem; text-decoration:none; padding:5px 11px; border-radius:20px;
+    background:var(--surface2); border:1px solid var(--border); color:var(--muted); }
+  .toc a:hover{ color:var(--accent); border-color:var(--accent); }
+  hr{ border:none; border-top:1px solid var(--border); margin:18px 0; }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<div class="wrap">
+<header class="page">
+  <h1>Observability — Metrics, Logs &amp; Traces</h1>
+  <p>Senior DevOps / SRE interview cheatsheet · Prometheus · PromQL · OpenTelemetry · alerting · cardinality traps · current to 2026</p>
+  <nav class="toc">
+    <a href="#pillars">Three Pillars</a>
+    <a href="#prometheus">Prometheus</a>
+    <a href="#types">Metric Types</a>
+    <a href="#promql">PromQL</a>
+    <a href="#methods">RED / USE / Golden</a>
+    <a href="#grafana">Grafana</a>
+    <a href="#alerting">Alertmanager</a>
+    <a href="#logging">Logging</a>
+    <a href="#tracing">Tracing / OTel</a>
+    <a href="#cardinality">Cardinality</a>
+    <a href="#traps">Traps &amp; Q&amp;A</a>
+  </nav>
+</header>
+
+<!-- ============ PILLARS ============ -->
+<section id="pillars">
+  <h2>The Three Pillars — Metrics, Logs, Traces</h2>
+  <p>Each answers a different question. Mature observability <em>correlates</em> all three (a metric alert → jump to logs → follow the trace). "Three pillars" is the interview framing; note the modern critique that they're really three views over one event stream (OpenTelemetry unifies them).</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Signal</th><th>What it is</th><th>Answers</th><th>Cost / cardinality</th><th>Retention</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Metrics</strong></td><td>Numeric time series, regularly sampled &amp; aggregated (name + labels + value + timestamp)</td><td>"<em>Is</em> something wrong? How much / how fast?" — trends, SLOs, alerting</td><td>Cheap per-sample; cost driven by <strong>label cardinality</strong> (# series)</td><td>Long (weeks–years cheaply)</td></tr>
+      <tr><td><strong>Logs</strong></td><td>Timestamped discrete events, ideally structured (JSON)</td><td>"<em>What</em> exactly happened?" — detailed per-event context</td><td>High volume; cost driven by ingest bytes &amp; index cardinality</td><td>Medium (days–weeks)</td></tr>
+      <tr><td><strong>Traces</strong></td><td>Causally-linked spans following one request across services</td><td>"<em>Where</em> in the system &amp; why is it slow?" — latency breakdown, dependencies</td><td>High if unsampled; usually sampled</td><td>Short (hours–days)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="muted"><strong>Rule of thumb:</strong> alert on <em>metrics</em>, diagnose <em>where</em> with <em>traces</em>, find the exact cause in <em>logs</em>. Correlate by injecting <code>trace_id</code> into logs and exemplars into metrics.</p>
+  <div class="callout qa">
+    <span class="t">Q&amp;A — "Observability vs monitoring?"</span>
+    <span class="a"><strong>Monitoring</strong> = watching known failure modes with predefined dashboards/alerts ("known-knowns"). <strong>Observability</strong> = ability to ask <em>arbitrary new</em> questions about internal state from external outputs without shipping new code — critical for "unknown-unknowns" in distributed systems. High-cardinality, wide structured events are what make a system observable.</span>
+  </div>
+</section>
+
+<!-- ============ PROMETHEUS ============ -->
+<section id="prometheus">
+  <h2>Prometheus Architecture</h2>
+  <p>Prometheus is a <strong>pull-based</strong> metrics system with a local time-series database (TSDB). The server scrapes HTTP <code>/metrics</code> endpoints on an interval, stores samples locally, and evaluates rules. It is a CNCF graduated project.</p>
+
+  <h3>Core components &amp; flow</h3>
+  <ul>
+    <li><strong>Scrape / pull model:</strong> Prometheus initiates HTTP GET to each target's <code>/metrics</code> every <code>scrape_interval</code> (commonly 15–60s). Targets don't push.</li>
+    <li><strong>Service discovery (SD):</strong> targets discovered dynamically — Kubernetes, Consul, EC2, file_sd, DNS, etc. — instead of static lists. <code>relabel_configs</code> filter/rewrite targets before scrape; <code>metric_relabel_configs</code> act on scraped samples (drop noisy metrics).</li>
+    <li><strong>TSDB:</strong> local, append-only. Recent samples in an in-memory <em>head</em> block + WAL (crash recovery); every ~2h compacted to immutable on-disk blocks, then merged. Not clustered — single node stores its own data.</li>
+    <li><strong>Exposition format:</strong> plain text, one sample per line: <code>metric{label="v"} 1.27 [timestamp]</code>. OpenMetrics is the standardized successor.</li>
+    <li><strong>Exporters:</strong> sidecar processes that translate third-party stats into Prometheus format — <code>node_exporter</code> (host CPU/mem/disk/net), <code>blackbox_exporter</code> (probe endpoints), <code>cAdvisor</code> (containers), plus DB/queue exporters.</li>
+    <li><strong>Pushgateway:</strong> for <em>short-lived batch jobs</em> that die before a scrape. Push metrics to it; Prometheus scrapes the gateway. <strong>Caveats:</strong> NOT for service metrics; it becomes a single point of failure, doesn't expire pushed metrics (stale values persist until deleted), and breaks <code>up</code>-based liveness. Use sparingly.</li>
+  </ul>
+
+  <h3>Scaling &amp; long-term storage</h3>
+  <ul>
+    <li><strong><code>remote_write</code>:</strong> stream samples to an external system (Thanos Receive, Mimir, Cortex, VictoriaMetrics, cloud TSDB) for durable/centralized storage. <code>remote_read</code> queries them back.</li>
+    <li><strong>Federation:</strong> a higher-level Prometheus scrapes <em>aggregated</em> series from many lower Prometheus servers via <code>/federate</code>. For hierarchical aggregation, not full data replication — don't use it to ship all raw series.</li>
+    <li><strong>HA pairs:</strong> run two+ identical Prometheus servers scraping the same targets. They're independent (no shared state); a deduplicating layer (Thanos Querier, Mimir) merges them at query time.</li>
+    <li><strong>Thanos / Cortex / Mimir:</strong> add global query view, long-term object-storage (S3/GCS), downsampling, and horizontal scale. <em>Thanos</em> = sidecar + object store + global querier; <em>Cortex</em> &amp; its successor <em>Grafana Mimir</em> = horizontally-scalable, multi-tenant remote-write backends.</li>
+  </ul>
+
+  <h3>Recording vs alerting rules</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Recording rule</th><th>Alerting rule</th></tr></thead>
+    <tbody>
+      <tr><th>Purpose</th><td>Precompute expensive/frequent expressions into a new series</td><td>Fire alerts when an expression is true over time</td></tr>
+      <tr><th>Output</th><td>A new time series (naming: <code>level:metric:operation</code>)</td><td>Alerts sent to Alertmanager</td></tr>
+      <tr><th>Key fields</th><td><code>record</code>, <code>expr</code></td><td><code>alert</code>, <code>expr</code>, <code>for</code>, <code>labels</code>, <code>annotations</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="scroll"><pre><code><span class="c"># prometheus rule group</span>
+<span class="k">groups</span>:
+  - <span class="k">name</span>: <span class="s">example</span>
+    <span class="k">rules</span>:
+      - <span class="k">record</span>: <span class="s">job:http_requests:rate5m</span>
+        <span class="k">expr</span>: <span class="s">sum by (job) (rate(http_requests_total[5m]))</span>
+      - <span class="k">alert</span>: <span class="s">HighErrorRate</span>
+        <span class="k">expr</span>: <span class="s">job:http_errors:rate5m / job:http_requests:rate5m > 0.05</span>
+        <span class="k">for</span>: <span class="s">10m</span>          <span class="c"># must stay true 10m before firing (debounce)</span>
+        <span class="k">labels</span>: { <span class="k">severity</span>: <span class="s">page</span> }
+        <span class="k">annotations</span>: { <span class="k">summary</span>: <span class="s">"5xx > 5% on {{ $labels.job }}"</span> }</code></pre></div>
+
+  <div class="callout trap">
+    <span class="t">⚠ Trap — pull vs push</span>
+    Interviewers love "why pull?" Pull gives Prometheus a built-in health signal (the synthetic <code>up</code> metric = did the scrape succeed), easy target discovery, and no client-side buffering. Downsides: firewalls/NAT/short-lived jobs (→ Pushgateway) and very ephemeral serverless (→ OTel push or agent). Prometheus <em>is</em> pull; don't claim it pushes.
+  </div>
+</section>
+
+<!-- ============ METRIC TYPES ============ -->
+<section id="types">
+  <h2>Metric Types</h2>
+  <div class="grid">
+    <div class="card"><h4>Counter</h4><p>Monotonically <strong>increasing</strong> (resets to 0 on restart). Only ever goes up. Never query the raw value — always <code>rate()</code>/<code>increase()</code>.</p><p class="muted">e.g. <code>http_requests_total</code>, <code>errors_total</code></p></div>
+    <div class="card"><h4>Gauge</h4><p>Value that goes <strong>up and down</strong>. Snapshot of current state. Query directly, or with <code>avg_over_time</code>, <code>delta</code>, <code>deriv</code>.</p><p class="muted">e.g. <code>memory_bytes</code>, <code>queue_depth</code>, <code>temperature</code></p></div>
+    <div class="card"><h4>Histogram</h4><p>Samples into cumulative <strong>buckets</strong> (<code>_bucket{le=...}</code>) + <code>_sum</code> + <code>_count</code>. Buckets aggregate across instances → server-side quantiles via <code>histogram_quantile()</code>.</p><p class="muted">e.g. request latency, response size</p></div>
+    <div class="card"><h4>Summary</h4><p>Client-computed streaming <strong>quantiles</strong> (<code>{quantile=...}</code>) + <code>_sum</code> + <code>_count</code>. Cheap to read, but <strong>quantiles can't be aggregated</strong> across instances.</p><p class="muted">Use when you need a preset percentile from one instance</p></div>
+  </div>
+
+  <h3>Histogram vs Summary — the classic question</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Histogram</th><th>Summary</th></tr></thead>
+    <tbody>
+      <tr><th>Quantiles computed</th><td>At <strong>query time</strong> (server)</td><td>At <strong>ingest time</strong> (client)</td></tr>
+      <tr><th>Aggregatable across instances?</th><td><strong>Yes</strong> — sum buckets, then <code>histogram_quantile</code></td><td><strong>No</strong> — averaging quantiles is statistically invalid</td></tr>
+      <tr><th>Choose bucket/quantile ahead?</th><td>Pick buckets ahead; any quantile queryable</td><td>Pick quantiles ahead; fixed φ &amp; error</td></tr>
+      <tr><th>Client cost</th><td>Cheap</td><td>Higher (streaming quantile calc)</td></tr>
+      <tr><th>Accuracy</th><td>Bounded by bucket width</td><td>Configurable per-quantile error</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>Default to histograms</strong> for anything you aggregate (SLOs across a fleet). Use summaries only for a single-instance exact quantile where you can't pick buckets. Modern <strong>native / exponential histograms</strong> (Prometheus 2.40+, still experimental as of 3.x) give high-resolution auto-bucketing at far lower cardinality than classic <code>le</code> buckets.</p>
+  <div class="callout trap">
+    <span class="t">⚠ Trap — averaging percentiles</span>
+    You <em>cannot</em> average p99s from two instances to get the fleet p99. This is why summaries don't aggregate. With histograms you sum the raw bucket counts first, then compute the quantile once.
+  </div>
+</section>
+
+<!-- ============ PROMQL ============ -->
+<section id="promql">
+  <h2>PromQL</h2>
+
+  <h3>Instant vs range vectors</h3>
+  <ul>
+    <li><strong>Instant vector:</strong> one sample per series at the eval time — <code>http_requests_total</code>.</li>
+    <li><strong>Range vector:</strong> a range of samples per series over a window — <code>http_requests_total[5m]</code>. Required by <code>rate()</code>, <code>increase()</code>, <code>*_over_time()</code>.</li>
+    <li>Most functions take one and return the other. <code>rate(counter[5m])</code> turns a range vector into an instant vector.</li>
+  </ul>
+
+  <h3>rate() vs irate() — and why they need a counter + range</h3>
+  <div class="scroll"><pre><code><span class="c"># per-second average rate over the whole 5m window (smoothed) — USE THIS for alerting/graphs</span>
+<span class="f">rate</span>(http_requests_total[<span class="n">5m</span>])
+
+<span class="c"># instantaneous rate from the LAST TWO samples in the window — spiky, for fast-moving dashboards only</span>
+<span class="f">irate</span>(http_requests_total[<span class="n">5m</span>])
+
+<span class="c"># total count increase over 1h (rate * seconds, extrapolated) — for "how many in the last hour"</span>
+<span class="f">increase</span>(http_requests_total[<span class="n">1h</span>])</code></pre></div>
+  <ul>
+    <li><code>rate()</code>/<code>irate()</code> take a <strong>range vector of a counter</strong>. They compute per-second increase and <strong>automatically correct counter resets</strong> (a drop is treated as a restart, not negative).</li>
+    <li><code>rate()</code> = average over the window (robust, use for alerts &amp; most graphs). <code>irate()</code> = last two data points only (reacts fast, but aliases/hides trends — never alert on it).</li>
+    <li>Pick a range <strong>≥ 4× scrape interval</strong> so <code>rate()</code> always has ≥2 samples even with a missed scrape (e.g. 15s scrape → <code>[1m]</code>+). Too-short ranges → gaps/no data.</li>
+  </ul>
+
+  <h3>histogram_quantile with <code>le</code> buckets</h3>
+  <div class="scroll"><pre><code><span class="c"># p95 request latency across ALL instances, per route</span>
+<span class="f">histogram_quantile</span>(<span class="n">0.95</span>,
+  <span class="f">sum</span> <span class="k">by</span> (le, route) (<span class="f">rate</span>(http_request_duration_seconds_bucket[<span class="n">5m</span>]))
+)</code></pre></div>
+  <ul>
+    <li>Input must be the <code>_bucket</code> series (cumulative, keyed by the <code>le</code> label). You <strong>must keep <code>le</code></strong> in the <code>by()</code> grouping or the quantile is meaningless.</li>
+    <li>Wrap buckets in <code>rate(...[5m])</code> first (they're counters), then <code>sum by (le, ...)</code> to aggregate across instances, then apply <code>histogram_quantile</code>.</li>
+    <li>Accuracy is bounded by your bucket boundaries; a quantile falling in the top open bucket (<code>+Inf</code>) can't be estimated precisely.</li>
+  </ul>
+
+  <h3>Aggregation, offset, subqueries</h3>
+  <div class="scroll"><pre><code><span class="c"># sum by keeps only listed labels; sum without drops listed labels (keeps the rest)</span>
+<span class="f">sum</span> <span class="k">by</span> (job, code)   (<span class="f">rate</span>(http_requests_total[<span class="n">5m</span>]))
+<span class="f">sum</span> <span class="k">without</span> (instance)(<span class="f">rate</span>(http_requests_total[<span class="n">5m</span>]))
+
+<span class="c"># compare to one hour ago (offset shifts the eval time backward)</span>
+<span class="f">rate</span>(http_requests_total[<span class="n">5m</span>] <span class="k">offset</span> <span class="n">1h</span>)
+
+<span class="c"># subquery: max 5m-rate sampled every 1m over the last hour</span>
+<span class="f">max_over_time</span>( <span class="f">rate</span>(http_requests_total[<span class="n">5m</span>])[<span class="n">1h</span>:<span class="n">1m</span>] )</code></pre></div>
+  <p>Aggregators: <code>sum, avg, min, max, count, count_values, stddev, topk, bottomk, quantile</code>. <code>by</code> = keep these labels; <code>without</code> = keep all <em>except</em> these.</p>
+
+  <div class="callout trap">
+    <span class="t">⚠ Trap — PromQL gotchas that fail candidates</span>
+    <ul style="margin:6px 0 0">
+      <li><strong>rate() on a gauge</strong> → garbage. <code>rate</code>/<code>increase</code> assume monotonic counters; gauges go down and get miscorrected as "resets." Use <code>deriv</code>, <code>delta</code>, or <code>*_over_time</code> for gauges.</li>
+      <li><strong>Counter resets:</strong> on restart a counter drops to 0. <code>rate/increase</code> handle this; the raw value or a naive <code>delta</code> do not.</li>
+      <li><strong>Staleness:</strong> if a target disappears, its series get a "stale" marker and stop returning after ~5m (default). A missing series ≠ zero — <code>up == 0</code> or <code>absent()</code> detect "gone," and <code>increase</code> won't invent data.</li>
+      <li><strong><code>increase()</code> is extrapolated</strong> — it can return non-integer values (e.g. 7.3) even for integer counters. Don't expect exact counts.</li>
+      <li><strong>Range too short:</strong> <code>[1m]</code> with a 60s scrape may have &lt;2 samples → empty result. Widen the range.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ METHODS ============ -->
+<section id="methods">
+  <h2>RED, USE &amp; the Four Golden Signals</h2>
+  <div class="grid">
+    <div class="card"><h4>RED <span class="pill">services / requests</span></h4>
+      <ul><li><strong>Rate</strong> — requests/sec</li><li><strong>Errors</strong> — failed requests/sec (or %)</li><li><strong>Duration</strong> — latency distribution (p50/p95/p99)</li></ul>
+      <p class="muted">Weaveworks / Tom Wilkie. Best for <em>request-driven</em> services. Same 3 metrics for every service = uniform dashboards.</p>
+    </div>
+    <div class="card"><h4>USE <span class="pill">resources</span></h4>
+      <ul><li><strong>Utilization</strong> — % time resource was busy</li><li><strong>Saturation</strong> — queued/extra work it can't service (run-queue, backlog)</li><li><strong>Errors</strong> — error events</li></ul>
+      <p class="muted">Brendan Gregg. Best for <em>resources</em> — CPU, memory, disk, network, pools. Answers "is this resource the bottleneck?"</p>
+    </div>
+    <div class="card"><h4>Four Golden Signals <span class="pill">Google SRE</span></h4>
+      <ul><li><strong>Latency</strong> (split success vs error latency!)</li><li><strong>Traffic</strong> — demand on the system</li><li><strong>Errors</strong> — rate of failures</li><li><strong>Saturation</strong> — how "full" the service is</li></ul>
+      <p class="muted">From the Google SRE book. RED ≈ golden signals minus saturation, for user-facing services.</p>
+    </div>
+  </div>
+  <div class="callout qa">
+    <span class="t">Q&amp;A — "RED vs USE vs golden signals — when which?"</span>
+    <span class="a">They complement, not compete. Use <strong>RED / golden signals</strong> for request-serving services (the user's view); use <strong>USE</strong> for the underlying resources (the machine's view). A latency spike (RED) is often explained by resource saturation (USE). Key nuance: always separate <strong>success vs error latency</strong> — a fast 500 shouldn't flatter your p99.</span>
+  </div>
+</section>
+
+<!-- ============ GRAFANA ============ -->
+<section id="grafana">
+  <h2>Grafana (briefly)</h2>
+  <ul>
+    <li><strong>Datasources:</strong> Grafana is a visualization layer over many backends — Prometheus, Loki, Tempo, Mimir, Elasticsearch/OpenSearch, SQL, cloud. It stores dashboards, not the metrics.</li>
+    <li><strong>Dashboards &amp; panels:</strong> panels run queries (PromQL/LogQL/TraceQL) against a datasource; time range is shared. Panels: time series, stat, gauge, table, heatmap, logs.</li>
+    <li><strong>Template variables:</strong> <code>$namespace</code>, <code>$instance</code> etc. driven by <code>label_values(metric, label)</code> queries → reusable dashboards with dropdowns instead of one per host.</li>
+    <li><strong>Alerting:</strong> Grafana has its own unified alerting (can also read Alertmanager). <strong>Exemplars</strong> let you jump from a latency spike on a graph straight to the trace that produced it.</li>
+    <li>Dashboards as code / provisioning (JSON + files/Terraform) for GitOps.</li>
+  </ul>
+</section>
+
+<!-- ============ ALERTMANAGER ============ -->
+<section id="alerting">
+  <h2>Alertmanager</h2>
+  <p>Prometheus <em>evaluates</em> alerting rules and pushes firing alerts to <strong>Alertmanager</strong>, which handles <em>deduplication, grouping, routing, inhibition, silencing</em>, and delivery to receivers. Separation of concerns: Prometheus decides <em>what</em> is firing; Alertmanager decides <em>who</em> hears about it and <em>how</em>.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Concept</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Routing tree</strong></td><td>Hierarchical <code>route</code> config matches alerts by label → picks receiver &amp; timing. Child routes inherit/override; <code>continue: true</code> to fall through to siblings.</td></tr>
+      <tr><td><strong>Grouping</strong></td><td><code>group_by</code> bundles related alerts (e.g. all pods of a service) into ONE notification. <code>group_wait</code> (initial buffer), <code>group_interval</code> (new alerts in a group), <code>repeat_interval</code> (re-notify unresolved).</td></tr>
+      <tr><td><strong>Inhibition</strong></td><td>Suppress lower-priority alerts when a higher one fires (e.g. a whole-cluster-down alert mutes per-node alerts). Matches source/target label sets.</td></tr>
+      <tr><td><strong>Silences</strong></td><td>Time-bounded, label-matcher mutes set by a human (maintenance windows). Not in config — created via UI/API.</td></tr>
+      <tr><td><strong>Receivers</strong></td><td>Integrations: PagerDuty, Opsgenie, Slack, email, webhook, etc. A route ends at exactly one receiver.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout trap">
+    <span class="t">⚠ Trap — alert fatigue</span>
+    Too many noisy/non-actionable alerts train responders to ignore the pager. Fixes: <strong>alert on symptoms, not causes</strong> (page on SLO/user impact, not every CPU blip); use <code>for:</code> to debounce transient spikes; group + inhibit to collapse storms; route by severity (<code>page</code> vs <code>ticket</code>); and ensure <strong>every page is actionable</strong> (a runbook link in annotations). If you can't act on it, it's a dashboard, not a page.
+  </div>
+  <div class="callout qa">
+    <span class="t">Q&amp;A — "Why <code>for:</code> in an alerting rule?"</span>
+    <span class="a">The expression must stay true for the whole <code>for</code> duration before the alert transitions <em>pending → firing</em>. It debounces flapping — a 3-second blip that self-heals never pages. It does <strong>not</strong> delay resolution.</span>
+  </div>
+</section>
+
+<!-- ============ LOGGING ============ -->
+<section id="logging">
+  <h2>Logging</h2>
+  <h3>Structured logging</h3>
+  <ul>
+    <li>Emit logs as <strong>structured key/value (JSON)</strong>, not free-text. Machine-parseable, queryable, filterable without brittle regex.</li>
+    <li>Attach consistent context: <code>service</code>, <code>level</code>, <code>trace_id</code>, <code>span_id</code>, <code>request_id</code>, <code>user_id</code>. This is what enables <strong>log ↔ trace correlation</strong> — click a slow trace, pivot to its logs by <code>trace_id</code>.</li>
+    <li><strong>Levels:</strong> <code>TRACE &lt; DEBUG &lt; INFO &lt; WARN &lt; ERROR &lt; FATAL</code>. Prod usually at INFO; DEBUG is high-volume/expensive. Alert off ERROR rate, not individual lines.</li>
+  </ul>
+  <h3>Aggregation stacks</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Stack</th><th>Model</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Loki</strong></td><td>Index only <em>labels</em>, store log <em>content</em> compressed (grep-on-read)</td><td>Grafana-native, cheap, Prometheus-style labels + LogQL. Keep label cardinality low — same trap as metrics.</td></tr>
+      <tr><td><strong>ELK / EFK</strong></td><td>Elasticsearch + Logstash/Fluentd/Fluent Bit + Kibana</td><td>Full-text inverted index — powerful search, but storage/ops-heavy at scale. EFK = Fluentd/Fluent Bit shipper (common in k8s).</td></tr>
+      <tr><td><strong>OpenSearch</strong></td><td>Open-source fork of Elasticsearch + OpenSearch Dashboards</td><td>Drop-in ELK alternative after Elastic's license change; AWS-backed.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout trap">
+    <span class="t">⚠ Trap — log cardinality &amp; cost</span>
+    In Loki, putting a high-cardinality value (user id, request id, trace id) in a <strong>label</strong> explodes the number of streams and destroys performance — keep those in the log <em>line</em> and filter at query time. In Elasticsearch/OpenSearch, "mapping explosion" from too many distinct fields blows up the index. Full-text logging is the biggest observability bill; sample/drop DEBUG, cap retention, and don't log PII.
+  </div>
+</section>
+
+<!-- ============ TRACING ============ -->
+<section id="tracing">
+  <h2>Distributed Tracing &amp; OpenTelemetry</h2>
+  <h3>Core concepts</h3>
+  <ul>
+    <li><strong>Trace:</strong> the whole journey of one request across services, identified by a <code>trace_id</code>.</li>
+    <li><strong>Span:</strong> one unit of work (an operation/service call) with start/end time, attributes, status, events. Spans form a tree via <code>parent_span_id</code>; the first is the <em>root span</em>.</li>
+    <li><strong>Context propagation:</strong> trace/span ids passed across service boundaries (usually HTTP/gRPC headers) so spans link into one trace. The <strong>W3C Trace Context</strong> standard defines the <code>traceparent</code> header:</li>
+  </ul>
+  <div class="scroll"><pre><code><span class="c"># W3C traceparent: version-traceid-spanid(parentid)-flags</span>
+traceparent: <span class="n">00</span>-<span class="s">4bf92f3577b34da6a3ce929d0e0e4736</span>-<span class="s">00f067aa0ba902b7</span>-<span class="n">01</span>
+             │    │                                │                 └ flags (01 = sampled)
+             │    │                                └ parent span id (8 bytes)
+             │    └ trace id (16 bytes, propagates unchanged)
+             └ version
+<span class="c"># tracestate: optional vendor-specific key/values, travels alongside</span></code></pre></div>
+
+  <h3>OpenTelemetry (OTel)</h3>
+  <ul>
+    <li>CNCF vendor-neutral standard + SDKs for <strong>all three signals — traces, metrics, logs</strong> — with a unified data model and the <strong>OTLP</strong> wire protocol. It's the de-facto instrumentation standard in 2026; it replaced OpenTracing + OpenCensus.</li>
+    <li><strong>OTel Collector:</strong> a standalone pipeline of <em>receivers → processors → exporters</em>. Ingests OTLP (and Prometheus, Jaeger, etc.), batches/filters/samples/enriches, and fans out to backends. Run as an <em>agent</em> (per-host/sidecar) and/or <em>gateway</em> (central). Decouples apps from backend choice.</li>
+    <li><strong>Semantic conventions</strong> standardize attribute names (<code>http.request.method</code>, <code>service.name</code>) so data is portable across tools.</li>
+  </ul>
+  <h3>Backends</h3>
+  <ul>
+    <li><strong>Jaeger</strong> — CNCF distributed-tracing backend/UI (now OTLP-native).</li>
+    <li><strong>Grafana Tempo</strong> — cheap, object-storage trace backend indexed only by trace id (+ TraceQL); pairs with Loki/Mimir.</li>
+    <li><strong>Zipkin</strong> — the original open tracer, still around.</li>
+  </ul>
+  <h3>Sampling — head vs tail</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Head-based</th><th>Tail-based</th></tr></thead>
+    <tbody>
+      <tr><th>Decision made</th><td>At trace <em>start</em>, before outcome known</td><td>After the <em>whole trace</em> completes</td></tr>
+      <tr><th>Can keep all errors/slow?</th><td>No — decision is blind to outcome</td><td>Yes — that's the point (keep errors + high latency)</td></tr>
+      <tr><th>Cost / complexity</th><td>Cheap, simple, stateless</td><td>Expensive — must buffer all spans of a trace (usually in the Collector) until complete</td></tr>
+      <tr><th>Consistency</th><td>Propagate decision via <code>sampled</code> flag so all services agree</td><td>Central component decides for the full trace</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout qa">
+    <span class="t">Q&amp;A — "You sample 1% but need every error trace — how?"</span>
+    <span class="a">Head sampling can't guarantee that (the error isn't known at the start). Use <strong>tail-based sampling</strong> in the OTel Collector: buffer spans per trace, and after completion apply policies — keep 100% of traces with an error status or latency &gt; threshold, sample the rest. Trade-off: memory + a stateful collector tier.</span>
+  </div>
+</section>
+
+<!-- ============ CARDINALITY ============ -->
+<section id="cardinality">
+  <h2>Cardinality Explosion — the #1 cost/perf trap</h2>
+  <p><strong>Cardinality</strong> = number of unique time series = product of all label-value combinations. Prometheus creates a <em>separate series per unique label set</em>. Add a label with 10k values and you multiply your series count by 10k — RAM, disk, and query time explode. This is the single most common way to take down a Prometheus.</p>
+  <div class="scroll"><pre><code><span class="c"># series count ≈ product of label-value counts, PER metric</span>
+http_requests_total{method, status, endpoint, <span class="lbl">user_id</span>, <span class="lbl">request_id</span>}
+       5 methods × 6 status × 40 endpoints ×  <span class="lbl">1,000,000 users</span>  =  <span class="n">1.2 BILLION series</span>  💥</code></pre></div>
+  <h4>Label discipline — what belongs in a label</h4>
+  <ul>
+    <li><strong>Good labels (bounded, low cardinality):</strong> <code>method</code>, <code>status_code</code>, <code>region</code>, <code>service</code>, <code>route template</code>. Ask: "is the set of values small and stable?"</li>
+    <li><strong>Never a label:</strong> user id, email, request/trace id, session id, full URL with ids, timestamps, raw error messages, container id — <strong>unbounded</strong> values. Put those in <em>logs</em> or <em>trace attributes</em>, not metric labels.</li>
+    <li>Use a <strong>route template</strong> (<code>/users/:id</code>) not the raw path (<code>/users/48213</code>).</li>
+    <li>Detect it: <code>topk(10, count by (__name__)({__name__=~".+"}))</code>, <code>count(count by (label)(metric))</code>, TSDB status page, or <code>prometheus_tsdb_head_series</code>. <code>metric_relabel_configs</code> can drop offending labels at scrape.</li>
+    <li>Cardinality applies to <strong>logs (Loki labels) and traces</strong> too — same discipline everywhere.</li>
+  </ul>
+  <div class="callout trap">
+    <span class="t">⚠ Trap — "just add a label"</span>
+    A single innocent-looking label (<code>user_id</code>, <code>pod</code> that churns every deploy, or an unbounded error string) can 100×+ your series count overnight and OOM the server. Before adding any label, ask <strong>"how many distinct values can this ever take?"</strong> If unbounded → it's a log/trace field, not a metric label.
+  </div>
+</section>
+
+<!-- ============ TRAPS / Q&A ============ -->
+<section id="traps">
+  <h2>Rapid-fire Traps &amp; Interview Q&amp;A</h2>
+
+  <div class="callout qa"><span class="t">Q — Why <code>rate()</code> and not just subtract the counter?</span><span class="a">Raw subtraction breaks on counter resets (restart → drop to 0 → negative delta) and ignores the sampling interval. <code>rate()</code> handles resets and returns per-second, extrapolated over the window.</span></div>
+
+  <div class="callout qa"><span class="t">Q — <code>rate()</code> vs <code>increase()</code>?</span><span class="a">Identical math; <code>increase(x[t]) ≈ rate(x[t]) × t</code>. <code>rate</code> = per-second (alerting/graphs); <code>increase</code> = total over the window (human "how many"). Both extrapolate, so <code>increase</code> can be fractional.</span></div>
+
+  <div class="callout qa"><span class="t">Q — A metric disappeared. Is it 0?</span><span class="a">No. A missing series is "no data," not zero. After ~5m it goes stale and stops returning. Use <code>absent()</code>, <code>up == 0</code>, or <code>or vector(0)</code> to reason about "gone." Alerting on absence needs explicit handling.</span></div>
+
+  <div class="callout qa"><span class="t">Q — How does Prometheus know a target is down?</span><span class="a">Every scrape yields the synthetic <code>up</code> metric (1 = scrape ok, 0 = failed). <code>up == 0 for 5m</code> is the canonical target-down alert — a free benefit of the pull model.</span></div>
+
+  <div class="callout qa"><span class="t">Q — Is Prometheus HA / clustered?</span><span class="a">No native clustering or sharding. HA = run duplicate independent servers; dedup at query time (Thanos/Mimir). For global view + long-term + horizontal scale you add Thanos, Cortex, or Grafana Mimir on top.</span></div>
+
+  <div class="callout qa"><span class="t">Q — When Pushgateway?</span><span class="a">Only for short-lived <em>batch/cron jobs</em> that finish before a scrape. Not for long-running services (use pull). It doesn't expire metrics, is a SPOF, and hides individual instance liveness.</span></div>
+
+  <div class="callout qa"><span class="t">Q — Histogram or summary for latency SLOs?</span><span class="a">Histogram — buckets aggregate across instances so you can compute a fleet-wide p99 with <code>histogram_quantile</code>. Summaries pre-compute per-instance quantiles that can't be combined. Prefer native/exponential histograms in 2026.</span></div>
+
+  <div class="callout qa"><span class="t">Q — Metrics, logs, or traces for "checkout is slow for user X"?</span><span class="a">Metrics tell you <em>it's</em> slow (p99 up) and alert; a <strong>trace</strong> shows <em>where</em> (which downstream span dominates); <strong>logs</strong> (found via the trace_id) give the exact error/context. Correlation across all three is the answer they want.</span></div>
+
+  <div class="callout qa"><span class="t">Q — What is an exemplar?</span><span class="a">A sampled trace id attached to a metric sample (e.g. a histogram bucket) that lets you jump from an aggregate metric graph directly to a representative trace — the glue between the metrics and traces pillars.</span></div>
+
+  <div class="callout qa"><span class="t">Q — Head vs tail sampling in one line?</span><span class="a">Head = decide at the start (cheap, blind to outcome). Tail = decide after the trace finishes (keep all errors/slow, but must buffer spans — stateful &amp; costly).</span></div>
+
+  <div class="callout qa"><span class="t">Q — Biggest observability cost driver?</span><span class="a">Cardinality (metrics/trace/Loki-label series count) and log ingest volume. Control with label discipline, sampling, retention limits, and downsampling — not by buying more storage.</span></div>
+</section>
+
+<p class="muted" style="text-align:center;margin:30px 0 0;font-size:.85rem">
+  Interview cheatsheet · accurate to 2026 · Prometheus 3.x · OpenTelemetry / OTLP · W3C Trace Context
+</p>
+</div>
+</body>
+</html>

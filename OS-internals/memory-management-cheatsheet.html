@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Management — OS Internals Cheatsheet</title>
+<style>
+  :root{
+    --bg:#0a0c10;
+    --surface:#111318;
+    --surface2:#161a21;
+    --border:#232833;
+    --text:#e6edf3;
+    --muted:#8b98a9;
+    --accent:#5db0ff;
+    --accent-dim:#2b4a66;
+    --warn:#ffb454;
+    --warn-bg:#2a1f0e;
+    --warn-border:#5c4318;
+    --qa:#7ee0a0;
+    --qa-bg:#0f2018;
+    --qa-border:#1f4a33;
+    --code-bg:#0d1017;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.6;
+    font-size:16px;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:64px 20px 96px}
+  header.page{
+    border-bottom:1px solid var(--border);
+    padding-bottom:22px;margin-bottom:32px;
+  }
+  h1{font-size:2rem;line-height:1.2;margin:0 0 8px;letter-spacing:-.02em}
+  .subtitle{color:var(--muted);font-size:1.02rem;margin:0}
+  .pillbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+  .pill{
+    font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--accent);background:var(--accent-dim);
+    border:1px solid var(--accent-dim);
+    padding:3px 9px;border-radius:999px;font-weight:600;
+  }
+  section{margin:44px 0 0}
+  h2{
+    font-size:1.35rem;margin:0 0 6px;letter-spacing:-.01em;
+    display:flex;align-items:baseline;gap:10px;
+  }
+  h2 .num{
+    color:var(--accent);font-size:.85rem;font-weight:700;
+    border:1px solid var(--accent-dim);border-radius:6px;
+    padding:1px 7px;flex:none;
+  }
+  h3{font-size:1.05rem;margin:26px 0 8px;color:var(--text)}
+  .lede{color:var(--muted);margin:0 0 18px;max-width:75ch}
+  p{margin:12px 0}
+  a{color:var(--accent)}
+  code{
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    background:var(--code-bg);border:1px solid var(--border);
+    padding:1px 5px;border-radius:5px;font-size:.86em;
+  }
+  pre{
+    background:var(--code-bg);border:1px solid var(--border);
+    border-radius:10px;padding:14px 16px;margin:14px 0;
+    overflow-x:auto;
+  }
+  pre code{background:none;border:none;padding:0;font-size:.85rem;line-height:1.55;color:#cdd6e0}
+  .tbl{overflow-x:auto;margin:14px 0;border:1px solid var(--border);border-radius:10px}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem}
+  th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surface2);color:var(--text);font-weight:600;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td code{white-space:nowrap}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:16px 18px;
+  }
+  .card h3{margin-top:0}
+  .trap,.qa{
+    border-radius:12px;padding:14px 16px 14px 18px;margin:16px 0;
+    border:1px solid;position:relative;
+  }
+  .trap{background:var(--warn-bg);border-color:var(--warn-border)}
+  .qa{background:var(--qa-bg);border-color:var(--qa-border)}
+  .trap .lbl,.qa .lbl{
+    font-weight:700;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;
+    display:block;margin-bottom:5px;
+  }
+  .trap .lbl{color:var(--warn)}
+  .qa .lbl{color:var(--qa)}
+  .trap p,.qa p{margin:6px 0}
+  .qa .q{font-weight:600;color:var(--text)}
+  .qa .a{color:var(--muted)}
+  ul,ol{margin:12px 0;padding-left:22px}
+  li{margin:5px 0}
+  .muted{color:var(--muted)}
+  .xref{
+    font-size:.82rem;color:var(--muted);
+    border-left:3px solid var(--accent-dim);padding:4px 0 4px 12px;margin:14px 0;
+  }
+  .kbd{font-family:ui-monospace,Menlo,monospace;font-size:.8rem;color:var(--accent)}
+  hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+  .toc{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:16px 20px;margin:8px 0 0;
+  }
+  .toc ol{columns:2;column-gap:32px;margin:6px 0 0;padding-left:20px}
+  @media(max-width:640px){.toc ol{columns:1}}
+  .toc a{text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<div class="wrap">
+<header class="page">
+  <h1>Memory Management</h1>
+  <p class="subtitle">Linux/OS virtual memory, paging, faults, swap, OOM, huge pages, NUMA &amp; measurement — the senior interview reference.</p>
+  <div class="pillbar">
+    <span class="pill">Virtual Memory</span>
+    <span class="pill">Paging &amp; TLB</span>
+    <span class="pill">Page Faults</span>
+    <span class="pill">Swap &amp; OOM</span>
+    <span class="pill">NUMA</span>
+    <span class="pill">Measuring RSS/PSS</span>
+  </div>
+  <div class="toc">
+    <strong style="font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)">Contents</strong>
+    <ol>
+      <li><a href="#vm">Virtual memory &amp; address spaces</a></li>
+      <li><a href="#segments">Process memory segments</a></li>
+      <li><a href="#paging">Paging, page tables &amp; the MMU</a></li>
+      <li><a href="#tlb">The TLB &amp; shootdowns</a></li>
+      <li><a href="#faults">Page faults &amp; demand paging</a></li>
+      <li><a href="#pagecache">Page cache, dirty pages, writeback</a></li>
+      <li><a href="#cow">Copy-on-write, fork &amp; exec</a></li>
+      <li><a href="#swap">Swap, swappiness &amp; thrashing</a></li>
+      <li><a href="#overcommit">Overcommit &amp; the OOM killer</a></li>
+      <li><a href="#huge">Huge pages (HugeTLB &amp; THP)</a></li>
+      <li><a href="#numa">NUMA</a></li>
+      <li><a href="#alloc">Allocators (slab/slub, malloc)</a></li>
+      <li><a href="#measure">Measuring memory</a></li>
+      <li><a href="#traps">Interview traps &amp; Q&amp;A</a></li>
+    </ol>
+  </div>
+</header>
+
+<!-- 1 -->
+<section id="vm">
+  <h2><span class="num">01</span> Virtual memory &amp; address spaces</h2>
+  <p class="lede">Every process sees a private, contiguous address space. The kernel + MMU translate those virtual addresses to physical frames on the fly, so processes are isolated and physical RAM can be shared, overcommitted, and paged.</p>
+
+  <h3>Why virtual memory exists</h3>
+  <ul>
+    <li><strong>Isolation:</strong> a process cannot read/write another process's physical RAM — each has its own page tables.</li>
+    <li><strong>Abstraction:</strong> code links against fixed virtual addresses regardless of where it physically lands (enables relocation, shared libraries).</li>
+    <li><strong>Overcommit &amp; sharing:</strong> more virtual memory can be handed out than physical RAM; identical pages (libc, COW pages) are shared.</li>
+    <li><strong>Protection:</strong> per-page permissions (R/W/X) enforce W^X, guard pages, read-only text.</li>
+  </ul>
+
+  <h3>User vs kernel space split (x86-64)</h3>
+  <p>Address space is split into a lower <strong>user half</strong> and an upper <strong>kernel half</strong>. With standard 4-level paging (48-bit virtual addresses), the canonical split is:</p>
+  <div class="tbl"><table>
+    <tr><th>Region</th><th>Range (x86-64, 48-bit)</th><th>Notes</th></tr>
+    <tr><td>User space</td><td><code>0x0000000000000000</code> – <code>0x00007fffffffffff</code></td><td>~128 TiB per process; text/data/heap/stack/mmap live here</td></tr>
+    <tr><td>Non-canonical hole</td><td>middle</td><td>Unusable — bits 48–63 must sign-extend bit 47</td></tr>
+    <tr><td>Kernel space</td><td><code>0xffff800000000000</code> – <code>0xffffffffffffffff</code></td><td>Shared across all processes, mapped only in kernel mode</td></tr>
+  </table></div>
+  <p class="muted">With 5-level paging (57-bit VA, opt-in) the user half grows to ~128 PiB. The kernel half is the same physical kernel mapping in every process's page table — accessible only when CPU is in ring 0.</p>
+
+  <h3>ASLR (Address Space Layout Randomization)</h3>
+  <p>The kernel randomizes the base of the stack, mmap region (shared libs), heap (<code>brk</code>), and — for PIE binaries — the executable itself, at each <code>exec()</code>. Defeats attacks that need fixed addresses (ROP gadgets, GOT overwrite). Controlled by <code>/proc/sys/kernel/randomize_va_space</code>: <code>0</code>=off, <code>1</code>=stack/mmap/vDSO, <code>2</code>=full (default). Disable per-process with <code>setarch -R</code> for debugging.</p>
+</section>
+
+<!-- 2 -->
+<section id="segments">
+  <h2><span class="num">02</span> Process memory segments</h2>
+  <p class="lede">A process image is a set of virtual memory areas (VMAs). Inspect them live via <code>/proc/&lt;pid&gt;/maps</code>.</p>
+  <div class="tbl"><table>
+    <tr><th>Segment</th><th>Contents</th><th>Perms</th><th>Backing</th></tr>
+    <tr><td><strong>text</strong> (code)</td><td>Machine instructions</td><td><code>r-x</code></td><td>File-backed, shared, read-only</td></tr>
+    <tr><td><strong>rodata</strong></td><td>Constants, string literals</td><td><code>r--</code></td><td>File-backed</td></tr>
+    <tr><td><strong>data</strong></td><td>Initialized globals/statics</td><td><code>rw-</code></td><td>File-backed, COW then private</td></tr>
+    <tr><td><strong>bss</strong></td><td>Zero-initialized globals</td><td><code>rw-</code></td><td>Anonymous, zero-fill on demand</td></tr>
+    <tr><td><strong>heap</strong></td><td><code>malloc</code>/<code>brk</code> allocations</td><td><code>rw-</code></td><td>Anonymous, grows up</td></tr>
+    <tr><td><strong>mmap region</strong></td><td>Shared libs, large mallocs, file mappings</td><td>varies</td><td>File- or anon-backed</td></tr>
+    <tr><td><strong>stack</strong></td><td>Frames, locals, return addrs</td><td><code>rw-</code></td><td>Anonymous, grows down, guard page</td></tr>
+  </table></div>
+  <pre><code># See a live process's address space
+cat /proc/self/maps
+# 55f... r-xp  ...  /usr/bin/cat        &lt;- text
+# 55f... rw-p  ...  [heap]
+# 7f7... r-xp  ...  /usr/lib/libc.so.6  &lt;- mmap'd shared lib
+# 7ff... rw-p  ...  [stack]</code></pre>
+  <p class="muted"><strong>text/data/bss</strong> are the classic ELF segments fixed at link time. The <strong>heap</strong> grows via <code>brk</code>/<code>sbrk</code>; large allocations and shared libraries go in the <strong>mmap region</strong> between heap and stack.</p>
+</section>
+
+<!-- 3 -->
+<section id="paging">
+  <h2><span class="num">03</span> Paging, page tables &amp; the MMU</h2>
+  <p class="lede">Physical RAM and virtual space are both divided into fixed-size <strong>pages</strong>. The MMU walks per-process <strong>page tables</strong> to translate a virtual page number to a physical frame number on every memory access.</p>
+
+  <h3>Pages</h3>
+  <ul>
+    <li>Base page size is <strong>4 KiB</strong> on x86-64 and most architectures (ARM64 supports 4/16/64 KiB configured at kernel build).</li>
+    <li>Virtual address = <em>virtual page number</em> + <em>page offset</em> (low 12 bits for 4 KiB pages).</li>
+    <li>The offset is copied verbatim; only the page number is translated.</li>
+  </ul>
+
+  <h3>Multi-level page tables (x86-64)</h3>
+  <p>A flat page table would be enormous, so tables are hierarchical and sparse. Standard x86-64 uses <strong>4 levels</strong>; opt-in <strong>5-level</strong> paging (LA57) extends VA to 57 bits:</p>
+  <div class="tbl"><table>
+    <tr><th>Level</th><th>Name (Linux)</th><th>x86 name</th></tr>
+    <tr><td>5 (opt-in)</td><td>PGD → P4D</td><td>PML5</td></tr>
+    <tr><td>4</td><td>PGD</td><td>PML4</td></tr>
+    <tr><td>3</td><td>PUD</td><td>PDPT</td></tr>
+    <tr><td>2</td><td>PMD</td><td>PD (page directory)</td></tr>
+    <tr><td>1</td><td>PTE</td><td>PT (page table)</td></tr>
+  </table></div>
+  <p>The MMU walks 4 (or 5) levels, each indexed by 9 bits of the virtual address, ending at a <strong>page table entry (PTE)</strong>. <code>CR3</code> holds the physical address of the top-level table; it's reloaded on every context switch, which is what makes address spaces per-process.</p>
+
+  <h3>The page table entry (PTE)</h3>
+  <p>A PTE holds the <strong>physical frame number</strong> plus control bits: <em>Present</em> (in RAM?), <em>R/W</em>, <em>User/Supervisor</em>, <em>Accessed</em>, <em>Dirty</em>, <em>NX</em> (no-execute), and — when Present=0 — swap location or "not mapped." A cleared Present bit is exactly what triggers a page fault.</p>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>Virtual addresses are <strong>not</strong> physical addresses. Two processes can hold the same virtual address pointing at completely different physical frames — or the <em>same</em> frame (shared library, shared memory). Never reason about aliasing from virtual addresses alone.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="tlb">
+  <h2><span class="num">04</span> The TLB &amp; shootdowns</h2>
+  <p class="lede">A full page-table walk is 4–5 memory accesses <em>per translation</em>. The <strong>TLB (Translation Lookaside Buffer)</strong> is a small CPU cache of recent virtual→physical translations that makes the common case one lookup.</p>
+
+  <ul>
+    <li><strong>TLB hit:</strong> translation cached → near-zero cost.</li>
+    <li><strong>TLB miss:</strong> the MMU (hardware, on x86) performs a <strong>page-table walk</strong>, then caches the result. Costs tens–hundreds of cycles.</li>
+    <li><strong>Coverage:</strong> a few thousand entries × 4 KiB is only a few MiB of memory "reachable" without a walk — huge pages exist largely to extend this.</li>
+  </ul>
+
+  <h3>Flush on context switch — and PCID/ASID</h3>
+  <p>TLB entries belong to a specific address space. Naively, switching processes (reloading <code>CR3</code>) must <strong>flush the entire TLB</strong>, so the new process doesn't read stale translations. That refill cost hurts.</p>
+  <p><strong>PCID</strong> (Process-Context ID, x86) / <strong>ASID</strong> (Address Space ID, ARM) tag each TLB entry with an address-space identifier, so entries survive a context switch and only entries matching the current PCID are used. This avoids full flushes and cuts switch cost. (KPTI/Meltdown mitigation reintroduced some flushing pressure, partly recovered via PCID.)</p>
+
+  <h3>TLB shootdown</h3>
+  <p>The TLB is <em>per-CPU</em>. When one core changes a mapping (unmaps a page, changes permissions, migrates a page), other cores may hold stale TLB entries for it. The originating core sends an <strong>IPI (inter-processor interrupt)</strong> to force other cores to invalidate the relevant entries. This "TLB shootdown" is a real scalability cost — heavy <code>munmap</code>/<code>mprotect</code>/migration on many-core boxes shows up as time in <code>smp_call_function</code>.</p>
+
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: Why does frequent <code>mprotect</code> on a busy multithreaded server hurt?</p>
+    <p class="a">A: Each permission change may require invalidating stale TLB entries on every core that ran the process — a TLB shootdown storm of IPIs, serializing cores.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="faults">
+  <h2><span class="num">05</span> Page faults &amp; demand paging</h2>
+  <p class="lede">A page fault is a CPU trap raised when a virtual access can't be satisfied by the current page tables. The kernel's fault handler decides: fix it up, fetch from disk, or kill the process. Three flavors matter.</p>
+
+  <div class="tbl"><table>
+    <tr><th>Fault type</th><th>Cause</th><th>Kernel action</th><th>Cost</th></tr>
+    <tr><td><strong>Minor</strong> (soft)</td><td>Page is already in RAM (page cache, zero page, COW) but not mapped in this PTE</td><td>Just install/adjust the PTE — no I/O</td><td>Cheap (µs)</td></tr>
+    <tr><td><strong>Major</strong> (hard)</td><td>Page must be read from disk: swap-in or first read of a file-backed page not in page cache</td><td>Block the thread, issue I/O, map when done</td><td>Expensive (ms — disk I/O)</td></tr>
+    <tr><td><strong>Invalid</strong></td><td>Access with no valid VMA or wrong permissions (write to r/o, NULL deref)</td><td>Deliver <code>SIGSEGV</code> (or <code>SIGBUS</code>)</td><td>Process usually dies</td></tr>
+  </table></div>
+
+  <h3>Demand paging &amp; lazy allocation</h3>
+  <p>Linux does not physically back memory until it's touched. <code>malloc</code>/<code>mmap</code> only reserve virtual address space and set up VMAs; the first <em>write</em> to each page triggers a minor fault that allocates a physical frame (or maps the shared zero page on first read). This is why:</p>
+  <ul>
+    <li>A 10 GiB <code>malloc</code> can succeed instantly with no free RAM movement — nothing is backed yet.</li>
+    <li>Newly allocated memory reads as zeros (zero-fill on demand) without cost until written.</li>
+    <li>RSS grows as pages are actually touched, not at allocation time.</li>
+  </ul>
+
+  <h3>Anonymous vs file-backed pages</h3>
+  <div class="grid2">
+    <div class="card">
+      <h3>Anonymous</h3>
+      <p class="muted">Heap, stack, BSS, <code>MAP_ANONYMOUS</code>. No file behind them. When reclaimed, they must go to <strong>swap</strong> (or be dropped if clean/zero). Under memory pressure with no swap, these are unreclaimable → OOM.</p>
+    </div>
+    <div class="card">
+      <h3>File-backed</h3>
+      <p class="muted">Program text, <code>mmap</code>'d files, page cache. Backed by a file. Clean pages can be <strong>dropped and re-read</strong> from disk for free; dirty pages must be written back first.</p>
+    </div>
+  </div>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>A thread stuck in a <strong>major fault</strong> shows up as <code>D</code> state (uninterruptible sleep) in <code>ps</code>/<code>top</code> — it's blocked on I/O, not on CPU or a normal signal. A pile of <code>D</code>-state threads usually means swap thrashing or slow storage, <em>not</em> a deadlock. <code>SIGKILL</code> won't touch a <code>D</code>-state task until the I/O completes.</p>
+  </div>
+
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: How do you tell minor vs major faults for a process?</p>
+    <p class="a">A: <code>ps -o min_flt,maj_flt -p &lt;pid&gt;</code>, <code>/proc/&lt;pid&gt;/stat</code> fields 10/12, or <code>/usr/bin/time -v</code> ("major/minor page faults"). High <em>major</em> fault rate = disk/swap I/O in the hot path → latency killer. High <em>minor</em> is normal (COW, first-touch).</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="pagecache">
+  <h2><span class="num">06</span> Page cache, dirty pages &amp; writeback</h2>
+  <p class="lede">Linux caches file data in RAM in the <strong>page cache</strong>. Reads hit RAM instead of disk; writes land in RAM first and are flushed later. This is why "free" memory always looks low — the kernel uses spare RAM as cache.</p>
+
+  <ul>
+    <li><strong>Clean pages</strong> match disk — instantly reclaimable (just drop them).</li>
+    <li><strong>Dirty pages</strong> were written and not yet flushed. They must be written back before reclaim. Tracked in <code>/proc/meminfo</code> as <code>Dirty:</code> and <code>Writeback:</code>.</li>
+    <li><strong>Writeback</strong> is done by kernel flusher threads, driven by <code>vm.dirty_ratio</code>, <code>vm.dirty_background_ratio</code>, and expiry timers, or forced by <code>fsync</code>/<code>sync</code>.</li>
+  </ul>
+  <pre><code># Drop clean page cache (test/benchmark only — not a fix for prod)
+sync; echo 1 &gt; /proc/sys/vm/drop_caches   # page cache
+echo 3 &gt; /proc/sys/vm/drop_caches         # + dentries/inodes</code></pre>
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>Page cache is <strong>reclaimable</strong> — it is not "used up" memory. Low <code>free</code> with high <code>buff/cache</code> is healthy. Judge headroom by <strong>available</strong>, not <strong>free</strong> (see §13).</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="cow">
+  <h2><span class="num">07</span> Copy-on-write, fork &amp; exec</h2>
+  <p class="lede">COW lets <code>fork()</code> be cheap: parent and child share physical pages read-only until one writes. The write faults, the kernel copies that single page, and each side gets its private copy.</p>
+
+  <h3>fork + COW</h3>
+  <ol>
+    <li><code>fork()</code> duplicates the page tables, not the pages. All writable private pages are marked <strong>read-only</strong> in both parent and child, with a COW flag.</li>
+    <li>Either process reading a page: fine, shared.</li>
+    <li>Either process <em>writing</em>: a <strong>minor</strong> (protection) fault fires; the kernel allocates a fresh frame, copies the page, marks it writable, and resumes. Only the touched page is copied.</li>
+  </ol>
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>COW is why a large process can <code>fork()</code> quickly, but also why a forking server (e.g. Redis <code>BGSAVE</code>) can see RSS balloon if the parent keeps writing — every written page gets duplicated. Under strict overcommit this can even OOM despite "just forking."</p>
+  </div>
+
+  <h3>exec replaces the address space</h3>
+  <p><code>execve()</code> does <strong>not</strong> create a process — it <em>replaces</em> the current one's image. The old address space (VMAs, mappings, heap, stack) is torn down and a fresh one is built from the new ELF: new text/data mapped from the binary, fresh BSS/heap/stack, ASLR re-rolled. The PID and open file descriptors (unless <code>O_CLOEXEC</code>) survive; the memory image does not. Hence the classic <code>fork()</code>-then-<code>exec()</code> pattern: COW-cheap fork, then blow it all away with exec.</p>
+</section>
+
+<!-- 8 -->
+<section id="swap">
+  <h2><span class="num">08</span> Swap, swappiness &amp; thrashing</h2>
+  <p class="lede">Swap is disk (or a swap file / zram device) used to hold <strong>anonymous</strong> pages evicted from RAM under pressure. It buys capacity at the cost of latency — a swapped page costs a major fault to get back.</p>
+
+  <ul>
+    <li><strong>Swap-out:</strong> the reclaim path (<code>kswapd</code> / direct reclaim) writes cold anonymous pages to swap and frees the frames.</li>
+    <li><strong>Swap-in:</strong> touching a swapped page → major fault → disk read → remap. Slow.</li>
+    <li><strong>Thrashing:</strong> the working set exceeds RAM, so the system spends most of its time swapping in/out instead of doing work. Symptoms: high major-fault rate, huge <code>si</code>/<code>so</code> in <code>vmstat</code>, near-zero throughput, everything in <code>D</code> state.</li>
+  </ul>
+
+  <h3>vm.swappiness</h3>
+  <p>A 0–200 knob (100 = "1:1") biasing reclaim between evicting <strong>file-backed</strong> page cache vs swapping <strong>anonymous</strong> pages. <strong>Default is 60.</strong> Lower → prefer dropping page cache, swap less; higher → swap anonymous more readily. <code>0</code> does not fully disable swap; it only avoids swapping until the file cache is nearly exhausted.</p>
+  <pre><code>cat /proc/sys/vm/swappiness         # 60 by default
+sysctl -w vm.swappiness=10          # DB boxes often lower it
+free -h                             # see Swap: total/used/free
+vmstat 1                            # watch si/so (swap in/out KB/s)</code></pre>
+
+  <h3>zram &amp; zswap</h3>
+  <div class="grid2">
+    <div class="card">
+      <h3>zram</h3>
+      <p class="muted">A compressed <em>block device in RAM</em> used as swap. Pages are compressed and kept in memory instead of hitting disk — effective on RAM-constrained systems (containers, embedded, ChromeOS). No disk needed.</p>
+    </div>
+    <div class="card">
+      <h3>zswap</h3>
+      <p class="muted">A compressed <em>writeback cache</em> in front of a real swap device. Pages are compressed in a RAM pool; only when that fills do they spill to disk swap. Reduces disk swap I/O and latency.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="overcommit">
+  <h2><span class="num">09</span> Overcommit &amp; the OOM killer</h2>
+  <p class="lede">Linux hands out more virtual memory than it can physically back, betting most is never touched. When that bet fails and reclaim can't free enough, the <strong>OOM killer</strong> picks a victim.</p>
+
+  <h3>vm.overcommit_memory modes</h3>
+  <div class="tbl"><table>
+    <tr><th>Mode</th><th>Name</th><th>Behavior</th></tr>
+    <tr><td><code>0</code> (default)</td><td>Heuristic</td><td>Allow "reasonable" overcommit; reject wildly large single requests. Most allocations succeed.</td></tr>
+    <tr><td><code>1</code></td><td>Always</td><td>Never refuse. Even absurd allocations succeed. Used by workloads that sparsely map huge regions (some scientific/HPC, certain DBs).</td></tr>
+    <tr><td><code>2</code></td><td>Never (strict)</td><td>Commit is capped at <code>swap + overcommit_ratio% × RAM</code>. <code>malloc</code> can genuinely fail — no OOM surprises, but you must size it right.</td></tr>
+  </table></div>
+  <pre><code>sysctl vm.overcommit_memory      # 0 default
+sysctl vm.overcommit_ratio       # 50 (used only in mode 2)
+grep -i commit /proc/meminfo     # CommitLimit / Committed_AS</code></pre>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>On default Linux, <code>malloc</code> <strong>almost never returns NULL</strong> — it only reserves virtual space. You discover you're out of memory later, when a <em>write</em> touches a page and there's no frame to give → the OOM killer fires. So "check malloc for NULL" is nearly useless as an OOM defense on Linux; the failure surfaces at first-touch, not at allocation.</p>
+  </div>
+
+  <h3>The OOM killer</h3>
+  <p>When the kernel truly can't reclaim enough to satisfy a fault, it invokes the OOM killer to free memory by killing a process. Selection is by <strong><code>oom_score</code></strong>, roughly proportional to the process's memory footprint (favoring big anonymous consumers), adjusted by <code>oom_score_adj</code>.</p>
+  <ul>
+    <li><code>/proc/&lt;pid&gt;/oom_score</code> — the computed badness (higher = more likely victim).</li>
+    <li><code>/proc/&lt;pid&gt;/oom_score_adj</code> — tunable bias, range <strong>−1000 … +1000</strong>. <code>−1000</code> makes a process effectively immune (score floored). Positive values make it a preferred target.</li>
+    <li>The kill and the chosen victim are logged to the kernel ring buffer — check <code>dmesg</code> / <code>journalctl -k</code> for "<code>Out of memory: Killed process ...</code>" and the per-task RSS table.</li>
+  </ul>
+  <pre><code># Protect a critical daemon from the OOM killer
+echo -1000 &gt; /proc/&lt;pid&gt;/oom_score_adj
+# See who died and why
+dmesg | grep -i -E "oom|killed process"
+journalctl -k | grep -i "out of memory"</code></pre>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>The OOM killer does <strong>not</strong> simply kill "the biggest process." It kills the highest <code>oom_score</code>, which factors in <code>oom_score_adj</code>, and it's constrained to the memory context that triggered it (a cgroup-v2 <code>memory.max</code> breach kills within that cgroup, not system-wide). A tuned <code>oom_score_adj</code> or a container boundary can make a smaller process the victim.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="huge">
+  <h2><span class="num">10</span> Huge pages (HugeTLB &amp; THP)</h2>
+  <p class="lede">Bigger pages mean fewer PTEs and far better TLB coverage — one 2 MiB entry replaces 512 × 4 KiB entries. Great for large working sets (databases, JVMs, VMs); the tradeoffs differ between the two mechanisms.</p>
+
+  <div class="tbl"><table>
+    <tr><th></th><th>Explicit HugeTLB</th><th>Transparent Huge Pages (THP)</th></tr>
+    <tr><td>Sizes (x86-64)</td><td>2 MiB, 1 GiB</td><td>2 MiB (PMD-level)</td></tr>
+    <tr><td>Setup</td><td>Reserve pool up front (<code>vm.nr_hugepages</code>), app opts in via <code>mmap(MAP_HUGETLB)</code> / <code>hugetlbfs</code></td><td>Automatic — kernel promotes/collapses transparently; <code>khugepaged</code> merges</td></tr>
+    <tr><td>Guarantee</td><td>Pinned, never swapped, deterministic</td><td>Best-effort; can be split back to 4 KiB</td></tr>
+    <tr><td>Control</td><td>Explicit reservations</td><td><code>/sys/kernel/mm/transparent_hugepage/enabled</code>: <code>always</code>/<code>madvise</code>/<code>never</code></td></tr>
+  </table></div>
+
+  <h3>THP tradeoffs</h3>
+  <ul>
+    <li><strong>Win:</strong> fewer TLB misses, less page-table walking, better throughput for large contiguous allocations.</li>
+    <li><strong>Latency risk:</strong> allocating a 2 MiB page may require <strong>compaction</strong> (defragmenting physical memory) — a stall. <code>khugepaged</code> also uses CPU. Latency-sensitive DBs (MongoDB, Oracle, Redis guidance) frequently recommend <code>never</code> or <code>madvise</code> to avoid unpredictable pauses.</li>
+    <li><strong>Bloat:</strong> promoting a mostly-empty 2 MiB region wastes RAM (internal fragmentation).</li>
+  </ul>
+  <pre><code>cat /sys/kernel/mm/transparent_hugepage/enabled   # [always] madvise never
+grep -i huge /proc/meminfo                          # AnonHugePages, HugePages_*
+echo madvise &gt; /sys/kernel/mm/transparent_hugepage/enabled</code></pre>
+  <p class="muted"><code>madvise</code> is the common middle ground: THP only where the app explicitly asks via <code>madvise(MADV_HUGEPAGE)</code>, avoiding surprise stalls elsewhere.</p>
+</section>
+
+<!-- 11 -->
+<section id="numa">
+  <h2><span class="num">11</span> NUMA (Non-Uniform Memory Access)</h2>
+  <p class="lede">On multi-socket servers, each CPU socket has its own local memory bank (a NUMA <strong>node</strong>). Accessing local memory is faster than reaching across the interconnect to another node's memory. Placement matters for throughput and latency.</p>
+
+  <ul>
+    <li><strong>Locality:</strong> a thread should run on the same node whose memory it uses. Cross-node access adds interconnect latency and contends for a shared link.</li>
+    <li><strong>First-touch policy:</strong> a page is allocated on the node of the CPU that <em>first writes</em> it, not where it was <code>malloc</code>'d. So initialize data on the thread/node that will use it.</li>
+    <li><strong>AutoNUMA:</strong> the kernel (<code>numa_balancing</code>) samples access patterns and migrates pages/threads toward locality automatically. Helps general workloads; can add migration overhead for carefully hand-placed ones.</li>
+  </ul>
+  <pre><code>numactl --hardware            # nodes, sizes, inter-node distances
+numactl --cpunodebind=0 --membind=0 ./app   # pin CPU + memory to node 0
+numastat -p &lt;pid&gt;             # per-node memory usage of a process
+cat /proc/sys/kernel/numa_balancing         # 1 = AutoNUMA on</code></pre>
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: A DB is slow on a 2-socket box despite low CPU. Where do you look?</p>
+    <p class="a">A: NUMA remote-access ratio (<code>numastat</code>). If memory is skewed onto one node while threads run on both, cross-node traffic serializes. Fix with <code>numactl</code> pinning, interleave for shared buffers (<code>--interleave=all</code>), or per-node worker affinity + first-touch init.</p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section id="alloc">
+  <h2><span class="num">12</span> Allocators — kernel &amp; user space</h2>
+  <p class="lede">Two allocator layers matter: the <strong>kernel</strong> allocating physical frames and small kernel objects, and <strong>user-space</strong> <code>malloc</code> carving up virtual memory it gets from the kernel.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Kernel: buddy + slab/slub</h3>
+      <p class="muted">The <strong>buddy allocator</strong> hands out physically contiguous power-of-two page blocks. The <strong>slab/slub allocator</strong> sits on top for small, frequent, same-size kernel objects (inodes, <code>task_struct</code>, dentries), keeping per-type caches to avoid fragmentation and speed alloc/free. SLUB is the modern default. Inspect via <code>/proc/slabinfo</code> and <code>slabtop</code>.</p>
+    </div>
+    <div class="card">
+      <h3>User space: glibc malloc</h3>
+      <p class="muted">Gets memory from the kernel two ways: <strong><code>brk</code>/<code>sbrk</code></strong> grows the heap for small allocations; <strong><code>mmap</code></strong> is used for large ones (default threshold ~128 KiB, dynamic) and returned directly to the kernel on <code>free</code>. Multiple <strong>arenas</strong> (per-thread heap regions) reduce lock contention in threaded programs. Freed small memory often stays mapped in the process (returned to malloc's free lists, not the OS) — RSS may not drop after <code>free</code>.</p>
+    </div>
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>Calling <code>free()</code> rarely shrinks RSS. Small freed chunks go back to the allocator's free lists (still mapped); only <code>mmap</code>-backed large allocations are unmapped immediately. "Memory not released after free" is usually allocator retention or fragmentation, not a leak. <code>malloc_trim()</code> can hint some back.</p>
+  </div>
+</section>
+
+<!-- 13 -->
+<section id="measure">
+  <h2><span class="num">13</span> Measuring memory</h2>
+  <p class="lede">The single most confused topic in interviews. Know exactly what each number counts — especially around shared pages and reclaimable cache.</p>
+
+  <h3>Per-process metrics</h3>
+  <div class="tbl"><table>
+    <tr><th>Metric</th><th>Means</th><th>Watch out</th></tr>
+    <tr><td><strong>VSZ</strong> (virtual size)</td><td>Total virtual address space reserved (mapped VMAs), touched or not</td><td>Wildly overcounts real usage — includes untouched <code>malloc</code>, mapped-but-unused files, guard regions</td></tr>
+    <tr><td><strong>RSS</strong> (resident set)</td><td>Physical pages currently in RAM for this process</td><td><em>Double-counts</em> shared pages — every process mapping libc counts libc's RSS in full</td></tr>
+    <tr><td><strong>PSS</strong> (proportional set)</td><td>Private pages + shared pages ÷ number of sharers</td><td>The honest per-process number; PSS across all processes ≈ total RAM used. From <code>/proc/&lt;pid&gt;/smaps</code></td></tr>
+    <tr><td><strong>USS</strong> (unique set)</td><td>Only private pages — what's freed if the process dies</td><td>Best "how much does THIS process cost me" figure</td></tr>
+  </table></div>
+  <pre><code># PSS/USS breakdown
+grep -E "^(Rss|Pss|Private|Shared)" /proc/&lt;pid&gt;/smaps_rollup
+# Sorted proportional set sizes across processes
+smem -tk -c "pid user command pss rss uss"</code></pre>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p><strong>VSZ overcounts, RSS double-counts.</strong> Summing RSS across processes overstates real RAM because shared libraries are counted once per process. For "how much memory is this actually using," use <strong>PSS</strong> (fair share of shared) or <strong>USS</strong> (private only). VSZ tells you almost nothing about physical usage.</p>
+  </div>
+
+  <h3>System-wide: <code>free</code> — available vs free</h3>
+  <pre><code>free -h
+#               total   used   free   shared  buff/cache  available
+# Mem:           31Gi   8Gi    1Gi    0.5Gi   22Gi        21Gi</code></pre>
+  <ul>
+    <li><strong>free</strong> = RAM sitting completely idle. Almost always low — Linux fills spare RAM with page cache on purpose.</li>
+    <li><strong>buff/cache</strong> = page cache + buffers, mostly reclaimable.</li>
+    <li><strong>available</strong> = the kernel's estimate of what a new workload could get <em>without swapping</em> — free + reclaimable cache − low-watermark reserves. <strong>This is the number that matters.</strong></li>
+  </ul>
+  <div class="trap">
+    <span class="lbl">⚠ Trap</span>
+    <p>"Only 1 GiB free!" on a 32 GiB box is <strong>not</strong> a problem if <em>available</em> is 21 GiB. Overcommit + page cache mean <code>free ≠ available</code>. Alert on <strong>available</strong> (and swap-in rate), never on <strong>free</strong>.</p>
+  </div>
+
+  <h3>cgroup v2 memory (containers)</h3>
+  <p>In containers/systemd, memory is bounded and measured per-cgroup, not per-host. This is where container OOMs actually get decided.</p>
+  <div class="tbl"><table>
+    <tr><th>File</th><th>Meaning</th></tr>
+    <tr><td><code>memory.current</code></td><td>Current bytes charged to the cgroup (anon + page cache + kernel)</td></tr>
+    <tr><td><code>memory.max</code></td><td>Hard limit — exceeding it triggers reclaim, then the cgroup OOM killer</td></tr>
+    <tr><td><code>memory.high</code></td><td>Soft limit — over it, allocations are throttled (reclaim pressure) but not killed</td></tr>
+    <tr><td><code>memory.stat</code></td><td>Detailed breakdown: <code>anon</code>, <code>file</code>, <code>slab</code>, <code>pgfault</code>, <code>pgmajfault</code>, etc.</td></tr>
+    <tr><td><code>memory.events</code></td><td>Counters incl. <code>oom</code> and <code>oom_kill</code> — proof a container was OOM-killed</td></tr>
+  </table></div>
+  <pre><code>cat /sys/fs/cgroup/&lt;path&gt;/memory.current
+cat /sys/fs/cgroup/&lt;path&gt;/memory.max        # "max" = unlimited
+grep -E "anon|file|pgmajfault" /sys/fs/cgroup/&lt;path&gt;/memory.stat</code></pre>
+  <div class="xref">
+    <strong>Cross-reference:</strong> container memory limits, <code>memory.high</code> throttling, and the cgroup OOM path are covered in depth in the <a href="./cgroups-cheatsheet.html">cgroups cheatsheet</a> — this section is the memory-subsystem view of the same knobs.
+  </div>
+</section>
+
+<hr>
+
+<!-- 14 -->
+<section id="traps">
+  <h2><span class="num">14</span> Interview traps &amp; Q&amp;A — rapid fire</h2>
+  <p class="lede">The recurring gotchas senior interviewers probe. If you can explain each in one breath, you're solid.</p>
+
+  <div class="trap">
+    <span class="lbl">⚠ Trap — malloc doesn't touch pages</span>
+    <p>Under demand paging, <code>malloc</code>/<code>mmap</code> only reserve virtual space. No physical frame is allocated until the <strong>first write</strong> (first read maps the shared zero page). So RSS after a big <code>malloc</code> is ~unchanged, and initialization (<code>memset</code>/<code>calloc</code> touch) is what actually costs RAM and time.</p>
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Trap — VSZ vs RSS vs PSS</span>
+    <p>VSZ = virtual reservation (overcounts). RSS = resident pages but shared libs double-counted across processes. Use PSS for a fair per-process share, USS for what dies with the process.</p>
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Trap — free ≠ available</span>
+    <p>Low <code>free</code> is normal (page cache eats it). Overcommit means committed virtual &gt; physical. Judge memory health by <code>available</code> and swap-in rate, not <code>free</code>.</p>
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Trap — OOM killer target</span>
+    <p>It kills highest <code>oom_score</code> (weighted by <code>oom_score_adj</code>, −1000…+1000, and by the triggering cgroup) — <strong>not</strong> automatically the largest process. Check <code>dmesg</code> for the actual victim and the RSS table.</p>
+  </div>
+  <div class="trap">
+    <span class="lbl">⚠ Trap — D-state on major faults</span>
+    <p>Uninterruptible sleep (<code>D</code>) usually means blocked on I/O — often a major fault / swap-in. Not a hang, not SIGKILL-able until I/O returns. A cluster of D-state = thrashing or slow storage.</p>
+  </div>
+
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: Minor vs major page fault?</p>
+    <p class="a">A: Minor = page already in RAM (page cache / zero page / COW), just fix the PTE — no I/O. Major = must read from disk (swap-in or uncached file page) — blocks on I/O, orders of magnitude slower.</p>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: Why is <code>vm.swappiness</code> default 60, and when lower it?</p>
+    <p class="a">A: 60 balances reclaiming file cache vs swapping anon pages. Latency-sensitive DBs lower it (e.g. 1–10) to keep their working set in RAM and prefer dropping cache; it doesn't fully disable swap even at 0.</p>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: Process freed gigabytes but RSS didn't drop — leak?</p>
+    <p class="a">A: Usually not. glibc keeps freed small chunks on its free lists (still mapped); only large <code>mmap</code>-backed allocations unmap on <code>free</code>. Fragmentation or arena retention. <code>malloc_trim()</code> may return some.</p>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: Why huge pages, and why might they hurt?</p>
+    <p class="a">A: They cut TLB misses and page-table walks (one 2 MiB entry = 512 × 4 KiB). Hurt via THP: compaction stalls and <code>khugepaged</code> CPU cause latency jitter — hence <code>madvise</code>/<code>never</code> for latency-critical services.</p>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: What's a TLB shootdown and when does it bite?</p>
+    <p class="a">A: TLBs are per-core; changing a mapping means IPI-ing other cores to invalidate stale entries. Heavy <code>munmap</code>/<code>mprotect</code>/page migration on many-core systems serializes cores in the shootdown path.</p>
+  </div>
+  <div class="qa">
+    <span class="lbl">Q&amp;A</span>
+    <p class="q">Q: How does <code>fork()</code> avoid copying all of memory?</p>
+    <p class="a">A: Copy-on-write — page tables are duplicated, pages shared read-only; the first write faults and copies just that one page. Cheap fork; RSS grows only as pages diverge.</p>
+  </div>
+</section>
+
+<footer>
+  OS Internals · Memory pillar. Companions: syscalls · CPU execution · CPU scheduling · process lifecycle · cgroups.
+  Figures (4 KiB pages, 48/57-bit VA split, swappiness 60, <code>oom_score_adj</code> −1000…+1000, overcommit modes 0/1/2) reflect mainline Linux current to 2026 on x86-64.
+</footer>
+</div>
+</body>
+</html>

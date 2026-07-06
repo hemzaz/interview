@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubernetes Interview Cheatsheet</title>
+<style>
+  @import url('../assets/fonts/font-set-8.css');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2530;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --dim: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 32px 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-full { grid-template-columns: 1fr; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card.blue::before  { background: linear-gradient(90deg, var(--accent), transparent); }
+  .card.purple::before{ background: linear-gradient(90deg, var(--accent2), transparent); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+  .card.amber::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+  .card.red::before   { background: linear-gradient(90deg, var(--accent5), transparent); }
+  .card.multi::before { background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3)); }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .blue  .card-title .dot { background: var(--accent); }
+  .purple .card-title .dot { background: var(--accent2); }
+  .green .card-title .dot  { background: var(--accent3); }
+  .amber .card-title .dot  { background: var(--accent4); }
+  .red   .card-title .dot  { background: var(--accent5); }
+  .multi .card-title .dot  { background: var(--accent); }
+
+  /* ── COMPONENT TABLE ── */
+  .comp-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 8px 12px;
+    align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 1px solid #1a1f2a;
+  }
+  .comp-row:last-child { border-bottom: none; }
+  .comp-name {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .comp-name.purple { color: var(--accent2); }
+  .comp-name.green  { color: var(--accent3); }
+  .comp-name.amber  { color: var(--accent4); }
+  .comp-name.red    { color: var(--accent5); }
+  .comp-desc {
+    color: var(--dim);
+    font-size: 11px;
+  }
+  .comp-desc b { color: var(--text); font-weight: 500; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-step {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+    position: relative;
+  }
+  .flow-step:not(:last-child) .step-line::after {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 24px;
+    bottom: -8px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--border), transparent);
+  }
+  .step-line {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 4px;
+  }
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+    flex-shrink: 0;
+    border: 1px solid;
+  }
+  .step-content {
+    padding: 4px 0 12px;
+  }
+  .step-title {
+    font-weight: 600;
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+  .step-body {
+    color: var(--dim);
+    font-size: 10px;
+    line-height: 1.7;
+  }
+  .step-body .hl { color: var(--text); background: #1e2530; padding: 0 4px; border-radius: 3px; }
+
+  /* step colors */
+  .s1 .step-num { border-color: var(--accent);  color: var(--accent);  background: #00d4ff15; }
+  .s2 .step-num { border-color: var(--accent2); color: var(--accent2); background: #7c3aed15; }
+  .s3 .step-num { border-color: var(--accent3); color: var(--accent3); background: #10b98115; }
+  .s4 .step-num { border-color: var(--accent4); color: var(--accent4); background: #f59e0b15; }
+  .s5 .step-num { border-color: var(--accent5); color: var(--accent5); background: #ef444415; }
+  .s6 .step-num { border-color: #a855f7;        color: #a855f7;        background: #a855f715; }
+  .s7 .step-num { border-color: var(--accent3); color: var(--accent3); background: #10b98115; }
+  .s8 .step-num { border-color: var(--accent);  color: var(--accent);  background: #00d4ff15; }
+  .s9 .step-num { border-color: var(--accent4); color: var(--accent4); background: #f59e0b15; }
+  .s1 .step-title { color: var(--accent); }
+  .s2 .step-title { color: var(--accent2); }
+  .s3 .step-title { color: var(--accent3); }
+  .s4 .step-title { color: var(--accent4); }
+  .s5 .step-title { color: var(--accent5); }
+  .s6 .step-title { color: #a855f7; }
+  .s7 .step-title { color: var(--accent3); }
+  .s8 .step-title { color: var(--accent); }
+  .s9 .step-title { color: var(--accent4); }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 2px 2px 2px 0;
+  }
+  .tag.blue   { background: #00d4ff15; color: var(--accent);  border: 1px solid #00d4ff30; }
+  .tag.purple { background: #7c3aed15; color: var(--accent2); border: 1px solid #7c3aed30; }
+  .tag.green  { background: #10b98115; color: var(--accent3); border: 1px solid #10b98130; }
+  .tag.amber  { background: #f59e0b15; color: var(--accent4); border: 1px solid #f59e0b30; }
+  .tag.red    { background: #ef444415; color: var(--accent5); border: 1px solid #ef444430; }
+
+  /* ── CODE BLOCK ── */
+  .code {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 8px;
+    overflow-x: auto;
+  }
+  .code .kw  { color: var(--accent2); }
+  .code .val { color: var(--accent3); }
+  .code .cmt { color: var(--muted); }
+  .code .key { color: var(--accent); }
+
+  /* ── KV LIST ── */
+  .kv { margin-top: 4px; }
+  .kv-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 6px 10px;
+    padding: 4px 0;
+    border-bottom: 1px solid #151a22;
+    align-items: baseline;
+  }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-key  { color: var(--accent); font-size: 10px; font-weight: 600; }
+  .kv-key.purple { color: var(--accent2); }
+  .kv-key.green  { color: var(--accent3); }
+  .kv-key.amber  { color: var(--accent4); }
+  .kv-val  { color: var(--dim); font-size: 10px; }
+  .kv-val b { color: var(--text); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    align-items: center;
+  }
+  .arch-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .arch-panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .arch-panel-title.blue   { color: var(--accent); }
+  .arch-panel-title.green  { color: var(--accent3); }
+  .arch-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 18px;
+  }
+  .arch-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #151a22;
+    font-size: 10px;
+  }
+  .arch-item:last-child { border-bottom: none; }
+  .arch-item-icon {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .arch-item-name { font-weight: 600; color: var(--text); font-size: 10px; }
+  .arch-item-desc { color: var(--muted); font-size: 9px; margin-top: 1px; }
+
+  /* ── PILL GRID ── */
+  .pill-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  /* highlight box */
+  .callout {
+    background: #00d4ff08;
+    border: 1px solid #00d4ff20;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 8px;
+  }
+  .callout b { color: var(--accent); }
+  .callout.purple { background: #7c3aed08; border-color: #7c3aed20; border-left-color: var(--accent2); }
+  .callout.purple b { color: var(--accent2); }
+  .callout.green { background: #10b98108; border-color: #10b98120; border-left-color: var(--accent3); }
+  .callout.green b { color: var(--accent3); }
+  .callout.amber { background: #f59e0b08; border-color: #f59e0b20; border-left-color: var(--accent4); }
+  .callout.amber b { color: var(--accent4); }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<div class="header">
+  <h1>Kubernetes Interview Cheatsheet</h1>
+  <span class="badge">Control Plane · Internals · Runtime</span>
+</div>
+
+<!-- ══ SECTION 1: CONTROL PLANE ══ -->
+<div class="section-label">Control Plane Architecture</div>
+
+<div class="grid">
+  <!-- kube-apiserver -->
+  <div class="card blue">
+    <div class="card-title"><span class="dot"></span>kube-apiserver</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Role</span><span class="kv-val"><b>Single front-door</b> for all cluster state. Every component talks to it — nothing talks directly to etcd except apiserver.</span></div>
+      <div class="kv-row"><span class="kv-key">Protocol</span><span class="kv-val">REST + gRPC (internal). Watches via <b>HTTP/2 chunked streaming</b>.</span></div>
+      <div class="kv-row"><span class="kv-key">Auth pipeline</span><span class="kv-val">Authn → Authz (RBAC/ABAC/Webhook) → Admission → Validation → etcd write</span></div>
+      <div class="kv-row"><span class="kv-key">Admission</span><span class="kv-val"><b>Mutating</b> webhooks first, then <b>Validating</b> webhooks. Built-ins: LimitRanger, ResourceQuota, PodSecurity.</span></div>
+      <div class="kv-row"><span class="kv-key">HA</span><span class="kv-val">Stateless — can run N replicas behind a load balancer.</span></div>
+    </div>
+    <div class="callout" style="margin-top:10px"><b>Key interview point:</b> apiserver is the only etcd client. All other components watch API objects, not etcd directly.</div>
+  </div>
+
+  <!-- etcd -->
+  <div class="card purple">
+    <div class="card-title"><span class="dot"></span>etcd</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Role</span><span class="kv-val"><b>Sole source of truth</b> for all cluster state. Distributed key-value store (Raft consensus).</span></div>
+      <div class="kv-row"><span class="kv-key">Data model</span><span class="kv-val">Keys like <code>/registry/pods/default/my-pod</code> → protobuf-encoded object</span></div>
+      <div class="kv-row"><span class="kv-key">Watch mechanism</span><span class="kv-val">etcd streams change events to apiserver, which then fans out to all watchers (controllers, kubelet, etc.)</span></div>
+      <div class="kv-row"><span class="kv-key">Raft quorum</span><span class="kv-val">Need <b>(N/2)+1</b> members to accept writes. Typical: 3 or 5 nodes.</span></div>
+      <div class="kv-row"><span class="kv-key">Performance</span><span class="kv-val">etcd is the most common bottleneck. Keep it on fast SSDs, separate from worker nodes.</span></div>
+    </div>
+    <div class="callout purple"><b>Raft in brief:</b> Leader receives writes, replicates to followers, commit only after majority ack. Leader election on failure.</div>
+  </div>
+
+  <!-- kube-scheduler -->
+  <div class="card green">
+    <div class="card-title"><span class="dot"></span>kube-scheduler</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Role</span><span class="kv-val">Watches for <b>unscheduled pods</b> (<code>spec.nodeName == ""</code>), picks a node, writes <code>spec.nodeName</code> back.</span></div>
+      <div class="kv-row"><span class="kv-key">Two phases</span><span class="kv-val"><b>1) Filtering</b> — remove infeasible nodes (resource, taints, nodeSelector, affinity, PV topology). <b>2) Scoring</b> — rank remaining nodes, pick highest.</span></div>
+      <div class="kv-row"><span class="kv-key">Scheduler does NOT</span><span class="kv-val">start containers. It only writes <code>nodeName</code>. kubelet on that node sees the binding and does the rest.</span></div>
+      <div class="kv-row"><span class="kv-key">Extensibility</span><span class="kv-val">Scheduling Framework: plugins per extension point (PreFilter, Filter, Score, Bind, etc.)</span></div>
+      <div class="kv-row"><span class="kv-key">HA</span><span class="kv-val">Multiple replicas — <b>leader election</b> via lease. Only leader schedules.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- kube-controller-manager -->
+  <div class="card amber">
+    <div class="card-title"><span class="dot"></span>kube-controller-manager</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Role</span><span class="kv-val"><b>Single binary</b> hosting all core reconciliation loops. Each controller watches API objects and drives actual → desired state.</span></div>
+      <div class="kv-row"><span class="kv-key">Key controllers</span><span class="kv-val">Node, ReplicaSet, Deployment, StatefulSet, DaemonSet, Job, CronJob, Endpoints/EndpointSlices, ServiceAccount, Namespace, GC, ResourceQuota</span></div>
+      <div class="kv-row"><span class="kv-key">Pattern</span><span class="kv-val">Watch → enqueue → reconcile → API write. Uses <b>shared informer factory</b> (one cache per resource kind, all controllers share it).</span></div>
+      <div class="kv-row"><span class="kv-key">HA</span><span class="kv-val">Leader election is <b>per-binary</b>, not per-controller. One active instance runs all controllers.</span></div>
+    </div>
+    <div class="callout amber"><b>Trick question:</b> Does Deployment controller create Pods? No — it creates/updates ReplicaSets; ReplicaSet controller creates Pods.</div>
+  </div>
+
+  <!-- cloud-controller-manager -->
+  <div class="card red">
+    <div class="card-title"><span class="dot"></span>cloud-controller-manager</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Role</span><span class="kv-val">Runs cloud-specific controllers split out from kube-controller-manager. Allows K8s core to remain cloud-agnostic.</span></div>
+      <div class="kv-row"><span class="kv-key">Contains</span><span class="kv-val"><b>Node</b> (cloud node lifecycle), <b>Route</b> (cloud routing tables), <b>Service</b> (cloud load balancers)</span></div>
+      <div class="kv-row"><span class="kv-key">Not present</span><span class="kv-val">On bare-metal clusters or if you handle cloud resources differently (e.g., Cluster API).</span></div>
+    </div>
+  </div>
+
+  <!-- kubelet -->
+  <div class="card multi">
+    <div class="card-title"><span class="dot"></span>kubelet <span style="color:var(--muted);font-size:9px;">(node agent — not control plane but critical)</span></div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Role</span><span class="kv-val">Runs on every node. Watches for Pods scheduled to its node, drives container lifecycle via <b>CRI</b>.</span></div>
+      <div class="kv-row"><span class="kv-key">CRI</span><span class="kv-val">Talks to container runtime (containerd, CRI-O) via gRPC. Runtime calls OCI-compliant runc/crun.</span></div>
+      <div class="kv-row"><span class="kv-key">Reconciles</span><span class="kv-val">Pod spec → containers running, probes passing, volumes mounted, status reported back to apiserver.</span></div>
+      <div class="kv-row"><span class="kv-key">Does NOT</span><span class="kv-val">Use Docker directly (deprecated). Talks CRI only. <b>kube-proxy</b> handles networking rules — kubelet handles pod lifecycle.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 2: MANIFEST APPLY FLOW ══ -->
+<div class="section-label">What Happens When You kubectl apply a Manifest</div>
+
+<div class="grid grid-2">
+  <div class="card multi" style="grid-column: span 1;">
+    <div class="card-title"><span class="dot"></span>Full Event Chain</div>
+    <div class="flow">
+
+      <div class="flow-step s1">
+        <div class="step-line"><div class="step-num">1</div></div>
+        <div class="step-content">
+          <div class="step-title">kubectl computes the patch</div>
+          <div class="step-body">kubectl reads local YAML, serializes it, computes a <span class="hl">strategic merge patch</span> against the last-applied annotation. Sends HTTP PATCH (or PUT for --overwrite) to <span class="hl">kube-apiserver</span>.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s2">
+        <div class="step-line"><div class="step-num">2</div></div>
+        <div class="step-content">
+          <div class="step-title">Authn + Authz</div>
+          <div class="step-body">apiserver authenticates the request (cert, token, OIDC). Then RBAC/Webhook authorization checks if the principal has <span class="hl">create/update</span> verb on that resource/namespace.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s3">
+        <div class="step-line"><div class="step-num">3</div></div>
+        <div class="step-content">
+          <div class="step-title">Mutating Admission Webhooks</div>
+          <div class="step-body">Sent to all registered <span class="hl">MutatingAdmissionWebhook</span>s in parallel. Can modify the object (inject sidecars, set defaults, add labels). Result merged back into the object.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s4">
+        <div class="step-line"><div class="step-num">4</div></div>
+        <div class="step-content">
+          <div class="step-title">Schema Validation + Defaulting</div>
+          <div class="step-body">Object validated against OpenAPI schema. Built-in admission plugins run (e.g., <span class="hl">LimitRanger</span> injects resource defaults, <span class="hl">PodSecurity</span> checks policy). Object is now fully defaulted.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s5">
+        <div class="step-line"><div class="step-num">5</div></div>
+        <div class="step-content">
+          <div class="step-title">Validating Admission Webhooks</div>
+          <div class="step-body">All <span class="hl">ValidatingAdmissionWebhook</span>s run (in parallel). Can only <b>reject</b>, not modify. Policy engines (OPA/Gatekeeper, Kyverno) hook here. Any rejection aborts the request.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s6">
+        <div class="step-line"><div class="step-num">6</div></div>
+        <div class="step-content">
+          <div class="step-title">etcd Write</div>
+          <div class="step-body">apiserver serializes to protobuf, writes to etcd. etcd replicates via Raft. Once majority commits, apiserver returns <span class="hl">200 OK</span> (update) or <span class="hl">201 Created</span>. Object now has a <b>resourceVersion</b>.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s7">
+        <div class="step-line"><div class="step-num">7</div></div>
+        <div class="step-content">
+          <div class="step-title">Watch event fans out</div>
+          <div class="step-body">apiserver broadcasts a MODIFIED/ADDED watch event to all watchers. Informer caches in <span class="hl">controller-manager</span>, <span class="hl">scheduler</span>, and <span class="hl">kubelet</span> update. Relevant controllers enqueue a reconcile.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s8">
+        <div class="step-line"><div class="step-num">8</div></div>
+        <div class="step-content">
+          <div class="step-title">Controller reconciles</div>
+          <div class="step-body">e.g., Deployment controller sees new Deployment → creates/updates <span class="hl">ReplicaSet</span> → ReplicaSet controller creates <span class="hl">Pod</span> objects with <code>spec.nodeName: ""</code>. Each write re-triggers the watch chain.</div>
+        </div>
+      </div>
+
+      <div class="flow-step s9">
+        <div class="step-line"><div class="step-num">9</div></div>
+        <div class="step-content">
+          <div class="step-title">Scheduler binds Pod → Node</div>
+          <div class="step-body">Scheduler sees unbound Pod, runs Filter + Score, writes <span class="hl">nodeName</span> back via a <b>Binding</b> subresource. kubelet on that node detects the Pod, calls CRI to pull image + start containers. Status flows back via kubelet → apiserver → etcd.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right column: key concepts -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <div class="card blue">
+      <div class="card-title"><span class="dot"></span>Admission Plugin Order</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:10px;">
+          <span class="tag blue">1</span> Authn
+          <span style="color:var(--muted)">→</span>
+          <span class="tag purple">2</span> Authz
+          <span style="color:var(--muted)">→</span>
+          <span class="tag amber">3</span> Mutating
+          <span style="color:var(--muted)">→</span>
+          <span class="tag green">4</span> Schema
+          <span style="color:var(--muted)">→</span>
+          <span class="tag red">5</span> Validating
+        </div>
+      </div>
+      <div class="callout" style="margin-top:10px"><b>Critical:</b> Mutating runs before Validating. A mutating webhook can inject a field; a validating webhook then checks it. Order matters for policy correctness.</div>
+    </div>
+
+    <div class="card green">
+      <div class="card-title"><span class="dot"></span>Informer / Watch Internals</div>
+      <div class="kv">
+        <div class="kv-row"><span class="kv-key kv-key green">ListWatch</span><span class="kv-val">On start, informer does a full <b>List</b> to populate cache, then opens a <b>Watch</b> stream for deltas.</span></div>
+        <div class="kv-row"><span class="kv-key kv-key green">Shared cache</span><span class="kv-val">All controllers for the same resource kind share one informer cache — only one Watch to apiserver per resource type per binary.</span></div>
+        <div class="kv-row"><span class="kv-key kv-key green">Work queue</span><span class="kv-val">Informer enqueues object key (namespace/name) on event. Controller dequeues, re-fetches fresh object from cache, reconciles.</span></div>
+        <div class="kv-row"><span class="kv-key kv-key green">resourceVersion</span><span class="kv-val">Passed to Watch calls for <b>resumption</b> after disconnect without full re-list.</span></div>
+      </div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-title"><span class="dot"></span>Strategic Merge Patch vs Others</div>
+      <div class="kv">
+        <div class="kv-row"><span class="kv-key purple">Strategic Merge</span><span class="kv-val">K8s default for <code>apply</code>. Merges lists by key (e.g., containers by name). Won't blow away existing fields not in your YAML.</span></div>
+        <div class="kv-row"><span class="kv-key purple">JSON Merge Patch</span><span class="kv-val">RFC 7396. Replaces entire list if you provide one. Used by some tooling.</span></div>
+        <div class="kv-row"><span class="kv-key purple">JSON Patch</span><span class="kv-val">RFC 6902. Explicit add/remove/replace operations on specific paths.</span></div>
+        <div class="kv-row"><span class="kv-key purple">Server-Side Apply</span><span class="kv-val">Since 1.18 GA. apiserver owns field management, tracks who set each field. Use <code>--server-side</code>.</span></div>
+      </div>
+    </div>
+
+    <div class="card amber">
+      <div class="card-title"><span class="dot"></span>Leader Election Mechanics</div>
+      <div class="kv">
+        <div class="kv-row"><span class="kv-key amber">Resource</span><span class="kv-val">Uses a <b>Lease</b> object (kube-system namespace). Replicas race to update the holderIdentity field.</span></div>
+        <div class="kv-row"><span class="kv-key amber">Acquire</span><span class="kv-val">CAS (compare-and-swap) on Lease via <b>resourceVersion</b>. Only one writer wins — etcd's linearizability guarantees this.</span></div>
+        <div class="kv-row"><span class="kv-key amber">Renew interval</span><span class="kv-val">Leader renews every <code>renewTime</code>. If lease expires (leaseDuration), others race to acquire it.</span></div>
+        <div class="kv-row"><span class="kv-key amber">kcm vs scheduler</span><span class="kv-val">Each binary has its own separate Lease. Leader election is per-binary, not per-controller.</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 3: NODE COMPONENTS & NETWORKING ══ -->
+<div class="section-label">Node Components + Networking Plane</div>
+
+<div class="grid">
+  <div class="card green">
+    <div class="card-title"><span class="dot"></span>Container Runtime Interface (CRI)</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key green">Stack</span><span class="kv-val">kubelet → <b>CRI gRPC</b> → containerd/CRI-O → <b>OCI</b> → runc/crun → Linux namespaces + cgroups</span></div>
+      <div class="kv-row"><span class="kv-key green">containerd</span><span class="kv-val">Default runtime. Manages image pull, snapshot, container create/start/stop via shim.</span></div>
+      <div class="kv-row"><span class="kv-key green">Pause container</span><span class="kv-val">Each Pod has an <b>infra/pause</b> container that holds the network namespace. App containers join it. Dies last.</span></div>
+      <div class="kv-row"><span class="kv-key green">CNI</span><span class="kv-val">Called by kubelet after container create. Sets up Pod network (assigns IP, veth pair, routes). Examples: Cilium, Calico, Flannel.</span></div>
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><span class="dot"></span>kube-proxy + Service Networking</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key">Modes</span><span class="kv-val"><b>iptables</b> (default): chains per Service/Endpoint. <b>IPVS</b>: kernel load-balancer, better at scale. <b>nftables</b>: newer replacement for iptables.</span></div>
+      <div class="kv-row"><span class="kv-key">ClusterIP</span><span class="kv-val">Virtual IP — only exists in iptables/IPVS rules, not on any interface. kube-proxy programs DNAT rules to real Pod IPs.</span></div>
+      <div class="kv-row"><span class="kv-key">EndpointSlice ctrl</span><span class="kv-val">kube-controller-manager watches Pods + Services, maintains EndpointSlice objects. kube-proxy watches those.</span></div>
+      <div class="kv-row"><span class="kv-key">Cilium eBPF</span><span class="kv-val">Can replace kube-proxy entirely. Programs eBPF maps in kernel for low-latency socket-level load balancing.</span></div>
+    </div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title"><span class="dot"></span>Pod Scheduling Constraints</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key purple">nodeSelector</span><span class="kv-val">Hard match on node labels. Simple equality filter.</span></div>
+      <div class="kv-row"><span class="kv-key purple">Node Affinity</span><span class="kv-val"><b>requiredDuringScheduling</b> = hard; <b>preferredDuringScheduling</b> = soft scored. Supports set operators.</span></div>
+      <div class="kv-row"><span class="kv-key purple">Taints/Tolerations</span><span class="kv-val">Taint on node repels Pods. Toleration on Pod allows scheduling. Effects: NoSchedule, PreferNoSchedule, NoExecute.</span></div>
+      <div class="kv-row"><span class="kv-key purple">Pod Affinity/Anti-Aff</span><span class="kv-val">Schedule relative to other Pods' topology keys. Anti-affinity spreads replicas across zones.</span></div>
+      <div class="kv-row"><span class="kv-key purple">TopologySpreadConstraint</span><span class="kv-val">Max skew across topology domains. Replaces manual anti-affinity for spread.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 4: KEY CONCEPTS & GOTCHAS ══ -->
+<div class="section-label">Common Interview Questions & Gotchas</div>
+
+<div class="grid">
+  <div class="card blue">
+    <div class="card-title"><span class="dot"></span>Reconciliation Loop Pattern</div>
+    <div style="font-size:10px;color:var(--dim);margin-bottom:8px;">All controllers follow this exact pattern:</div>
+    <div class="code">
+<span class="cmt">// Simplified reconcile loop</span>
+<span class="kw">func</span> <span class="val">Reconcile</span>(ctx, req) {
+  obj := <span class="val">cache.Get</span>(req.NamespacedName)  <span class="cmt">// read from local cache</span>
+  desired := <span class="val">computeDesired</span>(obj)          <span class="cmt">// business logic</span>
+  actual  := <span class="val">getCurrentState</span>(ctx)          <span class="cmt">// may hit API</span>
+  <span class="kw">if</span> <span class="val">diff</span>(actual, desired) != nil {
+    <span class="val">applyDiff</span>(ctx, desired)               <span class="cmt">// API write</span>
+  }
+  <span class="kw">return</span> requeue                           <span class="cmt">// or Done</span>
+}
+    </div>
+    <div class="callout" style="margin-top:10px;"><b>Idempotency:</b> reconcile must be safe to run multiple times. Never assume it runs exactly once.</div>
+  </div>
+
+  <div class="card amber">
+    <div class="card-title"><span class="dot"></span>Resource Versions & Optimistic Concurrency</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key amber">resourceVersion</span><span class="kv-val">An opaque etcd revision string on every object. Changes on every write.</span></div>
+      <div class="kv-row"><span class="kv-key amber">Optimistic lock</span><span class="kv-val">If you PUT/PATCH with a resourceVersion, apiserver rejects with <b>409 Conflict</b> if object changed since you read it.</span></div>
+      <div class="kv-row"><span class="kv-key amber">Controller pattern</span><span class="kv-val">Controllers re-read from cache before writing to get fresh resourceVersion, then retry on 409.</span></div>
+    </div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title"><span class="dot"></span>Common Gotchas</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key red">Finalizers</span><span class="kv-val">Object with finalizers won't be deleted — only gets <code>deletionTimestamp</code> set. Controller must remove finalizer to complete deletion.</span></div>
+      <div class="kv-row"><span class="kv-key red">OwnerReferences</span><span class="kv-val">GC uses these to cascade delete. Foreground deletion waits for dependents; Background deletes owner first.</span></div>
+      <div class="kv-row"><span class="kv-key red">Pod eviction</span><span class="kv-val">Node pressure → kubelet evicts pods by QoS class: BestEffort first, Burstable next, Guaranteed last.</span></div>
+      <div class="kv-row"><span class="kv-key red">CrashLoopBackOff</span><span class="kv-val">Kubelet applies exponential backoff (10s → 20s → 40s … max 5m) before restarting a crashed container.</span></div>
+      <div class="kv-row"><span class="kv-key red">ImagePullBackOff</span><span class="kv-val">CRI failed to pull image. Separate from crash — check image name, tag, registry credentials (imagePullSecrets).</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card green">
+    <div class="card-title"><span class="dot"></span>QoS Classes</div>
+    <div class="kv">
+      <div class="kv-row"><span class="kv-key green">Guaranteed</span><span class="kv-val">All containers have <b>requests == limits</b> for CPU and memory. Never OOM-killed first. Lowest eviction priority.</span></div>
+      <div class="kv-row"><span class="kv-key green">Burstable</span><span class="kv-val">At least one container has requests or limits set, but not all equal. Middle tier.</span></div>
+      <div class="kv-row"><span class="kv-key green">BestEffort</span><span class="kv-val">No requests or limits set on any container. First to be evicted under node pressure.</span></div>
+    </div>
+    <div class="callout green"><b>Tip:</b> Set requests = limits for critical Pods to guarantee Guaranteed QoS. But over-provisioning hurts bin packing — balance carefully.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title"><span class="dot"></span>Key kubectl Debugging Commands</div>
+    <div class="code">
+<span class="cmt"># Check events (often most useful first)</span>
+<span class="key">kubectl</span> <span class="val">describe pod</span> &lt;name&gt;
+
+<span class="cmt"># Real-time pod logs with previous crash</span>
+<span class="key">kubectl</span> <span class="val">logs</span> &lt;pod&gt; <span class="kw">--previous -f</span>
+
+<span class="cmt"># Dump all events sorted by time</span>
+<span class="key">kubectl</span> <span class="val">get events</span> --sort-by='.lastTimestamp'
+
+<span class="cmt"># Check what a controller sees</span>
+<span class="key">kubectl</span> <span class="val">get</span> replicaset,pods -l app=&lt;label&gt;
+
+<span class="cmt"># Node conditions + allocatable resources</span>
+<span class="key">kubectl</span> <span class="val">describe node</span> &lt;node&gt; | grep -A5 Conditions
+
+<span class="cmt"># Force delete stuck namespace (remove finalizers)</span>
+<span class="key">kubectl</span> <span class="val">patch ns</span> &lt;ns&gt; -p '{"metadata":{"finalizers":[]}}' --type=merge
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>KUBERNETES CONTROL PLANE · INTERVIEW REFERENCE</span>
+  <span>v1.29+ · kube-controller-manager · etcd Raft · CRI · CNI</span>
+</div>
+
+</body>
+</html>

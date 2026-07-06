@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitOps — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-10.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #060811;
+  --s1:    #09091a;
+  --s2:    #0c0d1f;
+  --bd:    #141630;
+  --b2:    #1e2044;
+
+  --git:   #F05033;   /* git orange-red */
+  --go:    #00DC82;   /* GitOps green */
+  --go2:   #00B86A;
+  --argo:  #F95E62;   /* ArgoCD red */
+  --flux:  #5468FF;   /* FluxCD blue */
+  --werf:  #F28C28;   /* werf orange */
+  --helm:  #0F1689;   /* Helm navy - use lighter */
+  --helml: #4B73FF;
+  --kust:  #326CE5;   /* Kustomize blue */
+  --tf:    #7B42BC;   /* Terraform purple */
+  --pink:  #FF4ECD;   /* accent pink */
+  --teal:  #00D8FF;
+  --yel:   #FFD60A;
+  --red:   #FF453A;
+  --grn:   #32D74B;
+
+  --text:  #ccd8f0;
+  --dim:   #0e1530;
+  --mid:   #354870;
+  --sans:  'DM Sans', sans-serif;
+  --mono:  'DM Mono', monospace;
+  --disp:  'Playfair Display', serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -15%,rgba(0,220,130,.1) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 0%   60%,rgba(84,104,255,.06) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 25% at 100% 75%,rgba(255,78,205,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 20% 20% at 80%  10%,rgba(240,80,51,.06) 0%,transparent 40%);
+}
+
+/* subtle grid */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
+  background:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(0,220,130,.025) 30px),
+             repeating-linear-gradient(90deg,transparent,transparent 29px,rgba(0,220,130,.025) 30px);}
+
+.page{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:32px 24px 80px;}
+
+/* ── HERO ── */
+.hero{position:relative;border:1px solid rgba(0,220,130,.15);border-radius:16px;padding:36px 40px;margin-bottom:24px;overflow:hidden;background:linear-gradient(135deg,rgba(0,220,130,.06) 0%,rgba(84,104,255,.04) 50%,rgba(255,78,205,.04) 100%);}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--git),var(--go),var(--flux),var(--argo),var(--pink));}
+.hero-bg-txt{position:absolute;right:-20px;top:-30px;font-size:180px;font-weight:900;color:rgba(0,220,130,.03);font-family:var(--mono);line-height:1;pointer-events:none;user-select:none;}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;position:relative;}
+.hero-kicker{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--go2);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.hero-kicker::before{content:'';width:24px;height:1px;background:var(--go);}
+.hero h1{font-family:var(--disp);font-size:68px;font-weight:900;line-height:.88;letter-spacing:-2px;}
+.h1a{background:linear-gradient(135deg,var(--go) 0%,var(--teal) 60%,#fff 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h1b{color:rgba(255,255,255,.07);-webkit-text-stroke:1px rgba(0,220,130,.2);}
+.hero-sub{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--mid);margin-top:12px;line-height:1.8;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+.hp{font-family:var(--mono);font-size:8.5px;padding:4px 12px;border-radius:20px;border:1px solid;font-weight:500;}
+.hp-g {background:rgba(0,220,130,.08);border-color:rgba(0,220,130,.3);color:var(--go);}
+.hp-a {background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--argo);}
+.hp-f {background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.35);color:var(--flux);}
+.hp-w {background:rgba(242,140,40,.08);border-color:rgba(242,140,40,.3);color:var(--werf);}
+.hp-t {background:rgba(123,66,188,.09);border-color:rgba(123,66,188,.35);color:#b060ff;}
+.hp-p {background:rgba(255,78,205,.07);border-color:rgba(255,78,205,.3);color:var(--pink);}
+.hero-right{display:flex;flex-direction:column;gap:8px;}
+.hquote{background:rgba(0,220,130,.06);border:1px solid rgba(0,220,130,.15);border-radius:10px;padding:16px 18px;max-width:280px;}
+.hq-text{font-family:var(--disp);font-size:13px;line-height:1.6;color:rgba(255,255,255,.7);font-style:italic;}
+.hq-src{font-family:var(--mono);font-size:8.5px;color:var(--go2);margin-top:8px;letter-spacing:1px;}
+.h4p{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.h4pi{background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:7px;padding:10px;text-align:center;}
+.h4pi-n{font-family:var(--disp);font-size:20px;font-weight:800;color:var(--go);line-height:1;}
+.h4pi-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:3px;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:5px;flex-wrap:wrap;}
+.nb{font-family:var(--mono);font-size:9px;font-weight:600;padding:9px 16px;border-radius:6px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);letter-spacing:.3px;}
+.nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nb.on{background:rgba(0,220,130,.1);color:var(--go);box-shadow:0 0 0 1px rgba(0,220,130,.25);}
+
+/* ── SECTIONS ── */
+.sec{display:none;}.sec.on{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-i{font-size:20px;flex-shrink:0;}
+.sh-l{font-size:22px;font-weight:700;letter-spacing:-.5px;}
+.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.cg::before{background:linear-gradient(90deg,var(--go),transparent);}
+.ca::before{background:linear-gradient(90deg,var(--argo),transparent);}
+.cf::before{background:linear-gradient(90deg,var(--flux),transparent);}
+.cw::before{background:linear-gradient(90deg,var(--werf),transparent);}
+.ct::before{background:linear-gradient(90deg,var(--tf),transparent);}
+.cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
+.cy::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.cr::before{background:linear-gradient(90deg,var(--red),transparent);}
+.ctt::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.ck::before{background:linear-gradient(90deg,var(--kust),transparent);}
+.ch::before{background:linear-gradient(90deg,var(--helml),transparent);}
+
+.ctit{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.2px;}
+
+/* facts */
+.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+
+/* code */
+.code{background:#030510;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:10px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
+.kw{color:#b4a0ff;} .ky{color:var(--go);} .st{color:var(--yel);}
+.nu{color:var(--teal);} .cm{color:#1a2850;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+
+/* trap / note */
+.trap{background:rgba(255,69,58,.04);border:1px solid rgba(255,69,58,.15);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:3px solid rgba(0,220,130,.3);padding:8px 12px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(0,220,130,.03);}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
+.st th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── PRINCIPLES ── */
+.principle{display:grid;grid-template-columns:56px 1fr;gap:14px;padding:14px 0;border-top:1px solid rgba(255,255,255,.028);align-items:start;}
+.p-num{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:22px;font-weight:900;flex-shrink:0;}
+.p-body{}
+.p-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.p-desc{font-size:11px;color:var(--mid);line-height:1.65;}
+.p-desc b{color:var(--text);}
+.p-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── RECONCILIATION LOOP SVG ── */
+
+/* ── TOOL CARDS ── */
+.tool-card{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:.25s;}
+.tool-card:hover{border-color:rgba(255,255,255,.12);}
+.tool-card.open{border-color:rgba(0,220,130,.2);background:rgba(0,220,130,.02);}
+.tc-head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;}
+.tc-logo{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;font-family:var(--mono);flex-shrink:0;}
+.tc-name{font-size:15px;font-weight:700;}
+.tc-tagline{font-family:var(--mono);font-size:9px;color:var(--mid);margin-top:3px;}
+.tc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.tc-tag{font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:12px;border:1px solid;}
+.tc-arrow{color:var(--mid);transition:.2s;font-size:14px;}
+.tool-card.open .tc-arrow{transform:rotate(90deg);color:var(--go);}
+.tc-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);}
+.tool-card.open .tc-body{display:block;}
+.tc-comparison{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.tc-col{background:rgba(0,0,0,.2);border-radius:6px;padding:10px;}
+.tc-col-title{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;}
+
+/* ── BOUNDARY DIAGRAM ── */
+.boundary-wrap{margin-bottom:14px;}
+.bzone{border-radius:10px;padding:18px;margin-bottom:6px;position:relative;}
+.bzone-tf{background:rgba(123,66,188,.07);border:1px solid rgba(123,66,188,.2);}
+.bzone-bridge{background:rgba(255,214,10,.04);border:1px solid rgba(255,214,10,.15);border-style:dashed;}
+.bzone-gitops{background:rgba(0,220,130,.06);border:1px solid rgba(0,220,130,.2);}
+.bz-title{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.bz-items{display:flex;flex-wrap:wrap;gap:6px;}
+.bz-item{padding:5px 12px;border-radius:6px;font-size:11px;display:flex;align-items:center;gap:5px;}
+.bz-tf{background:rgba(123,66,188,.12);border:1px solid rgba(123,66,188,.3);color:#b060ff;}
+.bz-go{background:rgba(0,220,130,.1);border:1px solid rgba(0,220,130,.3);color:var(--go);}
+.bz-both{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.25);color:var(--yel);}
+.bz-arrow{text-align:center;font-size:20px;color:var(--mid);margin:4px 0;line-height:1;}
+
+/* ── PATTERN CARDS ── */
+.pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.pat-card{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:14px;}
+.pat-title{font-size:12.5px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.pat-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.pat-desc b{color:var(--text);}
+.pat-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── TRAPS ── */
+.trap-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.trap-card{background:var(--s1);border:1px solid rgba(255,69,58,.1);border-radius:9px;padding:14px;position:relative;overflow:hidden;}
+.trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,58,.45),transparent);}
+.trap-n{position:absolute;top:8px;right:12px;font-family:var(--disp);font-size:30px;font-weight:900;color:rgba(255,69,58,.06);line-height:1;}
+.trap-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.trap-q{font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.trap-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.trap-a b{color:var(--text);}
+.trap-a code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+
+/* ── VS TABLE ── */
+.vs-pill{padding:3px 8px;border-radius:4px;font-size:9px;font-family:var(--mono);display:inline-block;}
+.vs-push{background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);}
+.vs-pull{background:rgba(0,220,130,.08);color:var(--go);border:1px solid rgba(0,220,130,.2);}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec.on>*{animation:fi .3s ease both;}
+.sec.on>*:nth-child(1){animation-delay:.02s}.sec.on>*:nth-child(2){animation-delay:.05s}
+.sec.on>*:nth-child(3){animation-delay:.08s}.sec.on>*:nth-child(4){animation-delay:.11s}
+.sec.on>*:nth-child(5){animation-delay:.14s}.sec.on>*:nth-child(6){animation-delay:.17s}
+.sec.on>*:nth-child(7){animation-delay:.20s}.sec.on>*:nth-child(8){animation-delay:.23s}
+
+.footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-bg-txt">GitOps</div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-kicker">Field Guide · 2026</div>
+      <h1><span class="h1a">GitOps</span><br><span class="h1b">Complete Guide</span></h1>
+      <div class="hero-sub">
+        Git as the single source of truth · Pull-based reconciliation · Drift detection<br>
+        ArgoCD · FluxCD · Werf · The infra/app boundary · Patterns & traps
+      </div>
+      <div class="hero-pills">
+        <div class="hp hp-g">🔁 Pull-based deployment</div>
+        <div class="hp hp-a">🐙 ArgoCD</div>
+        <div class="hp hp-f">🔀 FluxCD</div>
+        <div class="hp hp-w">⚙️ Werf</div>
+        <div class="hp hp-t">🏗️ Terraform boundary</div>
+        <div class="hp hp-p">🔐 Sealed Secrets · SOPS · ESO</div>
+        <div class="hp hp-g">📦 Helm · Kustomize · Plain YAML</div>
+        <div class="hp hp-f">🚀 Progressive Delivery · Rollouts</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hquote">
+        <div class="hq-text">"GitOps is an operational framework that takes DevOps best practices used for application development such as version control, collaboration, compliance, and CI/CD, and applies them to infrastructure automation."</div>
+        <div class="hq-src">— Weaveworks (coined the term, 2017)</div>
+      </div>
+      <div class="h4p">
+        <div class="h4pi"><div class="h4pi-n">4</div><div class="h4pi-l">CNCF Principles</div></div>
+        <div class="h4pi"><div class="h4pi-n">Pull</div><div class="h4pi-l">not Push</div></div>
+        <div class="h4pi"><div class="h4pi-n">Git</div><div class="h4pi-l">single source of truth</div></div>
+        <div class="h4pi"><div class="h4pi-n">∞</div><div class="h4pi-l">continuous reconciliation</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nb on" onclick="show('why')">💡 Why GitOps</button>
+  <button class="nb" onclick="show('how')">🔄 How It Works</button>
+  <button class="nb" onclick="show('tools')">🧰 Tools</button>
+  <button class="nb" onclick="show('argo')">🐙 ArgoCD Deep Dive</button>
+  <button class="nb" onclick="show('flux')">🔀 FluxCD Deep Dive</button>
+  <button class="nb" onclick="show('boundary')">🏗️ Infra / App Boundary</button>
+  <button class="nb" onclick="show('patterns')">🗺️ Patterns</button>
+  <button class="nb" onclick="show('traps')">⚡ Traps</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--              WHY GITOPS               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec on" id="sec-why">
+
+<div class="sh"><div class="sh-i">💡</div><div class="sh-l" style="color:var(--go);">Why GitOps</div><div class="sh-s">// the problem it solves · benefits · vs traditional CI/CD</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,220,130,.3),transparent);"></div></div>
+
+<div class="g32">
+<div>
+  <!-- 4 Principles -->
+  <div class="card cg" style="margin-bottom:12px;">
+    <div class="ctit" style="color:var(--go);">📜 The 4 OpenGitOps Principles (CNCF)</div>
+    <div class="principle">
+      <div class="p-num" style="background:rgba(0,220,130,.12);color:var(--go);">1</div>
+      <div class="p-body">
+        <div class="p-title" style="color:var(--go);">Declarative</div>
+        <div class="p-desc">The entire system (infrastructure and apps) must be described declaratively. <b>Not "run these commands" — describe "what should exist."</b> YAML manifests, Helm charts, Kustomize overlays = the desired state expressed as data, not scripts.</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="p-num" style="background:rgba(0,216,255,.1);color:var(--teal);">2</div>
+      <div class="p-body">
+        <div class="p-title" style="color:var(--teal);">Versioned & Immutable</div>
+        <div class="p-desc"><b>Git is the single source of truth.</b> Every desired state is stored in Git with full history. You know exactly what was deployed when, who changed it, and why (commit message). State cannot be changed without a Git commit.</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="p-num" style="background:rgba(255,78,205,.1);color:var(--pink);">3</div>
+      <div class="p-body">
+        <div class="p-title" style="color:var(--pink);">Pulled Automatically</div>
+        <div class="p-desc">Software agents in the cluster <b>pull</b> the desired state from Git and apply it. The cluster reaches out to Git — Git doesn't push to the cluster. This is the fundamental architectural difference from traditional CI/CD pipelines.</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="p-num" style="background:rgba(255,214,10,.1);color:var(--yel);">4</div>
+      <div class="p-body">
+        <div class="p-title" style="color:var(--yel);">Continuously Reconciled</div>
+        <div class="p-desc">Agents <b>continuously compare desired state (Git) with actual state (cluster)</b> and correct drift. If someone manually deletes a resource, the agent recreates it. <code>Self-healing</code> by design — the cluster always converges toward what Git says.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--go);">✅ Why GitOps Wins</div>
+    <div class="fr"><span class="fk">Auditability</span><span class="fv"><b>Every deployment is a Git commit.</b> Full audit trail: who, what, when, why. No more "I wonder who changed that Pod resource" — it's in the Git log. Essential for compliance (SOC2, PCI, HIPAA).</span></div>
+    <div class="fr"><span class="fk">Rollback = git revert</span><span class="fv">Rollback a deployment? <code>git revert HEAD</code> and the reconciler applies the old state. No special rollback tooling, no runbooks. The history IS the rollback mechanism.</span></div>
+    <div class="fr"><span class="fk">Cluster credential-free CI</span><span class="fv"><b>CI never holds cluster credentials.</b> CI pipeline writes to Git (image tag bump). The in-cluster agent picks it up. Compromised CI ≠ compromised cluster. Massive security improvement.</span></div>
+    <div class="fr"><span class="fk">Drift detection</span><span class="fv">Manual kubectl changes are detected and reverted automatically. Prevents "snowflake clusters." Every cluster converges to the same state from the same Git repo.</span></div>
+    <div class="fr"><span class="fk">Disaster recovery</span><span class="fv">Cluster destroyed? Point new cluster at the same Git repo. The agent recreates everything automatically. DR becomes: provision cluster → bootstrap GitOps agent → wait for convergence.</span></div>
+    <div class="fr"><span class="fk">Multi-cluster</span><span class="fv">One Git repo can drive N clusters. Each cluster runs its own agent pointing at the same (or different) Git path. Environments become Git paths, not manual config.</span></div>
+  </div>
+
+  <div class="card cr">
+    <div class="ctit" style="color:var(--red);">⚠️ When GitOps Is NOT the Right Choice</div>
+    <div class="fr"><span class="fk">Tiny teams</span><span class="fv">Team of 2 with one cluster? GitOps overhead (Git repo structure, agent setup, PR workflow) may outweigh benefits. Helm + CI/CD push may be simpler.</span></div>
+    <div class="fr"><span class="fk">Stateful app config</span><span class="fv">Database schema migrations, runtime config that must be updated without restarts — GitOps forces a reconcile cycle. Sometimes direct mutation is needed.</span></div>
+    <div class="fr"><span class="fk">Very fast iteration</span><span class="fv">Dev environments where you're changing things 50 times a day — the PR/commit overhead slows iteration. Use GitOps for staging/prod, not dev.</span></div>
+    <div class="fr"><span class="fk">Non-K8s targets</span><span class="fv">ArgoCD and FluxCD are Kubernetes-native. Non-K8s targets (VMs, on-prem servers) need Ansible/Puppet/Salt — different tools. GitOps principles apply but the tooling differs.</span></div>
+  </div>
+</div>
+</div>
+
+<!-- Push vs Pull -->
+<div class="card cy" style="margin-bottom:12px;">
+  <div class="ctit" style="color:var(--yel);">⚖️ Push-based CI/CD vs Pull-based GitOps</div>
+  <div style="overflow-x:auto;">
+  <table class="st">
+    <tr>
+      <th></th>
+      <th><span class="vs-push">PUSH-based CI/CD</span></th>
+      <th><span class="vs-pull">PULL-based GitOps</span></th>
+    </tr>
+    <tr><td>Deployment trigger</td><td>CI pipeline pushes to cluster</td><td class="good">Agent in cluster pulls from Git</td></tr>
+    <tr><td>Cluster credentials</td><td class="bad">CI holds kubeconfig/token (high risk)</td><td class="good">CI never touches cluster (zero creds)</td></tr>
+    <tr><td>Drift correction</td><td class="bad">No — manual kubectl changes persist</td><td class="good">Yes — agent reverts unauthorized changes</td></tr>
+    <tr><td>Audit trail</td><td class="warn">CI logs (may be incomplete)</td><td class="good">Git history — complete, immutable</td></tr>
+    <tr><td>Rollback</td><td class="warn">Re-run old pipeline or manually</td><td class="good">git revert → auto-applied</td></tr>
+    <tr><td>Disaster recovery</td><td class="bad">Re-run pipelines + manual steps</td><td class="good">New cluster + GitOps agent = done</td></tr>
+    <tr><td>Network requirements</td><td class="warn">CI needs cluster network access</td><td class="good">Cluster needs Git network access (outbound)</td></tr>
+    <tr><td>Multi-cluster management</td><td class="warn">Duplicate pipeline per cluster</td><td class="good">One Git repo → many cluster agents</td></tr>
+    <tr><td>Visibility</td><td class="warn">Pipeline status in CI tool</td><td class="good">ArgoCD/Flux UI shows live sync status</td></tr>
+    <tr><td>Environment promotion</td><td class="warn">Pipeline stages (brittle)</td><td class="good">Git branches/paths + PR approval</td></tr>
+    <tr><td>Secrets in CI</td><td class="bad">CI holds all deployment secrets</td><td class="good">Sealed Secrets / SOPS encrypt in Git</td></tr>
+    <tr><td>Bootstrap complexity</td><td class="good">Simpler to get started</td><td class="warn">Initial setup requires more thought</td></tr>
+  </table>
+  </div>
+</div>
+
+</div><!-- /why -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--            HOW IT WORKS               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-how">
+
+<div class="sh"><div class="sh-i">🔄</div><div class="sh-l" style="color:var(--teal);">How GitOps Works</div><div class="sh-s">// reconciliation loop · sync · drift detection · the agent</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,216,255,.3),transparent);"></div></div>
+
+<div class="card ctt" style="margin-bottom:12px;padding:20px;">
+  <div class="ctit" style="color:var(--teal);">🔁 The Reconciliation Loop</div>
+  <svg viewBox="0 0 1380 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+    <defs>
+      <marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(0,220,130,.8)"/></marker>
+      <marker id="a2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(255,214,10,.8)"/></marker>
+      <marker id="a3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(249,94,98,.8)"/></marker>
+      <marker id="a4" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,1 L6,3.5 L0,6 Z" fill="rgba(84,104,255,.7)"/></marker>
+      <filter id="gw"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <!-- ── GIT REPO ── -->
+    <g transform="translate(30,90)">
+      <rect width="160" height="130" rx="10" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5" filter="url(#gw)"/>
+      <text x="80" y="30" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#F05033" font-weight="700">Git Repository</text>
+      <text x="80" y="50" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(240,80,51,.55)">single source of truth</text>
+      <rect x="15" y="62" width="130" height="22" rx="4" fill="rgba(240,80,51,.1)" stroke="rgba(240,80,51,.2)" stroke-width="1"/>
+      <text x="80" y="77" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,.8)">app/deployment.yaml</text>
+      <rect x="15" y="90" width="130" height="22" rx="4" fill="rgba(240,80,51,.08)" stroke="rgba(240,80,51,.15)" stroke-width="1"/>
+      <text x="80" y="105" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,.6)">infra/service.yaml</text>
+      <rect x="15" y="118" width="130" height="18" rx="4" fill="rgba(240,80,51,.06)" stroke="rgba(240,80,51,.1)" stroke-width="1"/>
+      <text x="80" y="131" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,.45)">helm/values.yaml</text>
+    </g>
+
+    <!-- Arrow: Git → Operator (PULL) -->
+    <path d="M 350 155 L 440 155" fill="none" stroke="rgba(0,220,130,.7)" stroke-width="2" marker-end="url(#a1)"/>
+    <text x="395" y="145" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,.6)">PULL (watch/poll)</text>
+    <text x="395" y="170" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,.35)">every 30-180s</text>
+
+    <!-- ── OPERATOR / AGENT ── -->
+    <g transform="translate(440,60)">
+      <rect width="200" height="190" rx="10" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.3)" stroke-width="2" filter="url(#gw)"/>
+      <text x="100" y="28" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#00DC82" font-weight="700">GitOps Agent</text>
+      <text x="100" y="45" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(0,220,130,.45)">ArgoCD / FluxCD</text>
+
+      <!-- Fetch desired state -->
+      <rect x="15" y="58" width="170" height="30" rx="5" fill="rgba(0,216,255,.08)" stroke="rgba(0,216,255,.2)" stroke-width="1"/>
+      <text x="100" y="77" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#00D8FF">1. Fetch desired state</text>
+
+      <!-- Get actual state -->
+      <rect x="15" y="96" width="170" height="30" rx="5" fill="rgba(84,104,255,.08)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
+      <text x="100" y="115" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#5468FF">2. Get actual state</text>
+
+      <!-- Compare / diff -->
+      <rect x="15" y="134" width="170" height="30" rx="5" fill="rgba(255,214,10,.07)" stroke="rgba(255,214,10,.2)" stroke-width="1"/>
+      <text x="100" y="153" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#FFD60A">3. Diff (desired vs actual)</text>
+
+      <!-- Apply -->
+      <rect x="15" y="172" width="170" height="12" rx="4" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.15)" stroke-width="1"/>
+      <text x="100" y="182" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,.5)">4. Apply delta if drift found</text>
+    </g>
+
+    <!-- Arrow: Agent → K8s (apply) -->
+    <path d="M 640 155 L 730 155" fill="none" stroke="rgba(0,220,130,.7)" stroke-width="2" marker-end="url(#a1)"/>
+    <text x="685" y="145" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,.6)">kubectl apply</text>
+    <text x="685" y="170" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,.35)">server-side apply</text>
+
+    <!-- ── KUBERNETES CLUSTER ── -->
+    <g transform="translate(730,50)">
+      <rect width="250" height="210" rx="10" fill="rgba(50,108,229,.05)" stroke="rgba(50,108,229,.25)" stroke-width="1.5"/>
+      <text x="125" y="28" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#5090f8" font-weight="700">Kubernetes Cluster</text>
+      <text x="125" y="45" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(50,108,229,.5)">actual running state</text>
+      <rect x="15" y="58" width="220" height="35" rx="5" fill="rgba(50,108,229,.08)" stroke="rgba(50,108,229,.2)" stroke-width="1"/>
+      <text x="125" y="79" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#7090ff">Deployment · Service · Ingress</text>
+      <rect x="15" y="100" width="220" height="30" rx="5" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.18)" stroke-width="1"/>
+      <text x="125" y="119" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#00DC82">Pod (running container)</text>
+      <rect x="15" y="137" width="220" height="30" rx="5" fill="rgba(84,104,255,.06)" stroke="rgba(84,104,255,.18)" stroke-width="1"/>
+      <text x="125" y="156" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#5468FF">ConfigMap · Secret · PVC</text>
+      <rect x="15" y="174" width="220" height="25" rx="5" fill="rgba(255,78,205,.04)" stroke="rgba(255,78,205,.15)" stroke-width="1"/>
+      <text x="125" y="190" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(255,78,205,.6)">RBAC · NetworkPolicy</text>
+    </g>
+
+    <!-- Arrow: K8s → Agent (status report back) -->
+    <path d="M 730 200 L 640 200" fill="none" stroke="rgba(84,104,255,.5)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a4)"/>
+    <text x="685" y="218" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(84,104,255,.4)">status / events</text>
+
+    <!-- ── CI PIPELINE ── -->
+    <g transform="translate(30,260)">
+      <rect width="160" height="48" rx="7" fill="rgba(84,104,255,.06)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" font-family="DM Mono" font-size="10" fill="#5468FF" font-weight="700">CI Pipeline</div>
+      <text x="80" y="36" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(84,104,255,.5)">build · test · push image</text>
+      <text x="80" y="48" text-anchor="middle" font-family="DM Mono" font-size="7.5" fill="rgba(84,104,255,.35)">GitHub Actions / Jenkins / etc</text>
+    </g>
+
+    <!-- Arrow: CI → Git (image tag update) -->
+    <path d="M 190 284 L 110 230" fill="none" stroke="rgba(84,104,255,.45)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a4)"/>
+    <text x="135" y="273" font-family="DM Mono" font-size="8" fill="rgba(84,104,255,.45)">bump image tag</text>
+    <text x="135" y="285" font-family="DM Mono" font-size="7.5" fill="rgba(84,104,255,.3)">commit to Git</text>
+
+    <!-- ── DRIFT SCENARIO ── -->
+    <g transform="translate(1050,60)">
+      <rect width="290" height="240" rx="10" fill="rgba(255,69,58,.04)" stroke="rgba(255,69,58,.2)" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <text x="145" y="28" text-anchor="middle" font-family="DM Mono" font-size="10" fill="rgba(255,69,58,.6)" letter-spacing="2">DRIFT SCENARIO</text>
+
+      <rect x="15" y="40" width="260" height="35" rx="5" fill="rgba(255,69,58,.06)" stroke="rgba(255,69,58,.15)" stroke-width="1"/>
+      <text x="145" y="61" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,69,58,.7)">Someone runs: <tspan font-family="DM Mono">kubectl delete svc api</tspan></text>
+
+      <text x="145" y="100" text-anchor="middle" font-size="20" fill="rgba(255,214,10,.6)">↓</text>
+
+      <rect x="15" y="110" width="260" height="35" rx="5" fill="rgba(255,214,10,.06)" stroke="rgba(255,214,10,.15)" stroke-width="1"/>
+      <text x="145" y="131" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,214,10,.7)">Agent detects drift on next cycle</text>
+
+      <text x="145" y="170" text-anchor="middle" font-size="20" fill="rgba(0,220,130,.5)">↓</text>
+
+      <rect x="15" y="180" width="260" height="40" rx="5" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.2)" stroke-width="1"/>
+      <text x="145" y="198" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,.8)">Reconciles: recreates svc api</text>
+      <text x="145" y="213" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(0,220,130,.5)">Cluster self-heals automatically</text>
+    </g>
+  </svg>
+</div>
+
+<div class="g3">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--go);">🔁 Reconciliation Details</div>
+    <div class="fr"><span class="fk">Poll interval</span><span class="fv">ArgoCD: configurable, default 3 min. FluxCD: <code>GitRepository</code> interval (e.g., <code>interval: 1m</code>). Webhook-based push for immediate trigger.</span></div>
+    <div class="fr"><span class="fk">Webhook trigger</span><span class="fv">Best practice: configure Git webhook → triggers immediate reconciliation on commit. Eliminates the polling delay. ArgoCD and FluxCD both support it.</span></div>
+    <div class="fr"><span class="fk">Sync status</span><span class="fv"><code>Synced</code> = Git and cluster match. <code>OutOfSync</code> = drift detected. <code>Unknown</code> = agent can't determine state (connectivity issue).</span></div>
+    <div class="fr"><span class="fk">Health status</span><span class="fv"><code>Healthy</code> = resources ready. <code>Progressing</code> = Deployment rolling. <code>Degraded</code> = pods failing. <code>Missing</code> = expected resource absent from cluster.</span></div>
+    <div class="fr"><span class="fk">Server-side apply</span><span class="fv">Modern GitOps tools use SSA (not client-side apply). Proper field management — each manager owns its fields. Prevents "last-apply-configuration" annotation pollution.</span></div>
+    <div class="fr"><span class="fk">Diff algorithm</span><span class="fv">Computes diff between Git manifest and live cluster state. Ignores runtime-only fields (status, managedFields, resourceVersion). Shows only meaningful changes.</span></div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--go);">🔐 Secrets in GitOps</div>
+    <div class="fr"><span class="fk">The problem</span><span class="fv">GitOps wants everything in Git. But you can't commit plaintext secrets to Git. These approaches solve it:</span></div>
+    <div class="fr"><span class="fk">Sealed Secrets</span><span class="fv">Encrypt secrets using cluster public key → commit ciphertext to Git → controller in cluster decrypts. Simple. Works with any GitOps tool. Key rotation is painful.</span></div>
+    <div class="fr"><span class="fk">SOPS</span><span class="fv">Mozilla SOPS encrypts individual YAML values (not the whole file) using KMS/PGP/age. Human-readable keys, encrypted values. FluxCD has native SOPS support. ArgoCD needs argocd-vault-plugin.</span></div>
+    <div class="fr"><span class="fk">External Secrets</span><span class="fv">Don't store secrets in Git at all. <code>ExternalSecret</code> CRD references AWS Secrets Manager / Vault / GCP Secret Manager. Agent syncs at runtime. Git has only references, not values.</span></div>
+    <div class="fr"><span class="fk">Vault + Agent</span><span class="fv">HashiCorp Vault Agent sidecar or Vault Secrets Operator injects secrets at runtime. Secrets never touch Git. Most complex but most secure and feature-rich.</span></div>
+    <div class="trap"><b>Never commit plaintext secrets to Git.</b> Even in private repos — access spreads, repos get forked, CI runners log output. Use one of the above patterns. ESO (External Secrets Operator) is the most cloud-native recommendation today.</div>
+  </div>
+
+  <div class="card ctt">
+    <div class="ctit" style="color:var(--teal);">🚀 Progressive Delivery</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">GitOps + controlled rollout strategies: canary, blue-green, A/B. Route a % of traffic to new version, validate, increase gradually.</span></div>
+    <div class="fr"><span class="fk">Argo Rollouts</span><span class="fv">CRD-based progressive delivery for K8s. Replaces Deployment for rollout-managed workloads. Supports canary + blue-green. Integrates with ArgoCD natively.</span></div>
+    <div class="fr"><span class="fk">Flagger</span><span class="fv">FluxCD's progressive delivery companion. Works with any service mesh (Istio, Linkerd) or SMI. Automated canary analysis via metrics (Prometheus, Datadog). Auto-rollback on metric breach.</span></div>
+    <div class="fr"><span class="fk">Canary flow</span><span class="fv">Deploy new version to 5% traffic → validate (error rate, latency) for N minutes → increment to 20% → 50% → 100%. Each step is a Git commit to the weight value.</span></div>
+    <div class="code"><span class="kw">kind</span>: Rollout
+<span class="ky">spec</span>:
+  <span class="ky">strategy</span>:
+    <span class="ky">canary</span>:
+      <span class="ky">steps</span>:
+      - <span class="ky">setWeight</span>: <span class="nu">10</span>
+      - <span class="ky">pause</span>: { <span class="ky">duration</span>: <span class="st">10m</span> }
+      - <span class="ky">setWeight</span>: <span class="nu">50</span>
+      - <span class="ky">pause</span>: { <span class="ky">duration</span>: <span class="st">10m</span> }
+      - <span class="ky">setWeight</span>: <span class="nu">100</span></div>
+  </div>
+</div>
+
+</div><!-- /how -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--               TOOLS                   -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-tools">
+
+<div class="sh"><div class="sh-i">🧰</div><div class="sh-l" style="color:var(--argo);">GitOps Tools Landscape</div><div class="sh-s">// ArgoCD · FluxCD · Werf · Fleet · Jenkins X · click to expand</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(249,94,98,.3),transparent);"></div></div>
+
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+
+  <!-- ArgoCD -->
+  <div class="tool-card" onclick="toggleTool(this)">
+    <div class="tc-head">
+      <div class="tc-logo" style="background:rgba(249,94,98,.12);color:var(--argo);font-size:26px;">🐙</div>
+      <div>
+        <div class="tc-name" style="color:var(--argo);">ArgoCD</div>
+        <div class="tc-tagline">CNCF Graduated · Most popular · UI-first · Application CRD model</div>
+        <div class="tc-tags">
+          <div class="tc-tag" style="background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--argo);">CNCF Graduated</div>
+          <div class="tc-tag" style="background:rgba(0,220,130,.07);border-color:rgba(0,220,130,.25);color:var(--go);">UI dashboard</div>
+          <div class="tc-tag" style="background:rgba(84,104,255,.08);border-color:rgba(84,104,255,.3);color:var(--flux);">Multi-cluster</div>
+          <div class="tc-tag" style="background:rgba(255,214,10,.07);border-color:rgba(255,214,10,.25);color:var(--yel);">SSO/RBAC</div>
+        </div>
+      </div>
+      <div class="tc-arrow">▶</div>
+    </div>
+    <div class="tc-body">
+      <div class="g2">
+        <div>
+          <div class="fr" style="border-top:none;"><span class="fk">Core model</span><span class="fv"><b>Application CRD</b> — one Application = one source (Git path) + one destination (cluster + namespace). ApplicationSet generates many Applications from templates (one per cluster, one per environment).</span></div>
+          <div class="fr"><span class="fk">Sync policies</span><span class="fv"><code>automated</code> = auto-sync on Git change. <code>selfHeal</code> = revert manual changes. <code>prune</code> = delete resources removed from Git. All opt-in — you control aggression level.</span></div>
+          <div class="fr"><span class="fk">App-of-apps</span><span class="fv">Root Application points to a Git directory of Application manifests. Those Applications manage other repos. Hierarchical management of the entire cluster via a single root sync.</span></div>
+          <div class="fr"><span class="fk">Multi-cluster</span><span class="fv">One ArgoCD instance manages multiple clusters. Each cluster registered with its kubeconfig. Central control plane model — ArgoCD pushes to remote clusters.</span></div>
+          <div class="fr"><span class="fk">RBAC</span><span class="fv">Policy-based RBAC via Casbin. SSO (Dex) integration. OIDC/SAML/GitHub/GitLab/LDAP. Fine-grained: team A can sync app X but not delete it.</span></div>
+          <div class="fr"><span class="fk">Resource hooks</span><span class="fv"><code>PreSync</code>, <code>Sync</code>, <code>PostSync</code>, <code>SyncFail</code>, <code>PostDelete</code> hooks. Run Jobs/Workflows at specific sync lifecycle phases (DB migrations, smoke tests).</span></div>
+          <div class="trap"><b>ArgoCD manages cluster resources — if ArgoCD itself is in the cluster and it syncs a broken config, it can break itself.</b> Bootstrap ArgoCD out-of-band (Helm install via CI), then hand control over to ArgoCD to manage its own config ("App-of-apps for ArgoCD").</div>
+        </div>
+        <div>
+          <div class="code" style="font-size:9.5px;"><span class="cm"># ArgoCD Application CRD</span>
+<span class="kw">apiVersion</span>: argoproj.io/v1alpha1
+<span class="kw">kind</span>: Application
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">myapp-prod</span>
+  <span class="ky">namespace</span>: <span class="st">argocd</span>
+<span class="ky">spec</span>:
+  <span class="ky">project</span>: <span class="st">default</span>
+  <span class="ky">source</span>:
+    <span class="ky">repoURL</span>: <span class="st">https://github.com/org/k8s-configs</span>
+    <span class="ky">targetRevision</span>: <span class="st">HEAD</span>
+    <span class="ky">path</span>: <span class="st">apps/myapp/prod</span>
+  <span class="ky">destination</span>:
+    <span class="ky">server</span>: <span class="st">https://kubernetes.default.svc</span>
+    <span class="ky">namespace</span>: <span class="st">myapp</span>
+  <span class="ky">syncPolicy</span>:
+    <span class="ky">automated</span>:
+      <span class="ky">prune</span>: <span class="kw">true</span>
+      <span class="ky">selfHeal</span>: <span class="kw">true</span>
+    <span class="ky">syncOptions</span>:
+    - <span class="st">CreateNamespace=true</span>
+    - <span class="st">ServerSideApply=true</span>
+    <span class="ky">retry</span>:
+      <span class="ky">limit</span>: <span class="nu">5</span>
+      <span class="ky">backoff</span>:
+        <span class="ky">duration</span>: <span class="st">5s</span>
+        <span class="ky">maxDuration</span>: <span class="st">3m</span></div>
+          <div class="code" style="font-size:9.5px;margin-top:8px;"><span class="cm"># ApplicationSet: one app per cluster</span>
+<span class="kw">kind</span>: ApplicationSet
+<span class="ky">spec</span>:
+  <span class="ky">generators</span>:
+  - <span class="ky">clusters</span>: {}  <span class="cm"># iterate all registered clusters</span>
+  <span class="ky">template</span>:
+    <span class="ky">spec</span>:
+      <span class="ky">source</span>:
+        <span class="ky">path</span>: <span class="st">clusters/{{name}}</span>  <span class="cm"># cluster name in path</span>
+      <span class="ky">destination</span>:
+        <span class="ky">server</span>: <span class="st">{{server}}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FluxCD -->
+  <div class="tool-card" onclick="toggleTool(this)">
+    <div class="tc-head">
+      <div class="tc-logo" style="background:rgba(84,104,255,.12);color:var(--flux);font-size:22px;">🔀</div>
+      <div>
+        <div class="tc-name" style="color:var(--flux);">FluxCD v2</div>
+        <div class="tc-tagline">CNCF Graduated · GitOps Toolkit · Controller-per-concern · CLI-first · SOPS native</div>
+        <div class="tc-tags">
+          <div class="tc-tag" style="background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.3);color:var(--flux);">CNCF Graduated</div>
+          <div class="tc-tag" style="background:rgba(0,220,130,.07);border-color:rgba(0,220,130,.25);color:var(--go);">SOPS native</div>
+          <div class="tc-tag" style="background:rgba(255,214,10,.07);border-color:rgba(255,214,10,.25);color:var(--yel);">Image automation</div>
+          <div class="tc-tag" style="background:rgba(255,78,205,.07);border-color:rgba(255,78,205,.25);color:var(--pink);">GitOps Toolkit</div>
+        </div>
+      </div>
+      <div class="tc-arrow">▶</div>
+    </div>
+    <div class="tc-body">
+      <div class="g2">
+        <div>
+          <div class="fr" style="border-top:none;"><span class="fk">Architecture</span><span class="fv"><b>Modular controllers (GitOps Toolkit):</b> source-controller (fetches Git/OCI/Helm repos), kustomize-controller (applies Kustomizations), helm-controller (reconciles HelmReleases), notification-controller (alerts/webhooks), image-reflector + image-automation (auto image tag updates).</span></div>
+          <div class="fr"><span class="fk">Kustomization CRD</span><span class="fv">Not the same as Kustomize (the tool). Flux <code>Kustomization</code> = a sync unit pointing to a GitRepository + path. It uses Kustomize under the hood but also supports plain YAML.</span></div>
+          <div class="fr"><span class="fk">HelmRelease</span><span class="fv">Flux manages Helm releases declaratively. Specify chart source (HelmRepository CRD), version, and values. Flux reconciles — if someone deletes the release manually, Flux reinstalls it.</span></div>
+          <div class="fr"><span class="fk">Image automation</span><span class="fv">ImageRepository + ImagePolicy + ImageUpdateAutomation: Flux watches a container registry, detects new tags matching a semver policy, and automatically commits updated image tags to Git.</span></div>
+          <div class="fr"><span class="fk">Bootstrap</span><span class="fv"><code>flux bootstrap github</code> — creates the Flux manifests, pushes to your Git repo, installs Flux into the cluster. The cluster then manages itself from that Git repo. One command to get started.</span></div>
+          <div class="fr"><span class="fk">Multi-tenancy</span><span class="fv">Kustomization CRD has <code>serviceAccountName</code> — each tenant's sync runs with a specific SA (with limited RBAC). Platform team owns Flux; app teams own their Kustomizations within their namespace permissions.</span></div>
+        </div>
+        <div>
+          <div class="code" style="font-size:9.5px;"><span class="cm"># FluxCD: GitRepository source</span>
+<span class="kw">apiVersion</span>: source.toolkit.fluxcd.io/v1
+<span class="kw">kind</span>: GitRepository
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">my-configs</span>
+  <span class="ky">namespace</span>: <span class="st">flux-system</span>
+<span class="ky">spec</span>:
+  <span class="ky">interval</span>: <span class="st">1m</span>
+  <span class="ky">url</span>: <span class="st">https://github.com/org/k8s-configs</span>
+  <span class="ky">ref</span>:
+    <span class="ky">branch</span>: <span class="st">main</span>
+  <span class="ky">secretRef</span>:
+    <span class="ky">name</span>: <span class="st">github-credentials</span>
+---
+<span class="cm"># Kustomization (sync unit)</span>
+<span class="kw">apiVersion</span>: kustomize.toolkit.fluxcd.io/v1
+<span class="kw">kind</span>: Kustomization
+<span class="ky">metadata</span>:
+  <span class="ky">name</span>: <span class="st">apps</span>
+<span class="ky">spec</span>:
+  <span class="ky">interval</span>: <span class="st">10m</span>
+  <span class="ky">sourceRef</span>:
+    <span class="ky">kind</span>: <span class="st">GitRepository</span>
+    <span class="ky">name</span>: <span class="st">my-configs</span>
+  <span class="ky">path</span>: <span class="st">./clusters/prod</span>
+  <span class="ky">prune</span>: <span class="kw">true</span>
+  <span class="ky">decryption</span>:          <span class="cm"># SOPS native!</span>
+    <span class="ky">provider</span>: <span class="st">sops</span>
+    <span class="ky">secretRef</span>:
+      <span class="ky">name</span>: <span class="st">sops-age</span>
+  <span class="ky">healthChecks</span>:
+  - <span class="ky">apiVersion</span>: <span class="st">apps/v1</span>
+    <span class="ky">kind</span>: <span class="st">Deployment</span>
+    <span class="ky">name</span>: <span class="st">myapp</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Werf -->
+  <div class="tool-card" onclick="toggleTool(this)">
+    <div class="tc-head">
+      <div class="tc-logo" style="background:rgba(242,140,40,.1);color:var(--werf);font-size:22px;">⚙️</div>
+      <div>
+        <div class="tc-name" style="color:var(--werf);">Werf</div>
+        <div class="tc-tagline">CNCF Sandbox · Full CI/CD + GitOps in one tool · Build + Deploy + Cleanup · Deterministic builds</div>
+        <div class="tc-tags">
+          <div class="tc-tag" style="background:rgba(242,140,40,.09);border-color:rgba(242,140,40,.3);color:var(--werf);">CNCF Sandbox</div>
+          <div class="tc-tag" style="background:rgba(0,220,130,.07);border-color:rgba(0,220,130,.25);color:var(--go);">Build + Deploy</div>
+          <div class="tc-tag" style="background:rgba(84,104,255,.08);border-color:rgba(84,104,255,.3);color:var(--flux);">Helm-based</div>
+          <div class="tc-tag" style="background:rgba(255,214,10,.07);border-color:rgba(255,214,10,.25);color:var(--yel);">Image cleanup</div>
+        </div>
+      </div>
+      <div class="tc-arrow">▶</div>
+    </div>
+    <div class="tc-body">
+      <div class="g2">
+        <div>
+          <div class="fr" style="border-top:none;"><span class="fk">What's unique</span><span class="fv"><b>Werf combines image build + deploy + GitOps in a single tool.</b> Not just a deploy agent — it builds images, pushes to registry, and manages the full delivery pipeline with Git as the state. Suited for teams that want one tool to own everything.</span></div>
+          <div class="fr"><span class="fk">Giterminism</span><span class="fv"><b>Werf's core concept:</b> the result of a build or deploy must be deterministically reproducible from a Git commit alone. No "it worked on my machine" — same commit always produces same result.</span></div>
+          <div class="fr"><span class="fk">werf.yaml</span><span class="fv">Defines images (Dockerfile or Stapel builder), build context, and build stages. Werf tracks content hashes — if nothing changed in an image's files, no rebuild (efficient).</span></div>
+          <div class="fr"><span class="fk">Deployment</span><span class="fv">Uses Helm charts under the hood. <code>werf converge</code> builds, pushes, and deploys in one command. Uses Nelm (Werf's reimplemented Helm) for proper 3-way merge and resource tracking.</span></div>
+          <div class="fr"><span class="fk">Cleanup</span><span class="fv">Automatic image cleanup: scans Git history + cluster state → determines which images are no longer referenced → removes from registry. Prevents registry bloat.</span></div>
+          <div class="fr"><span class="fk">vs ArgoCD/Flux</span><span class="fv">Werf is more CI-oriented — runs in CI pipeline. ArgoCD/Flux are cluster agents — run inside Kubernetes. Werf fits "run from CI" mental model; Argo/Flux fit "cluster pulls from Git" model.</span></div>
+        </div>
+        <div>
+          <div class="code" style="font-size:9.5px;"><span class="cm"># werf.yaml (define images)</span>
+configVersion: 1
+project: myapp
+
+image: backend
+dockerfile: ./backend/Dockerfile
+context: ./backend
+
+image: frontend
+dockerfile: ./frontend/Dockerfile
+context: ./frontend
+
+<span class="cm"># CI pipeline usage</span>
+<span class="cm"># .gitlab-ci.yml (or GitHub Actions)</span>
+deploy:
+  script:
+    - werf converge
+      --env production
+      --repo registry.example.com/myapp
+  <span class="cm"># werf: builds → pushes → deploys helm chart</span>
+  <span class="cm"># → all in one command → git state = truth</span>
+
+<span class="cm"># Helm chart: .helm/</span>
+<span class="cm"># .helm/templates/deployment.yaml</span>
+image: {{ .Values.werf.image.backend }}
+<span class="cm"># ↑ Werf injects the built image reference</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Others -->
+  <div class="tool-card" onclick="toggleTool(this)">
+    <div class="tc-head">
+      <div class="tc-logo" style="background:rgba(0,216,255,.08);color:var(--teal);font-size:22px;">🗺️</div>
+      <div>
+        <div class="tc-name" style="color:var(--teal);">Other Tools: Fleet · Jenkins X · Rancher Fleet</div>
+        <div class="tc-tagline">Scale-focused · enterprise · k3s-centric · click to expand</div>
+      </div>
+      <div class="tc-arrow">▶</div>
+    </div>
+    <div class="tc-body">
+      <div class="g3">
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--teal);margin-bottom:8px;">🐄 Rancher Fleet</div>
+          <div class="fr" style="border-top:none;"><span class="fk">Focus</span><span class="fv">Massive-scale multi-cluster GitOps. Designed for 1000+ clusters. Built into Rancher.</span></div>
+          <div class="fr"><span class="fk">Model</span><span class="fv">GitRepo + Fleet (target clusters). One Git repo → N clusters matching labels.</span></div>
+          <div class="fr"><span class="fk">Sharding</span><span class="fv">Groups clusters into "bundles" for parallel sync. Handles cluster sprawl at enterprise scale that ArgoCD/Flux can't easily manage.</span></div>
+          <div class="note"><b>Use when:</b> you have 50+ clusters and need a single management plane across all of them. Fleet shines at cluster-fleet management.</div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--pink);margin-bottom:8px;">🔧 Jenkins X</div>
+          <div class="fr" style="border-top:none;"><span class="fk">Focus</span><span class="fv">Full CI/CD + GitOps platform with preview environments for every PR.</span></div>
+          <div class="fr"><span class="fk">Preview envs</span><span class="fv">Automatically creates K8s namespace + deployment for every PR. Destroyed on PR close. Great developer experience.</span></div>
+          <div class="fr"><span class="fk">Complexity</span><span class="fv">Very opinionated — uses Tekton for pipelines, Lighthouse for Git events. High learning curve. Best for teams fully buying into the Jenkins X ecosystem.</span></div>
+        </div>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--yel);margin-bottom:8px;">⚖️ Tool Selection Guide</div>
+          <table class="st" style="margin-top:0;">
+            <tr><th>Need</th><th>Use</th></tr>
+            <tr><td>Rich UI + multi-cluster</td><td class="good">ArgoCD</td></tr>
+            <tr><td>SOPS secrets + Flux</td><td class="good">FluxCD v2</td></tr>
+            <tr><td>Build + deploy unified</td><td style="color:var(--werf);">Werf</td></tr>
+            <tr><td>1000+ clusters</td><td style="color:var(--teal);">Fleet</td></tr>
+            <tr><td>PR preview envs</td><td style="color:var(--pink);">Jenkins X</td></tr>
+            <tr><td>Rancher shop</td><td style="color:var(--teal);">Fleet / Rancher</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tools list -->
+
+<!-- Comparison table -->
+<div class="card" style="margin-bottom:0;">
+  <div class="ctit" style="color:var(--text);">⚖️ ArgoCD vs FluxCD — The Main Battle</div>
+  <table class="st">
+    <tr><th>Aspect</th><th style="color:var(--argo);">ArgoCD</th><th style="color:var(--flux);">FluxCD v2</th></tr>
+    <tr><td>UI</td><td class="good">Rich web UI built-in</td><td class="warn">CLI-first, no built-in UI (Weave GitOps adds UI)</td></tr>
+    <tr><td>Architecture</td><td>Monolithic (application-server + repo-server)</td><td class="good">Modular controllers (separate concern per controller)</td></tr>
+    <tr><td>CRD model</td><td><code>Application</code> / <code>ApplicationSet</code></td><td><code>GitRepository</code> + <code>Kustomization</code> + <code>HelmRelease</code></td></tr>
+    <tr><td>Secrets</td><td class="warn">argocd-vault-plugin (external)</td><td class="good">SOPS native support in kustomize-controller</td></tr>
+    <tr><td>Multi-cluster</td><td class="good">Hub-and-spoke (one ArgoCD → many clusters)</td><td>Each cluster runs its own Flux agent</td></tr>
+    <tr><td>Image automation</td><td class="warn">External tool (Argo Image Updater)</td><td class="good">Built-in (ImageRepository + ImageUpdateAutomation)</td></tr>
+    <tr><td>RBAC</td><td class="good">Fine-grained (SSO, Dex, Casbin)</td><td class="warn">Relies on K8s RBAC, less GitOps-specific</td></tr>
+    <tr><td>Resource hooks</td><td class="good">Rich sync hooks (PreSync, PostSync, etc.)</td><td class="warn">Basic health checks, no lifecycle hooks</td></tr>
+    <tr><td>Learning curve</td><td class="warn">Steeper (many concepts: App, AppSet, Projects)</td><td>Simpler mental model (composable controllers)</td></tr>
+    <tr><td>Bootstrap</td><td class="warn">Manual install + configure</td><td class="good"><code>flux bootstrap github</code> — one command</td></tr>
+    <tr><td>Progressive delivery</td><td class="good">Argo Rollouts (first-class)</td><td class="good">Flagger (external but well integrated)</td></tr>
+    <tr><td>Community</td><td class="good">Larger (more plugins, more examples)</td><td>Smaller but growing</td></tr>
+    <tr><td>CNCF status</td><td class="good">Graduated</td><td class="good">Graduated</td></tr>
+  </table>
+</div>
+
+</div><!-- /tools -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--           ARGOCD DEEP DIVE            -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-argo">
+
+<div class="sh"><div class="sh-i">🐙</div><div class="sh-l" style="color:var(--argo);">ArgoCD Deep Dive</div><div class="sh-s">// architecture · sync · ApplicationSet · RBAC · hooks · CLI</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(249,94,98,.3),transparent);"></div></div>
+
+<div class="g32">
+  <div class="card ca">
+    <div class="ctit" style="color:var(--argo);">🏗️ ArgoCD Architecture</div>
+    <div class="fr"><span class="fk">API Server</span><span class="fv">gRPC/REST server. CLI + UI communicate with it. Handles Application CRUD, sync triggers, user auth. The "control center."</span></div>
+    <div class="fr"><span class="fk">Repository Server</span><span class="fv">Fetches and caches Git repos. Renders templates (Helm, Kustomize, plain YAML, Jsonnet). Returns rendered manifests. Stateless, scalable independently.</span></div>
+    <div class="fr"><span class="fk">Application Controller</span><span class="fv">Watches Application CRDs. Compares desired (rendered manifests) vs actual (live cluster state). Triggers sync when OutOfSync. Uses Kubernetes informer cache for live state.</span></div>
+    <div class="fr"><span class="fk">Redis</span><span class="fv">Caches cluster state, rendered manifests, repo metadata. Critical for performance — without Redis, every API call would re-query etcd and re-render templates.</span></div>
+    <div class="fr"><span class="fk">Dex</span><span class="fv">Optional OIDC provider/proxy. Connects ArgoCD to GitHub/GitLab/LDAP/SAML for SSO. Not required if you use external OIDC directly (Okta, Auth0).</span></div>
+    <div class="fr"><span class="fk">ApplicationSet ctrl</span><span class="fv">Generates Application objects from templates + generators (cluster list, Git directory, matrix, merge). One ApplicationSet → many Applications.</span></div>
+    <div class="code"><span class="cm"># Common ArgoCD commands</span>
+argocd login argocd.mycompany.com
+
+<span class="cm"># List applications</span>
+argocd app list
+
+<span class="cm"># Sync an app manually</span>
+argocd app sync myapp --prune
+
+<span class="cm"># Get app details + sync status</span>
+argocd app get myapp
+
+<span class="cm"># Watch sync in real time</span>
+argocd app wait myapp --sync --health
+
+<span class="cm"># Diff what would change</span>
+argocd app diff myapp
+
+<span class="cm"># Rollback to previous version</span>
+argocd app rollback myapp 3
+
+<span class="cm"># Force hard refresh (re-fetch Git)</span>
+argocd app get myapp --hard-refresh
+
+<span class="cm"># Delete app (and its resources)</span>
+argocd app delete myapp --cascade</div>
+    <div class="trap"><b>AutoSync with prune=true will delete resources removed from Git.</b> If you accidentally delete a manifest from Git, the resource is gone from the cluster within minutes. Always test changes in non-prod with prune enabled. Production: consider prune=false + manual review.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card ca">
+      <div class="ctit" style="color:var(--argo);">📋 AppProject — Tenancy + RBAC</div>
+      <div class="fr"><span class="fk">What it is</span><span class="fv">AppProject scopes what an Application can do: which source repos, which destination clusters/namespaces, which K8s resources, which cluster resource whitelist.</span></div>
+      <div class="code" style="font-size:9px;"><span class="kw">kind</span>: AppProject
+<span class="ky">spec</span>:
+  <span class="ky">sourceRepos</span>:
+  - <span class="st">https://github.com/myorg/*</span>
+  <span class="ky">destinations</span>:
+  - { <span class="ky">namespace</span>: <span class="st">team-a-*</span>, <span class="ky">server</span>: <span class="st">https://prod-cluster</span> }
+  <span class="ky">clusterResourceWhitelist</span>:
+  - { <span class="ky">group</span>: <span class="st">''</span>, <span class="ky">kind</span>: <span class="st">Namespace</span> }
+  <span class="ky">namespaceResourceBlacklist</span>:
+  - { <span class="ky">group</span>: <span class="st">''</span>, <span class="ky">kind</span>: <span class="st">ResourceQuota</span> }
+  <span class="ky">roles</span>:
+  - <span class="ky">name</span>: <span class="st">dev</span>
+    <span class="ky">policies</span>:
+    - <span class="st">p, proj:team-a:dev, applications, sync, team-a/*, allow</span></div>
+    </div>
+    <div class="card ca">
+      <div class="ctit" style="color:var(--argo);">🪝 Sync Hooks & Waves</div>
+      <div class="fr"><span class="fk">Hooks</span><span class="fv"><code>argocd.argoproj.io/hook: PreSync</code> — Job/Workflow runs before sync. PreSync (migration), Sync (main apply), PostSync (smoke tests), SyncFail (alerting), PostDelete (cleanup).</span></div>
+      <div class="fr"><span class="fk">Sync waves</span><span class="fv"><code>argocd.argoproj.io/sync-wave: "1"</code> — within a sync, resources with lower wave number are applied first and must be healthy before higher waves start. Order-dependent deploys.</span></div>
+      <div class="code" style="font-size:9px;"><span class="cm"># Run DB migration before app deploys</span>
+<span class="ky">metadata</span>:
+  <span class="ky">annotations</span>:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: <span class="st">"-1"</span>
+<span class="cm"># Wave -1 runs before wave 0 (default)</span></div>
+    </div>
+    <div class="card ca">
+      <div class="ctit" style="color:var(--argo);">⚙️ Sync Options Reference</div>
+      <div class="code" style="font-size:9px;"><span class="ky">syncOptions</span>:
+- <span class="st">CreateNamespace=true</span>     <span class="cm"># auto-create dest ns</span>
+- <span class="st">ServerSideApply=true</span>     <span class="cm"># use SSA not CSA</span>
+- <span class="st">PrunePropagationPolicy=foreground</span>
+- <span class="st">ApplyOutOfSyncOnly=true</span>  <span class="cm"># skip Synced resources</span>
+- <span class="st">RespectIgnoreDifferences=true</span>
+- <span class="st">FailOnSharedResource=true</span><span class="cm"># reject shared resources</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /argo -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--          FLUXCD DEEP DIVE             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-flux">
+
+<div class="sh"><div class="sh-i">🔀</div><div class="sh-l" style="color:var(--flux);">FluxCD v2 Deep Dive</div><div class="sh-s">// source controller · kustomize controller · helm controller · image automation</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(84,104,255,.3),transparent);"></div></div>
+
+<div class="g3" style="margin-bottom:12px;">
+  <div class="card cf">
+    <div class="ctit" style="color:var(--flux);">📡 Source Controller</div>
+    <div class="fr"><span class="fk">GitRepository</span><span class="fv">Fetches and caches a Git repo. Produces an <code>Artifact</code> (tarball) on each new commit. All other controllers reference this artifact — they don't fetch Git themselves.</span></div>
+    <div class="fr"><span class="fk">HelmRepository</span><span class="fv">Fetches and indexes a Helm chart repository. Caches index. HelmRelease objects reference this.</span></div>
+    <div class="fr"><span class="fk">OCIRepository</span><span class="fv">Fetches an OCI artifact (container image or OCI Helm chart) from a registry. Flux can use OCI registries as config stores — no Git required.</span></div>
+    <div class="fr"><span class="fk">Bucket</span><span class="fv">Fetches from S3-compatible object storage. For teams storing configs in S3, Minio, GCS.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Bootstrap FluxCD</span>
+flux bootstrap github \
+  --owner=myorg \
+  --repository=fleet-infra \
+  --branch=main \
+  --path=./clusters/prod \
+  --personal
+
+<span class="cm"># Create a GitRepository source</span>
+flux create source git apps \
+  --url=https://github.com/myorg/apps \
+  --branch=main \
+  --interval=1m
+
+<span class="cm"># Check source status</span>
+flux get sources git</div>
+    <div class="trap"><b>FluxCD reconciles per Kustomization independently.</b> If one Kustomization fails, others continue. This is different from ArgoCD where one bad Application doesn't affect others either — but the mental model differs. Design Kustomization boundaries carefully.</div>
+  </div>
+
+  <div class="card cf">
+    <div class="ctit" style="color:var(--flux);">🗂️ Kustomize + Helm Controllers</div>
+    <div class="fr"><span class="fk">Kustomization</span><span class="fv">References a GitRepository + path. Runs <code>kustomize build</code> on the path, applies the output. With <code>prune: true</code>, deletes resources removed from Git. Health checks track readiness.</span></div>
+    <div class="fr"><span class="fk">Dependencies</span><span class="fv"><code>dependsOn</code> field: Kustomization B won't sync until A is healthy. Chain ordering: infra → crds → apps. Prevents race conditions on CRD-dependent resources.</span></div>
+    <div class="fr"><span class="fk">HelmRelease</span><span class="fv">Flux manages a Helm release. Reconciles on chart version change or values change. Rollbacks: <code>upgrade.remediation.remediateLastFailure: true</code> rolls back on upgrade failure automatically.</span></div>
+    <div class="fr"><span class="fk">PostRenderers</span><span class="fv">Apply Kustomize patches on top of Helm-rendered output. Fixes "this Helm chart almost does what I want but I need to patch X." No chart fork needed.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="ky">apiVersion</span>: helm.toolkit.fluxcd.io/v2
+<span class="kw">kind</span>: HelmRelease
+<span class="ky">spec</span>:
+  <span class="ky">chart</span>:
+    <span class="ky">spec</span>:
+      <span class="ky">chart</span>: <span class="st">nginx-ingress</span>
+      <span class="ky">version</span>: <span class="st">">=4.0.0 <5.0.0"</span>
+      <span class="ky">sourceRef</span>:
+        <span class="ky">kind</span>: <span class="st">HelmRepository</span>
+        <span class="ky">name</span>: <span class="st">ingress-nginx</span>
+  <span class="ky">install</span>:
+    <span class="ky">remediation</span>:
+      <span class="ky">retries</span>: <span class="nu">3</span>
+  <span class="ky">upgrade</span>:
+    <span class="ky">remediation</span>:
+      <span class="ky">remediateLastFailure</span>: <span class="kw">true</span>
+  <span class="ky">postRenderers</span>:
+  - <span class="ky">kustomize</span>:
+      <span class="ky">patches</span>:
+      - <span class="ky">target</span>: { <span class="ky">kind</span>: <span class="st">Deployment</span> }
+        <span class="ky">patch</span>: |
+          - op: add
+            path: /metadata/labels/team
+            value: infra</div>
+  </div>
+
+  <div class="card cf">
+    <div class="ctit" style="color:var(--flux);">🖼️ Image Automation</div>
+    <div class="fr"><span class="fk">ImageRepository</span><span class="fv">Watches a container registry for new image tags. Polls at <code>interval</code>. Requires read access to registry (imagePullSecret).</span></div>
+    <div class="fr"><span class="fk">ImagePolicy</span><span class="fv">Selects which tag to use from ImageRepository. Supports semver ranges (<code>>=1.0.0</code>), alphabetical (latest alphabetically), numerical (latest numerically).</span></div>
+    <div class="fr"><span class="fk">ImageUpdateAutomation</span><span class="fv">When a new tag matches ImagePolicy, commits the updated image reference back to Git. Triggers a reconcile. CI pushes image → Flux detects → commits to Git → Flux deploys. Fully automated image upgrade loop.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># deployment.yaml — mark for auto-update</span>
+<span class="ky">spec</span>:
+  <span class="ky">template</span>:
+    <span class="ky">spec</span>:
+      <span class="ky">containers</span>:
+      - <span class="ky">image</span>: <span class="st">myrepo/myapp:v1.2.3</span> <span class="cm"># {"$imagepolicy": "flux-system:myapp"}</span>
+
+<span class="cm"># ImagePolicy: use latest semver patch</span>
+<span class="kw">kind</span>: ImagePolicy
+<span class="ky">spec</span>:
+  <span class="ky">imageRepositoryRef</span>: { <span class="ky">name</span>: <span class="st">myapp</span> }
+  <span class="ky">policy</span>:
+    <span class="ky">semver</span>: { <span class="ky">range</span>: <span class="st">>=1.0.0</span> }
+
+<span class="cm"># Result: CI tags v1.2.4 → Flux detects</span>
+<span class="cm"># → commits image: myrepo/myapp:v1.2.4 to Git</span>
+<span class="cm"># → reconciles → new pods deployed automatically</span></div>
+    <div class="note"><b>Image automation = fully closed GitOps loop.</b> Human never touches the image tag in Git. CI pushes an image → Flux commits the new tag → Flux deploys it. Git history shows every image promotion with timestamp.</div>
+  </div>
+</div>
+
+</div><!-- /flux -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--         INFRA / APP BOUNDARY          -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-boundary">
+
+<div class="sh"><div class="sh-i">🏗️</div><div class="sh-l" style="color:var(--tf);">The Infra / App Boundary</div><div class="sh-s">// where does Terraform end and GitOps begin? · the gray zone</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(123,66,188,.3),transparent);"></div></div>
+
+<div class="card" style="margin-bottom:14px;background:var(--s1);border-color:var(--bd);">
+  <div class="ctit" style="color:var(--text);">🗺️ The Three Zones</div>
+  <div class="boundary-wrap" style="margin-top:4px;">
+    <div class="bzone bzone-tf">
+      <div class="bz-title" style="color:#b060ff;">🏗️ TERRAFORM / IaC ZONE — Infrastructure Provisioning</div>
+      <div class="bz-items">
+        <div class="bz-item bz-tf">☁️ Cloud provider resources (VPC, subnets, SG)</div>
+        <div class="bz-item bz-tf">🖥️ EKS / GKE / AKS cluster creation</div>
+        <div class="bz-item bz-tf">🔑 IAM roles &amp; policies</div>
+        <div class="bz-item bz-tf">📦 Node groups / Managed Node Groups</div>
+        <div class="bz-item bz-tf">🗄️ RDS, ElastiCache, S3 buckets</div>
+        <div class="bz-item bz-tf">🌐 Route53, ACM certs, CloudFront</div>
+        <div class="bz-item bz-tf">🔐 KMS keys, Secret Manager resources</div>
+        <div class="bz-item bz-tf">🔌 VPN, Direct Connect, Transit Gateway</div>
+        <div class="bz-item bz-tf">📊 CloudWatch alarms, SNS topics</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:#b060ff;opacity:.5;margin-top:8px;">// Cloud API calls · state in tfstate file · not K8s resources</div>
+    </div>
+
+    <div class="bz-arrow">↕ the gray zone</div>
+
+    <div class="bzone bzone-bridge">
+      <div class="bz-title" style="color:var(--yel);">⚠️ THE GRAY ZONE — Both tools may manage these</div>
+      <div class="bz-items">
+        <div class="bz-item bz-both">🧩 EKS Addons (Terraform <code>aws_eks_addon</code> OR ArgoCD)</div>
+        <div class="bz-item bz-both">📛 K8s Namespaces (Terraform <code>kubernetes_namespace</code> OR GitOps)</div>
+        <div class="bz-item bz-both">👤 K8s RBAC / ClusterRoleBindings</div>
+        <div class="bz-item bz-both">🔑 External Secrets / Sealed Secrets</div>
+        <div class="bz-item bz-both">📦 Storage Classes, IngressClass</div>
+        <div class="bz-item bz-both">🔗 ArgoCD bootstrap itself (chicken-and-egg)</div>
+        <div class="bz-item bz-both">🏷️ aws-auth ConfigMap (Terraform OR manual)</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--yel);opacity:.5;margin-top:8px;">// Decision: pick ONE tool per resource. Never let both manage the same resource — drift hell.</div>
+    </div>
+
+    <div class="bz-arrow">↕ the clear line</div>
+
+    <div class="bzone bzone-gitops">
+      <div class="bz-title" style="color:var(--go);">✅ GITOPS ZONE — Application &amp; In-Cluster Configuration</div>
+      <div class="bz-items">
+        <div class="bz-item bz-go">🚀 Deployments, StatefulSets, DaemonSets</div>
+        <div class="bz-item bz-go">🌐 Services, Ingresses, NetworkPolicies</div>
+        <div class="bz-item bz-go">⚙️ ConfigMaps (app config)</div>
+        <div class="bz-item bz-go">🔐 Sealed Secrets / External Secret references</div>
+        <div class="bz-item bz-go">📦 HorizontalPodAutoscalers, PodDisruptionBudgets</div>
+        <div class="bz-item bz-go">📊 ServiceMonitors, PrometheusRules</div>
+        <div class="bz-item bz-go">🔀 Argo Rollouts, Flagger Canaries</div>
+        <div class="bz-item bz-go">🧩 CRD instances (ArgoCD Apps, Flux Kustomizations)</div>
+        <div class="bz-item bz-go">🏷️ Kyverno/OPA policies</div>
+        <div class="bz-item bz-go">🗂️ PersistentVolumeClaims (app-level storage)</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--go);opacity:.5;margin-top:8px;">// K8s resources · Git as source of truth · reconciled continuously</div>
+    </div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card ct">
+    <div class="ctit" style="color:var(--tf);">🏗️ Where Terraform Stops</div>
+    <div class="fr"><span class="fk">Terraform role</span><span class="fv"><b>Terraform provisions the platform that GitOps runs on top of.</b> Create the K8s cluster, configure cloud resources, install the GitOps agent (ArgoCD/Flux) itself — then hand off.</span></div>
+    <div class="fr"><span class="fk">The handoff</span><span class="fv">TF creates cluster → TF installs ArgoCD (Helm provider or kubectl exec) → TF creates the "root" Application pointing at Git → from that point, Git drives everything.</span></div>
+    <div class="fr"><span class="fk">TF managing K8s</span><span class="fv">The Terraform <code>kubernetes</code> provider can manage K8s resources — but for app-level resources, this is an anti-pattern. TF reconciles on <code>apply</code> only (not continuously). No drift detection.</span></div>
+    <div class="fr"><span class="fk">IAM + IRSA</span><span class="fv">IAM roles for pods (IRSA) = Terraform creates the IAM role. The ServiceAccount annotation referencing the role ARN = GitOps. Each tool does what it's good at.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Terraform: provision cluster + bootstrap</span>
+resource "aws_eks_cluster" "this" { ... }
+
+resource "helm_release" "argocd" {
+  chart     = "argo-cd"
+  namespace = "argocd"
+  <span class="cm"># TF installs ArgoCD...</span>
+}
+
+resource "kubectl_manifest" "root_app" {
+  yaml_body = templatefile("root-app.yaml", {
+    git_url = var.git_url
+  })
+  <span class="cm"># ...then creates the root Application</span>
+  <span class="cm"># From here: Git drives the cluster</span>
+  depends_on = [helm_release.argocd]
+}</span></div>
+    <div class="trap"><b>Don't manage the same K8s resource from both Terraform and GitOps.</b> Example: TF creates a Namespace AND Argo syncs a Namespace manifest for the same name. They'll fight — TF updates on next apply, Argo reverts drift. Pick one owner per resource.</div>
+  </div>
+
+  <div class="card cg">
+    <div class="ctit" style="color:var(--go);">✅ Where GitOps Takes Over</div>
+    <div class="fr"><span class="fk">The principle</span><span class="fv"><b>"If it runs inside Kubernetes, GitOps manages it. If it runs in the cloud outside Kubernetes, Terraform manages it."</b> This is the cleanest mental model.</span></div>
+    <div class="fr"><span class="fk">CRDs</span><span class="fv">CRD <i>definitions</i> = GitOps. CRD <i>instances</i> = GitOps. But if the CRD controller itself needs cloud resources (e.g., cert-manager needs Route53 IAM role), that IAM role = Terraform.</span></div>
+    <div class="fr"><span class="fk">Platform addons</span><span class="fv">cert-manager, external-dns, nginx-ingress, kyverno — should be managed by GitOps (ArgoCD App-of-Apps or Flux bootstrap Kustomization). Not Terraform. This way they're continuously reconciled.</span></div>
+    <div class="fr"><span class="fk">The bootstrap problem</span><span class="fv">ArgoCD must be installed before it can manage itself. Solution: Terraform installs ArgoCD via Helm, then creates a GitOps Application for ArgoCD's own config. ArgoCD then manages its own updates.</span></div>
+    <div class="fr"><span class="fk">Namespaces gray zone</span><span class="fv">Recommendation: Let GitOps create namespaces (<code>CreateNamespace=true</code> in ArgoCD, or Namespace manifests in Git). This keeps namespace lifecycle in Git history. Terraform can create "core" namespaces (kube-system, argocd) during bootstrap only.</span></div>
+  </div>
+
+  <div class="card cy">
+    <div class="ctit" style="color:var(--yel);">⚠️ Gray Zone Decision Framework</div>
+    <div style="font-size:11px;line-height:1.8;color:var(--mid);">
+      <div style="background:rgba(0,0,0,.2);border-radius:6px;padding:12px;font-family:var(--mono);font-size:10px;line-height:2.1;">
+        <div style="color:var(--yel);">Is the resource a cloud API resource?</div>
+        <div style="padding-left:12px;">→ YES: <span style="color:var(--tf);">Terraform</span></div>
+        <div style="padding-left:12px;">→ NO: Is it a K8s resource?</div>
+        <div style="padding-left:24px;">→ YES: Is it platform bootstrap?</div>
+        <div style="padding-left:36px;">→ YES: <span style="color:var(--yel);">Terraform (one-time)</span></div>
+        <div style="padding-left:36px;">→ NO: <span style="color:var(--go);">GitOps (always)</span></div>
+        <div style="padding-left:24px;">→ NO: <span style="color:var(--red);">Rethink your design</span></div>
+      </div>
+    </div>
+    <div class="fr" style="margin-top:10px;"><span class="fk">EKS addons</span><span class="fv"><b>Gray zone recommendation:</b> manage EKS addons via Terraform (<code>aws_eks_addon</code>) for lifecycle coupling with cluster. ArgoCD won't know if the addon fails at the AWS API level.</span></div>
+    <div class="fr"><span class="fk">RBAC</span><span class="fv">ClusterRoles for platform operators (access to cluster-admin) = bootstrap via Terraform. App-level Roles/RoleBindings (scoped to namespace) = GitOps.</span></div>
+    <div class="fr"><span class="fk">StorageClass</span><span class="fv">Manage StorageClass via GitOps — it's a K8s resource with no cloud API call on creation. The underlying EBS volume is cloud API (created by CSI on PVC binding), but StorageClass itself = GitOps.</span></div>
+  </div>
+</div>
+
+</div><!-- /boundary -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--             PATTERNS                  -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-patterns">
+
+<div class="sh"><div class="sh-i">🗺️</div><div class="sh-l" style="color:var(--pink);">GitOps Patterns</div><div class="sh-s">// repo structure · environments · promotion · app-of-apps · multi-cluster</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,78,205,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card cp">
+    <div class="ctit" style="color:var(--pink);">📁 Repo Structure Patterns</div>
+    <div class="g2" style="margin-bottom:0;gap:8px;">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Monorepo</div>
+        <div class="code" style="margin-top:0;font-size:9px;">fleet-infra/
+├── clusters/
+│   ├── dev/
+│   │   ├── flux-system/   <span class="cm"># Flux CRDs</span>
+│   │   ├── apps/
+│   │   └── infra/
+│   ├── staging/
+│   └── prod/
+├── apps/
+│   ├── myapp/
+│   │   ├── base/          <span class="cm"># shared config</span>
+│   │   └── overlays/
+│   │       ├── dev/
+│   │       ├── staging/
+│   │       └── prod/
+└── infra/
+    ├── cert-manager/
+    ├── ingress-nginx/
+    └── monitoring/</div>
+        <div class="note" style="margin-top:6px;font-size:10px;"><b>Monorepo:</b> everything in one place. Easy to see full system state. Good for small-medium teams. Harder to grant per-team access.</div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Multi-repo</div>
+        <div class="code" style="margin-top:0;font-size:9px;">fleet-infra/         <span class="cm"># platform team</span>
+├── clusters/
+└── infra/
+
+team-a-configs/      <span class="cm"># team A owns</span>
+├── myapp/
+│   ├── dev/
+│   ├── staging/
+│   └── prod/
+└── another-app/
+
+team-b-configs/      <span class="cm"># team B owns</span>
+└── service/</div>
+        <div class="note" style="margin-top:6px;font-size:10px;"><b>Multi-repo:</b> each team owns their config repo. Better separation of concerns, better RBAC (teams can only see their repo). Harder to see whole-system state.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cp">
+    <div class="ctit" style="color:var(--pink);">🌿 Environment Promotion Strategies</div>
+    <div class="fr"><span class="fk">Branch per env</span><span class="fv">dev branch → dev cluster. staging branch → staging cluster. prod branch → prod cluster. Promote: PR from dev to staging. Simple but branch divergence is painful to manage long-term.</span></div>
+    <div class="fr"><span class="fk">Directory per env</span><span class="fv"><b>Recommended.</b> Main branch, different paths: <code>clusters/dev</code>, <code>clusters/staging</code>, <code>clusters/prod</code>. Promote: copy/Kustomize overlay update. Single branch, clear diffs.</span></div>
+    <div class="fr"><span class="fk">Kustomize overlays</span><span class="fv"><code>base/</code> has shared config. <code>overlays/prod/</code> patches replicas, resource limits, image tags. Promotion = updating the image tag in the overlay. Clear diff between envs.</span></div>
+    <div class="fr"><span class="fk">Image tag promotion</span><span class="fv">CI builds image → tags with <code>:dev-$SHA</code> → deploys to dev → passes tests → PR to bump image tag in staging overlay → merge → ArgoCD deploys to staging → repeat for prod.</span></div>
+    <div class="code" style="font-size:9.5px;"><span class="cm"># Kustomize overlay for prod</span>
+<span class="cm"># clusters/prod/myapp/kustomization.yaml</span>
+<span class="kw">bases</span>:
+- ../../../apps/myapp/base
+
+<span class="kw">images</span>:
+- name: myrepo/myapp
+  newTag: <span class="st">v1.2.3</span>        <span class="cm"># ← THIS gets bumped on promotion</span>
+
+<span class="kw">patches</span>:
+- target: { kind: Deployment }
+  patch: |
+    spec.replicas: 5    <span class="cm"># prod: 5 replicas</span>
+    resources.limits.cpu: 2000m</div>
+    <div class="trap"><b>Avoid per-environment Git branches for long-lived environments.</b> Branch drift causes merge conflicts and "works in dev, broken in prod" — because the branches diverged in unexpected ways. Use directories (Kustomize overlays) instead.</div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="pat-card">
+    <div class="pat-title" style="color:var(--argo);">🌳 App-of-Apps (ArgoCD)</div>
+    <div class="pat-desc">A root Application points to a Git path containing <i>other</i> Application manifests. ArgoCD syncs the root → creates child Applications → each child syncs its own resources. The entire cluster config is bootstrapped from one root sync.
+    <br><br><b>Structure:</b> <code>root-app</code> → syncs <code>apps/*.yaml</code> → each is an ArgoCD Application → each manages its own namespace/resources.
+    <br><br><b>When to use:</b> any multi-app ArgoCD cluster. It's the standard ArgoCD pattern for managing many applications.</div>
+  </div>
+  <div class="pat-card">
+    <div class="pat-title" style="color:var(--flux);">🌊 Flux Kustomization Tree</div>
+    <div class="pat-desc">Platform Kustomization (<code>infra</code>) runs before App Kustomization (<code>apps</code>) via <code>dependsOn</code>. Within infra: <code>infra-crds</code> → <code>infra-controllers</code> → <code>infra-configs</code>. This layered dependency graph prevents race conditions (CRDs must exist before CRD instances).
+    <br><br><b>Key:</b> <code>dependsOn</code> in Kustomization CRD creates a DAG. Flux respects it during reconciliation.</div>
+  </div>
+  <div class="pat-card">
+    <div class="pat-title" style="color:var(--go);">🌐 Multi-Cluster GitOps</div>
+    <div class="pat-desc"><b>ArgoCD hub-and-spoke:</b> one ArgoCD in "management cluster" manages all other clusters. Each target cluster is registered. ApplicationSets generate Applications per-cluster from a generator.
+    <br><br><b>Flux pull model:</b> each cluster runs its own Flux agents. Clusters are independent — one failing cluster doesn't affect others. Config paths in Git differ per cluster.
+    <br><br><b>Fleet:</b> purpose-built for 100+ clusters. One GitRepo → ClusterGroup → N clusters. Built for scale.</div>
+  </div>
+  <div class="pat-card">
+    <div class="pat-title" style="color:var(--teal);">🔐 Secrets Pattern: ESO</div>
+    <div class="pat-desc">External Secrets Operator (ESO) is the modern recommendation. <code>ExternalSecret</code> CRD references a secret in AWS Secrets Manager / HashiCorp Vault / GCP Secret Manager. ESO fetches and syncs it to a Kubernetes Secret automatically.
+    <br><br><b>In Git:</b> only the <code>ExternalSecret</code> manifest (references, not values). <b>In cluster:</b> ESO creates real Secret. <b>Benefits:</b> secrets rotate in the source, ESO syncs without Git commits. Perfect GitOps story.</div>
+  </div>
+  <div class="pat-card">
+    <div class="pat-title" style="color:var(--yel);">🔄 CI/CD + GitOps Split</div>
+    <div class="pat-desc"><b>CI does:</b> lint, test, build image, push to registry, update image tag in Git (via PR or direct commit to non-prod branches).
+    <br><br><b>GitOps does:</b> detect Git change → reconcile → deploy.
+    <br><br><b>Key rule:</b> CI never has cluster credentials. CI only has Git write access and registry push access. The cluster pulls from Git. This is the security model that makes GitOps genuinely safer than push-based CI/CD.</div>
+  </div>
+  <div class="pat-card">
+    <div class="pat-title" style="color:var(--orn);">📦 OCI-based GitOps</div>
+    <div class="pat-desc">Instead of Git repos, store configs as OCI artifacts in a container registry. Flux v2 supports <code>OCIRepository</code> as a source. Package Helm charts or Kustomize configs as OCI artifacts → version + sign → reference from Flux.
+    <br><br><b>Benefits:</b> no Git server needed for config distribution, same registry for images + configs, Cosign signing for supply chain security.
+    <br><br><b>Use case:</b> distributing configs to many clusters from an air-gapped registry.</div>
+  </div>
+</div>
+
+</div><!-- /patterns -->
+
+<!-- ═══════════════════════════════════════ -->
+<!--              TRAPS                    -->
+<!-- ═══════════════════════════════════════ -->
+<div class="sec" id="sec-traps">
+
+<div class="sh"><div class="sh-i">⚡</div><div class="sh-l" style="color:var(--red);">GitOps Traps</div><div class="sh-s">// operational gotchas that bite everyone adopting gitops</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,69,58,.3),transparent);"></div></div>
+
+<div class="trap-grid">
+  <div class="trap-card"><div class="trap-n">01</div>
+    <div class="trap-tag">AutoSync + Prune</div>
+    <div class="trap-q">Accidentally deleted a manifest from Git — production resource vanished within minutes</div>
+    <div class="trap-a"><b>AutoSync with prune=true automatically deletes resources removed from Git.</b> This is a feature, but it bites teams who make typos in Git. Production safeguard: disable prune on prod, require manual sync for deletions. Or: use branch protection + PR review before merging to prod path.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">02</div>
+    <div class="trap-tag">Secrets in Git</div>
+    <div class="trap-q">Team committing plaintext secrets "just for now" — they persist in Git history forever</div>
+    <div class="trap-a"><b>Git history is permanent.</b> Even if you delete the commit, the secret may be in PR comments, CI logs, or git reflog on clone. You must rotate any secret committed to Git. Use pre-commit hooks to block secrets: <code>git-secrets</code>, <code>detect-secrets</code>, <code>truffleHog</code>. Set these up before the first commit.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">03</div>
+    <div class="trap-tag">Drift + Manual Changes</div>
+    <div class="trap-q">Engineer hotfixes prod with kubectl — ArgoCD reverts it 3 minutes later</div>
+    <div class="trap-a"><b>This is GitOps working correctly — but it breaks the "hotfix now, document later" workflow.</b> Establish a procedure: 1) disable AutoSync for the affected app 2) apply hotfix 3) commit the fix to Git 4) re-enable AutoSync. Never fight the reconciler — work with it.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">04</div>
+    <div class="trap-tag">Bootstrap Chicken-Egg</div>
+    <div class="trap-q">ArgoCD can't manage itself because it doesn't exist yet</div>
+    <div class="trap-a"><b>Bootstrap paradox: ArgoCD must exist to manage its own config, but something must install ArgoCD first.</b> Solution: Terraform installs ArgoCD via Helm (one-time bootstrap), then creates an ArgoCD Application pointing to the ArgoCD Helm values in Git. From then on, ArgoCD manages its own config via GitOps.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">05</div>
+    <div class="trap-tag">Dual Management</div>
+    <div class="trap-q">Terraform and ArgoCD both managing the same Namespace — constant drift</div>
+    <div class="trap-a"><b>Pick ONE owner per resource.</b> TF manages cloud resources. GitOps manages K8s resources. If TF creates a K8s Namespace AND ArgoCD syncs a Namespace manifest → they fight. The winner on each reconcile is unpredictable. Remove the K8s provider from TF, or add <code>ignore_changes</code>, or delete the GitOps manifest for that resource.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">06</div>
+    <div class="trap-tag">Git as Bottleneck</div>
+    <div class="trap-q">During an incident, can't deploy a hotfix because Git PR approval is blocking it</div>
+    <div class="trap-a"><b>GitOps requires Git to be the change path — which is a bottleneck in emergencies.</b> Pre-plan an emergency bypass: designate "break-glass" ArgoCD users who can sync without PR, or maintain a CLI procedure to temporarily disable AutoSync. Document this before the incident happens.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">07</div>
+    <div class="trap-tag">Large State Files</div>
+    <div class="trap-q">ArgoCD UI loads slowly — 2000 resources in one Application</div>
+    <div class="trap-a"><b>Monolithic Applications with thousands of resources slow ArgoCD's reconciliation loop and UI.</b> Split large Applications into smaller ones by team, namespace, or component. Use AppProject to group them logically. Target: < 500 resources per Application for good performance.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">08</div>
+    <div class="trap-tag">Helm + ArgoCD Drift</div>
+    <div class="trap-q"><code>argocd app get myapp</code> shows OutOfSync for fields managed by Helm</div>
+    <div class="trap-a"><b>Helm adds labels/annotations that ArgoCD doesn't know about — constant "OutOfSync" noise.</b> Fix: add ignoreDifferences for Helm-managed fields, or use <code>ServerSideApply=true</code> which uses field managers. Also: use Flux HelmRelease instead of ArgoCD + Helm for cleaner Helm integration.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">09</div>
+    <div class="trap-tag">CRD Ordering</div>
+    <div class="trap-q">GitOps syncs CRD instances before CRD definitions exist — resources stuck in Unknown state</div>
+    <div class="trap-a"><b>K8s won't accept resources for unknown CRDs.</b> In Flux: use Kustomization <code>dependsOn</code> — infra-crds Kustomization must be Ready before apps Kustomization runs. In ArgoCD: use sync waves — wave 0 for CRDs, wave 1+ for CRD instances. Also: use <code>Replace=true</code> sync option for CRD resources.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">10</div>
+    <div class="trap-tag">Image Tag "latest"</div>
+    <div class="trap-q">Using <code>image: myapp:latest</code> in manifests — GitOps can't track what's deployed</div>
+    <div class="trap-a"><b><code>:latest</code> is not GitOps-compatible.</b> The deployed image changes without a Git commit. You lose the audit trail and the ability to roll back. Always use immutable tags: SHA (<code>sha256:abc123</code>) or semver (<code>v1.2.3</code>). Flux image automation can automate this correctly with proper tags.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">11</div>
+    <div class="trap-tag">Multi-team Access</div>
+    <div class="trap-q">Team A can see Team B's Application in ArgoCD — and accidentally syncs it</div>
+    <div class="trap-a"><b>ArgoCD Projects (AppProject) define access boundaries.</b> Create one Project per team, restrict to their source repos and destination namespaces. Assign RBAC roles to Git groups (GitHub team → ArgoCD project role). Without proper Projects, ArgoCD is a single-tenant tool in a multi-tenant cluster.</div>
+  </div>
+  <div class="trap-card"><div class="trap-n">12</div>
+    <div class="trap-tag">Flux Deprecation</div>
+    <div class="trap-q">Flux v1 vs v2 — team running Flux v1 which is EOL</div>
+    <div class="trap-a"><b>Flux v1 reached EOL in 2022.</b> Flux v2 (GitOps Toolkit) is a complete rewrite with different CRDs and concepts. The migration path is non-trivial. If you're on Flux v1: migrate now. Flux v2 is significantly better in every dimension and is CNCF graduated.</div>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="card cg">
+    <div class="ctit" style="color:var(--go);">🎓 GitOps Maturity Model</div>
+    <table class="st">
+      <tr><th>Level</th><th>Characteristics</th></tr>
+      <tr><td class="bad">Level 0 — No GitOps</td><td>Manual kubectl apply, no Git tracking of cluster state, no drift detection.</td></tr>
+      <tr><td class="warn">Level 1 — Git as backup</td><td>Manifests in Git but deployed via CI push. No continuous reconciliation. No drift detection.</td></tr>
+      <tr><td class="warn">Level 2 — Basic GitOps</td><td>GitOps agent installed. Manual sync. No AutoSync. Git is source of truth but drift is tolerated.</td></tr>
+      <tr><td style="color:var(--teal);">Level 3 — Full GitOps</td><td>AutoSync + selfHeal enabled. Secrets managed (Sealed/SOPS/ESO). All changes via Git PR.</td></tr>
+      <tr><td class="good">Level 4 — Advanced GitOps</td><td>Progressive delivery (canary). Multi-cluster. Image automation. Policy-as-code. Full observability.</td></tr>
+    </table>
+  </div>
+  <div class="card cr">
+    <div class="ctit" style="color:var(--red);">🚨 The Top 5 GitOps Mistakes</div>
+    <div style="counter-reset: trap-counter;">
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">1</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Managing the same resource from both Terraform and GitOps</b> — dual ownership creates perpetual drift fights.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">2</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">No secrets strategy before going live</b> — teams commit plaintext secrets "temporarily" and they stay forever.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">3</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">prune=true on prod without an emergency bypass procedure</b> — accidental Git deletion = production outage.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">4</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">No AppProject/namespace isolation in multi-tenant ArgoCD</b> — teams can accidentally or maliciously affect each other.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">5</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Using :latest image tags</b> — destroys the GitOps audit trail and makes rollback impossible.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /traps -->
+
+<div class="footer">
+  <div class="ft">GitOps Field Guide · Why · How · ArgoCD · FluxCD · Werf · Infra/App Boundary · Patterns · Traps</div>
+  <div class="ft" style="color:rgba(0,220,130,.2);">Git = single source of truth · Pull not Push · Continuous reconciliation · Drift detection · Declarative desired state</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('sec-'+id).classList.add('on');
+  event.target.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleTool(el) {
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+</script>
+</body>
+</html>

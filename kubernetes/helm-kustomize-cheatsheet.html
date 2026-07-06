@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm & Kustomize — Senior Kubernetes Interview Cheatsheet</title>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #161920;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --accent: #58a6ff;
+    --accent2: #f0883e;
+    --border: rgba(255,255,255,.08);
+    --danger: #f0656580;
+    --ok: #3fb95080;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 70px 20px 80px;
+  }
+  header.page {
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+  header.page h1 {
+    font-size: 2rem;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  header.page p.sub {
+    color: var(--muted);
+    margin: 0;
+    font-size: 1.02rem;
+  }
+  .badges { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 36px;
+  }
+  nav.toc h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  nav.toc ol {
+    columns: 2;
+    column-gap: 28px;
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.92rem;
+  }
+  nav.toc li { margin-bottom: 5px; break-inside: avoid; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section {
+    margin-bottom: 44px;
+    scroll-margin-top: 20px;
+  }
+  section > h2 {
+    font-size: 1.35rem;
+    margin: 0 0 6px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+  }
+  section > h2 .num {
+    color: var(--accent);
+    margin-right: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  h3 {
+    font-size: 1.05rem;
+    margin: 26px 0 8px;
+    color: var(--text);
+  }
+  h4 {
+    font-size: 0.95rem;
+    margin: 18px 0 6px;
+    color: var(--accent);
+  }
+  p { color: var(--text); }
+  p.lead { color: var(--muted); }
+
+  code {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: #ffd479;
+    border: 1px solid var(--border);
+  }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    margin: 10px 0 18px;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #d7e3ee;
+    font-size: 1em;
+  }
+  .code-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 18px 0 -4px;
+  }
+
+  .tbl-wrap { overflow-x: auto; margin: 10px 0 18px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+    min-width: 560px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    background: var(--surface);
+  }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  .callout {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+  }
+  .callout.trap {
+    background: rgba(240,101,101,.06);
+    border-left-color: #f06565;
+  }
+  .callout.trap .label { color: #ff8a8a; }
+  .callout.qa {
+    background: rgba(88,166,255,.06);
+    border-left-color: var(--accent);
+  }
+  .callout.qa .label { color: var(--accent); }
+  .callout.info {
+    background: rgba(240,136,62,.06);
+    border-left-color: var(--accent2);
+  }
+  .callout.info .label { color: var(--accent2); }
+  .callout .label {
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout p { margin: 6px 0; }
+
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 4px; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) {
+    .grid2 { grid-template-columns: 1fr; }
+    nav.toc ol { columns: 1; }
+    header.page h1 { font-size: 1.5rem; }
+  }
+
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    color: var(--muted);
+    white-space: pre;
+    margin: 12px 0 18px;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+
+  ::selection { background: rgba(88,166,255,.35); }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<div class="wrap">
+
+<header class="page">
+  <h1>Helm &amp; Kustomize — Kubernetes Packaging Deep Dive</h1>
+  <p class="sub">Senior/staff-level interview cheatsheet: chart internals, templating semantics, release lifecycle, overlay patching, and how GitOps tools consume both.</p>
+  <div class="badges">
+    <span class="badge">Helm 3</span>
+    <span class="badge">Kustomize (built into kubectl)</span>
+    <span class="badge">GitOps: Argo CD / Flux</span>
+    <span class="badge">Current to 2026</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#helm-basics">Helm fundamentals &amp; Helm 2 → 3</a></li>
+    <li><a href="#chart-structure">Chart structure</a></li>
+    <li><a href="#templating">Templating: Go template + Sprig</a></li>
+    <li><a href="#template-gotchas">Templating gotchas</a></li>
+    <li><a href="#values-precedence">Values &amp; precedence</a></li>
+    <li><a href="#release-lifecycle">Release lifecycle</a></li>
+    <li><a href="#release-storage">Release storage (Secrets)</a></li>
+    <li><a href="#hooks">Helm hooks</a></li>
+    <li><a href="#library-deps">Library charts &amp; dependencies</a></li>
+    <li><a href="#template-vs-install">helm template vs helm install</a></li>
+    <li><a href="#repos-oci">Chart repos &amp; OCI registries</a></li>
+    <li><a href="#testing-linting">Testing &amp; linting</a></li>
+    <li><a href="#kustomize-basics">Kustomize fundamentals</a></li>
+    <li><a href="#patches">Patch strategies</a></li>
+    <li><a href="#generators">Generators &amp; hash suffixes</a></li>
+    <li><a href="#transformers">Common transformers</a></li>
+    <li><a href="#components">Kustomize components</a></li>
+    <li><a href="#helm-vs-kustomize">Helm vs Kustomize</a></li>
+    <li><a href="#gitops">GitOps consumption (Argo/Flux)</a></li>
+    <li><a href="#qa-rapid">Rapid-fire Q&amp;A</a></li>
+  </ol>
+</nav>
+
+<section id="helm-basics">
+  <h2><span class="num">01</span>Helm Fundamentals &amp; the Helm 2 → 3 Shift</h2>
+  <p class="lead">Helm is a templating engine + package manager for Kubernetes manifests. A <strong>chart</strong> is the package; a <strong>release</strong> is a chart deployed with a specific set of values into a namespace.</p>
+
+  <h3>The Tiller removal (Helm 2 → Helm 3)</h3>
+  <p>Helm 2 ran a server-side component called <strong>Tiller</strong> inside the cluster. Tiller held a broad service account (often cluster-admin) and executed all install/upgrade logic server-side — a well-known security liability (anyone who could talk to Tiller's gRPC endpoint could act with Tiller's permissions, and there was no per-user RBAC differentiation).</p>
+  <p><strong>Helm 3 removed Tiller entirely.</strong> The Helm CLI now talks directly to the Kubernetes API server using the user's own kubeconfig/RBAC credentials — same permission model as <code>kubectl</code>. Consequences:</p>
+  <ul>
+    <li>No cluster-side component to install, secure, or upgrade.</li>
+    <li>RBAC is enforced per-user via normal Kubernetes auth, not a shared Tiller identity.</li>
+    <li>Release information moved from <code>ConfigMaps</code> in <code>kube-system</code> (Tiller's namespace) to <strong>Secrets in the release's own namespace</strong>.</li>
+    <li>Releases became namespace-scoped by name — two releases with the same name can exist in different namespaces (in Helm 2, release names were cluster-global).</li>
+    <li><code>helm template</code> gained parity for pure rendering without any cluster contact.</li>
+    <li>3-way strategic merge patch on upgrade (compares chart, live state, and previous release manifest) instead of Helm 2's naive 2-way diff — this is why Helm 3 correctly removes fields you deleted from a template, where Helm 2 would leave orphaned fields behind.</li>
+  </ul>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p>Candidates often say "Helm 3 added namespaces to charts." Wrong framing — Helm 2 <em>had</em> namespace support for resources, but release <em>names</em> were global across the cluster and all release metadata lived centrally in Tiller's namespace. Helm 3's real architectural change is <strong>removing the server-side component</strong> and moving to client-only + native RBAC; namespace-scoped release storage is a consequence of that, not the headline.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: Why was Tiller considered a security risk?</strong><br>
+    A: It ran as a single in-cluster gRPC service, usually granted cluster-admin, with no fine-grained authorization of who could send it commands — any pod/user with network access to the Tiller service inherited its blast radius. Helm 3 eliminates the shared privileged identity by executing entirely client-side against the API server under the caller's own credentials.</p>
+  </div>
+</section>
+
+<section id="chart-structure">
+  <h2><span class="num">02</span>Chart Structure</h2>
+  <div class="code-title">Standard chart layout</div>
+<pre><code>mychart/
+├── Chart.yaml           # metadata: name, version, appVersion, dependencies
+├── values.yaml           # default configuration values
+├── values.schema.json    # (optional) JSON Schema to validate values
+├── charts/               # subcharts (dependencies), vendored or via `helm dependency update`
+├── crds/                 # CRDs installed before templates render, never templated, never upgraded/deleted by Helm
+├── templates/
+│   ├── _helpers.tpl      # named templates ("partials"), prefixed with underscore = not rendered as a manifest
+│   ├── NOTES.txt         # post-install/upgrade usage notes, templated, printed to stdout
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── tests/
+│   │   └── test-connection.yaml   # helm test hooks
+│   └── ...
+├── .helmignore           # patterns excluded when packaging
+└── README.md
+</code></pre>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th><th>Key notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>Chart.yaml</code></td><td>Chart metadata</td><td><code>apiVersion: v2</code> (Helm 3) required; <code>version</code> = chart version (SemVer), <code>appVersion</code> = version of the packaged app (free text, informational only)</td></tr>
+      <tr><td><code>values.yaml</code></td><td>Default values consumed by templates</td><td>Overridden by <code>-f</code>/<code>--set</code> at install/upgrade time</td></tr>
+      <tr><td><code>templates/</code></td><td>Go templates rendered into K8s manifests</td><td>Files starting with <code>_</code> are not rendered directly (partials)</td></tr>
+      <tr><td><code>_helpers.tpl</code></td><td>Named template definitions (<code>define</code>/<code>include</code>)</td><td>Convention, not a magic filename — any <code>_*.tpl</code> works the same way</td></tr>
+      <tr><td><code>charts/</code></td><td>Subchart dependencies (vendored .tgz or unpacked dirs)</td><td>Populated by <code>helm dependency update</code> based on <code>Chart.yaml</code>'s <code>dependencies:</code> block</td></tr>
+      <tr><td><code>crds/</code></td><td>CustomResourceDefinitions</td><td>Installed once, first, before any template rendering; Helm <strong>never</strong> upgrades or deletes CRDs in this directory — you manage that manually</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p>"Why didn't my CRD update after I bumped the chart version?" — because <code>crds/</code> is intentionally excluded from the normal template/upgrade/delete lifecycle to avoid Helm ever deleting a CRD (which would cascade-delete every CR instance in the cluster). If you need CRDs to evolve with releases, either manage them with a separate tool/process or put them in <code>templates/</code> with explicit care (and accept they'll behave like normal — but riskier — resources).</p>
+  </div>
+</section>
+
+<section id="templating">
+  <h2><span class="num">03</span>Templating: Go <code>text/template</code> + Sprig</h2>
+  <p class="lead">Helm templates are Go's <code>text/template</code> syntax, extended with the <strong>Sprig</strong> function library (string, math, date, crypto, list/dict helpers) plus Helm-specific functions.</p>
+
+  <div class="code-title">Built-in objects</div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Object</th><th>Contains</th></tr></thead>
+    <tbody>
+      <tr><td><code>.Values</code></td><td>Merged values (defaults + overrides)</td></tr>
+      <tr><td><code>.Release</code></td><td><code>.Name</code>, <code>.Namespace</code>, <code>.IsInstall</code>, <code>.IsUpgrade</code>, <code>.Revision</code>, <code>.Service</code></td></tr>
+      <tr><td><code>.Chart</code></td><td>Contents of <code>Chart.yaml</code>: <code>.Name</code>, <code>.Version</code>, <code>.AppVersion</code></td></tr>
+      <tr><td><code>.Files</code></td><td>Non-template files in the chart (<code>.Get</code>, <code>.GetBytes</code>, <code>.Glob</code>)</td></tr>
+      <tr><td><code>.Capabilities</code></td><td>K8s/Helm version info, API availability (<code>.APIVersions.Has</code>)</td></tr>
+      <tr><td><code>.Template</code></td><td><code>.Name</code> / <code>.BasePath</code> of the currently rendering file</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="code-title">Named templates (_helpers.tpl)</div>
+<pre><code>{{- define "mychart.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "mychart.labels" -}}
+app.kubernetes.io/name: {{ .Chart.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+{{- end -}}
+</code></pre>
+
+  <div class="code-title">Using them: include vs template</div>
+<pre><code>metadata:
+  labels:
+    {{- include "mychart.labels" . | nindent 4 }}
+</code></pre>
+  <p><code>include</code> returns a string you can pipe (e.g. into <code>nindent</code>); the older <code>template</code> action prints directly and cannot be piped. Prefer <code>include</code> in almost all cases.</p>
+
+  <div class="code-title">Common Sprig helpers seen in interviews</div>
+<pre><code>{{ .Values.name | default "my-app" }}
+{{ .Values.replicaCount | int }}
+{{ list "a" "b" "c" | join "," }}
+{{ .Values.tag | quote }}
+{{ dict "key" "value" }}
+{{ now | date "2006-01-02" }}
+{{ .Values.config | toYaml | nindent 2 }}
+{{ required "image.tag is required!" .Values.image.tag }}
+</code></pre>
+</section>
+
+<section id="template-gotchas">
+  <h2><span class="num">04</span>Templating Gotchas (favorite interview probes)</h2>
+
+  <h3>Whitespace control: <code>{{-</code> and <code>-}}</code></h3>
+  <p>A plain <code>{{ }}</code> action leaves surrounding whitespace/newlines untouched, which frequently produces blank lines or bad YAML indentation. The hyphen variants trim whitespace on that side:</p>
+<pre><code>{{- if .Values.enabled }}     # trims preceding whitespace/newline
+key: value
+{{- end }}                    # trims preceding whitespace/newline
+</code></pre>
+  <p><code>{{-</code> trims whitespace (including the newline) immediately <em>before</em> the tag; <code>-}}</code> trims whitespace immediately <em>after</em>. Get this wrong and you get invalid YAML (extra blank lines are usually harmless, but missing/extra indentation is not).</p>
+
+  <h3><code>indent</code> vs <code>nindent</code></h3>
+<pre><code>{{ .Values.labels | toYaml | indent 4 }}
+# vs
+{{- .Values.labels | toYaml | nindent 4 }}
+</code></pre>
+  <p><code>nindent</code> = "newline then indent" — it prepends a newline before indenting each line. Use <code>nindent</code> when injecting a multi-line block after a YAML key (<code>labels:</code>\n  <code>{{- ... | nindent 4 }}</code>); use plain <code>indent</code> only when you already control the leading newline.</p>
+
+  <h3><code>toYaml</code> for passing through arbitrary structures</h3>
+<pre><code>resources:
+  {{- toYaml .Values.resources | nindent 2 }}
+</code></pre>
+  <p>Lets users supply an arbitrary nested YAML block in <code>values.yaml</code> (e.g. full <code>resources:</code>, <code>affinity:</code>, <code>tolerations:</code> stanzas) without the chart author hand-templating every possible field.</p>
+
+  <h3><code>required</code> and <code>default</code></h3>
+<pre><code>image: {{ required "An image repository is required" .Values.image.repository }}
+tag: {{ .Values.image.tag | default .Chart.AppVersion }}
+</code></pre>
+  <p><code>required</code> fails the render immediately with a clear message — much better than a cryptic downstream K8s API error from a missing field. <code>default</code> substitutes a fallback only when the value is Go's zero-value/empty (empty string, nil, 0, false) — this can bite you (see trap below).</p>
+
+  <h3>Scoping: <code>with</code>, <code>range</code>, and the <code>$</code> root</h3>
+<pre><code>{{- with .Values.service }}
+type: {{ .type }}
+port: {{ .port }}
+{{- end }}
+
+{{- range .Values.env }}
+- name: {{ .name }}
+  value: {{ .value | quote }}
+{{- end }}
+
+{{- range .Values.env }}
+- name: {{ .name }}
+  value: {{ .value }}
+  release: {{ $.Release.Name }}   {{/* $ = root context, since "." is rescoped inside range/with */}}
+{{- end }}
+</code></pre>
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p>Inside <code>with</code> or <code>range</code>, <code>.</code> is rebound to the iterated/scoped value — <code>.Release.Name</code> will fail because <code>.Release</code> no longer exists in that scope. You must capture the root context first (<code>{{- $root := . }}</code>) or reference the pre-defined <code>$</code> variable, which Go templates always bind to the original root context regardless of scope changes.</p>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><code>default</code> treats Go zero-values as "empty" — so <code>{{ .Values.replicaCount | default 3 }}</code> will replace an explicit <code>replicaCount: 0</code> with <code>3</code>, which is almost never what you want for a deliberate "scale to zero." Use <code>{{ if hasKey .Values "replicaCount" }}</code>/<code>kindIs</code> checks or restructure with a pointer-like sentinel when zero/false must be distinguishable from "unset."</p>
+  </div>
+</section>
+
+<section id="values-precedence">
+  <h2><span class="num">05</span>Values &amp; Override Precedence</h2>
+  <p class="lead">Highest wins. From lowest to highest priority:</p>
+  <ol>
+    <li>Chart's own <code>values.yaml</code> (the defaults shipped in the chart)</li>
+    <li>Parent chart's <code>values.yaml</code> overrides for a subchart (scoped under the subchart's name)</li>
+    <li><code>-f</code> / <code>--values</code> files, in the order given on the command line (later files win, merged recursively/deep-merge)</li>
+    <li><code>--set</code>, <code>--set-string</code>, <code>--set-json</code>, <code>--set-file</code> flags (highest — always win over <code>-f</code> files)</li>
+  </ol>
+
+  <div class="code-title">Precedence in practice</div>
+<pre><code>helm upgrade myapp ./mychart \
+  -f values.yaml \
+  -f values-prod.yaml \
+  --set image.tag=v1.2.3 \
+  --set-string replicaCount=3
+</code></pre>
+  <p><code>values-prod.yaml</code> overrides <code>values.yaml</code> for overlapping keys (deep merge, not replace-whole-file); <code>--set</code> flags override everything from <code>-f</code>.</p>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><strong><code>--set</code> type coercion.</strong> <code>--set</code> parses values and tries to infer type: <code>--set replicaCount=3</code> becomes the integer <code>3</code>, <code>--set enabled=true</code> becomes boolean <code>true</code>. This breaks when you actually want a string that looks numeric/boolean, e.g. a <code>tag: "01"</code> or a numeric-looking Git SHA — Helm will silently coerce/strip it. Use <code>--set-string</code> to force string type: <code>--set-string image.tag=00123</code>. Also, arrays via <code>--set</code> use a fragile <code>{a,b,c}</code> syntax and commas inside values must be escaped (<code>\,</code>) — for anything nested or list-heavy, prefer <code>-f</code> files or <code>--set-json</code>.</p>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p>Lists/arrays in <code>-f</code> value files are <strong>replaced wholesale</strong>, not merged element-by-element, when a later file also sets that key. Maps merge recursively; lists do not. This surprises people expecting "just append my extra item."</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: How do you pass values to a subchart?</strong><br>
+    A: Namespace them under the subchart's name (as declared as a dependency) in the parent's <code>values.yaml</code>: <code>mysubchart:\n&nbsp;&nbsp;replicaCount: 2</code>. Use <code>global:</code> for values you want visible to <em>every</em> chart/subchart in the tree without namespacing.</p>
+  </div>
+</section>
+
+<section id="release-lifecycle">
+  <h2><span class="num">06</span>Release Lifecycle</h2>
+
+  <div class="code-title">Core commands</div>
+<pre><code>helm install myrelease ./mychart -n myns --create-namespace
+helm upgrade myrelease ./mychart -n myns -f values-prod.yaml
+helm upgrade --install myrelease ./mychart -n myns   # idempotent install-or-upgrade, common in CI
+
+helm rollback myrelease 3 -n myns    # roll back to revision 3
+helm history myrelease -n myns       # list all revisions
+helm status myrelease -n myns        # current state, notes
+helm list -n myns                    # list releases in a namespace
+helm list -A                         # all namespaces
+helm uninstall myrelease -n myns     # delete release + resources (history purged too by default; use --keep-history to retain — see below)
+</code></pre>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>helm install</code></td><td>Creates revision 1 of a new release</td></tr>
+      <tr><td><code>helm upgrade</code></td><td>Renders a new revision, 3-way merges against live + previous state, applies diff</td></tr>
+      <tr><td><code>helm upgrade --install</code></td><td>Installs if the release doesn't exist, upgrades if it does — the standard CI pattern</td></tr>
+      <tr><td><code>helm rollback &lt;release&gt; &lt;rev&gt;</code></td><td>Re-applies a prior revision's rendered manifests as a <em>new</em> revision (rollback itself creates a new revision entry, it doesn't rewind history)</td></tr>
+      <tr><td><code>helm history</code></td><td>Shows revision number, status (deployed/superseded/failed), chart version, app version, description</td></tr>
+      <tr><td><code>helm uninstall</code></td><td>Deletes all release resources; release Secret history is deleted by default (use <code>--keep-history</code> to retain it for later <code>helm history</code>/rollback-from-uninstalled)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><strong><code>helm rollback</code> creates a new revision — it does not delete forward history.</strong> If you're on revision 5 and roll back to revision 2, you land on revision 6 (content = revision 2's manifests). <code>helm history</code> will show all 6 entries. This matters for auditing and for anyone assuming rollback "erases" the bad deploy.</p>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><strong>Helm rollback vs GitOps drift.</strong> If Argo CD or Flux owns this release (deploying from a Git-tracked HelmRelease/Application), running <code>helm rollback</code> by hand creates a live cluster state that diverges from Git — the GitOps controller will detect drift and either auto-heal (re-apply Git's desired state, silently undoing your manual rollback) or flag <code>OutOfSync</code>. The correct GitOps-native rollback is <code>git revert</code> the commit that introduced the bad change and let the controller reconcile — not a direct <code>helm</code> CLI call against a GitOps-managed release.</p>
+  </div>
+
+  <h3>Failed upgrades</h3>
+  <p><code>--atomic</code> flag: if the upgrade fails, Helm automatically rolls back to the last successful revision. Without it, a failed upgrade can leave the release in a <code>failed</code> state requiring manual <code>helm rollback</code>.</p>
+<pre><code>helm upgrade myrelease ./mychart --atomic --timeout 5m
+</code></pre>
+</section>
+
+<section id="release-storage">
+  <h2><span class="num">07</span>Release Storage — Secrets In-Cluster</h2>
+  <p>Helm 3 stores release state (rendered manifests, values used, chart metadata) as <strong>Kubernetes Secrets</strong> in the release's own namespace, one Secret per revision, named like:</p>
+<pre><code>sh.helm.release.v1.&lt;release-name&gt;.v&lt;revision&gt;
+</code></pre>
+  <p>Type: <code>helm.sh/release.v1</code>. The Secret's data is a gzip-compressed, base64-encoded blob of the release manifest. This is why <code>kubectl get secrets</code> in an app namespace shows entries you never created directly — they're Helm's own bookkeeping, not application secrets.</p>
+  <div class="callout info">
+    <span class="label">Note</span>
+    <p>Helm 2 used <strong>ConfigMaps</strong> (and later, optionally, Secrets) stored centrally in Tiller's namespace (<code>kube-system</code>) rather than the release's own namespace. Helm 3's default backend is Secrets, colocated with the release — both a security improvement (encryption-at-rest where configured, tighter RBAC scoping) and a namespace-isolation improvement.</p>
+  </div>
+  <p>Storage backend is pluggable (<code>--storage-driver</code> or <code>HELM_DRIVER</code> env var supports <code>secrets</code> (default), <code>configmaps</code>, <code>memory</code>, or <code>sql</code>).</p>
+</section>
+
+<section id="hooks">
+  <h2><span class="num">08</span>Helm Hooks</h2>
+  <p class="lead">Hooks let a chart run Kubernetes Jobs/other resources at specific points in the release lifecycle — outside the normal template render/apply flow.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Hook</th><th>Fires</th></tr></thead>
+    <tbody>
+      <tr><td><code>pre-install</code></td><td>After templates are rendered, before any resource is created</td></tr>
+      <tr><td><code>post-install</code></td><td>After all resources are created</td></tr>
+      <tr><td><code>pre-upgrade</code></td><td>Before any resource is upgraded during an upgrade</td></tr>
+      <tr><td><code>post-upgrade</code></td><td>After all resources are upgraded</td></tr>
+      <tr><td><code>pre-delete</code></td><td>Before any resource is deleted on uninstall</td></tr>
+      <tr><td><code>post-delete</code></td><td>After all resources are deleted</td></tr>
+      <tr><td><code>pre-rollback</code> / <code>post-rollback</code></td><td>Around rollback operations</td></tr>
+      <tr><td><code>test</code></td><td>On explicit <code>helm test</code> invocation only</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="code-title">Hook annotation example (DB migration Job)</div>
+<pre><code>apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mychart.fullname" . }}-migrate
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          command: ["./migrate.sh"]
+</code></pre>
+
+  <h3>Hook weights</h3>
+  <p><code>helm.sh/hook-weight</code> (string-encoded integer) controls ordering among multiple hooks bound to the same event — lower weights execute first. Negative weights are valid and commonly used to run things before weight-0/unweighted hooks.</p>
+
+  <h3>Delete policies</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Policy</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr><td><code>before-hook-creation</code> (default)</td><td>Delete the previous hook resource before creating a new one for this event</td></tr>
+      <tr><td><code>hook-succeeded</code></td><td>Delete the hook resource right after it succeeds</td></tr>
+      <tr><td><code>hook-failed</code></td><td>Delete the hook resource if it fails</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p>Hook resources are <strong>not tracked as part of the normal release manifest</strong> — they don't participate in <code>helm uninstall</code>'s automatic cleanup unless you set a delete policy, and they're invisible to <code>helm diff</code>/3-way-merge logic that governs normal templates. This is by design (hooks are one-shot side effects, not desired-state resources), but it means orphaned hook Jobs are a common real-world cleanup issue if delete policies are misconfigured.</p>
+  </div>
+</section>
+
+<section id="library-deps">
+  <h2><span class="num">09</span>Library Charts &amp; Dependencies</h2>
+
+  <h3>Library charts</h3>
+  <p>A chart with <code>type: library</code> in <code>Chart.yaml</code> contains only reusable named templates (<code>define</code> blocks) — it produces <strong>no Kubernetes resources of its own</strong> and cannot be installed standalone. Consuming charts declare it as a dependency purely to <code>include</code> its helper templates (common label sets, standard Deployment/Service scaffolding, etc.) — this is Helm's answer to "don't repeat yourself" across a fleet of charts.</p>
+
+  <h3>Chart dependencies</h3>
+  <div class="code-title">Chart.yaml dependencies block</div>
+<pre><code>apiVersion: v2
+name: myapp
+version: 1.0.0
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: common
+    version: "2.x.x"
+    repository: "https://charts.example.com"
+</code></pre>
+<pre><code>helm dependency update ./mychart   # fetches deps into charts/ as .tgz, writes Chart.lock
+helm dependency build ./mychart    # rebuilds charts/ from an existing Chart.lock (no re-resolution)
+helm dependency list ./mychart     # shows declared vs. present dependencies
+</code></pre>
+  <p><code>condition</code> ties a subchart's inclusion to a boolean value path (commonly <code>&lt;subchart&gt;.enabled</code>); <code>tags</code> offer a similar group-level toggle. <code>Chart.lock</code> pins resolved versions — check it into version control just like a lockfile in any package manager.</p>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><code>helm dependency update</code> re-resolves version ranges against the repo index (can pull a newer patch/minor if your range allows it) and rewrites <code>Chart.lock</code>. <code>helm dependency build</code> is the reproducible, CI-safe operation — it trusts the existing lock file and only re-downloads. Forgetting this distinction leads to "works on my machine" dependency drift.</p>
+  </div>
+</section>
+
+<section id="template-vs-install">
+  <h2><span class="num">10</span><code>helm template</code> vs <code>helm install</code></h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th></th><th><code>helm template</code></th><th><code>helm install</code> / <code>upgrade</code></th></tr></thead>
+    <tbody>
+      <tr><td>Cluster contact</td><td>None required (fully offline rendering)*</td><td>Requires live API server connection</td></tr>
+      <tr><td>Output</td><td>Rendered YAML to stdout</td><td>Applies resources to the cluster</td></tr>
+      <tr><td>Release tracking</td><td>None — no Secret is created</td><td>Creates/updates a release Secret</td></tr>
+      <tr><td>Hooks</td><td>Rendered as regular manifests but NOT executed (unless <code>--hook-only</code>-style tooling wraps it)</td><td>Executed at appropriate lifecycle points</td></tr>
+      <tr><td>Use case</td><td>CI diffing, GitOps input (Argo CD/Flux render step), debugging templates, <code>kubectl diff -f -</code> pipelines</td><td>Actual deployment</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>* <code>helm template</code> can optionally validate against live cluster API capabilities with <code>--validate</code>/<code>--is-upgrade</code>, but its core rendering does not require a cluster.</p>
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: How does Argo CD render a Helm chart without "installing" a Helm release?</strong><br>
+    A: Argo CD (and Flux's Helm controller, in template-only paths) shells out to effectively <code>helm template</code> to produce plain manifests, then applies/diffs those manifests itself using its own reconciliation engine — it does not use Helm's release/Secret bookkeeping at all in the default Argo CD Helm integration. This is a key reason <code>helm history</code>/<code>helm rollback</code> don't apply to an Argo CD-managed Helm app; Argo CD's own revision history (Git commits) is the source of truth instead.</p>
+  </div>
+</section>
+
+<section id="repos-oci">
+  <h2><span class="num">11</span>Chart Repositories &amp; OCI Registries</h2>
+
+  <h3>Classic HTTP chart repos</h3>
+<pre><code>helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm search repo bitnami/postgresql
+helm install mydb bitnami/postgresql
+</code></pre>
+  <p>A classic repo is just a static <code>index.yaml</code> (chart metadata + download URLs) served over HTTP(S) — no special server logic required, can be hosted on any static file host (S3, GitHub Pages, etc.).</p>
+
+  <h3>OCI registries (now the recommended default)</h3>
+<pre><code>helm registry login registry.example.com -u user -p pass
+helm push mychart-1.0.0.tgz oci://registry.example.com/charts
+helm install myrelease oci://registry.example.com/charts/mychart --version 1.0.0
+helm pull oci://registry.example.com/charts/mychart --version 1.0.0
+</code></pre>
+  <p>Since Helm v3.8 OCI support graduated out of experimental and is enabled by default — charts are pushed/pulled as OCI artifacts through any OCI-compliant registry (Docker Hub, GHCR, ECR, ACR, Harbor, etc.), letting orgs reuse existing container registry infrastructure and auth instead of standing up a separate chart-repo server. <code>helm search repo</code> and <code>index.yaml</code> concepts don't apply to OCI — discovery works differently (tag listing via registry APIs), and there's no separate "repo add" step; you reference the OCI URL directly.</p>
+</section>
+
+<section id="testing-linting">
+  <h2><span class="num">12</span>Chart Testing &amp; Linting</h2>
+<pre><code>helm lint ./mychart                      # static analysis: YAML validity, required fields, best-practice checks
+helm lint ./mychart -f values-prod.yaml  # lint against a specific values overlay
+helm template ./mychart | kubeval -      # (external tool) validate rendered output against K8s schemas
+helm install myrelease ./mychart --dry-run --debug   # render + validate against live API without applying
+helm test myrelease -n myns              # runs any resources annotated helm.sh/hook: test
+</code></pre>
+  <p><code>helm.sh/hook: test</code> resources (conventionally Pods or Jobs under <code>templates/tests/</code>) are only ever run by an explicit <code>helm test</code> invocation — they're not part of install/upgrade at all. Common pattern: a Pod that curls the just-deployed Service and asserts a 200.</p>
+</section>
+
+<section id="kustomize-basics">
+  <h2><span class="num">13</span>Kustomize Fundamentals</h2>
+  <p class="lead">Kustomize is a <strong>template-free</strong> configuration customization tool: you keep plain, valid Kubernetes YAML (a "base") and layer declarative patches on top (via "overlays") rather than parameterizing the YAML itself. It has been built into <code>kubectl</code> since v1.14 (<code>kubectl apply -k</code>, <code>kubectl kustomize</code>) with its own standalone <code>kustomize</code> CLI for more advanced/newer features.</p>
+
+  <div class="diagram">base/
+├── kustomization.yaml
+├── deployment.yaml
+└── service.yaml
+
+overlays/
+├── dev/
+│   ├── kustomization.yaml   # references ../../base, patches replicas down, adds -dev suffix
+│   └── patch-replicas.yaml
+├── staging/
+│   └── kustomization.yaml
+└── prod/
+    ├── kustomization.yaml   # references ../../base, patches resources up, adds prod labels
+    └── patch-resources.yaml</div>
+
+  <div class="code-title">base/kustomization.yaml</div>
+<pre><code>apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+commonLabels:
+  app.kubernetes.io/part-of: myapp
+</code></pre>
+
+  <div class="code-title">overlays/prod/kustomization.yaml</div>
+<pre><code>apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod
+namePrefix: prod-
+resources:
+  - ../../base
+patches:
+  - path: patch-resources.yaml
+    target:
+      kind: Deployment
+      name: myapp
+replicas:
+  - name: myapp
+    count: 5
+</code></pre>
+
+  <div class="code-title">Apply</div>
+<pre><code>kubectl apply -k overlays/prod/
+kubectl kustomize overlays/prod/    # render only, no apply
+kustomize build overlays/prod/      # standalone CLI, same rendering (often newer features)
+</code></pre>
+  <div class="callout info">
+    <span class="label">Note</span>
+    <p>The <code>kubectl</code>-bundled Kustomize version typically lags behind the standalone <code>kustomize</code> CLI release. For newer features (e.g. certain component behaviors, replacements transformer), use the standalone binary and feed rendered YAML to <code>kubectl apply -f -</code>.</p>
+  </div>
+</section>
+
+<section id="patches">
+  <h2><span class="num">14</span>Patch Strategies: Strategic Merge vs JSON 6902</h2>
+
+  <h3>Strategic merge patch</h3>
+  <p>YAML that looks like a partial version of the target resource; Kubernetes' strategic-merge semantics (which understand list merge keys like container <code>name</code>) decide how to combine it with the base.</p>
+<pre><code># patch-resources.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  template:
+    spec:
+      containers:
+        - name: myapp        # matched by name, merged into existing container entry
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+</code></pre>
+
+  <h3>JSON 6902 patch</h3>
+  <p>An explicit list of RFC 6902 JSON Patch operations (<code>add</code>/<code>remove</code>/<code>replace</code>/<code>move</code>/<code>copy</code>/<code>test</code>) addressed by JSON pointer path — necessary when you need to target array elements by index, remove a field entirely, or do something strategic-merge can't express cleanly.</p>
+<pre><code>patches:
+  - target:
+      kind: Deployment
+      name: myapp
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: remove
+        path: /spec/template/spec/containers/0/env/2
+</code></pre>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th></th><th>Strategic merge</th><th>JSON 6902</th></tr></thead>
+    <tbody>
+      <tr><td>Syntax</td><td>Partial resource YAML</td><td>List of path-based operations</td></tr>
+      <tr><td>Best for</td><td>Adding/overriding fields, merging by known list keys (container name, port name)</td><td>Precise index-based edits, deletions, moves, anything strategic-merge can't target</td></tr>
+      <tr><td>Readability</td><td>Higher — looks like the resource itself</td><td>Lower — path syntax, less self-documenting</td></tr>
+      <tr><td>CRD support</td><td>Falls back to standard merge (no merge-key awareness) unless the CRD defines patch strategies</td><td>Works uniformly regardless of resource type</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><strong>Patch target selectors matter — a patch with no match is silently a no-op in some Kustomize versions/configurations, or an explicit error in others.</strong> The <code>target</code> block matches on <code>group</code>, <code>version</code>, <code>kind</code>, <code>name</code> (supports regex), <code>namespace</code>, and <code>labelSelector</code>/<code>annotationSelector</code>. A typo in <code>name</code> or an overly narrow <code>kind</code> is one of the most common real-world Kustomize debugging sessions — always verify with <code>kubectl kustomize .</code> that the patch actually landed where intended before applying.</p>
+  </div>
+</section>
+
+<section id="generators">
+  <h2><span class="num">15</span>Generators &amp; Hash Suffixes</h2>
+  <p class="lead"><code>configMapGenerator</code> and <code>secretGenerator</code> let you generate ConfigMaps/Secrets from literals, files, or env files, rather than hand-writing the resource.</p>
+
+<pre><code>configMapGenerator:
+  - name: app-config
+    literals:
+      - LOG_LEVEL=info
+    files:
+      - config.properties
+secretGenerator:
+  - name: db-creds
+    envs:
+      - db.env
+    type: Opaque
+generatorOptions:
+  disableNameSuffixHash: false   # default: false (hash suffix ON)
+</code></pre>
+
+  <h3>Why the hash suffix exists</h3>
+  <p>Kustomize appends a content hash to the generated ConfigMap/Secret's name (e.g. <code>app-config-8f2c6b9d4t</code>). Any consuming Deployment/Pod spec that Kustomize also processes gets its <code>volumeMounts</code>/<code>envFrom</code> references automatically rewritten to the new hashed name. <strong>This is the mechanism that forces a rollout</strong> when config changes — because the ConfigMap/Secret name itself changes, the Pod template's spec changes, which Kubernetes deployment controllers detect as a genuine spec diff and roll new Pods. Without the hash, updating a ConfigMap in place would <em>not</em> trigger a rollout (Kubernetes doesn't watch ConfigMap/Secret content for that), leaving old Pods running stale config until they happen to restart.</p>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p>This is one of the most-tested Kustomize interview facts: <strong>updating a plain ConfigMap referenced by name does not automatically restart Pods.</strong> <code>secretGenerator</code>/<code>configMapGenerator</code>'s hash-suffix behavior is specifically the workaround — it changes the resource's identity so the owning workload's pod template spec changes too, and normal rolling-update mechanics take over. If <code>disableNameSuffixHash: true</code> is set, you lose this auto-rollout trigger and are back to manual restart (<code>kubectl rollout restart</code>) or another mechanism (e.g. a checksum annotation, common in Helm charts via <code>checksum/config</code>).</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: Helm doesn't have generators/hash-suffixes — how do Helm charts solve the same "config change needs a rollout" problem?</strong><br>
+    A: Common pattern: annotate the pod template with a checksum of the rendered ConfigMap/Secret, e.g. <code>checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}</code> in the Deployment's <code>spec.template.metadata.annotations</code>. Since that's part of the pod template spec, any content change alters the checksum, alters the pod template, and triggers a rollout — conceptually the same trick as Kustomize's hash suffix, implemented via templating instead of generated resource identity.</p>
+  </div>
+</section>
+
+<section id="transformers">
+  <h2><span class="num">16</span>Common Transformers</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Field</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>commonLabels</code></td><td>Adds labels to all resources <em>and</em> updates matching label selectors (Service selectors, Deployment matchLabels) so they stay consistent — this is more than a metadata stamp, it actively rewires selectors</td></tr>
+      <tr><td><code>commonAnnotations</code></td><td>Adds annotations to all resources (metadata only, no selector rewiring)</td></tr>
+      <tr><td><code>namePrefix</code> / <code>nameSuffix</code></td><td>Prepends/appends a string to every resource name, and updates internal references (e.g. a ConfigMap reference in a Deployment) accordingly</td></tr>
+      <tr><td><code>namespace</code></td><td>Sets/overrides the namespace on all namespaced resources</td></tr>
+      <tr><td><code>images</code></td><td>Rewrites container image name/tag/digest without touching the rest of the Deployment spec</td></tr>
+      <tr><td><code>replicas</code></td><td>Sets replica count for a named workload (cleaner than a full strategic-merge patch for this one field)</td></tr>
+      <tr><td><code>vars</code> / <code>replacements</code></td><td>Injects a value from one resource's field into another (e.g. propagate a generated Service name into a ConfigMap); <code>replacements</code> is the modern, more explicit successor to the deprecated <code>vars</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><code>commonLabels</code> in legacy Kustomize versions applies to <strong>immutable selector fields</strong> too (Service <code>spec.selector</code>, Deployment <code>spec.selector.matchLabels</code>) — which is fine on first apply but will hard-fail an update if you change <code>commonLabels</code> later, since those selector fields are immutable on existing objects. Newer Kustomize APIs introduced <code>labels</code> (with more granular control over which fields get touched) as the more flexible replacement for blanket <code>commonLabels</code>/<code>commonAnnotations</code> behavior.</p>
+  </div>
+</section>
+
+<section id="components">
+  <h2><span class="num">17</span>Kustomize Components</h2>
+  <p class="lead">A <strong>Component</strong> (<code>kind: Component</code>) is a reusable, optional slice of configuration that overlays can opt into — unlike a base (which every overlay inherits wholesale), a component is designed to be mixed into multiple, unrelated overlays selectively (e.g. "add Istio sidecar config," "add a debug sidecar," "enable a feature flag's extra resources").</p>
+<pre><code># components/debug-sidecar/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+patches:
+  - path: add-debug-container.yaml
+    target:
+      kind: Deployment
+</code></pre>
+<pre><code># overlays/dev/kustomization.yaml
+resources:
+  - ../../base
+components:
+  - ../../components/debug-sidecar
+</code></pre>
+  <p>Key distinction from a base: components are additive, composable building blocks meant to be referenced from many different overlays (mix-and-match), while a base is the singular foundation an overlay is built from (typically one base per overlay chain).</p>
+</section>
+
+<section id="helm-vs-kustomize">
+  <h2><span class="num">18</span>Helm vs Kustomize — Philosophy &amp; When to Use Which</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th></th><th>Helm</th><th>Kustomize</th></tr></thead>
+    <tbody>
+      <tr><td>Core model</td><td>Templating — placeholders filled from values</td><td>Overlay/patch — start from valid YAML, layer diffs on top</td></tr>
+      <tr><td>Base artifact</td><td>Chart with <code>{{ }}</code> template syntax (not valid YAML on its own)</td><td>Plain, valid Kubernetes YAML — readable and directly <code>kubectl apply -f</code>-able even without Kustomize</td></tr>
+      <tr><td>Packaging &amp; distribution</td><td>Versioned charts, repos/OCI registries, dependency management</td><td>No packaging concept — just directories of YAML in version control</td></tr>
+      <tr><td>Release tracking</td><td>Built-in (revisions, rollback, history via Secrets)</td><td>None — no concept of a "release"; relies on the applying tool (kubectl/GitOps controller) for history</td></tr>
+      <tr><td>Logic/conditionals</td><td>Full templating language (if/range/functions) — powerful but can produce unreadable, deeply nested templates</td><td>Deliberately no logic/conditionals — patches are declarative diffs, which some consider more auditable, others more limited</td></tr>
+      <tr><td>Best for</td><td>Distributing reusable, parameterized software (public/third-party charts, complex apps with many optional features)</td><td>Managing environment-specific variants of YAML you own (dev/staging/prod diffs), especially where "read the actual manifest" clarity matters</td></tr>
+      <tr><td>Learning curve</td><td>Steeper — Go templates + Sprig + Helm object model</td><td>Shallower — mostly YAML you already know, plus patch semantics</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Using them together</h3>
+  <p>Two common combined patterns:</p>
+  <ul>
+    <li><strong>Helm renders, Kustomize patches:</strong> <code>helm template ./chart | kustomize build - </code> (or via a <code>helmCharts</code>/<code>helmGlobals</code> field in <code>kustomization.yaml</code>, supported by the standalone <code>kustomize</code> CLI) — useful when you consume a third-party Helm chart but need small environment-specific tweaks the chart's own <code>values.yaml</code> doesn't expose.</li>
+    <li><strong><code>kustomization.yaml</code>'s native <code>helmCharts</code> field:</strong> lets Kustomize itself invoke Helm as a chart inflator, then apply Kustomize patches on the rendered output, all from one <code>kustomize build</code> invocation.</li>
+  </ul>
+<pre><code># kustomization.yaml with inline Helm chart inflation (standalone kustomize CLI, --enable-helm)
+helmCharts:
+  - name: redis
+    repo: https://charts.bitnami.com/bitnami
+    version: 18.1.5
+    releaseName: myredis
+    valuesFile: redis-values.yaml
+patches:
+  - path: patch-redis-resources.yaml
+    target:
+      kind: StatefulSet
+      name: myredis-redis-master
+</code></pre>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: If Kustomize has no templating, how do you avoid duplicating near-identical YAML across many overlays?</strong><br>
+    A: The base/overlay model itself is the DRY mechanism — put everything common in the base, express only the diff in each overlay's patches. Components extend this for cross-cutting, optional concerns. For genuinely parameterized needs (loops, conditionals, computed values), that's a signal to reach for Helm instead, or to generate the Kustomize YAML with an external templating step before it ever reaches Kustomize.</p>
+  </div>
+</section>
+
+<section id="gitops">
+  <h2><span class="num">19</span>GitOps Consumption: Argo CD &amp; Flux</h2>
+
+  <h3>Argo CD</h3>
+  <ul>
+    <li>An <code>Application</code> resource's <code>spec.source</code> declares either a Helm chart (path + <code>helm.valueFiles</code>/<code>helm.parameters</code>) or a Kustomize directory (path + <code>kustomize.namePrefix</code>/<code>images</code> overrides etc.) — Argo CD auto-detects the tool from directory contents (presence of <code>Chart.yaml</code> vs <code>kustomization.yaml</code>) if not explicitly specified.</li>
+    <li>Internally, Argo CD's <code>repo-server</code> component runs the equivalent of <code>helm template</code> or <code>kustomize build</code> to produce plain manifests, then diffs those against live cluster state using its own reconciliation loop — it does <strong>not</strong> use Helm's release/Secret bookkeeping or invoke <code>helm install</code>/<code>upgrade</code> directly.</li>
+    <li>Multi-source apps can combine a Helm chart with a separate Kustomize-applied values overlay in one <code>Application</code>.</li>
+  </ul>
+
+  <h3>Flux</h3>
+  <ul>
+    <li><code>HelmRelease</code> + <code>HelmRepository</code>/<code>OCIRepository</code> CRDs drive Helm charts through Flux's <code>helm-controller</code>, which does perform real Helm actions server-side (it manages actual Helm releases, storage, and history — closer to genuine <code>helm upgrade</code> semantics than Argo CD's render-and-diff approach).</li>
+    <li><code>Kustomization</code> CRD (via <code>kustomize-controller</code>) applies a Kustomize-built directory tree, reconciling it against a <code>GitRepository</code>/<code>OCIRepository</code> source.</li>
+    <li>Flux commonly layers its own <code>Kustomization</code> CRD <em>on top of</em> plain manifests or even on top of Helm-rendered output as a generic "apply this path, patch these fields" mechanism — distinct from Kustomize's own <code>kustomization.yaml</code> patches, though conceptually similar.</li>
+  </ul>
+
+  <div class="callout trap">
+    <span class="label">⚠ Trap</span>
+    <p><strong>Helm rollback vs GitOps drift, revisited:</strong> because Argo CD/Flux continuously reconcile toward what's declared in Git, any manual <code>helm rollback</code>, <code>kubectl edit</code>, or <code>kubectl apply</code> against a GitOps-managed resource is fighting a controller that will detect the drift and (depending on sync policy — especially <code>selfHeal: true</code> in Argo CD) revert it back to Git's declared state, often within seconds to minutes. The interview-safe answer: GitOps-managed workloads are rolled back by reverting the Git commit, not by imperative cluster commands.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: Does Argo CD create real Helm releases you can see with <code>helm list</code>?</strong><br>
+    A: No (in the default/common integration) — Argo CD renders the chart to plain manifests and manages them through its own Application/sync state; there's no corresponding <code>sh.helm.release.v1.*</code> Secret and <code>helm list</code> will show nothing for it. Flux's <code>helm-controller</code>, by contrast, does drive genuine Helm releases and <code>helm list</code>/<code>helm history</code> will reflect them.</p>
+  </div>
+</section>
+
+<section id="qa-rapid">
+  <h2><span class="num">20</span>Rapid-Fire Q&amp;A</h2>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: What's the difference between <code>Chart.yaml</code>'s <code>version</code> and <code>appVersion</code>?</strong><br>
+    A: <code>version</code> is the chart's own SemVer, bumped whenever the chart's templates/structure change — it's what <code>helm repo</code>/OCI registries index and what <code>helm dependency</code> ranges match against. <code>appVersion</code> is free-form text describing the version of the application the chart deploys (e.g. the app's own release tag) — purely informational, not used by Helm's dependency resolution.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: Can two Helm releases share the same name in the same cluster?</strong><br>
+    A: Not in the same namespace (release names are unique per-namespace in Helm 3), but yes across different namespaces — namespace + release name together form the unique key, unlike Helm 2 where release names were cluster-global.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: How do you debug a chart that fails to render?</strong><br>
+    A: <code>helm template ./chart --debug</code> (shows the merged values used and full rendered output, or the exact template error with file/line), <code>helm lint</code> for structural issues, and <code>helm install --dry-run --debug</code> to also validate against the live API server's schema without actually applying.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: What happens if you delete a resource's template from a chart and run <code>helm upgrade</code>?</strong><br>
+    A: Helm 3's 3-way merge diff (comparing the chart's new rendered manifest, the previous release's rendered manifest, and live cluster state) detects the resource is gone from the new render and deletes it from the cluster. Helm 2's naive 2-way diff (old chart vs new chart, ignoring live drift) could miss this in certain edge cases — one of the concrete correctness improvements from the Helm 3 rewrite.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: Why prefer Kustomize's <code>configMapGenerator</code> over just editing a ConfigMap's data in place across environments?</strong><br>
+    A: Beyond DRY composition (base data + per-overlay literals/files), the generated hash suffix solves the "config changed but nothing restarted" problem for free — editing in place doesn't change the workload's pod template spec, so no rollout is triggered; the generator's name-change mechanism does trigger one automatically.</p>
+  </div>
+
+  <div class="callout qa">
+    <span class="label">Q&amp;A</span>
+    <p><strong>Q: Is Kustomize a replacement for Helm?</strong><br>
+    A: Not fully — they solve overlapping but distinct problems. Kustomize has no packaging/versioning/distribution story and no templating logic; Helm has no first-class "environment overlay" concept as clean as bases/overlays and pulls in a full templating language even for trivial variance. Many orgs use Helm to consume/distribute reusable charts and Kustomize on top (or instead) for environment-specific overlay logic that doesn't need a chart's parameterization power.</p>
+  </div>
+
+</section>
+
+<footer>
+  Helm &amp; Kustomize — Kubernetes packaging cheatsheet · Helm 3 (Tiller-less) · Kustomize built into kubectl
+</footer>
+
+</div>
+</body>
+</html>

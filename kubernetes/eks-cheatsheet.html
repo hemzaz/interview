@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EKS — Complete Field Guide</title>
+<link href="../assets/fonts/font-set-3.css" rel="stylesheet">
+<style>
+:root {
+  --bg:    #080c10;
+  --s1:    #0c1118;
+  --s2:    #101720;
+  --bd:    #1a2535;
+  --b2:    #22334a;
+
+  --aws:   #ff9900;   /* AWS orange */
+  --aws2:  #ffb347;
+  --eks:   #1a73e8;   /* EKS blue */
+  --teal:  #00b4d8;
+  --grn:   #57cc99;
+  --red:   #ef4444;
+  --yel:   #fbbf24;
+  --vio:   #8b5cf6;
+  --pink:  #ec4899;
+  --slate: #7c9ab8;
+
+  --text:  #d4e4f4;
+  --dim:   #1e3048;
+  --mid:   #446080;
+  --mono:  'IBM Plex Mono', monospace;
+  --sans:  'IBM Plex Sans', sans-serif;
+  --disp:  'Syne', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+
+/* ── SCAN LINES EFFECT ── */
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -5%,rgba(255,153,0,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 0%   60%,rgba(0,180,216,.06) 0%,transparent 45%),
+    radial-gradient(ellipse 30% 25% at 100% 75%,rgba(139,92,246,.05) 0%,transparent 45%);
+}
+
+.page{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:32px 24px 80px;}
+
+/* ── WELCOME BANNER ── */
+.welcome{background:linear-gradient(135deg,rgba(255,153,0,.08) 0%,rgba(26,115,232,.06) 50%,rgba(139,92,246,.06) 100%);border:1px solid rgba(255,153,0,.2);border-radius:12px;padding:28px 32px;margin-bottom:28px;position:relative;overflow:hidden;}
+.welcome::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--aws),var(--eks),var(--teal),var(--vio));}
+.welcome-grid{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;}
+.welcome h1{font-family:var(--disp);font-size:64px;font-weight:800;line-height:.9;letter-spacing:-2px;text-transform:uppercase;}
+.wt1{background:linear-gradient(135deg,var(--aws) 0%,var(--aws2) 40%,#fff 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.wt2{color:rgba(255,255,255,.06);-webkit-text-stroke:1px rgba(255,153,0,.25);}
+.welcome-sub{font-family:var(--mono);font-size:9.5px;letter-spacing:2.5px;color:var(--mid);text-transform:uppercase;margin-top:10px;}
+.welcome-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.wtag{font-family:var(--mono);font-size:8.5px;letter-spacing:.5px;padding:4px 10px;border-radius:4px;border:1px solid;font-weight:600;}
+.wt-aws{background:rgba(255,153,0,.08);border-color:rgba(255,153,0,.35);color:var(--aws);}
+.wt-eks{background:rgba(26,115,232,.08);border-color:rgba(26,115,232,.35);color:#6090ff;}
+.wt-grn{background:rgba(87,204,153,.07);border-color:rgba(87,204,153,.3);color:var(--grn);}
+.wt-vio{background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.3);color:var(--vio);}
+.wt-red{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.3);color:var(--red);}
+.welcome-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.wstat{background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center;}
+.wstat-n{font-family:var(--disp);font-size:26px;font-weight:800;color:var(--aws);line-height:1;}
+.wstat-l{font-family:var(--mono);font-size:7.5px;letter-spacing:1.5px;color:var(--mid);text-transform:uppercase;margin-top:3px;}
+
+/* ── NAV TABS ── */
+.nav{display:flex;gap:4px;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:5px;overflow-x:auto;}
+.nav-btn{font-family:var(--mono);font-size:9px;letter-spacing:1px;font-weight:600;text-transform:uppercase;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.nav-btn.active{background:rgba(255,153,0,.12);color:var(--aws);border:1px solid rgba(255,153,0,.25);}
+
+/* ── SECTIONS ── */
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
+.sh-icon{font-size:20px;flex-shrink:0;}
+.sh-label{font-family:var(--disp);font-size:22px;font-weight:700;letter-spacing:.5px;}
+.sh-sub{font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+.g53{display:grid;grid-template-columns:5fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;position:relative;overflow:hidden;transition:.2s;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.c-aws::before{background:linear-gradient(90deg,var(--aws),transparent);}
+.c-eks::before{background:linear-gradient(90deg,var(--eks),transparent);}
+.c-teal::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.c-grn::before{background:linear-gradient(90deg,var(--grn),transparent);}
+.c-red::before{background:linear-gradient(90deg,var(--red),transparent);}
+.c-vio::before{background:linear-gradient(90deg,var(--vio),transparent);}
+.c-yel::before{background:linear-gradient(90deg,var(--yel),transparent);}
+.card:hover{border-color:var(--b2);}
+
+.ct{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+
+/* ── FACT ROWS ── */
+.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
+.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.6;}
+.fv b{color:var(--text);}
+.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--aws);}
+
+/* ── CODE ── */
+.code{background:#020507;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:10px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
+.kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--aws);}
+.nu{color:var(--teal);} .cm{color:#1e3048;} .fn{color:#60a5fa;}
+.re{color:var(--red);} .op{color:rgba(255,255,255,.25);}
+
+/* ── TRAP / NOTE ── */
+.trap{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.note{background:rgba(255,255,255,.02);border-left:3px solid var(--bd);padding:8px 12px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;}
+.note b{color:var(--text);}
+.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+
+/* ── TABLE ── */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
+.st th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
+
+/* ── UPGRADE WIZARD ── */
+.wizard{background:var(--s1);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.wiz-header{background:linear-gradient(135deg,rgba(255,153,0,.08),rgba(26,115,232,.06));padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
+.wiz-title{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--aws);}
+.wiz-progress{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;color:var(--mid);}
+.wiz-bar{width:160px;height:5px;background:var(--dim);border-radius:3px;overflow:hidden;}
+.wiz-fill{height:100%;background:linear-gradient(90deg,var(--aws),var(--aws2));border-radius:3px;transition:.4s;}
+.wiz-body{padding:24px;}
+.wiz-steps{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;}
+.wiz-step{font-family:var(--mono);font-size:8px;letter-spacing:.5px;padding:6px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;transition:.2s;white-space:nowrap;color:var(--mid);background:transparent;}
+.wiz-step:hover{border-color:rgba(255,153,0,.3);color:var(--text);}
+.wiz-step.active{background:rgba(255,153,0,.1);border-color:rgba(255,153,0,.4);color:var(--aws);}
+.wiz-step.done{background:rgba(87,204,153,.07);border-color:rgba(87,204,153,.3);color:var(--grn);}
+.wiz-step.danger{border-color:rgba(239,68,68,.3);color:var(--red);}
+.wiz-content{min-height:200px;}
+.step-pane{display:none;}
+.step-pane.active{display:block;}
+.step-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:14px;font-weight:800;flex-shrink:0;}
+.step-num.aws{background:rgba(255,153,0,.15);color:var(--aws);border:1px solid rgba(255,153,0,.3);}
+.step-num.grn{background:rgba(87,204,153,.12);color:var(--grn);border:1px solid rgba(87,204,153,.3);}
+.step-num.red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
+.step-num.vio{background:rgba(139,92,246,.12);color:var(--vio);border:1px solid rgba(139,92,246,.3);}
+.step-title{font-family:var(--disp);font-size:16px;font-weight:700;}
+.step-sub{font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;margin-top:2px;}
+
+/* fail items */
+.fail-item{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.12);border-radius:6px;padding:10px 14px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr;gap:0 12px;align-items:start;}
+.fail-icon{font-size:16px;margin-top:1px;}
+.fail-title{font-weight:600;color:var(--text);font-size:11.5px;margin-bottom:3px;}
+.fail-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.fail-desc b{color:var(--text);}
+.fail-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+
+/* check items */
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid rgba(255,255,255,.025);}
+.check-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.check-text{font-size:11px;color:var(--mid);line-height:1.6;}
+.check-text b{color:var(--text);}
+.check-text code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+
+.wiz-btns{display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--bd);}
+.wbtn{font-family:var(--mono);font-size:9px;letter-spacing:1px;font-weight:700;text-transform:uppercase;padding:9px 20px;border-radius:5px;border:1px solid;cursor:pointer;transition:.2s;}
+.wbtn-prev{background:transparent;border-color:var(--bd);color:var(--mid);}
+.wbtn-prev:hover{border-color:var(--b2);color:var(--text);}
+.wbtn-next{background:rgba(255,153,0,.1);border-color:rgba(255,153,0,.4);color:var(--aws);}
+.wbtn-next:hover{background:rgba(255,153,0,.18);}
+
+/* ── NODE UPGRADE DIFF ── */
+.diff-table{width:100%;border-collapse:collapse;font-size:11px;}
+.diff-table th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);}
+.diff-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:top;line-height:1.5;}
+.diff-table .dkey{color:var(--text);font-weight:600;font-size:11px;}
+.diff-table .dal2{color:var(--mid);}
+.diff-table .dal23{color:var(--grn);}
+.diff-table code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.diff-table tr:last-child td{border-bottom:none;}
+
+/* ── PERMISSION FLOW ── */
+.perm-flow{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:8px 0;}
+.pbox{padding:5px 12px;border-radius:5px;border:1px solid;font-family:var(--mono);font-size:9px;font-weight:600;white-space:nowrap;}
+.pb-aws{background:rgba(255,153,0,.09);border-color:rgba(255,153,0,.35);color:var(--aws);}
+.pb-k8s{background:rgba(26,115,232,.09);border-color:rgba(26,115,232,.35);color:#6090ff;}
+.pb-grn{background:rgba(87,204,153,.07);border-color:rgba(87,204,153,.3);color:var(--grn);}
+.pb-vio{background:rgba(139,92,246,.09);border-color:rgba(139,92,246,.3);color:var(--vio);}
+.parr{color:var(--mid);font-size:16px;padding:0 2px;}
+
+/* ── ADDON CARDS ── */
+.addon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.addon-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:14px;position:relative;cursor:pointer;transition:.2s;}
+.addon-card:hover{border-color:var(--b2);transform:translateY(-1px);}
+.addon-card.managed{border-left:3px solid var(--grn);}
+.addon-card.self{border-left:3px solid var(--aws);}
+.addon-name{font-family:var(--disp);font-size:12px;font-weight:700;margin-bottom:4px;}
+.addon-type{font-family:var(--mono);font-size:7.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.addon-type.m{color:var(--grn);}
+.addon-type.s{color:var(--aws);}
+.addon-desc{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.addon-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);font-size:10.5px;color:var(--mid);line-height:1.6;}
+.addon-detail b{color:var(--text);}
+.addon-detail code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.addon-card.open .addon-detail{display:block;}
+.addon-card.open{border-color:rgba(255,153,0,.25);}
+
+/* ── TRAP CARDS ── */
+.trap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+.trap-big{background:var(--s1);border:1px solid rgba(239,68,68,.12);border-radius:8px;padding:14px;position:relative;overflow:hidden;}
+.trap-big::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(239,68,68,.5),transparent);}
+.trap-n{position:absolute;top:8px;right:12px;font-family:var(--disp);font-size:34px;font-weight:800;color:rgba(239,68,68,.06);line-height:1;}
+.trap-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.trap-q{font-size:12px;color:var(--text);font-weight:600;margin-bottom:5px;line-height:1.5;}
+.trap-q code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--aws);}
+.trap-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.trap-a b{color:var(--text);}
+.trap-a code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+
+/* ── INLINE HIGHLIGHTS ── */
+.hl-aws{color:var(--aws);font-weight:600;}
+.hl-eks{color:#6090ff;font-weight:600;}
+.hl-grn{color:var(--grn);font-weight:600;}
+.hl-red{color:var(--red);font-weight:600;}
+.hl-vio{color:var(--vio);font-weight:600;}
+
+@keyframes fi{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.section.active>*{animation:fi .35s ease both;}
+.section.active>*:nth-child(1){animation-delay:.02s}
+.section.active>*:nth-child(2){animation-delay:.06s}
+.section.active>*:nth-child(3){animation-delay:.10s}
+.section.active>*:nth-child(4){animation-delay:.14s}
+.section.active>*:nth-child(5){animation-delay:.18s}
+.section.active>*:nth-child(6){animation-delay:.22s}
+.section.active>*:nth-child(7){animation-delay:.26s}
+
+.footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;}
+.ft{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ WELCOME ══ -->
+<div class="welcome">
+  <div class="welcome-grid">
+    <div>
+      <h1><span class="wt1">EKS</span><br><span class="wt2">FIELD GUIDE</span></h1>
+      <div class="welcome-sub">// elastic kubernetes service · complete operational reference</div>
+      <div class="welcome-tags">
+        <div class="wtag wt-aws">☁️ AWS Managed Control Plane</div>
+        <div class="wtag wt-eks">⚙️ Architecture & Addons</div>
+        <div class="wtag wt-grn">📈 Scaling: CA · Karpenter · KEDA</div>
+        <div class="wtag wt-vio">🔐 IAM · IRSA · Pod Identity</div>
+        <div class="wtag wt-red">🚀 Upgrade Wizard · What Fails</div>
+        <div class="wtag wt-aws">🔄 AL2 → AL2023 Migration</div>
+      </div>
+    </div>
+    <div class="welcome-stats">
+      <div class="wstat"><div class="wstat-n">1</div><div class="wstat-l">minor version at a time</div></div>
+      <div class="wstat"><div class="wstat-n">14mo</div><div class="wstat-l">standard support</div></div>
+      <div class="wstat"><div class="wstat-n">CP→NG</div><div class="wstat-l">upgrade order</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('arch')">🏗️ Architecture</button>
+  <button class="nav-btn" onclick="showSection('addons')">🧩 Addons</button>
+  <button class="nav-btn" onclick="showSection('scaling')">📈 Scaling</button>
+  <button class="nav-btn" onclick="showSection('perms')">🔐 Permissions</button>
+  <button class="nav-btn" onclick="showSection('upgrade')">🚀 EKS Upgrade</button>
+  <button class="nav-btn" onclick="showSection('nodes')">🔄 Node Migration</button>
+  <button class="nav-btn" onclick="showSection('traps')">⚡ Traps</button>
+</div>
+
+<!-- ═════════════════════════════════════ -->
+<!--           ARCHITECTURE               -->
+<!-- ═════════════════════════════════════ -->
+<div class="section active" id="sec-arch">
+
+<div class="sh"><div class="sh-icon">🏗️</div><div class="sh-label" style="color:var(--aws);">EKS Architecture</div><div class="sh-sub">// managed control plane · data plane options · VPC topology</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,153,0,.3),transparent);"></div></div>
+
+<!-- Architecture SVG -->
+<div class="card c-aws" style="padding:20px;margin-bottom:12px;">
+<svg viewBox="0 0 1380 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+  <defs>
+    <marker id="aa" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(255,153,0,.8)"/></marker>
+    <marker id="ab" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(87,204,153,.7)"/></marker>
+    <marker id="ac" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(0,180,216,.6)"/></marker>
+    <marker id="ad" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(139,92,246,.6)"/></marker>
+    <filter id="gw"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- AWS Cloud boundary -->
+  <rect x="5" y="5" width="1370" height="408" rx="10" fill="rgba(255,153,0,.02)" stroke="rgba(255,153,0,.12)" stroke-width="1.5" stroke-dasharray="8 4"/>
+  <text x="22" y="22" font-family="IBM Plex Mono" font-size="9" fill="rgba(255,153,0,.35)" letter-spacing="3">AWS CLOUD</text>
+
+  <!-- ── CONTROL PLANE ── -->
+  <rect x="20" y="32" width="480" height="175" rx="8" fill="rgba(255,153,0,.04)" stroke="rgba(255,153,0,.25)" stroke-width="1.5"/>
+  <text x="260" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="rgba(255,153,0,.55)" letter-spacing="2">EKS MANAGED CONTROL PLANE (AWS-OWNED VPC)</text>
+
+  <!-- API Server -->
+  <g transform="translate(35,62)">
+    <rect width="130" height="50" rx="6" fill="rgba(255,153,0,.1)" stroke="rgba(255,153,0,.4)" stroke-width="1.5" filter="url(#gw)"/>
+    <text x="65" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#ff9900" font-weight="700">API Server</text>
+    <text x="65" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(255,153,0,.5)">HA multi-AZ</text>
+    <text x="65" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(255,153,0,.3)">OIDC endpoint</text>
+  </g>
+  <!-- etcd -->
+  <g transform="translate(185,62)">
+    <rect width="100" height="50" rx="6" fill="rgba(0,180,216,.07)" stroke="rgba(0,180,216,.3)" stroke-width="1"/>
+    <text x="50" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#00b4d8" font-weight="700">etcd</text>
+    <text x="50" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(0,180,216,.45)">encrypted</text>
+    <text x="50" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(0,180,216,.3)">KMS CMK</text>
+  </g>
+  <!-- Scheduler + CM -->
+  <g transform="translate(305,62)">
+    <rect width="100" height="50" rx="6" fill="rgba(139,92,246,.07)" stroke="rgba(139,92,246,.25)" stroke-width="1"/>
+    <text x="50" y="18" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6" font-weight="700">Scheduler</text>
+    <text x="50" y="32" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">ctrl-manager</text>
+    <text x="50" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(139,92,246,.3)">cloud-ctrl-mgr</text>
+  </g>
+  <!-- CoreDNS CP -->
+  <g transform="translate(425,62)">
+    <rect width="65" height="50" rx="6" fill="rgba(87,204,153,.06)" stroke="rgba(87,204,153,.2)" stroke-width="1"/>
+    <text x="32" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#57cc99" font-weight="700">CoreDNS</text>
+    <text x="32" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="7.5" fill="rgba(87,204,153,.4)">managed</text>
+    <text x="32" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,.3)">addon</text>
+  </g>
+
+  <!-- CP note -->
+  <text x="260" y="140" text-anchor="middle" font-family="IBM Plex Sans" font-size="9" fill="rgba(255,153,0,.35)">AWS manages: HA, patching, etcd backup, API server scaling, multi-AZ</text>
+  <text x="260" y="158" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(255,153,0,.25)">You pay $0.10/hr per cluster · SLA: 99.95%</text>
+
+  <!-- ENI in customer VPC -->
+  <rect x="20" y="220" width="480" height="60" rx="6" fill="rgba(255,153,0,.03)" stroke="rgba(255,153,0,.12)" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="260" y="240" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(255,153,0,.3)">Cross-account ENIs in your VPC (for kubelet→apiserver)</text>
+  <text x="260" y="256" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.2)">EKS-managed ENI  ←→  your node SG must allow 443 outbound</text>
+  <text x="260" y="270" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.2)">Endpoint: Public+Private (default) | Private only | Public only</text>
+
+  <!-- ── YOUR VPC ── -->
+  <rect x="520" y="32" width="845" height="370" rx="8" fill="rgba(87,204,153,.02)" stroke="rgba(87,204,153,.18)" stroke-width="1.5"/>
+  <text x="940" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="rgba(87,204,153,.45)" letter-spacing="2">YOUR VPC</text>
+
+  <!-- AZ-A -->
+  <rect x="535" y="62" width="250" height="320" rx="6" fill="rgba(255,255,255,.01)" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="5 3"/>
+  <text x="660" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,255,255,.2)">AZ-A</text>
+
+  <!-- Node in AZ-A -->
+  <g transform="translate(550,90)">
+    <rect width="220" height="240" rx="7" fill="rgba(0,180,216,.04)" stroke="rgba(0,180,216,.2)" stroke-width="1"/>
+    <text x="110" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(0,180,216,.5)" letter-spacing="1">MANAGED NODE GROUP</text>
+    <!-- kubelet -->
+    <rect x="10" y="30" width="90" height="32" rx="4" fill="rgba(0,180,216,.08)" stroke="rgba(0,180,216,.25)" stroke-width="1"/>
+    <text x="55" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#00b4d8" font-weight="700">kubelet</text>
+    <!-- kube-proxy -->
+    <rect x="110" y="30" width="100" height="32" rx="4" fill="rgba(0,180,216,.06)" stroke="rgba(0,180,216,.2)" stroke-width="1"/>
+    <text x="160" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#00b4d8" font-weight="700">kube-proxy</text>
+    <!-- VPC CNI -->
+    <rect x="10" y="72" width="90" height="32" rx="4" fill="rgba(87,204,153,.08)" stroke="rgba(87,204,153,.25)" stroke-width="1"/>
+    <text x="55" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#57cc99" font-weight="700">vpc-cni</text>
+    <text x="55" y="98" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,.4)">aws-node</text>
+    <!-- Pods -->
+    <rect x="110" y="72" width="100" height="70" rx="4" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
+    <text x="160" y="92" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pod</text>
+    <text x="160" y="107" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pod</text>
+    <text x="160" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pod</text>
+    <!-- ENI secondary IPs -->
+    <rect x="10" y="154" width="200" height="30" rx="4" fill="rgba(255,153,0,.05)" stroke="rgba(255,153,0,.2)" stroke-width="1"/>
+    <text x="110" y="173" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.6)">ENI (secondary IPs = pod IPs)</text>
+    <!-- Instance role -->
+    <rect x="10" y="194" width="200" height="30" rx="4" fill="rgba(255,153,0,.04)" stroke="rgba(255,153,0,.15)" stroke-width="1"/>
+    <text x="110" y="213" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.5)">EC2 Instance Role (node IAM)</text>
+  </g>
+
+  <!-- AZ-B (abbreviated) -->
+  <rect x="810" y="62" width="170" height="320" rx="6" fill="rgba(255,255,255,.01)" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="5 3"/>
+  <text x="895" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,255,255,.2)">AZ-B</text>
+  <g transform="translate(820,90)">
+    <rect width="150" height="130" rx="6" fill="rgba(0,180,216,.03)" stroke="rgba(0,180,216,.15)" stroke-width="1"/>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(0,180,216,.4)">MNG / Fargate</text>
+    <rect x="10" y="30" width="130" height="25" rx="4" fill="rgba(0,180,216,.07)" stroke="rgba(0,180,216,.2)" stroke-width="1"/>
+    <text x="75" y="46" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#00b4d8">kubelet + cni</text>
+    <rect x="10" y="64" width="130" height="55" rx="4" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
+    <text x="75" y="87" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pods</text>
+    <text x="75" y="103" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(139,92,246,.4)">(IRSA / Pod Identity)</text>
+  </g>
+
+  <!-- Fargate -->
+  <g transform="translate(820,235)">
+    <rect width="150" height="80" rx="6" fill="rgba(255,153,0,.04)" stroke="rgba(255,153,0,.2)" stroke-width="1"/>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.6)">Fargate Profile</text>
+    <text x="75" y="38" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(255,153,0,.4)">serverless pods</text>
+    <text x="75" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(255,153,0,.3)">no node mgmt</text>
+    <text x="75" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(255,153,0,.25)">pod-level IAM roles</text>
+  </g>
+
+  <!-- Karpenter -->
+  <g transform="translate(1000,90)">
+    <rect width="150" height="80" rx="6" fill="rgba(251,191,36,.05)" stroke="rgba(251,191,36,.25)" stroke-width="1"/>
+    <text x="75" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#fbbf24" font-weight="700">Karpenter</text>
+    <text x="75" y="38" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(251,191,36,.5)">node provisioner</text>
+    <text x="75" y="54" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(251,191,36,.35)">NodePool / EC2NodeClass</text>
+    <text x="75" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(251,191,36,.25)">direct EC2 fleet calls</text>
+  </g>
+
+  <!-- ALB / NLB -->
+  <g transform="translate(1000,195)">
+    <rect width="150" height="55" rx="6" fill="rgba(87,204,153,.05)" stroke="rgba(87,204,153,.2)" stroke-width="1"/>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#57cc99" font-weight="700">ALB / NLB</text>
+    <text x="75" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(87,204,153,.45)">AWS LB Controller</text>
+    <text x="75" y="47" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,.3)">Ingress → ALB</text>
+  </g>
+
+  <!-- EBS CSI / EFS -->
+  <g transform="translate(1000,275)">
+    <rect width="150" height="55" rx="6" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8b5cf6" font-weight="700">EBS CSI / EFS</text>
+    <text x="75" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(139,92,246,.45)">storage addons</text>
+    <text x="75" y="47" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(139,92,246,.3)">PV provisioner</text>
+  </g>
+
+  <!-- Arrows -->
+  <!-- API Server ↔ nodes -->
+  <path d="M 500 112 L 548 160" fill="none" stroke="rgba(255,153,0,.5)" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#aa)"/>
+  <text x="515" y="147" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(255,153,0,.4)">TLS/443</text>
+  <!-- API Server → Karpenter -->
+  <path d="M 500 100 L 1000 130" fill="none" stroke="rgba(251,191,36,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#aa)"/>
+  <!-- nodes → ALB -->
+  <path d="M 770 200 L 1000 222" fill="none" stroke="rgba(87,204,153,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ab)"/>
+  <!-- legend -->
+  <text x="540" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.45)">── control traffic (TLS 443)</text>
+  <text x="720" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(87,204,153,.45)">── data/app traffic</text>
+  <text x="900" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(139,92,246,.45)">── IRSA/Pod Identity</text>
+</svg>
+</div>
+
+<div class="g3">
+  <div class="card c-aws">
+    <div class="ct" style="color:var(--aws);">🎛️ Control Plane (AWS manages)</div>
+    <div class="fr"><span class="fk">What's included</span><span class="fv">API server (HA, multi-AZ), etcd (encrypted, backed up), scheduler, controller-manager, cloud-controller-manager. <b>You never SSH into these.</b></span></div>
+    <div class="fr"><span class="fk">Cost</span><span class="fv"><b>$0.10/hr per cluster</b> (~$73/month). No charge for worker nodes (EC2 billed separately). EKS Auto Mode adds $0.003/node/hr.</span></div>
+    <div class="fr"><span class="fk">Endpoint modes</span><span class="fv"><code>Public+Private</code> (default) — internet-accessible API + in-VPC ENI. <code>Private only</code> — no internet access, requires VPN/DirectConnect. <code>Public only</code> — nodes reach API via internet.</span></div>
+    <div class="fr"><span class="fk">OIDC provider</span><span class="fv">Each cluster has an OIDC issuer URL. Used by IRSA to exchange ServiceAccount JWT tokens for IAM role credentials. Must enable explicitly.</span></div>
+    <div class="fr"><span class="fk">Kubernetes version</span><span class="fv">AWS supports latest + 3 previous minor versions. 14 months standard support, 26 months extended (adds cost). After that: <b>auto-upgrade happens.</b></span></div>
+    <div class="trap"><b>Private endpoint clusters need VPN/Direct Connect for kubectl.</b> CI/CD runners inside VPC can reach private endpoint — but your laptop can't without routing. Combine public+private: nodes use private ENI, you use public endpoint.</div>
+  </div>
+
+  <div class="card c-teal">
+    <div class="ct" style="color:var(--teal);">🖥️ Data Plane Options</div>
+    <table class="st">
+      <tr><th>Mode</th><th>You manage</th><th>Best for</th></tr>
+      <tr><td style="color:var(--teal);">Managed Node Group</td><td>AMI version, instance type, desired count</td><td class="good">Most workloads. AWS handles drain on termination.</td></tr>
+      <tr><td style="color:var(--aws);">Self-Managed Nodes</td><td>Everything (ASG, bootstrap, AMI)</td><td class="warn">Custom kernel, GPU drivers, special OS config.</td></tr>
+      <tr><td style="color:var(--vio);">Fargate</td><td>Nothing (serverless pods)</td><td>Bursty, isolated, no DaemonSet workloads.</td></tr>
+      <tr><td style="color:var(--yel);">EKS Auto Mode</td><td>Almost nothing</td><td>Karpenter-based, AWS manages node config.</td></tr>
+    </table>
+    <div class="note" style="margin-top:10px;"><b>Managed Node Groups</b> handle draining before terminating nodes. They don't automatically handle AMI upgrades — you trigger <code>UpdateNodegroupVersion</code> or use the console. MNG uses rolling update: launches new nodes, drains old ones.</div>
+  </div>
+
+  <div class="card c-grn">
+    <div class="ct" style="color:var(--grn);">🌐 Networking Deep Dive</div>
+    <div class="fr"><span class="fk">VPC CNI</span><span class="fv"><b>aws-node DaemonSet</b>. Assigns secondary IP addresses from your VPC CIDR to pods. Pods get real VPC IPs — no overlay. Max pods = (ENIs × (IPv4 per ENI − 1)) + 2 (e.g., t3.medium: 3 ENIs × (6 IPs per ENI − 1) + 2 = 17 pods max by default).</span></div>
+    <div class="fr"><span class="fk">Prefix delegation</span><span class="fv">Attach /28 prefixes to ENI instead of individual IPs → <b>16× more pod IPs per ENI</b>. Required for larger pod densities. Enable: <code>ENABLE_PREFIX_DELEGATION=true</code> on aws-node.</span></div>
+    <div class="fr"><span class="fk">Security groups</span><span class="fv">Node SG + Pod-level SGs (Security Groups for Pods addon). Pod SG assigned per workload via <code>SecurityGroupPolicy</code> CRD. <b>Only Nitro instances support pod-level SG.</b></span></div>
+    <div class="fr"><span class="fk">Service mesh</span><span class="fv">App Mesh (AWS managed) or Istio/Linkerd (self-managed). Sidecar injection, mTLS, traffic management. Not required for EKS but common at scale.</span></div>
+    <div class="trap"><b>Default VPC CNI max pods is very low.</b> t3.medium: 3 ENIs × (6 IPs − 1) + 2 = 17 pods max. Enable prefix delegation or use larger instances. Check <code>kubectl describe node | grep pods</code>.</div>
+  </div>
+</div>
+
+</div><!-- /arch -->
+
+<!-- ═════════════════════════════════════ -->
+<!--              ADDONS                  -->
+<!-- ═════════════════════════════════════ -->
+<div class="section" id="sec-addons">
+
+<div class="sh"><div class="sh-icon">🧩</div><div class="sh-label" style="color:var(--grn);">EKS Addons</div><div class="sh-sub">// managed vs self-managed · click each addon for details</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(87,204,153,.3),transparent);"></div></div>
+
+<div style="display:flex;gap:10px;margin-bottom:12px;">
+  <div style="font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:4px;background:rgba(87,204,153,.07);border:1px solid rgba(87,204,153,.25);color:var(--grn);">🟢 EKS Managed Addon — AWS handles upgrades, config stored in EKS</div>
+  <div style="font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:4px;background:rgba(255,153,0,.07);border:1px solid rgba(255,153,0,.25);color:var(--aws);">🟠 Self-Managed — Helm/manifests, you own the upgrade</div>
+</div>
+
+<div class="addon-grid">
+  <div class="addon-card managed" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--grn);">vpc-cni (aws-node)</div>
+    <div class="addon-type m">✅ EKS Managed Addon</div>
+    <div class="addon-desc">AWS VPC CNI plugin. Assigns VPC IPs to pods. Foundation of all pod networking.</div>
+    <div class="addon-detail">
+      <b>DaemonSet:</b> runs on every node as <code>aws-node</code>. Calls EC2 API to manage ENIs and assign secondary IPs.<br><br>
+      <b>Key env vars:</b> <code>ENABLE_PREFIX_DELEGATION</code> (more pods/node), <code>AWS_VPC_K8S_CNI_EXTERNALSNAT</code> (custom NAT).<br><br>
+      <b>Upgrade trap:</b> upgrading CNI addon restarts aws-node DaemonSet — brief connectivity blip per node. Do during low-traffic window. CNI version must be compatible with K8s version.
+    </div>
+  </div>
+  <div class="addon-card managed" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--grn);">CoreDNS</div>
+    <div class="addon-type m">✅ EKS Managed Addon</div>
+    <div class="addon-desc">In-cluster DNS. Every pod DNS query goes through CoreDNS. 2 replicas by default.</div>
+    <div class="addon-detail">
+      <b>Scale:</b> default 2 replicas handles ~300 nodes. Add replicas for larger clusters: <code>kubectl scale deploy coredns --replicas=5 -n kube-system</code>.<br><br>
+      <b>NodeLocal DNSCache:</b> DaemonSet that caches DNS per-node. Eliminates conntrack race condition. Reduces CoreDNS load by 90%+. Highly recommended at scale.<br><br>
+      <b>Trap:</b> CoreDNS upgrade during K8s upgrade can cause DNS failures if config format changes. Always check release notes.
+    </div>
+  </div>
+  <div class="addon-card managed" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--grn);">kube-proxy</div>
+    <div class="addon-type m">✅ EKS Managed Addon</div>
+    <div class="addon-desc">Programs iptables/IPVS rules for Service networking. Runs on every node.</div>
+    <div class="addon-detail">
+      <b>Mode:</b> EKS uses iptables mode by default. Switch to IPVS for clusters with 1000+ Services (O(1) vs O(n) lookup).<br><br>
+      <b>Replacement:</b> Cilium can replace kube-proxy entirely with eBPF. If using Cilium: set <code>kubeProxyReplacement: true</code> and don't install kube-proxy addon.<br><br>
+      <b>Version lock:</b> kube-proxy version must match K8s server version within 1 minor version.
+    </div>
+  </div>
+  <div class="addon-card managed" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--grn);">EBS CSI Driver</div>
+    <div class="addon-type m">✅ EKS Managed Addon</div>
+    <div class="addon-desc">PersistentVolume provisioner for EBS. Required for stateful workloads on EKS 1.23+.</div>
+    <div class="addon-detail">
+      <b>Required since 1.23:</b> in-tree EBS plugin removed. Must install CSI driver for PVs to work.<br><br>
+      <b>IRSA/Pod Identity required:</b> driver needs IAM permissions to create/attach EBS volumes. Create IAM role with <code>AmazonEBSCSIDriverPolicy</code> and annotate ServiceAccount.<br><br>
+      <b>StorageClasses:</b> <code>gp2</code> (legacy), <code>gp3</code> (recommended, 20% cheaper, more IOPS/throughput baseline). Set gp3 as default.<br><br>
+      <b>Limitation:</b> EBS volumes are AZ-specific. Pod must schedule in same AZ as volume. Use EFS for cross-AZ storage.
+    </div>
+  </div>
+  <div class="addon-card managed" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--grn);">EFS CSI Driver</div>
+    <div class="addon-type m">✅ EKS Managed Addon</div>
+    <div class="addon-desc">EFS (NFS) storage for ReadWriteMany workloads. Cross-AZ, elastic, shared filesystem.</div>
+    <div class="addon-detail">
+      <b>Use when:</b> multiple pods need shared storage, cross-AZ resilience needed, ML training data sharing.<br><br>
+      <b>Access points:</b> mount specific subdirectory per team/namespace. Enforce UID/GID. Much cleaner than raw EFS mount.<br><br>
+      <b>Cost:</b> EFS costs $0.30/GB/month (standard). Expensive for large datasets — consider S3 + Mountpoint-for-S3 instead.
+    </div>
+  </div>
+  <div class="addon-card managed" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--grn);">Pod Identity Agent</div>
+    <div class="addon-type m">✅ EKS Managed Addon</div>
+    <div class="addon-desc">New (2023). Simpler alternative to IRSA for pod-level IAM roles. No OIDC required.</div>
+    <div class="addon-detail">
+      <b>vs IRSA:</b> Pod Identity uses EKS agent on node (DaemonSet). No OIDC configuration needed. Multiple clusters share same IAM role without trust policy changes.<br><br>
+      <b>Setup:</b> associate IAM role + K8s ServiceAccount in EKS console/CLI. No annotation needed on ServiceAccount.<br><br>
+      <b>Limitation:</b> requires EKS Pod Identity Agent addon on nodes. Doesn't work with Fargate. IRSA still works everywhere.
+    </div>
+  </div>
+  <div class="addon-card self" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--aws);">AWS Load Balancer Controller</div>
+    <div class="addon-type s">🟠 Self-Managed (Helm)</div>
+    <div class="addon-desc">Creates ALB from Ingress resources, NLB from LoadBalancer Services. Replaces legacy in-tree ELB provisioning.</div>
+    <div class="addon-detail">
+      <b>Ingress → ALB:</b> annotation <code>kubernetes.io/ingress.class: alb</code>. One ALB per Ingress by default. Use <code>alb.ingress.kubernetes.io/group.name</code> to share ALB across Ingresses (cost saving).<br><br>
+      <b>Target types:</b> <code>ip</code> (routes to pod IP — no NodePort hop, requires VPC CNI) vs <code>instance</code> (routes to NodePort). Use <code>ip</code> mode.<br><br>
+      <b>IRSA required:</b> controller needs EC2/ELBv2 permissions. Attach <code>AWSLoadBalancerControllerIAMPolicy</code>.
+    </div>
+  </div>
+  <div class="addon-card self" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--aws);">Cluster Autoscaler</div>
+    <div class="addon-type s">🟠 Self-Managed (Helm)</div>
+    <div class="addon-desc">Scales ASG/MNG based on pending pods. Legacy — Karpenter is preferred on AWS.</div>
+    <div class="addon-detail">
+      <b>How it works:</b> watches for <code>Unschedulable</code> pods → finds ASG that can satisfy → increments desired count. Scale-down: removes underutilized nodes after 10 min cooldown.<br><br>
+      <b>Version match:</b> CA version must match K8s minor version exactly. 1.28 cluster needs CA 1.28.x.<br><br>
+      <b>Trap:</b> CA and Karpenter together on same node group = conflict. Pick one. Karpenter is preferred for new clusters.
+    </div>
+  </div>
+  <div class="addon-card self" onclick="toggleAddon(this)">
+    <div class="addon-name" style="color:var(--aws);">Karpenter</div>
+    <div class="addon-type s">🟠 Self-Managed (Helm) — AWS-supported</div>
+    <div class="addon-desc">Next-gen node provisioner. Direct EC2 Fleet calls, no ASG. Faster, smarter bin-packing.</div>
+    <div class="addon-detail">
+      <b>Key CRDs:</b> <code>NodePool</code> (replacement for InstanceProfile/ASG config) + <code>EC2NodeClass</code> (AMI, subnet, SG, instanceType filters).<br><br>
+      <b>Speed:</b> node ready in ~45s vs CA ~3 min. Directly calls RunInstances API.<br><br>
+      <b>Consolidation:</b> <code>disruption.consolidationPolicy: WhenUnderutilized</code> automatically bins nodes together. Significant cost savings.<br><br>
+      <b>Drift detection:</b> if NodePool AMI changes, Karpenter drains and replaces nodes automatically. This is how node upgrades happen with Karpenter.
+    </div>
+  </div>
+</div>
+
+<div class="g2">
+  <div class="card c-grn">
+    <div class="ct" style="color:var(--grn);">📋 Addon Upgrade Rules</div>
+    <div class="fr"><span class="fk">Managed addons</span><span class="fv"><b>Don't auto-upgrade.</b> EKS notifies of available updates in console/API. You must explicitly update. During K8s control plane upgrade, addons may be marked "requires update" — update them after CP upgrade.</span></div>
+    <div class="fr"><span class="fk">Conflict detection</span><span class="fv">If you've manually modified addon-managed resources (e.g., edited CoreDNS ConfigMap), EKS marks the addon as <code>DEGRADED</code> and won't overwrite. Use <code>--resolve-conflicts OVERWRITE</code> to force.</span></div>
+    <div class="fr"><span class="fk">Preservation mode</span><span class="fv"><code>--resolve-conflicts PRESERVE</code> keeps your customizations but won't apply new default config from the upgrade. Risk: new config options missing.</span></div>
+    <div class="fr"><span class="fk">Configuration schema</span><span class="fv">Managed addons support structured config via <code>--configuration-values</code> JSON. No more manual kubectl edits. Schema varies per addon version.</span></div>
+    <div class="trap"><b>Addon version ≠ chart version.</b> EKS addon versions (e.g., <code>v1.16.4-eksbuild.2</code>) are AWS-built images. The upstream Helm chart version is different. Don't mix documentation.</div>
+  </div>
+  <div class="card c-aws">
+    <div class="ct" style="color:var(--aws);">🔍 Addon Status Check</div>
+    <div class="code"><span class="cm"># List all addons and their status</span>
+aws eks list-addons \
+  --cluster-name my-cluster
+
+<span class="cm"># Describe specific addon</span>
+aws eks describe-addon \
+  --cluster-name my-cluster \
+  --addon-name vpc-cni
+
+<span class="cm"># Available versions for an addon</span>
+aws eks describe-addon-versions \
+  --addon-name vpc-cni \
+  --kubernetes-version 1.31
+
+<span class="cm"># Update addon (after K8s upgrade)</span>
+aws eks update-addon \
+  --cluster-name my-cluster \
+  --addon-name vpc-cni \
+  --addon-version v1.19.0-eksbuild.1 \
+  --resolve-conflicts OVERWRITE
+
+<span class="cm"># Check for addon health issues</span>
+aws eks describe-addon \
+  --cluster-name my-cluster \
+  --addon-name coredns \
+  --query 'addon.health'</div>
+  </div>
+</div>
+
+</div><!-- /addons -->
+
+<!-- ═════════════════════════════════════ -->
+<!--             SCALING                  -->
+<!-- ═════════════════════════════════════ -->
+<div class="section" id="sec-scaling">
+
+<div class="sh"><div class="sh-icon">📈</div><div class="sh-label" style="color:var(--yel);">Scaling</div><div class="sh-sub">// HPA · VPA · KEDA · Cluster Autoscaler · Karpenter</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(251,191,36,.3),transparent);"></div></div>
+
+<div class="g3">
+  <div class="card c-yel">
+    <div class="ct" style="color:var(--yel);">📊 HPA — Horizontal Pod Autoscaler</div>
+    <div class="fr"><span class="fk">What it does</span><span class="fv">Scales pod replicas based on CPU, memory, or custom metrics. <b>Does not scale nodes.</b> Works in tandem with Cluster Autoscaler/Karpenter.</span></div>
+    <div class="fr"><span class="fk">Metrics server</span><span class="fv">Required for CPU/memory HPA. Install <code>metrics-server</code> addon. EKS doesn't include it by default. Without it: <code>unknown</code> metric status.</span></div>
+    <div class="fr"><span class="fk">Formula</span><span class="fv">desiredReplicas = ceil(currentReplicas × currentMetric / targetMetric). Stabilization window: 5min down, 0s up (avoid rapid scale-down).</span></div>
+    <div class="fr"><span class="fk">v2 API</span><span class="fv">Use <code>autoscaling/v2</code>. Supports multiple metrics, custom metrics (Prometheus via adapter), external metrics (SQS queue depth via KEDA).</span></div>
+    <div class="code"><span class="ky">apiVersion</span>: autoscaling/v2
+<span class="ky">kind</span>: HorizontalPodAutoscaler
+<span class="ky">spec</span>:
+  <span class="ky">scaleTargetRef</span>: { <span class="ky">name</span>: <span class="st">myapp</span> }
+  <span class="ky">minReplicas</span>: <span class="nu">2</span>
+  <span class="ky">maxReplicas</span>: <span class="nu">20</span>
+  <span class="ky">metrics</span>:
+  - <span class="ky">type</span>: <span class="st">Resource</span>
+    <span class="ky">resource</span>: { <span class="ky">name</span>: <span class="st">cpu</span>, <span class="ky">target</span>: { <span class="ky">type</span>: <span class="st">Utilization</span>, <span class="ky">averageUtilization</span>: <span class="nu">70</span> }}
+  <span class="ky">behavior</span>:
+    <span class="ky">scaleDown</span>:
+      <span class="ky">stabilizationWindowSeconds</span>: <span class="nu">300</span></div>
+    <div class="trap"><b>HPA + VPA on same deployment = conflict.</b> VPA changes resource requests → HPA recalculates based on new requests. Use HPA only, or VPA in recommendation-only mode alongside HPA.</div>
+  </div>
+
+  <div class="card c-vio">
+    <div class="ct" style="color:var(--vio);">⚡ KEDA — Event-Driven Autoscaling</div>
+    <div class="fr"><span class="fk">What it does</span><span class="fv"><b>Scale pods to zero and from zero</b> based on external event sources: SQS queue depth, Kafka lag, Prometheus, DynamoDB, Cron schedules.</span></div>
+    <div class="fr"><span class="fk">ScaledObject</span><span class="fv">CRD that wraps HPA. KEDA creates/manages HPA internally. You define triggers (event sources) and KEDA translates to HPA metrics.</span></div>
+    <div class="fr"><span class="fk">Scale to zero</span><span class="fv">When queue is empty: replicas = 0. On new message: KEDA wakes one pod before HPA takes over. No traffic = zero cost. HPA alone can't scale to zero (min=1).</span></div>
+    <div class="fr"><span class="fk">On AWS</span><span class="fv">Most common trigger: <code>aws-sqs-queue</code>. Set <code>queueLength</code> threshold (target messages per pod). KEDA calls SQS API using IRSA.</span></div>
+    <div class="code"><span class="ky">kind</span>: ScaledObject
+<span class="ky">spec</span>:
+  <span class="ky">minReplicaCount</span>: <span class="nu">0</span>   <span class="cm"># scale to zero!</span>
+  <span class="ky">maxReplicaCount</span>: <span class="nu">100</span>
+  <span class="ky">triggers</span>:
+  - <span class="ky">type</span>: <span class="st">aws-sqs-queue</span>
+    <span class="ky">metadata</span>:
+      <span class="ky">queueURL</span>: <span class="st">https://sqs.../queue</span>
+      <span class="ky">queueLength</span>: <span class="st">"5"</span>   <span class="cm"># msgs per replica</span>
+      <span class="ky">awsRegion</span>: <span class="st">us-east-1</span>
+    <span class="ky">authenticationRef</span>: { <span class="ky">name</span>: <span class="st">keda-aws-auth</span> }</div>
+    <div class="trap"><b>KEDA polling interval default is 30s.</b> For latency-sensitive queues, set <code>pollingInterval: 5</code>. But each poll = SQS API call = cost. Balance freshness vs cost.</div>
+  </div>
+
+  <div class="card c-aws">
+    <div class="ct" style="color:var(--aws);">🚀 Karpenter vs Cluster Autoscaler</div>
+    <table class="st">
+      <tr><th></th><th>Cluster Autoscaler</th><th>Karpenter</th></tr>
+      <tr><td>Node selection</td><td>Pre-defined ASG instance types</td><td class="good">Any EC2 type matching NodePool constraints</td></tr>
+      <tr><td>Speed</td><td class="warn">~3 min (ASG launch)</td><td class="good">~45s (direct RunInstances)</td></tr>
+      <tr><td>Bin-packing</td><td class="warn">Basic</td><td class="good">Optimal (considers all pending pods)</td></tr>
+      <tr><td>Consolidation</td><td class="warn">Scale-down only</td><td class="good">Bin-packing consolidation</td></tr>
+      <tr><td>Spot handling</td><td class="warn">Manual diversification</td><td class="good">Automatic multi-family diversification</td></tr>
+      <tr><td>Node upgrades</td><td class="bad">Manual</td><td class="good">Drift detection → auto replace</td></tr>
+      <tr><td>Complexity</td><td class="good">Simpler</td><td class="warn">More CRDs to learn</td></tr>
+    </table>
+    <div class="note" style="margin-top:10px;">Use <b>Karpenter</b> for new EKS clusters. Only use CA for legacy clusters or if your org has strict ASG-based policies. <b>Never run both on the same node groups.</b></div>
+    <div class="code" style="font-size:9.5px;"><span class="ky">apiVersion</span>: karpenter.sh/v1
+<span class="ky">kind</span>: NodePool
+<span class="ky">spec</span>:
+  <span class="ky">template</span>:
+    <span class="ky">spec</span>:
+      <span class="ky">nodeClassRef</span>: { <span class="ky">name</span>: <span class="st">default</span> }
+      <span class="ky">requirements</span>:
+      - { <span class="ky">key</span>: <span class="st">karpenter.k8s.aws/instance-family</span>, <span class="ky">operator</span>: <span class="st">In</span>, <span class="ky">values</span>: [<span class="st">m7g</span>, <span class="st">m7i</span>, <span class="st">c7g</span>] }
+      - { <span class="ky">key</span>: <span class="st">kubernetes.io/arch</span>, <span class="ky">operator</span>: <span class="st">In</span>, <span class="ky">values</span>: [<span class="st">amd64</span>, <span class="st">arm64</span>] }
+  <span class="ky">disruption</span>:
+    <span class="ky">consolidationPolicy</span>: <span class="st">WhenEmptyOrUnderutilized</span></div>
+  </div>
+</div>
+
+</div><!-- /scaling -->
+
+<!-- ═════════════════════════════════════ -->
+<!--           PERMISSIONS                -->
+<!-- ═════════════════════════════════════ -->
+<div class="section" id="sec-perms">
+
+<div class="sh"><div class="sh-icon">🔐</div><div class="sh-label" style="color:var(--vio);">Permissions</div><div class="sh-sub">// IAM · RBAC · IRSA · Pod Identity · aws-auth configmap</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(139,92,246,.3),transparent);"></div></div>
+
+<div class="g2" style="margin-bottom:12px;">
+  <div class="card c-vio">
+    <div class="ct" style="color:var(--vio);">🗺️ Permission Layers</div>
+    <div style="margin-bottom:12px;">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:8px;">LAYER 1: AWS-level access (who can call EKS API)</div>
+      <div class="perm-flow">
+        <div class="pbox pb-aws">IAM User/Role</div>
+        <div class="parr">→</div>
+        <div class="pbox pb-aws">IAM Policy</div>
+        <div class="parr">→</div>
+        <div class="pbox pb-aws">EKS Actions (CreateCluster, etc.)</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin:10px 0 8px;">LAYER 2: K8s-level access (who can call K8s API)</div>
+      <div class="perm-flow">
+        <div class="pbox pb-aws">IAM Principal</div>
+        <div class="parr">→</div>
+        <div class="pbox pb-k8s">aws-auth ConfigMap / Access Entry</div>
+        <div class="parr">→</div>
+        <div class="pbox pb-k8s">K8s RBAC (Role/ClusterRole)</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin:10px 0 8px;">LAYER 3: Pod-level AWS access (what pods can do in AWS)</div>
+      <div class="perm-flow">
+        <div class="pbox pb-k8s">ServiceAccount</div>
+        <div class="parr">→</div>
+        <div class="pbox pb-vio">IRSA / Pod Identity</div>
+        <div class="parr">→</div>
+        <div class="pbox pb-aws">IAM Role → AWS APIs</div>
+      </div>
+    </div>
+    <div class="fr"><span class="fk">Cluster creator</span><span class="fv">The IAM principal that creates the cluster is <b>automatically cluster-admin</b>. Other principals need explicit mapping in aws-auth or Access Entries. This is a top-3 "locked out" cause.</span></div>
+    <div class="trap"><b>If you create EKS via Terraform with a role, and kubectl with a different profile — you're locked out.</b> The role that ran <code>terraform apply</code> is the cluster admin, not your personal IAM user. Add yourself via aws-auth or use the same role.</div>
+  </div>
+
+  <div class="card c-vio">
+    <div class="ct" style="color:var(--vio);">🔑 aws-auth vs Access Entries</div>
+    <div class="fr"><span class="fk">aws-auth (legacy)</span><span class="fv">ConfigMap in kube-system. Maps IAM roles/users to K8s usernames/groups. <b>Edited with kubectl</b> — editing wrong format breaks ALL cluster access. No audit log.</span></div>
+    <div class="fr"><span class="fk">Access Entries (new)</span><span class="fv">EKS API-based approach (2024). Manage IAM principal→K8s RBAC mapping via AWS API. <b>No kubectl needed.</b> Auditable via CloudTrail. Preferred for new clusters.</span></div>
+    <div class="code"><span class="cm"># Legacy aws-auth ConfigMap</span>
+kubectl edit configmap aws-auth -n kube-system
+
+mapRoles:
+- <span class="ky">rolearn</span>: <span class="st">arn:aws:iam::123:role/NodeRole</span>
+  <span class="ky">username</span>: <span class="st">system:node:{{EC2PrivateDNSName}}</span>
+  <span class="ky">groups</span>: [<span class="st">system:bootstrappers</span>, <span class="st">system:nodes</span>]
+- <span class="ky">rolearn</span>: <span class="st">arn:aws:iam::123:role/DevopsRole</span>
+  <span class="ky">username</span>: <span class="st">devops</span>
+  <span class="ky">groups</span>: [<span class="st">system:masters</span>]
+
+<span class="cm"># New: Access Entry (API-based)</span>
+aws eks create-access-entry \
+  --cluster-name my-cluster \
+  --principal-arn arn:aws:iam::123:role/DevopsRole \
+  --type STANDARD
+
+aws eks associate-access-policy \
+  --cluster-name my-cluster \
+  --principal-arn arn:aws:iam::123:role/DevopsRole \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
+  --access-scope type=cluster</div>
+    <div class="trap"><b>aws-auth YAML format is strict.</b> Extra spaces, wrong indentation, or missing quotes = all kubectl access breaks immediately. Use <code>eksctl create iamidentitymapping</code> instead of direct edits.</div>
+  </div>
+</div>
+
+<div class="g3">
+  <div class="card c-vio">
+    <div class="ct" style="color:var(--vio);">🎭 IRSA — IAM Roles for Service Accounts</div>
+    <div class="fr"><span class="fk">How it works</span><span class="fv">Pod's ServiceAccount has a JWT token → projected to pod at <code>/var/run/secrets/eks.amazonaws.com/serviceaccount/token</code> → AWS SDK exchanges it with STS using OIDC federation → gets temporary credentials.</span></div>
+    <div class="fr"><span class="fk">Setup steps</span><span class="fv">1. Enable OIDC provider on cluster. 2. Create IAM role with trust policy for OIDC issuer + service account name. 3. Annotate K8s ServiceAccount with role ARN.</span></div>
+    <div class="code"><span class="cm"># Trust policy for IRSA role</span>
+{
+  "Principal": {
+    "Federated": "arn:aws:iam::123:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/EXAM"
+  },
+  "Condition": {
+    "StringEquals": {
+      "oidc.eks...:sub":
+        "system:serviceaccount:default:my-sa"
+    }
+  }
+}
+
+<span class="cm"># ServiceAccount annotation</span>
+<span class="ky">annotations</span>:
+  eks.amazonaws.com/role-arn: <span class="st">arn:aws:iam::123:role/MyRole</span></div>
+    <div class="trap"><b>IRSA trust policy has exact SA name.</b> If you rename the ServiceAccount or change namespace, IRSA stops working. The <code>sub</code> condition is <code>system:serviceaccount:{namespace}:{sa-name}</code> — must match exactly.</div>
+  </div>
+
+  <div class="card c-grn">
+    <div class="ct" style="color:var(--grn);">🔓 Pod Identity (new 2023)</div>
+    <div class="fr"><span class="fk">vs IRSA</span><span class="fv">No OIDC setup needed. No trust policy with exact SA name. Associate IAM role to SA via EKS API — reusable across clusters without trust policy changes.</span></div>
+    <div class="fr"><span class="fk">Pod Identity Agent</span><span class="fv">DaemonSet on each node intercepts credential requests. Calls EKS API to get temp creds for the pod's associated IAM role. No STS OIDC exchange needed.</span></div>
+    <div class="fr"><span class="fk">Setup</span><span class="fv">1. Install Pod Identity Agent addon. 2. Create IAM role (no special trust policy). 3. Associate role with SA via <code>aws eks create-pod-identity-association</code>.</span></div>
+    <div class="fr"><span class="fk">Limitation</span><span class="fv">Doesn't work on Fargate. Requires the addon on every node (via DaemonSet). IRSA still preferred for maximum compatibility.</span></div>
+    <div class="note"><b>Both IRSA and Pod Identity can coexist.</b> Pod Identity takes precedence if both are configured for the same ServiceAccount. Migrate gradually: new workloads on Pod Identity, existing on IRSA.</div>
+  </div>
+
+  <div class="card c-aws">
+    <div class="ct" style="color:var(--aws);">🛡️ Node IAM Role</div>
+    <div class="fr"><span class="fk">Required policies</span><span class="fv"><code>AmazonEKSWorkerNodePolicy</code> — allows node to call EKS DescribeCluster. <code>AmazonEKS_CNI_Policy</code> — VPC CNI manages ENIs. <code>AmazonEC2ContainerRegistryReadOnly</code> — pull images from ECR.</span></div>
+    <div class="fr"><span class="fk">IMDSv2</span><span class="fv">Enforce IMDSv2 on node instances (hop limit = 1 blocks pods from using node metadata credentials). <b>Critical security requirement.</b> Pods must use IRSA/Pod Identity, not inherited node role.</span></div>
+    <div class="fr"><span class="fk">Least privilege</span><span class="fv">Node role should have <b>zero AWS service permissions</b> beyond the 3 required. All AWS access from pods must go through IRSA/Pod Identity. Node role ≠ pod permissions.</span></div>
+    <div class="code"><span class="cm"># Enforce IMDSv2 on launch template</span>
+aws ec2 modify-instance-metadata-options \
+  --instance-id i-xxx \
+  --http-put-response-hop-limit 1 \
+  --http-endpoint enabled \
+  --http-tokens required</div>
+    <div class="trap"><b>If IMDSv2 hop limit is 2+, pods can steal node role credentials.</b> Default hop limit is 2 for many AMIs. Set to 1 to block pod access to IMDS. Required for any multi-tenant cluster.</div>
+  </div>
+</div>
+
+</div><!-- /perms -->
+
+<!-- ═════════════════════════════════════ -->
+<!--           EKS UPGRADE WIZARD         -->
+<!-- ═════════════════════════════════════ -->
+<div class="section" id="sec-upgrade">
+
+<div class="sh"><div class="sh-icon">🚀</div><div class="sh-label" style="color:var(--aws);">EKS Upgrade Wizard</div><div class="sh-sub">// control plane → addons → node groups · what could go wrong</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,153,0,.3),transparent);"></div></div>
+
+<div class="wizard">
+  <div class="wiz-header">
+    <div class="wiz-title">🔄 Kubernetes Upgrade: Step-by-Step</div>
+    <div class="wiz-progress">
+      <span id="progText">Step 1 of 8</span>
+      <div class="wiz-bar"><div class="wiz-fill" id="progFill" style="width:12%"></div></div>
+    </div>
+  </div>
+  <div class="wiz-body">
+    <div class="wiz-steps">
+      <div class="wiz-step active" onclick="goStep(0)">1. Pre-flight</div>
+      <div class="wiz-step" onclick="goStep(1)">2. Control Plane</div>
+      <div class="wiz-step" onclick="goStep(2)">3. Addons</div>
+      <div class="wiz-step" onclick="goStep(3)">4. Node Groups</div>
+      <div class="wiz-step danger" onclick="goStep(4)">5. What Fails</div>
+      <div class="wiz-step" onclick="goStep(5)">6. Fargate</div>
+      <div class="wiz-step" onclick="goStep(6)">7. Karpenter</div>
+      <div class="wiz-step" onclick="goStep(7)">8. Verify</div>
+    </div>
+
+    <div class="wiz-content">
+
+      <!-- STEP 0: PRE-FLIGHT -->
+      <div class="step-pane active" id="sp-0">
+        <div class="step-header">
+          <div class="step-num aws">1</div>
+          <div><div class="step-title" style="color:var(--aws);">Pre-Flight Checklist</div><div class="step-sub">// run BEFORE starting upgrade · non-negotiable</div></div>
+        </div>
+        <div class="g2">
+          <div>
+            <div class="check-item"><div class="check-icon">📋</div><div class="check-text"><b>Check deprecated APIs.</b> Run <code>kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</code> or use <code>pluto detect-all-in-cluster</code>. Any deprecated API in use = app breaks after upgrade.</div></div>
+            <div class="check-item"><div class="check-icon">📦</div><div class="check-text"><b>Check addon compatibility.</b> <code>aws eks describe-addon-versions --kubernetes-version 1.31</code>. Some addon versions don't exist for the new K8s version.</div></div>
+            <div class="check-item"><div class="check-icon">🔍</div><div class="check-text"><b>Check EKS upgrade insights.</b> <code>aws eks list-insights --cluster-name myc --filter category=UPGRADE_READINESS</code>. AWS pre-scans your cluster for known issues.</div></div>
+            <div class="check-item"><div class="check-icon">⏱️</div><div class="check-text"><b>Only upgrade ONE minor version at a time.</b> 1.28 → 1.29 → 1.30. Cannot skip versions. Plan multiple maintenance windows if far behind.</div></div>
+            <div class="check-item"><div class="check-icon">📸</div><div class="check-text"><b>Backup critical state.</b> Velero snapshot of PVs, ETCD backup is automatic but verify, export all manifests: <code>kubectl get all --all-namespaces -o yaml</code>.</div></div>
+          </div>
+          <div>
+            <div class="check-item"><div class="check-icon">🏥</div><div class="check-text"><b>Verify PodDisruptionBudgets.</b> Misconfigured PDBs block node drain indefinitely. Check all PDBs: <code>kubectl get pdb -A</code>. maxUnavailable=0 with minAvailable=replicas = deadlock.</div></div>
+            <div class="check-item"><div class="check-icon">🔑</div><div class="check-text"><b>Confirm kubectl version.</b> kubectl must be within ±1 minor version of server. Upgrade kubectl first if needed.</div></div>
+            <div class="check-item"><div class="check-icon">🌿</div><div class="check-text"><b>Check kube-apiserver audit logs.</b> Look for <code>warning</code> level events about deprecated API usage by specific clients.</div></div>
+            <div class="check-item"><div class="check-icon">⚡</div><div class="check-text"><b>Test in non-prod first.</b> Upgrade a staging cluster using the same procedure. If it works → proceed to prod.</div></div>
+            <div class="check-item"><div class="check-icon">📢</div><div class="check-text"><b>Notify teams.</b> Announce maintenance window. Node upgrades drain workloads — brief disruption expected even with rolling updates.</div></div>
+          </div>
+        </div>
+        <div class="code"><span class="cm"># Quick pre-upgrade scan</span>
+<span class="cm"># 1. Check for deprecated APIs</span>
+pluto detect-all-in-cluster --target-versions k8s=v1.31.0
+
+<span class="cm"># 2. EKS upgrade insights</span>
+aws eks list-insights --cluster-name prod \
+  --filter '{"category": ["UPGRADE_READINESS"]}'
+
+<span class="cm"># 3. Check PodDisruptionBudgets for blockers</span>
+kubectl get pdb -A -o json | jq '.items[] | select(.spec.maxUnavailable == 0) | .metadata'</div>
+      </div>
+
+      <!-- STEP 1: CONTROL PLANE -->
+      <div class="step-pane" id="sp-1">
+        <div class="step-header">
+          <div class="step-num aws">2</div>
+          <div><div class="step-title" style="color:var(--aws);">Control Plane Upgrade</div><div class="step-sub">// always first · AWS handles HA · ~10-25 minutes · no downtime</div></div>
+        </div>
+        <div class="fr"><span class="fk">AWS manages</span><span class="fv">AWS upgrades API servers one at a time, maintaining HA throughout. etcd is also upgraded. <b>Zero downtime for the control plane itself</b> — existing pods keep running.</span></div>
+        <div class="fr"><span class="fk">Duration</span><span class="fv">Typically 10–25 minutes. Can take longer for large clusters or when AWS is under capacity pressure. <b>Cannot be rolled back once started.</b></span></div>
+        <div class="fr"><span class="fk">API compatibility</span><span class="fv">K8s API server is backward compatible within 1 version. Existing workloads using the old API version continue to work <b>temporarily</b>. But deprecated APIs removed in new version break immediately.</span></div>
+        <div class="fr"><span class="fk">Node version skew</span><span class="fv">After CP upgrade: nodes are 1 version behind (e.g., CP=1.30, nodes=1.29). <b>This is supported and expected.</b> Kubelet can be 1 minor version behind API server per K8s spec. But don't leave nodes behind for weeks.</span></div>
+        <div class="code"><span class="cm"># Trigger control plane upgrade</span>
+aws eks update-cluster-version \
+  --name my-cluster \
+  --kubernetes-version 1.31
+
+<span class="cm"># Monitor upgrade progress</span>
+aws eks describe-cluster \
+  --name my-cluster \
+  --query 'cluster.{status: status, version: version}'
+
+<span class="cm"># Or watch in real-time</span>
+watch -n 30 'aws eks describe-cluster \
+  --name my-cluster \
+  --query "cluster.status" --output text'</div>
+        <div class="trap"><b>Control plane upgrade cannot be paused or rolled back.</b> Once started, it runs to completion. If there's a problem, EKS support must intervene. This is why pre-flight is critical.</div>
+        <div class="note"><b>One minor version at a time.</b> EKS strictly enforces this. You cannot upgrade from 1.28 to 1.30 in one step. Each upgrade is an explicit API call.</div>
+      </div>
+
+      <!-- STEP 2: ADDONS -->
+      <div class="step-pane" id="sp-2">
+        <div class="step-header">
+          <div class="step-num grn">3</div>
+          <div><div class="step-title" style="color:var(--grn);">Addon Upgrades</div><div class="step-sub">// update after control plane · BEFORE node groups · version compatibility is critical</div></div>
+        </div>
+        <div class="fr"><span class="fk">Order</span><span class="fv"><b>CP upgrade → addon upgrades → node group upgrades.</b> Some addons require the new K8s version's APIs. Some addons have versions only available for the new K8s version.</span></div>
+        <div class="fr"><span class="fk">kube-proxy first</span><span class="fv">kube-proxy version must be ≤ API server version. After CP upgrade, kube-proxy on nodes is old version — technically fine (1 version skew) but upgrade it before nodes.</span></div>
+        <div class="fr"><span class="fk">vpc-cni timing</span><span class="fv">vpc-cni upgrade restarts aws-node DaemonSet on every node. Brief per-node network disruption. Do during low-traffic window. New pods may lose connectivity for ~1-2 seconds per node restart.</span></div>
+        <div class="fr"><span class="fk">CoreDNS upgrade</span><span class="fv">CoreDNS upgrade recreates pods. Rolling update by default. Brief window where DNS capacity is reduced. Pre-scale CoreDNS replicas before upgrading if DNS-heavy workload.</span></div>
+        <div class="code"><span class="cm"># Find latest addon version for new K8s version</span>
+aws eks describe-addon-versions \
+  --kubernetes-version 1.31 \
+  --addon-name vpc-cni \
+  --query 'addons[].addonVersions[0].addonVersion'
+
+<span class="cm"># Update all addons</span>
+for addon in vpc-cni kube-proxy coredns aws-ebs-csi-driver; do
+  LATEST=$(aws eks describe-addon-versions \
+    --kubernetes-version 1.31 --addon-name $addon \
+    --query 'addons[].addonVersions[0].addonVersion' --output text)
+  aws eks update-addon \
+    --cluster-name prod \
+    --addon-name $addon \
+    --addon-version $LATEST \
+    --resolve-conflicts OVERWRITE
+  echo "Updating $addon to $LATEST"
+done</div>
+        <div class="trap"><b>Self-managed addons (Helm) are NOT upgraded by EKS.</b> Cluster Autoscaler, AWS LB Controller, Karpenter, KEDA — you must upgrade these manually. CA version must match K8s minor version exactly.</div>
+      </div>
+
+      <!-- STEP 3: NODE GROUPS -->
+      <div class="step-pane" id="sp-3">
+        <div class="step-header">
+          <div class="step-num vio">4</div>
+          <div><div class="step-title" style="color:var(--vio);">Node Group Upgrades</div><div class="step-sub">// last step · rolling replacement · PDB-aware · 1 new node at a time</div></div>
+        </div>
+        <div class="fr"><span class="fk">MNG rolling update</span><span class="fv">AWS launches new node (new AMI), cordons it, waits for pods to start scheduling on it, then drains old node, terminates it. Respects PodDisruptionBudgets.</span></div>
+        <div class="fr"><span class="fk">Max unavailable</span><span class="fv">Default <code>maxUnavailable: 1</code>. Can set <code>maxUnavailable: 33%</code> for faster upgrade at cost of more disruption. For production: 1 at a time.</span></div>
+        <div class="fr"><span class="fk">Duration</span><span class="fv">~5-10 min per node (launch + drain). 10-node group ≈ 50-100 min. 100-node group ≈ 8-16 hours. Plan accordingly.</span></div>
+        <div class="fr"><span class="fk">Drain behavior</span><span class="fv">EKS MNG drain respects PDBs and <code>terminationGracePeriodSeconds</code>. Stuck drain (PDB blocks) waits indefinitely. Set drain timeout with <code>--nodegroup-drain-timeout</code>.</span></div>
+        <div class="code"><span class="cm"># Update MNG to new K8s version</span>
+aws eks update-nodegroup-version \
+  --cluster-name prod \
+  --nodegroup-name workers \
+  --kubernetes-version 1.31
+
+<span class="cm"># Monitor progress</span>
+aws eks describe-nodegroup \
+  --cluster-name prod \
+  --nodegroup-name workers \
+  --query 'nodegroup.{status:status,health:health}'
+
+<span class="cm"># Force update (skip drain) - USE WITH CAUTION</span>
+aws eks update-nodegroup-version \
+  --cluster-name prod \
+  --nodegroup-name workers \
+  --kubernetes-version 1.31 \
+  --force</div>
+        <div class="trap"><b>Single-replica deployments without PDB = downtime during drain.</b> When the node running a single-replica pod is drained, the pod is killed and rescheduled — brief outage. Always run ≥2 replicas for production workloads. Add PDB with minAvailable=1.</div>
+        <div class="trap"><b>StatefulSets on local storage = drain failure.</b> Pods with local PVCs (hostPath, local PV) cannot move nodes. They block drain. Must manually delete the pod if the PVC is not needed on the new node.</div>
+      </div>
+
+      <!-- STEP 4: WHAT FAILS -->
+      <div class="step-pane" id="sp-4">
+        <div class="step-header">
+          <div class="step-num red">⚠</div>
+          <div><div class="step-title" style="color:var(--red);">What Can Fail — And Why</div><div class="step-sub">// real-world failure modes during K8s upgrades</div></div>
+        </div>
+        <div class="fail-item">
+          <div class="fail-icon">🧨</div>
+          <div>
+            <div class="fail-title">Deprecated API Removal</div>
+            <div class="fail-desc">App uses <code>extensions/v1beta1</code> Ingress, or <code>policy/v1beta1</code> PodSecurityPolicy, or <code>batch/v1beta1</code> CronJob. These APIs are <b>completely removed</b> in new versions. Apps fail with 404 or connection errors on startup. Fix before upgrade with <code>pluto</code> scan.</div>
+          </div>
+        </div>
+        <div class="fail-item">
+          <div class="fail-icon">💥</div>
+          <div>
+            <div class="fail-title">PDB Deadlock Blocks Drain</div>
+            <div class="fail-desc"><code>minAvailable: 2</code> on a Deployment with 2 replicas and both replicas on nodes being drained = drain hangs forever. EKS waits for PDB to allow eviction, which never happens. Fix: temporarily patch PDB, or scale up replicas first.</div>
+          </div>
+        </div>
+        <div class="fail-item">
+          <div class="fail-icon">🔒</div>
+          <div>
+            <div class="fail-title">Webhook Incompatibility</div>
+            <div class="fail-desc">Admission webhooks (OPA Gatekeeper, Kyverno, custom webhooks) may fail with new API versions. If the webhook server is down or returns errors, all API calls matching its rules fail. Set <code>failurePolicy: Ignore</code> for non-critical webhooks during upgrade.</div>
+          </div>
+        </div>
+        <div class="fail-item">
+          <div class="fail-icon">📦</div>
+          <div>
+            <div class="fail-title">Incompatible Addon Versions</div>
+            <div class="fail-desc">Cluster Autoscaler 1.28.x on K8s 1.30 causes scheduling failures. AWS LB Controller old version may fail to create ALBs due to API changes. AWS CNI old version may fail to assign pod IPs. Always upgrade self-managed addons alongside K8s.</div>
+          </div>
+        </div>
+        <div class="fail-item">
+          <div class="fail-icon">🌐</div>
+          <div>
+            <div class="fail-title">CNI Disruption During aws-node Restart</div>
+            <div class="fail-desc">Upgrading vpc-cni restarts aws-node. During restart, new pods on that node get <code>NetworkPluginNotReady</code>. Existing pod connections are unaffected. Brief ~30s window per node. If aws-node crashes post-upgrade due to bug: all new pod scheduling on that node fails.</div>
+          </div>
+        </div>
+        <div class="fail-item">
+          <div class="fail-icon">🎫</div>
+          <div>
+            <div class="fail-title">IRSA Token Rotation</div>
+            <div class="fail-desc">Control plane upgrade can trigger service account token rotation. Pods with old tokens may get 401 from AWS STS. Usually self-resolving (AWS SDK auto-refreshes). But pods that cache credentials aggressively may need restart after upgrade.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: FARGATE -->
+      <div class="step-pane" id="sp-5">
+        <div class="step-header">
+          <div class="step-num grn">6</div>
+          <div><div class="step-title" style="color:var(--grn);">Fargate Profile Upgrades</div><div class="step-sub">// different from node groups · rolling pod replacement</div></div>
+        </div>
+        <div class="fr"><span class="fk">No node upgrade</span><span class="fv">Fargate pods don't run on nodes you manage. AWS upgrades the underlying Fargate infrastructure. <b>You upgrade by rolling restarting your pods.</b></span></div>
+        <div class="fr"><span class="fk">Method</span><span class="fv">After CP upgrade: delete Fargate pods in rolling fashion. AWS schedules replacement pods on new Fargate infrastructure with new K8s version. Or use <code>kubectl rollout restart deployment</code>.</span></div>
+        <div class="fr"><span class="fk">Wait period</span><span class="fv">After CP upgrade, wait for AWS to propagate new Fargate runtime. Then roll pods. If you roll immediately, new pods may still launch on old runtime (usually OK, brief transition).</span></div>
+        <div class="code"><span class="cm"># Roll all Fargate deployments after CP upgrade</span>
+kubectl get deployments -A -o json | \
+  jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name)"' | \
+  while read ns name; do
+    kubectl rollout restart deployment/$name -n $ns
+    kubectl rollout status deployment/$name -n $ns
+  done</div>
+        <div class="trap"><b>Fargate doesn't support DaemonSets.</b> Any addon that uses a DaemonSet (vpc-cni, kube-proxy, node-local-dns) doesn't run on Fargate nodes. Fargate handles networking and DNS differently — the EKS control plane manages this. You can't install custom DaemonSets on Fargate.</div>
+      </div>
+
+      <!-- STEP 6: KARPENTER NODES -->
+      <div class="step-pane" id="sp-6">
+        <div class="step-header">
+          <div class="step-num aws">7</div>
+          <div><div class="step-title" style="color:var(--aws);">Karpenter Node Upgrades</div><div class="step-sub">// drift detection → automatic node replacement</div></div>
+        </div>
+        <div class="fr"><span class="fk">Drift feature</span><span class="fv">When EC2NodeClass AMI selector is updated (or K8s version changes), Karpenter marks existing nodes as <b>drifted</b>. It then replaces them: launch new node with new AMI → drain old node → terminate.</span></div>
+        <div class="fr"><span class="fk">Drift update</span><span class="fv">After CP upgrade, update NodePool's <code>amiFamily</code> or let EKS auto-detect that current AMI is outdated. Karpenter handles the rolling replacement automatically per its disruption budget.</span></div>
+        <div class="fr"><span class="fk">Disruption budget</span><span class="fv"><code>disruption.budgets</code> in NodePool controls how many nodes can be disrupted simultaneously. Default: 10%. For prod: set explicit budget like <code>nodes: 1</code>.</span></div>
+        <div class="code"><span class="cm"># After CP upgrade: trigger drift on Karpenter nodes</span>
+<span class="cm"># Method 1: Update EC2NodeClass to use new AMI alias</span>
+kubectl patch ec2nodeclass default \
+  --type merge \
+  -p '{"spec":{"amiSelectorTerms":[{"alias":"al2023@latest"}]}}'
+
+<span class="cm"># Karpenter automatically detects drift and replaces nodes</span>
+<span class="cm"># Watch replacement progress</span>
+kubectl get nodes -w
+
+<span class="cm"># Manual drift trigger (force all nodes to replace)</span>
+kubectl annotate nodes -l karpenter.sh/nodepool=default \
+  karpenter.k8s.aws/ec2nodeclass-hash-version=force-refresh</div>
+        <div class="note"><b>Karpenter drift is the cleanest upgrade experience.</b> No manual node rotation needed. Just update the AMI reference and Karpenter handles the rest. Set disruption budgets to control blast radius.</div>
+      </div>
+
+      <!-- STEP 7: VERIFY -->
+      <div class="step-pane" id="sp-7">
+        <div class="step-header">
+          <div class="step-num grn">✓</div>
+          <div><div class="step-title" style="color:var(--grn);">Post-Upgrade Verification</div><div class="step-sub">// confirm everything is healthy before closing the window</div></div>
+        </div>
+        <div class="g2">
+          <div class="code"><span class="cm"># 1. Confirm cluster version</span>
+kubectl version --short
+
+<span class="cm"># 2. All nodes on new version</span>
+kubectl get nodes -o wide
+
+<span class="cm"># 3. All system pods running</span>
+kubectl get pods -n kube-system
+
+<span class="cm"># 4. Check for failed addon updates</span>
+aws eks list-addons --cluster-name prod \
+  --query 'addons[*]' --output json | \
+  jq '.[] | select(. | test("DEGRADED|FAILED"))'
+
+<span class="cm"># 5. Verify no deprecated API usage</span>
+kubectl get --raw /metrics | \
+  grep apiserver_requested_deprecated_apis
+
+<span class="cm"># 6. Check all deployments healthy</span>
+kubectl get deployments -A | grep -v "1/1\|2/2\|3/3"
+
+<span class="cm"># 7. Run smoke tests</span>
+kubectl run test --rm -it --image=nicolaka/netshoot \
+  -- curl http://myservice.default.svc/health</div>
+          <div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>All nodes show new K8s version</b> in <code>kubectl get nodes</code>. No nodes stuck on old version.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>kube-system pods all Running</b>. Pay attention to CoreDNS, kube-proxy, aws-node replicas.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>Addon health all ACTIVE</b>. No DEGRADED or CREATE_FAILED addons.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>Application deployments healthy.</b> All replicas ready. No CrashLoopBackOff.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>DNS resolving</b>. Test from a pod: <code>nslookup kubernetes.default</code>.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>New PVCs can be created.</b> Test EBS CSI: create a test PVC and delete it.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>Load balancers responding.</b> Test ALB/NLB endpoints end-to-end.</div></div>
+            <div class="check-item"><div class="check-icon">✅</div><div class="check-text"><b>HPA and Karpenter active.</b> Scaling still works post-upgrade.</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /wiz-content -->
+
+    <div class="wiz-btns">
+      <button class="wbtn wbtn-prev" onclick="stepNav(-1)">← Previous</button>
+      <button class="wbtn wbtn-next" onclick="stepNav(1)">Next →</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /upgrade -->
+
+<!-- ═════════════════════════════════════ -->
+<!--         NODE MIGRATION               -->
+<!-- ═════════════════════════════════════ -->
+<div class="section" id="sec-nodes">
+
+<div class="sh"><div class="sh-icon">🔄</div><div class="sh-label" style="color:var(--teal);">Node AMI Migration: AL2 → AL2023</div><div class="sh-sub">// differences · breaking changes · migration strategy · what breaks</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,180,216,.3),transparent);"></div></div>
+
+<div class="card c-teal" style="margin-bottom:12px;">
+  <div class="ct" style="color:var(--teal);">🔄 AL2 vs AL2023 — Full Comparison</div>
+  <table class="diff-table">
+    <tr><th>Area</th><th style="color:var(--mid);">Amazon Linux 2 (AL2) — Legacy</th><th style="color:var(--grn);">Amazon Linux 2023 (AL2023) — Modern</th></tr>
+    <tr><td class="dkey">Base OS</td><td class="dal2">CentOS/RHEL-compatible · GLIBC 2.26</td><td class="dal23">Fedora-based · GLIBC 2.34 · modern kernel</td></tr>
+    <tr><td class="dkey">Kernel</td><td class="dal2">4.14 / 5.10 LTS</td><td class="dal23">6.1 LTS (security patches faster)</td></tr>
+    <tr><td class="dkey">Init system</td><td class="dal2">systemd</td><td class="dal23">systemd (same)</td></tr>
+    <tr><td class="dkey">Package mgr</td><td class="dal2"><code>yum</code></td><td class="dal23"><code>dnf</code> (yum is aliased but deprecated)</td></tr>
+    <tr><td class="dkey">cgroups</td><td class="dal2">cgroups v1 (default)</td><td class="dal23"><b>cgroups v2 (default)</b> — big change!</td></tr>
+    <tr><td class="dkey">Container runtime</td><td class="dal2">containerd 1.6.x</td><td class="dal23">containerd 1.7.x</td></tr>
+    <tr><td class="dkey">Networking</td><td class="dal2">iptables</td><td class="dal23">nftables (with iptables compat layer)</td></tr>
+    <tr><td class="dkey">IMDSv2</td><td class="dal2">Optional (configurable)</td><td class="dal23"><b>Required by default</b></td></tr>
+    <tr><td class="dkey">SSH users</td><td class="dal2"><code>ec2-user</code></td><td class="dal23"><code>ec2-user</code> (same)</td></tr>
+    <tr><td class="dkey">Bootstrap</td><td class="dal2"><code>/etc/eks/bootstrap.sh</code></td><td class="dal23"><b>nodeadm</b> — new binary, different config</td></tr>
+    <tr><td class="dkey">UserData format</td><td class="dal2">Shell script, MIME multipart</td><td class="dal23"><b>YAML config file</b> via nodeadm</td></tr>
+    <tr><td class="dkey">EKS support</td><td class="dal2">EOL 2025 for AL2 EKS AMI</td><td class="dal23">Current and future supported</td></tr>
+    <tr><td class="dkey">Instance types</td><td class="dal2">All types</td><td class="dal23">All types + better Graviton4/Trainium support</td></tr>
+  </table>
+</div>
+
+<div class="g3">
+  <div class="card c-red">
+    <div class="ct" style="color:var(--red);">💥 Breaking Changes (Things That Will Break)</div>
+    <div class="fail-item">
+      <div class="fail-icon">⚙️</div>
+      <div>
+        <div class="fail-title">cgroups v2 — The Biggest Change</div>
+        <div class="fail-desc">Many tools assume cgroups v1 paths (<code>/sys/fs/cgroup/cpu/</code>). cgroups v2 unified hierarchy (<code>/sys/fs/cgroup/</code>) breaks: older Java apps, custom monitoring agents that read cgroup files, some Prometheus node-exporter configs. Check: <code>stat -fc %T /sys/fs/cgroup</code></div>
+      </div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-icon">📜</div>
+      <div>
+        <div class="fail-title">UserData / Bootstrap Format Change</div>
+        <div class="fail-desc">AL2 bootstrap: <code>/etc/eks/bootstrap.sh --kubelet-extra-args "..."</code>. AL2023 uses <b>nodeadm YAML</b> via <code>nodeConfig.yaml</code>. Self-managed nodes with custom UserData must be rewritten. MNG handles this automatically if you just change amiType.</div>
+      </div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-icon">🔒</div>
+      <div>
+        <div class="fail-title">IMDSv2 Required by Default</div>
+        <div class="fail-desc">AL2023 enforces IMDSv2. Apps using IMDS v1 API (<code>curl http://169.254.169.254/...</code> without token header) fail silently. Fix: update SDK (any modern AWS SDK handles IMDSv2 automatically). Or set hop limit to allow v1 (not recommended).</div>
+      </div>
+    </div>
+    <div class="fail-item">
+      <div class="fail-icon">🧪</div>
+      <div>
+        <div class="fail-title">Package Differences</div>
+        <div class="fail-desc">Init scripts or custom AMI modifications using <code>yum install</code> may work but <code>dnf</code> is preferred. Some package names differ between AL2 and AL2023 repos. Custom userdata that installs OS packages must be tested.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card c-teal">
+    <div class="ct" style="color:var(--teal);">🗺️ Migration Strategy</div>
+    <div class="fr"><span class="fk">MNG (easiest)</span><span class="fv"><b>Change <code>amiType</code> from <code>AL2_x86_64</code> to <code>AL2023_x86_64</code></b> in the node group config, then trigger a version update. AWS handles the rest — new nodes launch with AL2023.</span></div>
+    <div class="fr"><span class="fk">Karpenter (elegant)</span><span class="fv">Update <code>EC2NodeClass</code> <code>amiSelectorTerms</code> to <code>alias: al2023@latest</code>. Karpenter's drift detection automatically replaces nodes with AL2023 AMIs.</span></div>
+    <div class="fr"><span class="fk">Blue/green (safest)</span><span class="fv">Create new MNG with AL2023. Gradually migrate workloads using taints/tolerations or node selectors. Keep AL2 nodes until all workloads verified on AL2023.</span></div>
+    <div class="fr"><span class="fk">Testing</span><span class="fv">Run critical workloads on AL2023 nodes first using node selector. Observe for 1-2 weeks before full migration. Check cgroup paths, metric collection, anything that reads /sys/fs/cgroup.</span></div>
+    <div class="code"><span class="cm"># MNG: change amiType in Terraform</span>
+resource "aws_eks_node_group" "workers" {
+  ami_type = "AL2023_x86_64"
+  <span class="cm"># was: ami_type = "AL2_x86_64"</span>
+}
+
+<span class="cm"># Karpenter: update EC2NodeClass</span>
+<span class="ky">spec</span>:
+  <span class="ky">amiSelectorTerms</span>:
+  - <span class="ky">alias</span>: <span class="st">al2023@latest</span>
+  <span class="cm"># was: alias: al2@latest</span>
+
+<span class="cm"># AL2023 nodeadm userdata format:</span>
+<span class="ky">---</span>
+<span class="ky">apiVersion</span>: node.eks.aws/v1alpha1
+<span class="ky">kind</span>: NodeConfig
+<span class="ky">spec</span>:
+  <span class="ky">cluster</span>:
+    <span class="ky">name</span>: my-cluster
+    <span class="ky">apiServerEndpoint</span>: https://...
+    <span class="ky">certificateAuthority</span>: <span class="st">BASE64</span>
+  <span class="ky">kubelet</span>:
+    <span class="ky">config</span>:
+      <span class="ky">maxPods</span>: <span class="nu">110</span></div>
+  </div>
+
+  <div class="card c-grn">
+    <div class="ct" style="color:var(--grn);">✅ Pre-Migration Checklist</div>
+    <div class="check-item"><div class="check-icon">🔍</div><div class="check-text"><b>Audit cgroups v1 dependencies.</b> Search for hardcoded paths: <code>grep -r "/sys/fs/cgroup/cpu" /</code> in any custom scripts or operator code.</div></div>
+    <div class="check-item"><div class="check-icon">☕</div><div class="check-text"><b>Test JVM apps.</b> Java 8 < 8u191 doesn't understand cgroups v2. Use modern JVM (Java 11+, Java 17+). Check <code>-XX:+UseContainerSupport</code> flag.</div></div>
+    <div class="check-item"><div class="check-icon">📊</div><div class="check-text"><b>Check monitoring agents.</b> Datadog, Prometheus node-exporter, custom collectors that read cgroup metrics. Test on AL2023 in non-prod first.</div></div>
+    <div class="check-item"><div class="check-icon">📜</div><div class="check-text"><b>Review all UserData scripts.</b> Any yum install commands, custom bootstrap hooks. AL2023 nodeadm format is different from AL2 bootstrap.sh.</div></div>
+    <div class="check-item"><div class="check-icon">🔑</div><div class="check-text"><b>Check IMDS usage.</b> Any app using EC2 metadata service directly. AWS SDKs ≥ 2018 support IMDSv2. Older SDKs or curl-based IMDS calls need updating.</div></div>
+    <div class="check-item"><div class="check-icon">🐳</div><div class="check-text"><b>Container image compatibility.</b> Images built for GLIBC 2.26 (AL2) work on AL2023 (GLIBC 2.34 is backward compatible). Generally no container image changes needed.</div></div>
+    <div class="check-item"><div class="check-icon">🔌</div><div class="check-text"><b>Test StorageClass and PVC creation.</b> EBS CSI, EFS CSI should work on AL2023 but test in non-prod.</div></div>
+    <div class="note" style="margin-top:10px;"><b>AWS EKS AL2 AMIs will stop being published</b> for K8s versions released after November 2024. Migration to AL2023 is not optional for future K8s versions — plan it now.</div>
+  </div>
+</div>
+
+</div><!-- /nodes -->
+
+<!-- ═════════════════════════════════════ -->
+<!--              TRAPS                   -->
+<!-- ═════════════════════════════════════ -->
+<div class="section" id="sec-traps">
+
+<div class="sh"><div class="sh-icon">⚡</div><div class="sh-label" style="color:var(--red);">EKS Traps & Interview Questions</div><div class="sh-sub">// operational gotchas that bite everyone</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(239,68,68,.3),transparent);"></div></div>
+
+<div class="trap-grid">
+  <div class="trap-big"><div class="trap-n">01</div>
+    <div class="trap-tag">Access</div>
+    <div class="trap-q">Created EKS with Terraform role, now kubectl returns "Unauthorized"</div>
+    <div class="trap-a"><b>The Terraform role is cluster admin, not your personal IAM user.</b> Assume that role or add your principal to aws-auth/Access Entries. Use <code>aws eks update-kubeconfig --role-arn arn:...terraform-role</code> to use the right identity.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">02</div>
+    <div class="trap-tag">Upgrade</div>
+    <div class="trap-q">Can you upgrade EKS from 1.27 to 1.30 in one step?</div>
+    <div class="trap-a"><b>No.</b> EKS enforces one minor version at a time: 1.27 → 1.28 → 1.29 → 1.30. Each is a separate API call. Plan for 3 maintenance windows or a long single window with all 3 upgrades sequentially.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">03</div>
+    <div class="trap-tag">Networking</div>
+    <div class="trap-q">Pods can't communicate cross-AZ. What's wrong?</div>
+    <div class="trap-a"><b>Security group rules.</b> EKS VPC CNI uses pod IPs from the VPC CIDR. Cross-AZ traffic goes through routing — SG rules on the ENI must allow the pod CIDR range. Also check NACLs. Also: check if you accidentally have a NetworkPolicy blocking it.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">04</div>
+    <div class="trap-tag">IRSA</div>
+    <div class="trap-q">IRSA worked, then you renamed the Kubernetes namespace. Now it breaks.</div>
+    <div class="trap-a"><b>IRSA trust policy includes exact namespace name.</b> The <code>sub</code> condition is <code>system:serviceaccount:{namespace}:{sa-name}</code>. Update the IAM role trust policy with the new namespace name. Consider using Pod Identity which doesn't have this limitation.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">05</div>
+    <div class="trap-tag">Scaling</div>
+    <div class="trap-q">Pods are Pending but Cluster Autoscaler isn't scaling up. Why?</div>
+    <div class="trap-a"><b>Multiple possible causes:</b> (1) Pod has node affinity/selector that no ASG can satisfy. (2) Pod requests exceed any available instance type. (3) ASG already at max capacity. (4) CA doesn't have IAM permissions to call ASG API. (5) Pod is in a namespace CA is ignoring. Check CA logs: <code>kubectl logs -n kube-system -l app=cluster-autoscaler</code>.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">06</div>
+    <div class="trap-tag">Storage</div>
+    <div class="trap-q">PVC stuck in Pending after EKS 1.23 upgrade</div>
+    <div class="trap-a"><b>In-tree EBS provisioner was removed in 1.23.</b> You must install EBS CSI driver. Existing PVs still work (migrated). New PVCs with <code>storageClass: gp2</code> fail until CSI driver is installed. Add <code>aws-ebs-csi-driver</code> managed addon before upgrading to 1.23.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">07</div>
+    <div class="trap-tag">Nodes</div>
+    <div class="trap-q">New nodes join cluster but not accepting pods. Status: "Not Ready"</div>
+    <div class="trap-a"><b>Common causes:</b> (1) aws-node (VPC CNI) not running on node — SG blocks port 443 to API server. (2) Node can't pull ECR images (ECR endpoint blocked, missing IAM). (3) Node IAM role not in aws-auth. (4) kubelet can't reach API server (private endpoint without route). Check: <code>kubectl describe node {nodename}</code>.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">08</div>
+    <div class="trap-tag">Drain</div>
+    <div class="trap-q">Node drain hangs indefinitely during upgrade</div>
+    <div class="trap-a"><b>PodDisruptionBudget blocking eviction.</b> Find the blocking pod: <code>kubectl get events --field-selector reason=EvictionThrottled</code>. Fix: scale up the Deployment temporarily (add 1 replica), let PDB allow eviction, then scale back. Or patch PDB maxUnavailable: 1 temporarily.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">09</div>
+    <div class="trap-tag">Fargate</div>
+    <div class="trap-q">DaemonSet pods don't run on Fargate nodes</div>
+    <div class="trap-a"><b>By design.</b> Fargate doesn't support DaemonSets. Each Fargate pod is a dedicated "micro-VM" — there's no node to run a DaemonSet on. CNI, kube-proxy, and log forwarding are handled by EKS control plane for Fargate. Use sidecar containers instead of DaemonSets on Fargate.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">10</div>
+    <div class="trap-tag">AL2023</div>
+    <div class="trap-q">Old Java app OOMKilled on AL2023 nodes but was fine on AL2</div>
+    <div class="trap-a"><b>cgroups v2 changes JVM memory reporting.</b> JVM < Java 8u191 doesn't understand cgroups v2 and thinks it has access to all node memory (no container limit), then gets OOMKilled. Fix: upgrade to Java 11+, or set <code>-XX:MaxRAMPercentage=75</code> explicitly, or add <code>-XX:+UseContainerSupport</code>.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">11</div>
+    <div class="trap-tag">Karpenter</div>
+    <div class="trap-q">Karpenter over-provisions: launches 10 nodes for 10 pending pods</div>
+    <div class="trap-a"><b>Consolidation not enabled or nodes are "tainted" as non-empty.</b> Enable: <code>consolidationPolicy: WhenUnderutilized</code>. Also: Karpenter waits before consolidating (default: 10 empty seconds + underutilized for 1 min). Set <code>consolidateAfter: 30s</code> for faster consolidation in non-prod.</div>
+  </div>
+  <div class="trap-big"><div class="trap-n">12</div>
+    <div class="trap-tag">Addons</div>
+    <div class="trap-q">Managed addon stuck in "DEGRADED" state after upgrade</div>
+    <div class="trap-a"><b>You modified addon-managed resources directly.</b> EKS detected drift between desired addon config and actual resource state. Fix: <code>aws eks update-addon --resolve-conflicts OVERWRITE</code> to let EKS restore to its desired state. Or use <code>PRESERVE</code> to keep your changes (but new defaults won't apply).</div>
+  </div>
+</div>
+
+<div class="g2" style="margin-top:0;">
+  <div class="card c-aws">
+    <div class="ct" style="color:var(--aws);">🎓 Senior Engineer Quick-Answers</div>
+    <table class="st">
+      <tr><th>Question</th><th>Answer</th></tr>
+      <tr><td>What's upgraded first during EKS version bump?</td><td class="good">Control plane, then addons, then node groups</td></tr>
+      <tr><td>Can kubelet be newer than API server?</td><td class="bad">No. kubelet can only be ≤1 minor version behind</td></tr>
+      <tr><td>What creates the ALB when you apply an Ingress?</td><td>AWS Load Balancer Controller (not EKS or K8s)</td></tr>
+      <tr><td>How many pods can a t3.medium node run?</td><td class="warn">~17 (3 ENIs × 6 IPs - 3 node IPs + prefix delegation)</td></tr>
+      <tr><td>IRSA vs Pod Identity — key difference?</td><td>IRSA needs OIDC + trust policy per SA. Pod Identity uses EKS agent, no OIDC config</td></tr>
+      <tr><td>Why does AL2023 break old Java apps?</td><td class="bad">cgroups v2 — JVM &lt;11 misreads memory limits</td></tr>
+      <tr><td>How does Karpenter differ from CA?</td><td class="good">Direct EC2 calls (~45s), optimal bin-packing, drift-based auto-upgrade</td></tr>
+      <tr><td>What's the EKS control plane SLA?</td><td>99.95% uptime, ~4.4 hours downtime/year allowance</td></tr>
+    </table>
+  </div>
+  <div class="card c-red">
+    <div class="ct" style="color:var(--red);">🚨 The Top 5 Things That Go Wrong</div>
+    <div style="counter-reset: trap-counter;">
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">1</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Deprecated API usage</b> — Apps using old API versions fail immediately after CP upgrade. Scan with pluto before every upgrade.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">2</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">PDB deadlock</b> — Node drain hangs because PDB won't allow eviction. Always check PDBs before upgrading.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">3</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Cluster Autoscaler version mismatch</b> — CA must match K8s minor version. Old CA on new cluster = erratic scaling.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">4</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">EBS CSI not installed pre-1.23</b> — Upgrading to 1.23 without pre-installing EBS CSI = all new PVCs fail.</div>
+      </div>
+      <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
+        <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">5</div>
+        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">cgroups v2 on AL2023</b> — Java/monitoring tools reading cgroup v1 paths break silently when migrating to AL2023.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /traps -->
+
+<div class="footer">
+  <div class="ft">EKS Field Guide · Architecture · Addons · Scaling · Permissions · Upgrades · AL2→AL2023</div>
+  <div class="ft" style="color:rgba(255,153,0,.25);">CP first → addons → nodes · one minor version at a time · pluto before every upgrade · AL2023 = cgroupsv2</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+// ── SECTION NAV ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── ADDON TOGGLE ──
+function toggleAddon(el) {
+  el.classList.toggle('open');
+}
+
+// ── WIZARD ──
+let currentStep = 0;
+const totalSteps = 8;
+
+function updateWizard() {
+  // Update panes
+  document.querySelectorAll('.step-pane').forEach((p,i) => {
+    p.classList.toggle('active', i === currentStep);
+  });
+  // Update step buttons
+  document.querySelectorAll('.wiz-step').forEach((b,i) => {
+    b.classList.remove('active','done');
+    if (i === currentStep) b.classList.add('active');
+    else if (i < currentStep) b.classList.add('done');
+  });
+  // Update progress
+  const pct = Math.round(((currentStep + 1) / totalSteps) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progText').textContent = `Step ${currentStep+1} of ${totalSteps}`;
+  // Update buttons
+  const prevBtn = document.querySelector('.wbtn-prev');
+  const nextBtn = document.querySelector('.wbtn-next');
+  prevBtn.style.opacity = currentStep === 0 ? '0.3' : '1';
+  prevBtn.disabled = currentStep === 0;
+  nextBtn.textContent = currentStep === totalSteps - 1 ? '✓ Complete' : 'Next →';
+}
+
+function stepNav(dir) {
+  const newStep = currentStep + dir;
+  if (newStep >= 0 && newStep < totalSteps) {
+    currentStep = newStep;
+    updateWizard();
+  }
+}
+
+function goStep(i) {
+  currentStep = i;
+  updateWizard();
+}
+
+updateWizard();
+</script>
+</body>
+</html>

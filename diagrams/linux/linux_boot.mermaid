@@ -1,0 +1,110 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#E95420', 
+    'primaryBorderColor': '#C4441C', 
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220', 
+    'secondaryBorderColor': '#C25D06',
+    'tertiaryColor': '#28A745', 
+    'tertiaryBorderColor': '#176127',
+    'lineColor': '#CCCCCC', 
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
+sequenceDiagram
+    %% === LINUX BOOT PROCESS DIAGRAM ===
+    %% Title: Linux Boot Sequence
+    %% Description: Detailed flow of Linux system startup from power-on to user login
+
+    %% Component Definitions with Icons
+    participant Power as 🔌 Power On
+    participant BIOS as 🔧 BIOS/UEFI
+    participant Disk as 💽 Boot Device
+    participant Bootloader as 🥾 GRUB/LILO
+    participant Kernel as 🐧 Linux Kernel
+    participant Init as ⚙️ Init/Systemd
+    participant Services as 🔄 Services
+    participant Display as 🖥️ Display Manager
+
+    %% No custom styling for better compatibility
+    
+    %% Phase 1: Hardware Initialization
+    rect rgb(40,20,15)
+    note over Power,Display: <b>Phase 1: Hardware Initialization</b>
+    
+    Power->>+BIOS: System power activated
+    note right of Power: POST begins
+    
+    BIOS-->>BIOS: Power-On Self Test (POST)
+    BIOS-->>BIOS: Initialize core hardware
+    BIOS->>-Disk: Locate boot device
+    
+    note left of BIOS: Check boot sequence<br/>in CMOS settings
+    end
+
+    %% Phase 2: Bootloader Stage
+    rect rgb(40,30,15)
+    note over Power,Display: <b>Phase 2: Bootloader Stage</b>
+    
+    Disk->>+Bootloader: Load bootloader from MBR/GPT
+    
+    alt UEFI System
+        note over Bootloader: Load from EFI System Partition
+    else Legacy BIOS
+        note over Bootloader: Load from Master Boot Record
+    end
+    
+    Bootloader-->>Bootloader: Display boot menu
+    Bootloader-->>Bootloader: Load boot parameters
+    Bootloader->>-Kernel: Load kernel & initramfs
+    
+    note right of Bootloader: Pass kernel parameters<br/>like root device location
+    end
+    
+    %% Phase 3: Kernel Initialization
+    rect rgb(15,40,15)
+    note over Power,Display: <b>Phase 3: Kernel Initialization</b>
+    
+    Kernel-->>Kernel: Decompress itself
+    Kernel-->>Kernel: Initialize memory management
+    Kernel-->>Kernel: Mount root filesystem (read-only)
+    Kernel-->>Kernel: Load essential drivers
+    
+    alt Using initramfs/initrd
+        Kernel-->>Kernel: Load drivers needed to<br/>mount actual root filesystem
+        Kernel-->>Kernel: Switch to actual root filesystem
+    end
+    
+    Kernel->>+Init: Start first process (PID 1)
+    end
+    
+    %% Phase 4: System Initialization
+    rect rgb(15,25,40)
+    note over Power,Display: <b>Phase 4: System Initialization</b>
+    
+    alt SystemD Init System
+        Init-->>Init: Parse /etc/systemd/system
+        Init->>+Services: Start target units in dependency order
+    else SysVinit
+        Init-->>Init: Parse /etc/inittab
+        Init->>+Services: Execute runlevel scripts in /etc/rc.d/
+    end
+    
+    Services-->>Services: Start system services
+    Services-->>Services: Configure network
+    Services-->>Services: Mount filesystems
+    Services->>-Init: Core services started
+    
+    Init->>+Display: Start display manager
+    end
+    
+    %% Phase 5: User Session
+    rect rgb(30,15,40)
+    note over Power,Display: <b>Phase 5: User Session</b>
+    
+    Display-->>Display: Show login screen
+    Display->>Display: Authenticate user
+    Display->>-Init: Start user session
+    
+    note right of Display: Launch desktop environment<br/>or shell based on user profile
+    end

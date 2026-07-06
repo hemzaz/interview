@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Ops & Troubleshooting Cheatsheet</title>
+<style>
+  :root{
+    --bg:#0a0c10;
+    --surface:#111318;
+    --surface2:#161922;
+    --text:#e6edf3;
+    --muted:#8b98a9;
+    --accent:#5fb3ff;
+    --accent2:#ffb454;
+    --danger:#ff6b6b;
+    --ok:#5fd97a;
+    --border:rgba(255,255,255,.08);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:64px 20px 100px}
+  header.page{
+    margin-bottom:36px;
+    border-bottom:1px solid var(--border);
+    padding-bottom:24px;
+  }
+  header.page h1{
+    font-size:2rem;
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  header.page p.sub{
+    color:var(--muted);
+    margin:0;
+    font-size:1.02rem;
+  }
+  header.page .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{
+    display:inline-block;
+    font-size:.72rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    padding:4px 10px;
+    border-radius:999px;
+    background:var(--surface2);
+    color:var(--muted);
+    border:1px solid var(--border);
+  }
+  nav.toc{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 22px;
+    margin-bottom:40px;
+  }
+  nav.toc h2{margin:0 0 10px;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  nav.toc ol{margin:0;padding-left:1.1em;columns:2;column-gap:24px}
+  nav.toc li{margin-bottom:6px;break-inside:avoid}
+  nav.toc a{color:var(--accent);text-decoration:none;font-size:.92rem}
+  nav.toc a:hover{text-decoration:underline}
+
+  section{margin-bottom:52px;scroll-margin-top:20px}
+  section h2{
+    font-size:1.4rem;
+    margin:0 0 6px;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--border);
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  section h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;font-size:1rem}
+  section h3{font-size:1.08rem;margin:26px 0 10px;color:var(--text)}
+  section > p.intro{color:var(--muted);margin-top:10px}
+
+  p{margin:.6em 0}
+  ul,ol{padding-left:1.4em}
+  li{margin:.3em 0}
+
+  code{
+    font-family:ui-monospace,Menlo,Consolas,monospace;
+    background:var(--surface2);
+    padding:.1em .4em;
+    border-radius:4px;
+    font-size:.88em;
+    color:var(--accent2);
+    border:1px solid var(--border);
+  }
+  pre{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+    overflow-x:auto;
+    margin:14px 0;
+    font-size:.86rem;
+  }
+  pre code{
+    background:none;
+    border:none;
+    padding:0;
+    color:var(--text);
+    font-size:1em;
+  }
+  pre .cmt{color:var(--muted)}
+  pre .flag{color:var(--accent)}
+  pre .out{color:var(--muted)}
+
+  .table-wrap{overflow-x:auto;margin:14px 0}
+  table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:520px;
+    font-size:.88rem;
+  }
+  th,td{
+    text-align:left;
+    padding:8px 12px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+  th{
+    color:var(--muted);
+    font-size:.75rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:600;
+    border-bottom:2px solid var(--border);
+  }
+  tr:hover td{background:rgba(255,255,255,.02)}
+  td code{white-space:nowrap}
+
+  .callout{
+    border-radius:10px;
+    padding:14px 16px;
+    margin:16px 0;
+    border:1px solid var(--border);
+    border-left-width:4px;
+  }
+  .callout .ctitle{
+    font-weight:700;
+    font-size:.82rem;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .callout.trap{
+    background:rgba(255,107,107,.06);
+    border-left-color:var(--danger);
+  }
+  .callout.trap .ctitle{color:var(--danger)}
+  .callout.qa{
+    background:rgba(95,179,255,.06);
+    border-left-color:var(--accent);
+  }
+  .callout.qa .ctitle{color:var(--accent)}
+  .callout.qa .q{font-weight:600;margin-bottom:4px}
+  .callout.qa .a{color:var(--muted)}
+  .callout.tip{
+    background:rgba(95,217,122,.06);
+    border-left-color:var(--ok);
+  }
+  .callout.tip .ctitle{color:var(--ok)}
+
+  .flow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin:16px 0;
+  }
+  .flow .step{
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:.86rem;
+    font-weight:600;
+  }
+  .flow .arrow{color:var(--muted)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:700px){.grid2{grid-template-columns:1fr}}
+
+  footer.page{
+    margin-top:60px;
+    padding-top:20px;
+    border-top:1px solid var(--border);
+    color:var(--muted);
+    font-size:.82rem;
+  }
+
+  a{color:var(--accent)}
+
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f5f7fa;
+      --surface:#ffffff;
+      --surface2:#eef1f5;
+      --text:#1a2027;
+      --muted:#5b6675;
+      --border:rgba(0,0,0,.09);
+    }
+    body:not([data-theme]) code{color:#a1590a}
+  }
+  :root[data-theme="light"]{
+    --bg:#f5f7fa;
+    --surface:#ffffff;
+    --surface2:#eef1f5;
+    --text:#1a2027;
+    --muted:#5b6675;
+    --border:rgba(0,0,0,.09);
+  }
+  :root[data-theme="light"] code{color:#a1590a}
+  :root[data-theme="dark"]{
+    --bg:#0a0c10;
+    --surface:#111318;
+    --surface2:#161922;
+    --text:#e6edf3;
+    --muted:#8b98a9;
+    --border:rgba(255,255,255,.08);
+  }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+
+<div class="wrap">
+
+  <header class="page">
+    <h1>Linux Ops &amp; Troubleshooting Cheatsheet</h1>
+    <p class="sub">Practitioner-layer Linux for SRE/DevOps interviews: systemd, the USE method, performance tools, networking, filesystems, permissions, and signals — with the traps interviewers love to probe.</p>
+    <div class="badges">
+      <span class="badge">systemd</span>
+      <span class="badge">USE method</span>
+      <span class="badge">Networking</span>
+      <span class="badge">Filesystems</span>
+      <span class="badge">Permissions</span>
+      <span class="badge">Signals</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#systemd">systemd &amp; unit management</a></li>
+      <li><a href="#journalctl">journalctl &amp; logging</a></li>
+      <li><a href="#timers">Timers vs cron</a></li>
+      <li><a href="#use-method">The USE method</a></li>
+      <li><a href="#cpu">CPU: tools &amp; signals</a></li>
+      <li><a href="#load-avg">Load average, deep dive</a></li>
+      <li><a href="#mem">Memory: tools &amp; signals</a></li>
+      <li><a href="#oom">OOM killer &amp; swap</a></li>
+      <li><a href="#disk">Disk I/O: tools &amp; signals</a></li>
+      <li><a href="#net-perf">Network: tools &amp; signals</a></li>
+      <li><a href="#tracing">strace / ltrace / lsof / /proc</a></li>
+      <li><a href="#networking">Core networking commands</a></li>
+      <li><a href="#filesystems">Filesystems &amp; disk management</a></li>
+      <li><a href="#permissions">Permissions, ownership, capabilities</a></li>
+      <li><a href="#signals">Signals, process states, limits</a></li>
+      <li><a href="#flowchart">Systematic troubleshooting flow</a></li>
+      <li><a href="#traps">Interview trap quick-reference</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ SYSTEMD ============ -->
+  <section id="systemd">
+    <h2><span class="num">01</span> systemd &amp; unit management</h2>
+    <p class="intro">systemd is PID 1 on nearly every modern distro. It supervises services, mounts, sockets, and timers as declarative <strong>units</strong>, resolving dependencies as a graph rather than a linear boot script.</p>
+
+    <h3>Unit types</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Unit</th><th>Extension</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Service</td><td><code>.service</code></td><td>A managed process (daemon, one-shot script)</td></tr>
+          <tr><td>Socket</td><td><code>.socket</code></td><td>Socket-activated start (systemd listens, spawns service on first connection)</td></tr>
+          <tr><td>Timer</td><td><code>.timer</code></td><td>Scheduled activation of a matching <code>.service</code>, cron-like</td></tr>
+          <tr><td>Target</td><td><code>.target</code></td><td>Synchronization point / grouping (e.g. <code>multi-user.target</code>), analogous to old runlevels</td></tr>
+          <tr><td>Mount</td><td><code>.mount</code></td><td>A filesystem mount point, usually auto-generated from <code>/etc/fstab</code></td></tr>
+          <tr><td>Path</td><td><code>.path</code></td><td>Activates a unit when a file/dir changes (inotify-based)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>systemctl essentials</h3>
+    <pre><code><span class="cmt"># lifecycle</span>
+systemctl start nginx
+systemctl stop nginx
+systemctl restart nginx
+systemctl reload nginx          <span class="cmt"># re-read config without dropping connections (if supported)</span>
+systemctl status nginx          <span class="cmt"># state, recent logs, cgroup, main PID</span>
+
+<span class="cmt"># boot-time behavior</span>
+systemctl enable nginx          <span class="cmt"># creates symlink in a .wants/ dir — does NOT start it now</span>
+systemctl enable --now nginx    <span class="cmt"># enable + start in one shot</span>
+systemctl disable nginx
+systemctl is-enabled nginx
+systemctl is-active nginx
+
+<span class="cmt"># after editing a unit file</span>
+systemctl daemon-reload         <span class="cmt"># re-parse unit files; required before changes take effect</span>
+
+<span class="cmt"># inspection</span>
+systemctl list-units --type=service --state=running
+systemctl list-unit-files --state=enabled
+systemctl cat nginx.service     <span class="cmt"># print the effective unit file (incl. drop-ins)</span>
+systemctl show nginx -p MainPID,ActiveState,Restart
+systemctl list-dependencies nginx
+systemctl --failed              <span class="cmt"># list all failed units</span>
+systemctl mask nginx            <span class="cmt"># symlink to /dev/null — cannot start even manually</span>
+</code></pre>
+
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap</div>
+      Forgetting <code>systemctl daemon-reload</code> after editing a unit file. Without it, <code>systemctl restart</code> uses the <em>cached</em> unit definition — the change silently doesn't apply.
+    </div>
+
+    <h3>Unit file anatomy</h3>
+    <pre><code>[Unit]
+Description=My API service
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/myapi --config /etc/myapi/config.yml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+User=myapi
+Group=myapi
+LimitNOFILE=65536
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Directive</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>After=</code></td><td>Ordering only — start after the listed unit, but does not pull it in as a dependency</td></tr>
+          <tr><td><code>Requires=</code></td><td>Hard dependency — if the required unit fails/stops, this unit is stopped too</td></tr>
+          <tr><td><code>Wants=</code></td><td>Soft dependency — pulls the unit in at start, but failure of the wanted unit doesn't stop this one</td></tr>
+          <tr><td><code>Restart=</code></td><td><code>no</code> (default), <code>on-failure</code>, <code>on-abnormal</code>, <code>always</code>, <code>on-success</code></td></tr>
+          <tr><td><code>ExecStart=</code></td><td>The command to run; exactly what "starting" means depends on <code>Type=</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><code>Type=</code> values</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Behavior</th></tr></thead>
+        <tbody>
+          <tr><td><code>simple</code> (default)</td><td>Process started by <code>ExecStart=</code> <em>is</em> the main process; systemd considers the unit started immediately</td></tr>
+          <tr><td><code>forking</code></td><td>Process forks and the parent exits; systemd expects a PID file (<code>PIDFile=</code>) or tracks the child via cgroup to know the real main PID</td></tr>
+          <tr><td><code>oneshot</code></td><td>Process is expected to exit before systemd considers the unit "active"; commonly paired with <code>RemainAfterExit=yes</code></td></tr>
+          <tr><td><code>notify</code></td><td>Process signals readiness itself via <code>sd_notify()</code> (<code>READY=1</code>) — most accurate for services with async startup</td></tr>
+          <tr><td><code>dbus</code></td><td>Unit is considered started when the specified D-Bus name appears on the bus</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout qa">
+      <div class="ctitle">Q&amp;A</div>
+      <div class="q">Q: Your service unit has <code>Type=simple</code> but the binary daemonizes (double-forks) internally. What happens?</div>
+      <div class="a">A: systemd loses track of the real child process — the tracked PID exits immediately (the parent that forked), so systemd thinks the service died even though the daemon is still running. Fix: use <code>Type=forking</code> with a correct <code>PIDFile=</code>, or better, run the binary in the foreground and use <code>Type=simple</code>/<code>notify</code>.</div>
+    </div>
+  </section>
+
+  <!-- ============ JOURNALCTL ============ -->
+  <section id="journalctl">
+    <h2><span class="num">02</span> journalctl &amp; logging</h2>
+    <p class="intro"><code>journalctl</code> queries the structured, binary systemd journal (<code>/var/log/journal/</code> if persistent, otherwise volatile in <code>/run/log/journal/</code>).</p>
+    <pre><code>journalctl -u nginx.service            <span class="cmt"># logs for one unit</span>
+journalctl -u nginx -f                 <span class="cmt"># follow, like tail -f</span>
+journalctl -u nginx --since "10 min ago"
+journalctl -u nginx --since "2026-07-06 08:00" --until "2026-07-06 09:00"
+journalctl -p err                      <span class="cmt"># priority filter: emerg/alert/crit/err/warning/notice/info/debug</span>
+journalctl -p err -b                   <span class="cmt"># errors since current boot</span>
+journalctl -b -1                       <span class="cmt"># logs from previous boot (needs persistent journal)</span>
+journalctl --list-boots                <span class="cmt"># enumerate boot IDs</span>
+journalctl -k                          <span class="cmt"># kernel messages only (like dmesg)</span>
+journalctl -o json-pretty -u nginx -n 5
+journalctl --disk-usage                <span class="cmt"># how much space the journal is using</span>
+journalctl --vacuum-time=2weeks        <span class="cmt"># prune old entries</span>
+journalctl --vacuum-size=500M
+</code></pre>
+    <div class="callout tip">
+      <div class="ctitle">Tip</div>
+      Persistent journal requires <code>/var/log/journal/</code> to exist (<code>mkdir -p /var/log/journal &amp;&amp; systemd-tmpfiles --create --prefix /var/log/journal</code>) and <code>Storage=persistent</code> in <code>/etc/systemd/journald.conf</code>. Otherwise logs vanish on reboot.
+    </div>
+  </section>
+
+  <!-- ============ TIMERS ============ -->
+  <section id="timers">
+    <h2><span class="num">03</span> Timers vs cron</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>systemd timer</th><th>cron</th></tr></thead>
+        <tbody>
+          <tr><td>Logging</td><td>Integrated with journal (<code>journalctl -u foo.service</code>)</td><td>Usually mail or syslog only, easy to miss</td></tr>
+          <tr><td>Dependencies</td><td>Can require other units (network, mounts) via <code>After=</code>/<code>Requires=</code></td><td>None — just fires at the time</td></tr>
+          <tr><td>Missed runs</td><td><code>Persistent=true</code> catches up missed runs after downtime</td><td>Missed run is simply skipped</td></tr>
+          <tr><td>Randomization</td><td><code>RandomizedDelaySec=</code> to spread load</td><td>Not built in</td></tr>
+          <tr><td>Resource control</td><td>Inherits cgroup limits (CPU/mem quotas) like any unit</td><td>None natively</td></tr>
+          <tr><td>Syntax</td><td><code>OnCalendar=</code> expressions, more verbose</td><td>Terse 5-field crontab syntax, ubiquitous</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code><span class="cmt"># /etc/systemd/system/backup.timer</span>
+[Unit]
+Description=Run backup daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+
+<span class="cmt"># pairs with backup.service (Type=oneshot), same base name</span>
+systemctl enable --now backup.timer
+systemctl list-timers               <span class="cmt"># next/last run times for all timers</span>
+</code></pre>
+  </section>
+
+  <!-- ============ USE METHOD ============ -->
+  <section id="use-method">
+    <h2><span class="num">04</span> The USE method</h2>
+    <p class="intro">Brendan Gregg's systematic approach: for every resource (CPU, memory, disk, network), check three things.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Definition</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>U</strong>tilization</td><td>% of time the resource was busy servicing work</td><td>CPU 95% busy</td></tr>
+          <tr><td><strong>S</strong>aturation</td><td>Degree of extra work queued that the resource can't service</td><td>Run-queue length, disk I/O queue depth</td></tr>
+          <tr><td><strong>E</strong>rrors</td><td>Count of error events</td><td>NIC drops, disk retries, ECC memory errors</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>USE gives you a checklist to avoid tunnel vision — cycling through every resource in a fixed order rather than randomly poking at whatever looks suspicious first.</p>
+  </section>
+
+  <!-- ============ CPU ============ -->
+  <section id="cpu">
+    <h2><span class="num">05</span> CPU: tools &amp; signals</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Shows</th><th>Key flags</th></tr></thead>
+        <tbody>
+          <tr><td><code>top</code> / <code>htop</code></td><td>Per-process CPU%, load avg, live snapshot</td><td><code>top -H</code> (per-thread), <code>htop</code> is friendlier + tree view</td></tr>
+          <tr><td><code>vmstat</code></td><td>System-wide CPU (us/sy/id/wa/st), run queue (<code>r</code>), blocked (<code>b</code>), context switches</td><td><code>vmstat 1</code> (1s interval)</td></tr>
+          <tr><td><code>mpstat</code></td><td>Per-CPU-core utilization breakdown</td><td><code>mpstat -P ALL 1</code></td></tr>
+          <tr><td><code>pidstat</code></td><td>Per-process CPU/mem/IO/context-switches over time</td><td><code>pidstat -u 1</code>, <code>pidstat -w 1</code> (ctx switches)</td></tr>
+          <tr><td><code>sar</code></td><td>Historical + live system stats (CPU, mem, disk, net) from <code>sysstat</code></td><td><code>sar -u 1 5</code>, <code>sar -q</code> (load), reads from <code>/var/log/sa/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Reading <code>vmstat</code> CPU columns</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>us</code></td><td>User-space CPU time</td></tr>
+          <tr><td><code>sy</code></td><td>Kernel/system CPU time</td></tr>
+          <tr><td><code>id</code></td><td>Idle</td></tr>
+          <tr><td><code>wa</code></td><td>Waiting on I/O (CPU idle but a process is blocked on disk)</td></tr>
+          <tr><td><code>st</code></td><td>Stolen — time a hypervisor took from this VM for other tenants (high <code>st</code> on a VM = noisy-neighbor problem)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout qa">
+      <div class="ctitle">Q&amp;A</div>
+      <div class="q">Q: High <code>%wa</code> in <code>top</code> — is that a CPU problem?</div>
+      <div class="a">A: No — it means CPUs are idle but processes are blocked waiting on I/O. It's a signal to look at disk (<code>iostat</code>) or network storage, not to add CPU.</div>
+    </div>
+  </section>
+
+  <!-- ============ LOAD AVERAGE ============ -->
+  <section id="load-avg">
+    <h2><span class="num">06</span> Load average — what it really measures</h2>
+    <p>Load average (the three numbers from <code>uptime</code> or <code>/proc/loadavg</code>: 1/5/15-minute exponentially-decayed averages) counts the number of processes in the <strong>run queue</strong> (state <code>R</code>, runnable/running) <em>plus</em> processes in <strong>uninterruptible sleep</strong> (state <code>D</code>, usually blocked on I/O). It is <strong>not</strong> a CPU-only metric.</p>
+    <pre><code>uptime
+<span class="out"> 14:22:01 up 12 days,  3:41,  2 users,  load average: 8.42, 5.10, 2.05</span>
+cat /proc/loadavg
+<span class="out">8.42 5.10 2.05 3/812 24193</span>   <span class="cmt"># 3rd field: running/total processes; last field: most recent PID</span>
+</code></pre>
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap</div>
+      A load average of 8 on a 4-core box does <strong>not</strong> automatically mean "CPU-bound." If most of that load is processes stuck in <code>D</code> state (disk-blocked), the real bottleneck is storage I/O, not CPU. Always cross-check with <code>vmstat</code>'s <code>r</code>/<code>b</code> columns and <code>ps -eo stat,comm</code> to see the state breakdown before concluding "we need more CPU."
+    </div>
+  </section>
+
+  <!-- ============ MEMORY ============ -->
+  <section id="mem">
+    <h2><span class="num">07</span> Memory: tools &amp; signals</h2>
+    <pre><code>free -h
+<span class="out">              total        used        free      shared  buff/cache   available
+Mem:           31Gi       6.1Gi       412Mi       210Mi        25Gi        24Gi
+Swap:         8.0Gi          0B       8.0Gi</span>
+</code></pre>
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap — buff/cache misread</div>
+      <code>buff/cache</code> is the kernel's page cache (file contents cached in RAM) and buffer cache. It is <strong>reclaimable on demand</strong> — the kernel frees it instantly under memory pressure. Seeing "only 412Mi free" is not a low-memory emergency; look at the <code>available</code> column instead, which already accounts for reclaimable cache. This trips up almost every junior engineer the first time they see <code>free -h</code>.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Shows</th></tr></thead>
+        <tbody>
+          <tr><td><code>free -h</code></td><td>System-wide memory/swap snapshot</td></tr>
+          <tr><td><code>top</code>/<code>htop</code></td><td>Per-process RSS/VSZ, %MEM, sortable</td></tr>
+          <tr><td><code>pidstat -r 1</code></td><td>Per-process memory faults/RSS over time</td></tr>
+          <tr><td><code>vmstat 1</code></td><td><code>si</code>/<code>so</code> columns = swap-in/swap-out rate (should be ~0 on a healthy box)</td></tr>
+          <tr><td><code>sar -r</code></td><td>Historical memory utilization</td></tr>
+          <tr><td><code>/proc/meminfo</code></td><td>Raw kernel memory counters (MemAvailable, Dirty, Slab, etc.)</td></tr>
+          <tr><td><code>smem</code>, <code>ps_mem</code></td><td>Proportional set size (PSS) — accounts for shared memory correctly across processes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ OOM / SWAP ============ -->
+  <section id="oom">
+    <h2><span class="num">08</span> OOM killer &amp; swap</h2>
+    <p>When the kernel can't satisfy an allocation and has no more reclaimable memory, the <strong>OOM killer</strong> selects a victim process to kill based on a computed <code>oom_score</code> (heavier memory users score higher, and the score can be biased).</p>
+    <pre><code>dmesg -T | grep -i 'killed process'
+<span class="out">[Sun Jul  6 09:14:02 2026] Out of memory: Killed process 24193 (java) total-vm:8241232kB...</span>
+
+cat /proc/&lt;pid&gt;/oom_score          <span class="cmt"># computed likelihood of being killed (higher = more likely)</span>
+cat /proc/&lt;pid&gt;/oom_score_adj      <span class="cmt"># -1000 (never kill) to 1000 (kill first); user/admin adjustable</span>
+echo -500 &gt; /proc/&lt;pid&gt;/oom_score_adj   <span class="cmt"># make this process less likely to be OOM-killed</span>
+</code></pre>
+    <div class="callout qa">
+      <div class="ctitle">Q&amp;A</div>
+      <div class="q">Q: A process died with no application-level error, no log entry, nothing. Where do you look first?</div>
+      <div class="a">A: <code>dmesg</code>/<code>journalctl -k</code> for an OOM kill message. The application never got a chance to log anything — SIGKILL from the OOM killer is instant and uncatchable.</div>
+    </div>
+    <h3>Swap &amp; swappiness</h3>
+    <pre><code>swapon --show                       <span class="cmt"># active swap devices/files</span>
+cat /proc/sys/vm/swappiness         <span class="cmt"># 0-100, default 60: kernel's eagerness to swap out anonymous pages</span>
+sysctl vm.swappiness=10             <span class="cmt"># lower = prefer reclaiming cache over swapping app memory; runtime only</span>
+<span class="cmt"># persist in /etc/sysctl.conf or /etc/sysctl.d/*.conf: vm.swappiness=10</span>
+</code></pre>
+    <p>Low swappiness (e.g. 10) is common on database/latency-sensitive hosts to avoid swapping hot application memory in favor of dropping page cache instead. Swapping itself isn't inherently bad — sustained <code>si</code>/<code>so</code> activity under load, however, is a strong latency-degradation signal.</p>
+  </section>
+
+  <!-- ============ DISK ============ -->
+  <section id="disk">
+    <h2><span class="num">09</span> Disk I/O: tools &amp; signals</h2>
+    <pre><code>iostat -xz 1
+<span class="out">Device   r/s   w/s  rkB/s  wkB/s  await  r_await  w_await  aqu-sz  %util
+nvme0n1  120   340   4800  22000   3.20     1.10     4.80    0.85   68.40</span>
+</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>%util</code></td><td>% of time the device had at least one I/O in flight (utilization — but can be misleading for SSD/NVMe with parallel queues; near 100% may still have headroom)</td></tr>
+          <tr><td><code>await</code></td><td>Average time (ms) for I/O requests to be served, including queue wait — the real latency signal</td></tr>
+          <tr><td><code>aqu-sz</code></td><td>Average queue size — saturation indicator</td></tr>
+          <tr><td><code>r/s</code>, <code>w/s</code></td><td>Reads/writes per second (IOPS)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Other tools: <code>pidstat -d 1</code> (per-process disk I/O), <code>sar -d</code> (historical), <code>iotop</code> (top-style, per-process, needs root or <code>CAP_NET_ADMIN</code>-like privilege), <code>blktrace</code>/<code>biosnoop</code> (BPF-based, deep block-layer tracing).</p>
+  </section>
+
+  <!-- ============ NETWORK PERF ============ -->
+  <section id="net-perf">
+    <h2><span class="num">10</span> Network: performance signals</h2>
+    <pre><code>sar -n DEV 1              <span class="cmt"># per-interface rx/tx throughput, historical + live</span>
+ip -s link show eth0      <span class="cmt"># interface counters: errors, drops, collisions</span>
+cat /proc/net/dev         <span class="cmt"># raw per-interface counters</span>
+ethtool -S eth0            <span class="cmt"># NIC driver stats (ring buffer drops, etc.)</span>
+</code></pre>
+    <p>Errors/drops on an interface (RX-DRP, RX-ERR, overruns) point to saturation at the NIC/ring-buffer level, often invisible in application-level metrics — always check for errors, not just throughput.</p>
+  </section>
+
+  <!-- ============ TRACING ============ -->
+  <section id="tracing">
+    <h2><span class="num">11</span> strace / ltrace / lsof / /proc</h2>
+    <pre><code>strace -p 24193                    <span class="cmt"># attach to running process, show syscalls live</span>
+strace -f -e trace=network myapp    <span class="cmt"># follow forks, filter to network syscalls</span>
+strace -c myapp                     <span class="cmt"># summary: syscall counts + time, no live trace</span>
+strace -T -tt -p 24193              <span class="cmt"># -T: time in each syscall, -tt: timestamps</span>
+
+ltrace -p 24193                     <span class="cmt"># trace library calls (e.g. libc), heavier overhead than strace</span>
+
+lsof -p 24193                       <span class="cmt"># all open files/sockets for a PID</span>
+lsof -i :443                        <span class="cmt"># who is listening/connected on port 443</span>
+lsof +L1                            <span class="cmt"># files with link count 0 that are still open (deleted-but-open)</span>
+lsof /var/log/app.log               <span class="cmt"># which processes have this file open</span>
+
+ss -tulpn                           <span class="cmt"># sockets, see Networking section</span>
+</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Path under <code>/proc</code></th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td><code>/proc/&lt;pid&gt;/status</code></td><td>Human-readable process summary: state, VmRSS, threads, uid/gid</td></tr>
+          <tr><td><code>/proc/&lt;pid&gt;/fd/</code></td><td>Symlinks to every open file descriptor</td></tr>
+          <tr><td><code>/proc/&lt;pid&gt;/maps</code></td><td>Memory mapping layout (libraries, heap, stack, mmap regions)</td></tr>
+          <tr><td><code>/proc/&lt;pid&gt;/limits</code></td><td>Effective resource limits (ulimits) for this process</td></tr>
+          <tr><td><code>/proc/&lt;pid&gt;/cmdline</code>, <code>environ</code></td><td>Launch command and environment</td></tr>
+          <tr><td><code>/proc/loadavg</code>, <code>/proc/meminfo</code>, <code>/proc/cpuinfo</code></td><td>System-wide counters, source for most tools above</td></tr>
+          <tr><td><code>/proc/net/tcp</code>, <code>/proc/net/dev</code></td><td>Raw kernel network state (what <code>ss</code> parses)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ NETWORKING ============ -->
+  <section id="networking">
+    <h2><span class="num">12</span> Core networking commands</h2>
+    <pre><code><span class="cmt"># ip — replaces ifconfig/route/arp (iproute2 suite)</span>
+ip addr show                        <span class="cmt"># (ip a) interface IPs</span>
+ip link show                        <span class="cmt"># interface state (UP/DOWN), MTU, MAC</span>
+ip route show                       <span class="cmt"># (ip r) routing table</span>
+ip route get 8.8.8.8                <span class="cmt"># which route/interface would be used</span>
+ip link set eth0 up
+ip addr add 10.0.0.5/24 dev eth0
+
+<span class="cmt"># ss — replaces netstat, reads netlink directly (faster, more detail)</span>
+ss -tulpn                           <span class="cmt"># TCP/UDP, listening, show process, numeric ports</span>
+ss -tan state established
+ss -s                                <span class="cmt"># summary stats (much faster than netstat -s on busy hosts)</span>
+
+<span class="cmt"># reachability / path</span>
+ping -c 4 host
+traceroute host                     <span class="cmt"># classic hop-by-hop, UDP by default on Linux</span>
+mtr host                            <span class="cmt"># traceroute + ping combined, live-updating per-hop loss/latency</span>
+
+<span class="cmt"># DNS</span>
+dig example.com
+dig +short example.com A
+dig @8.8.8.8 example.com            <span class="cmt"># query a specific resolver directly</span>
+nslookup example.com                <span class="cmt"># older, still common in interviews</span>
+
+tcpdump -i eth0 port 443 -w cap.pcap
+tcpdump -i any -n host 10.0.0.5 and port 443
+</code></pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th><code>ss</code></th><th><code>netstat</code></th></tr></thead>
+        <tbody>
+          <tr><td>Data source</td><td>Netlink sockets directly from the kernel</td><td>Parses <code>/proc/net/*</code> — slower</td></tr>
+          <tr><td>Status</td><td>Actively maintained, iproute2</td><td>Deprecated (net-tools), often not preinstalled on minimal images</td></tr>
+          <tr><td>Speed on busy hosts</td><td>Fast even with tens of thousands of sockets</td><td>Noticeably slower</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>DNS resolution order</h3>
+    <p>Name resolution order for most services is governed by <code>/etc/nsswitch.conf</code>:</p>
+    <pre><code>hosts:  files dns
+</code></pre>
+    <p>This means: check <code>/etc/hosts</code> first, then fall back to DNS as configured in <code>/etc/resolv.conf</code> (nameserver list, search domains). Modern systems often route this through <code>systemd-resolved</code> (<code>/run/systemd/resolve/resolv.conf</code> symlinked from <code>/etc/resolv.conf</code>) which adds caching and per-interface DNS — check with <code>resolvectl status</code>.</p>
+
+    <h3>nftables / iptables basics</h3>
+    <pre><code><span class="cmt"># iptables (legacy, still very common)</span>
+iptables -L -n -v                      <span class="cmt"># list rules, numeric, verbose (packet/byte counters)</span>
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -P INPUT DROP                 <span class="cmt"># default-deny policy</span>
+iptables-save &gt; /etc/iptables/rules.v4 <span class="cmt"># persist rules</span>
+
+<span class="cmt"># nftables (modern replacement, single framework for IPv4+IPv6+bridge+arp)</span>
+nft list ruleset
+nft add table inet filter
+nft add chain inet filter input { type filter hook input priority 0 \; }
+nft add rule inet filter input tcp dport 22 accept
+</code></pre>
+  </section>
+
+  <!-- ============ FILESYSTEMS ============ -->
+  <section id="filesystems">
+    <h2><span class="num">13</span> Filesystems &amp; disk management</h2>
+    <pre><code>df -h                       <span class="cmt"># filesystem-level usage, by mount point</span>
+df -i                       <span class="cmt"># inode usage instead of blocks</span>
+du -sh /var/log/*           <span class="cmt"># directory-level usage, walks the tree</span>
+du -h --max-depth=1 /var
+</code></pre>
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap — df says full, du doesn't add up</div>
+      <code>df</code> reports space allocated at the filesystem level; <code>du</code> reports space used by files currently reachable in the directory tree. If a process holds a file descriptor open on a file that has been <code>unlink</code>ed (deleted), the disk blocks are <strong>not freed</strong> until the last file descriptor closes — but the file no longer appears in any directory listing, so <code>du</code> won't count it while <code>df</code> still shows the space as used. Diagnose with:
+      <pre><code>lsof +L1                      <span class="cmt"># list open files with a link count of 0 (deleted but still open)</span>
+<span class="out">COMMAND   PID USER   FD   TYPE DEVICE SIZE/OFF NLINK NODE NAME
+java    24193 app   17w   REG  259,1   4.2G       0 9931 /var/log/app.log (deleted)</span>
+</code></pre>
+      Fix: restart/HUP the offending process to release the descriptor, or truncate via <code>&gt; /proc/&lt;pid&gt;/fd/17</code> if you can't restart it yet.
+    </div>
+
+    <h3>Inode exhaustion</h3>
+    <p>A filesystem can report free space (<code>df -h</code>) while being completely unable to create new files, because it ran out of <strong>inodes</strong> (each file/dir consumes one, regardless of size — common with huge numbers of tiny files, e.g. session caches, mail spools).</p>
+    <pre><code>df -i /var
+<span class="out">Filesystem      Inodes  IUsed   IFree IUse% Mounted on
+/dev/sda1      6553600 6553600      0  100% /var</span>
+</code></pre>
+
+    <h3>Mounts &amp; fstab</h3>
+    <pre><code>mount                                  <span class="cmt"># list current mounts</span>
+mount /dev/sdb1 /mnt/data
+mount -o remount,rw /                  <span class="cmt"># remount with new options</span>
+umount /mnt/data
+
+<span class="cmt"># /etc/fstab — persistent mounts across reboot</span>
+<span class="cmt"># device        mountpoint   fstype  options              dump  pass</span>
+UUID=abcd-1234  /data        ext4    defaults,noatime      0     2
+
+mount -a                               <span class="cmt"># mount everything in fstab not yet mounted (validates syntax)</span>
+findmnt                                <span class="cmt"># tree view of mounts, easier to read than raw mount</span>
+</code></pre>
+
+    <h3>ext4 vs XFS</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>ext4</th><th>XFS</th></tr></thead>
+        <tbody>
+          <tr><td>Typical use</td><td>General purpose, default on many distros</td><td>Large files, high-throughput workloads, RHEL default</td></tr>
+          <tr><td>Shrinking</td><td>Supported (offline)</td><td>Not supported — XFS filesystems cannot be shrunk, only grown</td></tr>
+          <tr><td>Growing</td><td>Online growth supported</td><td>Online growth supported (<code>xfs_growfs</code>)</td></tr>
+          <tr><td>Check tool</td><td><code>fsck.ext4</code></td><td><code>xfs_repair</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>LVM basics</h3>
+    <div class="flow">
+      <span class="step">Physical Volume (PV)</span><span class="arrow">→</span>
+      <span class="step">Volume Group (VG)</span><span class="arrow">→</span>
+      <span class="step">Logical Volume (LV)</span><span class="arrow">→</span>
+      <span class="step">Filesystem</span>
+    </div>
+    <pre><code>pvcreate /dev/sdb1
+vgcreate vg_data /dev/sdb1
+lvcreate -L 50G -n lv_app vg_data
+mkfs.ext4 /dev/vg_data/lv_app
+
+pvs; vgs; lvs                     <span class="cmt"># list PVs/VGs/LVs</span>
+lvextend -L +20G /dev/vg_data/lv_app
+resize2fs /dev/vg_data/lv_app     <span class="cmt"># grow the ext4 filesystem to fill the extended LV</span>
+</code></pre>
+    <p>LVM's value: resize volumes online, take snapshots, and span a logical volume across multiple physical disks — decoupling the filesystem from any single physical device.</p>
+  </section>
+
+  <!-- ============ PERMISSIONS ============ -->
+  <section id="permissions">
+    <h2><span class="num">14</span> Permissions, ownership, capabilities</h2>
+    <h3>rwx / ugo</h3>
+    <pre><code>ls -l file.txt
+<span class="out">-rwxr-xr-- 1 alice devs 4096 Jul  6 09:00 file.txt</span>
+<span class="cmt"># owner(rwx) group(r-x) other(r--)</span>
+</code></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Bit</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>r</td><td>4</td></tr>
+          <tr><td>w</td><td>2</td></tr>
+          <tr><td>x</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>chmod 754 file.txt        <span class="cmt"># owner=rwx(7) group=r-x(5) other=r--(4)</span>
+chmod u+x,g-w file.txt    <span class="cmt"># symbolic form</span>
+chown alice:devs file.txt
+chown -R alice:devs /srv/app   <span class="cmt"># recursive</span>
+
+umask                     <span class="cmt"># default mask subtracted from 666 (files) / 777 (dirs) on creation</span>
+umask 022                 <span class="cmt"># default on most systems: new files 644, new dirs 755</span>
+</code></pre>
+
+    <h3>setuid / setgid / sticky bit</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Bit</th><th>Numeric</th><th>On a file</th><th>On a directory</th></tr></thead>
+        <tbody>
+          <tr><td>setuid</td><td>4000</td><td>Executes with the file <em>owner's</em> privilege (e.g. <code>/usr/bin/passwd</code> runs as root)</td><td>No standard effect</td></tr>
+          <tr><td>setgid</td><td>2000</td><td>Executes with the file's <em>group</em> privilege</td><td>New files/dirs created inside inherit the directory's group</td></tr>
+          <tr><td>sticky</td><td>1000</td><td>No standard effect on regular files (historically kept program image in swap)</td><td>Only the file owner (or root) can delete/rename files within, even if others have write on the dir — e.g. <code>/tmp</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>chmod 4755 /usr/bin/mybin     <span class="cmt"># setuid + rwxr-xr-x</span>
+chmod g+s /shared/project      <span class="cmt"># setgid on a directory</span>
+chmod +t /tmp                  <span class="cmt"># sticky bit; shows as drwxrwxrwt in ls -l</span>
+</code></pre>
+
+    <h3>ACLs (finer-grained than ugo)</h3>
+    <pre><code>getfacl file.txt
+setfacl -m u:bob:rw file.txt      <span class="cmt"># grant bob rw specifically, beyond owner/group/other</span>
+setfacl -x u:bob file.txt         <span class="cmt"># remove that entry</span>
+</code></pre>
+
+    <h3>Capabilities — precision alternative to full root/setuid</h3>
+    <p>Linux capabilities split root's monolithic privilege into discrete units, letting a binary get exactly the privilege it needs instead of full root via setuid.</p>
+    <pre><code>getcap /usr/bin/ping
+<span class="out">/usr/bin/ping cap_net_raw=ep</span>
+
+setcap cap_net_bind_service=+ep /usr/bin/myserver
+<span class="cmt"># lets a non-root process bind to ports < 1024 without running as root or being setuid</span>
+
+capsh --print                     <span class="cmt"># show current process's capability sets</span>
+</code></pre>
+    <div class="callout qa">
+      <div class="ctitle">Q&amp;A</div>
+      <div class="q">Q: Why does <code>/bin/ping</code> work as a non-root user?</div>
+      <div class="a">A: Either it's setuid-root (older systems), or — the modern, more precise approach — it carries <code>cap_net_raw</code> via <code>setcap</code>, granting just the raw-socket privilege ICMP needs without full root.</div>
+    </div>
+  </section>
+
+  <!-- ============ SIGNALS ============ -->
+  <section id="signals">
+    <h2><span class="num">15</span> Signals, process states, limits</h2>
+    <h3>Common signals</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Signal</th><th>Number</th><th>Default action</th><th>Catchable?</th></tr></thead>
+        <tbody>
+          <tr><td><code>SIGHUP</code></td><td>1</td><td>Terminate (often repurposed by daemons to mean "reload config")</td><td>Yes</td></tr>
+          <tr><td><code>SIGINT</code></td><td>2</td><td>Terminate (Ctrl-C)</td><td>Yes</td></tr>
+          <tr><td><code>SIGKILL</code></td><td>9</td><td>Terminate immediately</td><td><strong>No</strong> — cannot be caught, blocked, or ignored</td></tr>
+          <tr><td><code>SIGTERM</code></td><td>15</td><td>Terminate gracefully (default for <code>kill</code>)</td><td>Yes</td></tr>
+          <tr><td><code>SIGSTOP</code></td><td>19</td><td>Pause process</td><td><strong>No</strong> — uncatchable, like SIGKILL</td></tr>
+          <tr><td><code>SIGCONT</code></td><td>18</td><td>Resume a stopped process</td><td>Yes</td></tr>
+          <tr><td><code>SIGUSR1</code>/<code>SIGUSR2</code></td><td>10/12</td><td>User-defined — apps commonly wire these to custom actions (log rotation, etc.)</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>kill -15 24193             <span class="cmt"># SIGTERM — ask nicely, let the process clean up</span>
+kill -9 24193              <span class="cmt"># SIGKILL — kernel terminates immediately, no cleanup possible</span>
+kill -HUP 24193             <span class="cmt"># common convention: reload config without restart</span>
+pkill -f "myapp.*worker"    <span class="cmt"># kill by matching process name/args pattern</span>
+killall nginx
+</code></pre>
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap — SIGKILL is uncatchable, and that has consequences</div>
+      <code>SIGKILL</code> (and <code>SIGSTOP</code>) bypass the process entirely — there's no signal handler, no cleanup, no flushing buffers, no closing files gracefully. Always try <code>SIGTERM</code> first and give the process a grace period; reach for <code>SIGKILL</code> only when the process is unresponsive. It also means a process stuck in uninterruptible sleep (state <code>D</code>) <strong>cannot be killed at all</strong> with SIGKILL until the blocking kernel operation (usually I/O) completes — the signal is queued but not delivered until the process returns to a signal-checkable state.
+    </div>
+
+    <h3>Process states</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>State</th><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Running/Runnable</td><td><code>R</code></td><td>Actively executing or waiting for a CPU slot on the run queue</td></tr>
+          <tr><td>Sleeping (interruptible)</td><td><code>S</code></td><td>Waiting on an event (I/O, timer, signal); can be woken by a signal</td></tr>
+          <tr><td>Uninterruptible sleep</td><td><code>D</code></td><td>Waiting on I/O at a point where the kernel cannot safely interrupt it (e.g. mid-syscall to a device); does <strong>not</strong> respond to signals, including SIGKILL, until the I/O completes</td></tr>
+          <tr><td>Zombie</td><td><code>Z</code></td><td>Process has exited but its parent hasn't yet called <code>wait()</code> to reap the exit status; consumes a PID slot and an entry in the process table, but zero other resources</td></tr>
+          <tr><td>Stopped</td><td><code>T</code></td><td>Suspended by <code>SIGSTOP</code>/<code>SIGTSTP</code> or being traced</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap — zombie vs D-state</div>
+      A <strong>zombie</strong> is dead already — it holds no memory, no open files, nothing to reclaim except a process-table slot; the fix is to make the parent reap it (fix the parent's code, or if the parent itself is broken/dead, the zombie gets reparented to PID 1/init which reaps it). A <strong>D-state</strong> process is very much alive, actively blocked on I/O, consuming real resources, and cannot be killed until the kernel operation completes — often the real symptom of a stuck NFS mount, failing disk, or hung driver. Interviewers use this pair to check whether you conflate "can't kill it" with "it's already dead."
+    </div>
+    <pre><code>ps -eo pid,ppid,stat,comm | awk '$3 ~ /Z/'    <span class="cmt"># find zombies</span>
+ps -eo pid,stat,wchan:32,comm | awk '$2 ~ /D/' <span class="cmt"># find D-state + what kernel function they're blocked in</span>
+</code></pre>
+
+    <h3>nice / renice</h3>
+    <pre><code>nice -n 10 ./batch_job          <span class="cmt"># start with lower priority (range -20 most favorable to 19 least)</span>
+renice -n 5 -p 24193             <span class="cmt"># adjust priority of a running process</span>
+ps -eo pid,ni,comm                <span class="cmt"># view current niceness</span>
+</code></pre>
+
+    <h3>ulimit / limits.conf</h3>
+    <pre><code>ulimit -a                         <span class="cmt"># show all current shell limits</span>
+ulimit -n 65536                   <span class="cmt"># raise open-file-descriptor limit for this shell session</span>
+ulimit -Hn                        <span class="cmt"># hard limit (only root can raise)</span>
+
+<span class="cmt"># /etc/security/limits.conf — persistent, applies via PAM at login</span>
+appuser   soft   nofile   65536
+appuser   hard   nofile   131072
+
+<span class="cmt"># for systemd services, ulimits are set per-unit instead:</span>
+<span class="cmt"># [Service] LimitNOFILE=65536</span>
+</code></pre>
+    <div class="callout trap">
+      <div class="ctitle">⚠ Trap</div>
+      <code>/etc/security/limits.conf</code> only affects processes started through a PAM login session (interactive shells, <code>su -</code>, SSH). A systemd-managed service ignores it entirely — its limits come from <code>LimitNOFILE=</code>/etc. in the unit file (or systemd's <code>DefaultLimitNOFILE=</code> default). "I set limits.conf but my service still hits too-many-open-files" is a very common misconfiguration.
+    </div>
+  </section>
+
+  <!-- ============ FLOWCHART ============ -->
+  <section id="flowchart">
+    <h2><span class="num">16</span> Systematic troubleshooting flow</h2>
+    <p class="intro">"The box is slow" — a repeatable order beats random poking. Walk it top-down; note at which step you find a saturated/erroring resource before drilling deeper.</p>
+    <div class="flow">
+      <span class="step">1. Load</span><span class="arrow">→</span>
+      <span class="step">2. CPU</span><span class="arrow">→</span>
+      <span class="step">3. Memory</span><span class="arrow">→</span>
+      <span class="step">4. Disk</span><span class="arrow">→</span>
+      <span class="step">5. Network</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step</th><th>Command(s)</th><th>Question being answered</th></tr></thead>
+        <tbody>
+          <tr><td>1. Load</td><td><code>uptime</code>, <code>cat /proc/loadavg</code></td><td>Is load high? Is it climbing? (context only — don't conclude "CPU-bound" yet)</td></tr>
+          <tr><td>2. CPU</td><td><code>vmstat 1</code>, <code>mpstat -P ALL 1</code>, <code>top</code></td><td>Is <code>us</code>/<code>sy</code> pegged? Is one core maxed while others idle (single-threaded bottleneck)? Is <code>%wa</code> high (points to disk, not CPU)?</td></tr>
+          <tr><td>3. Memory</td><td><code>free -h</code>, <code>vmstat 1</code> (si/so), <code>dmesg</code> (OOM)</td><td>Is <code>available</code> low? Is the system actively swapping? Any recent OOM kills?</td></tr>
+          <tr><td>4. Disk</td><td><code>iostat -xz 1</code>, <code>df -h</code>, <code>df -i</code></td><td>Is <code>await</code>/<code>%util</code> high? Out of space or out of inodes?</td></tr>
+          <tr><td>5. Network</td><td><code>ss -s</code>, <code>sar -n DEV 1</code>, <code>ip -s link</code></td><td>Errors/drops on an interface? Saturated bandwidth? Connection backlog?</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Once a saturated/erroring resource is found, switch to the per-process view for that resource (<code>pidstat</code>, <code>top</code> sorted accordingly) to identify <em>which</em> process is responsible, then drill in with <code>strace</code>/<code>lsof</code>/<code>/proc/&lt;pid&gt;</code> as needed.</p>
+  </section>
+
+  <!-- ============ TRAPS SUMMARY ============ -->
+  <section id="traps">
+    <h2><span class="num">17</span> Interview trap quick-reference</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Trap</th><th>The correct read</th></tr></thead>
+        <tbody>
+          <tr><td>Load average is high</td><td>Counts runnable (<code>R</code>) <em>and</em> uninterruptible (<code>D</code>) processes — could be disk-bound, not CPU-bound. Check <code>vmstat</code> r/b columns.</td></tr>
+          <tr><td><code>free -h</code> shows little "free" memory</td><td>Check <code>available</code>, not <code>free</code> — <code>buff/cache</code> is reclaimable on demand.</td></tr>
+          <tr><td><code>df</code> says full but <code>du</code> doesn't add up</td><td>Deleted-but-open file holding disk blocks — find it with <code>lsof +L1</code>.</td></tr>
+          <tr><td>Process is a zombie (<code>Z</code>)</td><td>Already dead; the parent hasn't reaped it. No resources to reclaim except the PID slot.</td></tr>
+          <tr><td>Process is stuck in <code>D</code> state and won't die</td><td>Alive, blocked on uninterruptible I/O; SIGKILL is queued but not delivered until the kernel op returns.</td></tr>
+          <tr><td><code>kill -9</code> "doesn't always work instantly"</td><td>See above — SIGKILL can't be delivered to a process mid-uninterruptible-syscall.</td></tr>
+          <tr><td>Edited a systemd unit file, restart doesn't pick up changes</td><td>Missing <code>systemctl daemon-reload</code>.</td></tr>
+          <tr><td>Set <code>limits.conf</code> but a systemd service still hits fd limits</td><td>PAM limits don't apply to systemd units — use <code>LimitNOFILE=</code> in the unit instead.</td></tr>
+          <tr><td>High <code>%wa</code> in <code>top</code></td><td>CPUs are idle, waiting on I/O — a disk problem, not a CPU problem.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="page">
+    Linux Ops &amp; Troubleshooting Cheatsheet — practitioner layer (systemd, USE method, performance triage, networking, filesystems, permissions, signals). Companion to the OS-internals set (syscalls, scheduling, process lifecycle).
+  </footer>
+
+</div>
+</body>
+</html>

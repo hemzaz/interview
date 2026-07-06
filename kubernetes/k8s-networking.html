@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K8s Networking — Complete Map</title>
+<link href="../assets/fonts/font-set-1.css" rel="stylesheet">
+<style>
+:root {
+  --bg:  #040608;
+  --s1:  #070a0e;
+  --s2:  #0b0f14;
+  --bd:  #131b24;
+  --b2:  #1a2533;
+
+  /* network palette: teal + amber + cyan */
+  --teal:   #14b8a6;
+  --teal2:  #0d9488;
+  --cyan:   #22d3ee;
+  --amber:  #f59e0b;
+  --ambl:   #fcd34d;
+  --lime:   #a3e635;
+  --red:    #f87171;
+  --blue:   #60a5fa;
+  --violet: #a78bfa;
+  --pink:   #f472b6;
+  --slate:  #94a3b8;
+  --green:  #4ade80;
+
+  /* layer colors */
+  --l7:    #f59e0b;   /* amber  - L7 HTTP/Ingress */
+  --l4:    #22d3ee;   /* cyan   - L4 TCP/Service */
+  --l3:    #14b8a6;   /* teal   - L3 IP/routing */
+  --l2:    #60a5fa;   /* blue   - L2 MAC/overlay */
+  --pod-c: #4ade80;   /* green  - Pod */
+  --svc-c: #f59e0b;   /* amber  - Service */
+  --ing-c: #f472b6;   /* pink   - Ingress */
+  --np-c:  #f87171;   /* red    - NetworkPolicy */
+  --cni-c: #a78bfa;   /* violet - CNI */
+  --dns-c: #22d3ee;   /* cyan   - DNS */
+  --lb-c:  #fcd34d;   /* yellow - LB */
+  --mesh-c:#6ee7b7;   /* emerald- mesh */
+
+  --text: #c8d8e8;
+  --dim:  #1e2d3d;
+  --mid:  #4a6070;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 65% 35% at 50% 0%, rgba(20,184,166,.08) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 25% at 2%  55%, rgba(34,211,238,.05) 0%,transparent 45%),
+    radial-gradient(ellipse 28% 22% at 98% 70%, rgba(245,158,11,.05) 0%,transparent 45%),
+    repeating-linear-gradient(0deg,  transparent,transparent 39px,rgba(20,184,166,.025) 40px),
+    repeating-linear-gradient(90deg, transparent,transparent 39px,rgba(20,184,166,.025) 40px);
+}
+.page{position:relative;z-index:1;max-width:1420px;margin:0 auto;padding:28px 20px 60px;}
+
+/* ── HEADER ── */
+.header{display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:20px;margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid var(--bd);}
+.hl h1{font-family:'Barlow Condensed',sans-serif;font-size:80px;font-weight:900;letter-spacing:-3px;line-height:.88;text-transform:uppercase;}
+.hl h1 .t1{background:linear-gradient(90deg,var(--teal) 0%,var(--cyan) 40%,#fff 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hl h1 .t2{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(20,184,166,.22);}
+.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
+.hright{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+.layer-stack{display:flex;flex-direction:column;gap:3px;}
+.layer{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 12px;border-radius:3px;border:1px solid;text-align:right;white-space:nowrap;}
+.lay7{background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); color:var(--l7);}
+.lay4{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.3); color:var(--l4);}
+.lay3{background:rgba(20,184,166,.08);border-color:rgba(20,184,166,.3); color:var(--l3);}
+.lay2{background:rgba(96,165,250,.07);border-color:rgba(96,165,250,.25);color:var(--l2);}
+
+/* ── SECTIONS ── */
+.sh{display:flex;align-items:center;gap:12px;margin:22px 0 11px;}
+.sh-icon{font-size:18px;}
+.sh-label{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh::after{content:'';flex:1;height:1px;}
+
+/* ── GRIDS ── */
+.g2 {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.g3 {display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.g4 {display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:12px;margin-bottom:12px;}
+.g53{display:grid;grid-template-columns:5fr 3fr;gap:12px;margin-bottom:12px;}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+
+.ct{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+/* fact rows */
+.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fv{color:var(--mid);line-height:1.5;}
+.fv b{color:var(--text);}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+
+/* code block */
+.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
+.code .cm{color:#1a2a38;} .code .kw{color:#a78bfa;} .code .fn{color:var(--teal);}
+.code .st{color:var(--amber);} .code .nu{color:var(--cyan);} .code .ky{color:var(--lime);}
+
+/* trap + note */
+.trap{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
+.trap::before{content:'⚡ ';color:var(--red);}
+.trap b{color:var(--text);}
+.trap code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.note b{color:var(--text);}
+.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+
+/* table */
+.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
+.st th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
+.st td:first-child{color:var(--text);font-weight:600;}
+.st tr:last-child td{border-bottom:none;}
+.st td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+.good{color:var(--green)!important;} .warn{color:var(--amber)!important;} .bad{color:var(--red)!important;}
+
+/* badge */
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid;font-weight:700;letter-spacing:.5px;margin:2px 2px 2px 0;white-space:nowrap;}
+
+/* chain node */
+.cnode{display:inline-flex;flex-direction:column;align-items:center;gap:2px;}
+.cbox{padding:6px 11px;border-radius:5px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-align:center;white-space:nowrap;}
+.cbox-sm{padding:4px 8px;font-size:9px;}
+.carr{font-size:20px;padding:0 5px;align-self:center;line-height:1;}
+.clabel{font-size:7.5px;color:var(--mid);font-family:'Share Tech Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
+
+/* object colors */
+.o-pod{background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.4); color:var(--green);}
+.o-svc{background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.4); color:var(--amber);}
+.o-ing{background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.4);color:var(--pink);}
+.o-ep {background:rgba(252,211,77,.07);border-color:rgba(252,211,77,.3); color:var(--ambl);}
+.o-np {background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:var(--red);}
+.o-cni{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.4); color:var(--violet);}
+.o-dns{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.3);  color:var(--cyan);}
+.o-lb {background:rgba(252,211,77,.1); border-color:rgba(252,211,77,.4);  color:var(--ambl);}
+.o-node{background:rgba(20,184,166,.08);border-color:rgba(20,184,166,.3); color:var(--teal);}
+.o-gw{background:rgba(163,230,53,.08);border-color:rgba(163,230,53,.3);  color:var(--lime);}
+
+/* chain row */
+.chainrow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:8px;}
+.chainrow:last-child{margin-bottom:0;}
+
+/* tree */
+.htree{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2.0;color:var(--mid);}
+.htree .r{color:var(--teal);font-weight:700;}
+.htree .l1{color:var(--amber);padding-left:14px;}
+.htree .l2{color:var(--text);padding-left:28px;}
+.htree .l3{color:var(--mid);padding-left:42px;}
+.htree .ann{color:rgba(255,255,255,.14);font-size:9px;}
+
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.page>*{animation:fi .35s ease both;}
+.page>*:nth-child(1){animation-delay:.00s} .page>*:nth-child(2){animation-delay:.04s}
+.page>*:nth-child(3){animation-delay:.07s} .page>*:nth-child(4){animation-delay:.10s}
+.page>*:nth-child(5){animation-delay:.13s} .page>*:nth-child(6){animation-delay:.16s}
+.page>*:nth-child(7){animation-delay:.19s} .page>*:nth-child(8){animation-delay:.22s}
+.page>*:nth-child(9){animation-delay:.25s} .page>*:nth-child(10){animation-delay:.28s}
+.page>*:nth-child(11){animation-delay:.31s} .page>*:nth-child(12){animation-delay:.34s}
+.page>*:nth-child(13){animation-delay:.37s} .page>*:nth-child(14){animation-delay:.40s}
+
+.footer{margin-top:32px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
+.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" title="Back to index" style="position:fixed;top:12px;left:12px;z-index:99999;font:600 13px/1 system-ui,sans-serif;text-decoration:none;padding:7px 12px;border-radius:8px;background:rgba(20,20,26,.82);color:#e6e6ec;border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.35)">← Index</a>
+<div class="page">
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="hl">
+    <h1><span class="t1">K8S NETWORKING</span><br><span class="t2">COMPLETE MAP</span></h1>
+    <div class="sub">// pod networking · services · ingress · gateway api · cni · kube-proxy · network policy · dns · service mesh</div>
+  </div>
+  <div class="hright">
+    <div class="layer-stack">
+      <div class="layer lay7">L7 — Ingress / Gateway API / Service Mesh (HTTP routing, TLS termination)</div>
+      <div class="layer lay4">L4 — Services / kube-proxy / NodePort / LoadBalancer (TCP/UDP)</div>
+      <div class="layer lay3">L3 — Pod IP routing / CNI overlay (IP packets)</div>
+      <div class="layer lay2">L2 — Node network / veth pairs / bridge / tunnel encap (Ethernet)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 1. POD NETWORKING FUNDAMENTALS ══ -->
+<div class="sh" style="--c:var(--teal);">
+  <div class="sh-icon">🌐</div>
+  <div class="sh-label" style="color:var(--teal);">Pod Networking Fundamentals</div>
+  <div class="sh-sub">// every pod gets a real routable IP · flat network model · no NAT between pods</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(20,184,166,.3),transparent);"></div>
+</div>
+
+<div class="g53">
+  <div class="card" style="border-color:rgba(20,184,166,.2);">
+    <div class="ct" style="color:var(--teal);">🔌 The Kubernetes Network Model (4 rules)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 1 — Pod↔Pod, no NAT</div>
+        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">Every pod can reach every other pod using its <b style="color:var(--text);">real IP</b>. No address translation. Pod A at 10.0.1.5 reaches Pod B at 10.0.2.7 directly.</div>
+      </div>
+      <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 2 — Node↔Pod, no NAT</div>
+        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">Nodes can reach pods using pod IPs directly. No masquerade. Same applies in reverse — pods can reach nodes.</div>
+      </div>
+      <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 3 — IP seen = IP used</div>
+        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">The IP a pod sees as its own (<code style="font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);">eth0</code>) is the same IP other pods use to reach it. No masquerade within the cluster.</div>
+      </div>
+      <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 4 — Implemented by CNI</div>
+        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">K8s doesn't implement networking itself. CNI plugins (Calico, Cilium, Flannel) are responsible for making these rules true on real hardware.</div>
+      </div>
+    </div>
+    <div class="fr"><span class="fk">Pod CIDR</span><span class="fv">Configured per-cluster (e.g., <code>10.244.0.0/16</code> for Flannel, <code>192.168.0.0/16</code> for Calico). Each node gets a slice: node-1 = <code>10.244.0.0/24</code>, node-2 = <code>10.244.1.0/24</code>.</span></div>
+    <div class="fr"><span class="fk">veth pair</span><span class="fv">Each pod gets a virtual ethernet pair. One end (<code>eth0</code>) inside pod network namespace. Other end (<code>vethXXXXX</code>) on the node, connected to a bridge or direct routing.</span></div>
+    <div class="fr"><span class="fk">Network NS</span><span class="fv">Each pod has its own network namespace (created by <code>pause</code> container). All containers in the pod <b>share</b> the same namespace — same <code>eth0</code>, same IP, same port space.</span></div>
+    <div class="fr"><span class="fk">pause container</span><span class="fv"><b>"infra" container.</b> Holds the network namespace open. If your app container crashes and restarts, the network namespace persists — same IP, no network interruption.</span></div>
+    <div class="trap"><b>Containers in the same pod share the network namespace.</b> They communicate via <code>localhost</code> and see the same ports. Two containers in one pod cannot both listen on port 8080. Port conflicts are a pod-level concern, not a node-level one.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card" style="border-color:rgba(20,184,166,.15);">
+      <div class="ct" style="color:var(--teal);">🏗️ How a Pod Gets Its IP</div>
+      <div class="htree">
+        <div class="r">kubelet creates Pod</div>
+        <div class="l1">→ calls CNI binary via exec</div>
+        <div class="l2">→ CNI creates veth pair</div>
+        <div class="l2">→ moves one end into pod netns</div>
+        <div class="l2">→ assigns IP from node CIDR pool</div>
+        <div class="l2">→ sets up routes on node</div>
+        <div class="l1">→ returns IP to kubelet</div>
+        <div class="l1">→ kubelet writes to Pod status</div>
+      </div>
+      <div class="note"><b>CNI is called twice per container:</b> ADD (bring up networking) on create, DEL (tear down) on delete. The spec is simple: binary reads stdin JSON, writes stdout JSON with assigned IP. No daemon required.</div>
+    </div>
+    <div class="card" style="border-color:rgba(20,184,166,.15);">
+      <div class="ct" style="color:var(--teal);">📡 Cross-Node Pod Traffic</div>
+      <div style="font-size:10.5px;color:var(--mid);line-height:1.7;">
+        <div style="margin-bottom:6px;"><b style="color:var(--text);">Overlay (VXLAN/IPIP):</b> Flannel/Weave. Pod packet encapsulated inside UDP (VXLAN) or IP-in-IP. Node knows which pod CIDRs live on which nodes via etcd/annotations.</div>
+        <div style="margin-bottom:6px;"><b style="color:var(--text);">Underlay (BGP):</b> Calico. Pod IPs advertised as real routes via BGP. No encapsulation overhead. Requires network equipment to support BGP.</div>
+        <div><b style="color:var(--text);">eBPF (bypass kernel):</b> Cilium. Replaces iptables/kube-proxy entirely. Packets processed in eBPF programs at XDP/TC hook points. Lowest latency, best observability.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 2. SERVICE TYPES ══ -->
+<div class="sh">
+  <div class="sh-icon">🔌</div>
+  <div class="sh-label" style="color:var(--amber);">Service Types</div>
+  <div class="sh-sub">// ClusterIP · NodePort · LoadBalancer · ExternalName · Headless</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(245,158,11,.3),transparent);"></div>
+</div>
+
+<!-- Master traffic flow SVG -->
+<div class="card" style="border-color:rgba(245,158,11,.2);margin-bottom:12px;">
+  <div class="ct" style="color:var(--amber);">🗺️ Traffic Path: Internet → Pod</div>
+  <svg viewBox="0 0 1360 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+    <defs>
+      <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(245,158,11,.8)"/></marker>
+      <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(244,114,182,.7)"/></marker>
+      <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(74,222,128,.7)"/></marker>
+      <filter id="gw"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <!-- Cloud/Internet -->
+    <g transform="translate(10,70)">
+      <rect width="100" height="50" rx="6" fill="rgba(148,163,184,.06)" stroke="rgba(148,163,184,.25)" stroke-width="1.5"/>
+      <text x="50" y="22" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#94a3b8" font-weight="700">INTERNET</text>
+      <text x="50" y="37" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(148,163,184,.5)">client</text>
+    </g>
+
+    <!-- Cloud LB -->
+    <g transform="translate(150,65)">
+      <rect width="120" height="60" rx="6" fill="rgba(252,211,77,.1)" stroke="rgba(252,211,77,.45)" stroke-width="1.5" filter="url(#gw)"/>
+      <text x="60" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fcd34d" font-weight="700">Cloud LB</text>
+      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(252,211,77,.5)">AWS/GCP/Azure</text>
+      <text x="60" y="48" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(252,211,77,.35)">type:LoadBalancer</text>
+    </g>
+
+    <!-- Ingress Controller pod -->
+    <g transform="translate(320,55)">
+      <rect width="140" height="80" rx="6" fill="rgba(244,114,182,.08)" stroke="rgba(244,114,182,.4)" stroke-width="1.5"/>
+      <text x="70" y="22" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f472b6" font-weight="700">Ingress Controller</text>
+      <text x="70" y="36" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,114,182,.5)">nginx/Envoy/Traefik pod</text>
+      <text x="70" y="52" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(244,114,182,.3)">TLS termination</text>
+      <text x="70" y="65" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(244,114,182,.3)">L7 path/host routing</text>
+    </g>
+
+    <!-- Service -->
+    <g transform="translate(510,70)">
+      <rect width="120" height="50" rx="6" fill="rgba(245,158,11,.1)" stroke="rgba(245,158,11,.45)" stroke-width="1.5"/>
+      <text x="60" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f59e0b" font-weight="700">Service</text>
+      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(245,158,11,.5)">ClusterIP · selector</text>
+      <text x="60" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(245,158,11,.3)">iptables / IPVS</text>
+    </g>
+
+    <!-- kube-proxy -->
+    <g transform="translate(510,148)">
+      <rect width="120" height="34" rx="4" fill="rgba(34,211,238,.06)" stroke="rgba(34,211,238,.25)" stroke-width="1"/>
+      <text x="60" y="15" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#22d3ee" font-weight="700">kube-proxy</text>
+      <text x="60" y="27" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(34,211,238,.4)">programs iptables/IPVS</text>
+    </g>
+
+    <!-- EndpointSlice -->
+    <g transform="translate(680,70)">
+      <rect width="120" height="50" rx="6" fill="rgba(252,211,77,.06)" stroke="rgba(252,211,77,.3)" stroke-width="1"/>
+      <text x="60" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fcd34d" font-weight="700">EndpointSlice</text>
+      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(252,211,77,.45)">pod IPs + ports</text>
+      <text x="60" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(252,211,77,.3)">≤100 eps per slice</text>
+    </g>
+
+    <!-- Pods -->
+    <g transform="translate(860,45)">
+      <rect width="90" height="40" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.4)" stroke-width="1.5"/>
+      <text x="45" y="19" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">Pod A</text>
+      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,.45)">10.244.0.5:8080</text>
+    </g>
+    <g transform="translate(860,100)">
+      <rect width="90" height="40" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.4)" stroke-width="1.5"/>
+      <text x="45" y="19" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">Pod B</text>
+      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,.45)">10.244.1.3:8080</text>
+    </g>
+    <g transform="translate(860,155)">
+      <rect width="90" height="40" rx="5" fill="rgba(74,222,128,.08)" stroke="rgba(74,222,128,.3)" stroke-width="1"/>
+      <text x="45" y="19" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">Pod C</text>
+      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,.35)">10.244.1.9:8080</text>
+    </g>
+
+    <!-- Arrows -->
+    <line x1="110" y1="95" x2="150" y2="95" stroke="rgba(148,163,184,.5)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <line x1="270" y1="95" x2="320" y2="95" stroke="rgba(252,211,77,.6)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <line x1="460" y1="95" x2="510" y2="95" stroke="rgba(244,114,182,.5)" stroke-width="1.5" marker-end="url(#a2)"/>
+    <line x1="630" y1="95" x2="680" y2="95" stroke="rgba(245,158,11,.6)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <!-- EP → Pods -->
+    <line x1="800" y1="88" x2="860" y2="68" stroke="rgba(74,222,128,.5)" stroke-width="1.3" marker-end="url(#a3)"/>
+    <line x1="800" y1="95" x2="860" y2="120" stroke="rgba(74,222,128,.5)" stroke-width="1.3" marker-end="url(#a3)"/>
+    <line x1="800" y1="100" x2="860" y2="168" stroke="rgba(74,222,128,.4)" stroke-width="1" marker-end="url(#a3)"/>
+    <!-- kube-proxy watches EP -->
+    <path d="M 570 148 L 570 120" fill="none" stroke="rgba(34,211,238,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+    <path d="M 740 120 L 570 148" fill="none" stroke="rgba(34,211,238,.3)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+
+    <!-- Labels above arrows -->
+    <text x="115" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(148,163,184,.4)">public IP</text>
+    <text x="275" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(252,211,77,.4)">:443 → :80</text>
+    <text x="462" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(244,114,182,.4)">L7 match</text>
+    <text x="635" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(245,158,11,.4)">DNAT lookup</text>
+    <text x="808" y="78" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.4)">random/RR</text>
+
+    <!-- Layer labels on right -->
+    <text x="1000" y="20"  font-family="Share Tech Mono" font-size="8" fill="rgba(244,114,182,.5)" letter-spacing="2">L7 ─ Ingress layer</text>
+    <text x="1000" y="100" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,.5)"  letter-spacing="2">L4 ─ Service / iptables</text>
+    <text x="1000" y="185" font-family="Share Tech Mono" font-size="8" fill="rgba(74,222,128,.5)"  letter-spacing="2">L3 ─ Pod network / CNI</text>
+
+    <!-- Network Policy gate -->
+    <g transform="translate(1080,100)">
+      <rect width="100" height="40" rx="4" fill="rgba(248,113,113,.06)" stroke="rgba(248,113,113,.25)" stroke-width="1" stroke-dasharray="5 3"/>
+      <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#f87171" font-weight="700">NetworkPolicy</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(248,113,113,.4)">gates pod ingress/egress</text>
+    </g>
+    <line x1="950" y1="120" x2="1080" y2="120" stroke="rgba(248,113,113,.3)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+  </svg>
+</div>
+
+<div class="g4">
+
+  <!-- ClusterIP -->
+  <div class="card" style="border-color:rgba(245,158,11,.25);"><div class="card" style="border:none;padding:0;background:transparent;">
+    <div class="ct" style="color:var(--amber);">🟡 ClusterIP <span style="font-size:10px;font-weight:400;color:var(--mid);">default</span></div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv"><b>Virtual IP inside the cluster only.</b> Stable IP+port that load-balances to matching pods. Never accessible from outside.</span></div>
+    <div class="fr"><span class="fk">IP reality</span><span class="fv">ClusterIP <b>does not exist on any network interface.</b> It's a fiction — iptables DNAT rules rewrite packets destined for it to a real pod IP before routing.</span></div>
+    <div class="fr"><span class="fk">DNS</span><span class="fv">CoreDNS resolves <code>svc-name.namespace.svc.cluster.local</code> → ClusterIP. In-cluster DNS always works regardless of actual pod IPs changing.</span></div>
+    <div class="code"><span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">ClusterIP</span>
+  <span class="ky">selector</span>:
+    <span class="ky">app</span>: <span class="st">myapp</span>
+  <span class="ky">ports</span>:
+  - <span class="ky">port</span>: <span class="nu">80</span>
+    <span class="ky">targetPort</span>: <span class="nu">8080</span></div>
+    <div class="trap"><b>ClusterIP=None = Headless.</b> CoreDNS returns individual pod IPs (A records), not a single VIP. Used for StatefulSet DNS names (<code>pod-0.svc.ns</code>) and direct pod addressing.</div>
+  </div></div>
+
+  <!-- NodePort -->
+  <div class="card" style="border-color:rgba(34,211,238,.2);"><div class="card" style="border:none;padding:0;background:transparent;">
+    <div class="ct" style="color:var(--cyan);">🔵 NodePort</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Opens a <b>static port (30000-32767)</b> on every node. Traffic on <code>nodeIP:nodePort</code> forwards to the service. Includes a ClusterIP.</span></div>
+    <div class="fr"><span class="fk">kube-proxy</span><span class="fv">Programs iptables rule on every node: packets arriving on the nodePort are DNAT'd to a random pod (any node, not just the local one).</span></div>
+    <div class="fr"><span class="fk">Source IP loss</span><span class="fv">By default, kube-proxy masquerades the source IP. Use <code>externalTrafficPolicy: Local</code> to preserve client IP — but only local-node pods receive traffic.</span></div>
+    <div class="code"><span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">NodePort</span>
+  <span class="ky">ports</span>:
+  - <span class="ky">port</span>: <span class="nu">80</span>
+    <span class="ky">targetPort</span>: <span class="nu">8080</span>
+    <span class="ky">nodePort</span>: <span class="nu">30080</span>  <span class="cm"># optional</span>
+  <span class="ky">externalTrafficPolicy</span>: <span class="st">Local</span></div>
+    <div class="trap"><b>externalTrafficPolicy: Local + no local pods = dropped packets.</b> If the node has no matching pod, packets are silently dropped. Health check port must be configured on LB to avoid this.</div>
+  </div></div>
+
+  <!-- LoadBalancer -->
+  <div class="card" style="border-color:rgba(252,211,77,.25);"><div class="card" style="border:none;padding:0;background:transparent;">
+    <div class="ct" style="color:var(--ambl);">🟨 LoadBalancer</div>
+    <div class="fr"><span class="fk">What it is</span><span class="fv">Provisions an <b>external cloud LB</b> (ELB, GCP LB, Azure LB). Includes NodePort+ClusterIP. Cloud CCM watches and creates the LB.</span></div>
+    <div class="fr"><span class="fk">Provisioning</span><span class="fv">Cloud Controller Manager (CCM) calls cloud API to create LB pointing at all node NodePorts. <code>status.loadBalancer.ingress[].ip</code> populated when ready.</span></div>
+    <div class="fr"><span class="fk">Annotations</span><span class="fv">All behavior controlled via cloud-specific annotations: <code>service.beta.kubernetes.io/aws-load-balancer-type: nlb</code>, internal vs external, cross-zone, SSL certs.</span></div>
+    <div class="code"><span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">LoadBalancer</span>
+  <span class="ky">externalTrafficPolicy</span>: <span class="st">Local</span>
+  <span class="ky">loadBalancerSourceRanges</span>:
+  - <span class="st">"10.0.0.0/8"</span>
+<span class="ky">metadata</span>:
+  <span class="ky">annotations</span>:
+    <span class="st">service.beta.kubernetes.io/aws-load-balancer-type</span>: <span class="st">"nlb"</span></div>
+    <div class="trap"><b>One LoadBalancer Service = one cloud LB = $$$.</b> For HTTP/HTTPS, use one Ingress + one LB for all services. LoadBalancer type is L4-only — no host/path routing.</div>
+  </div></div>
+
+  <!-- ExternalName + Headless -->
+  <div class="card" style="border-color:rgba(163,230,53,.18);">
+    <div class="ct" style="color:var(--lime);">🟢 ExternalName + Headless</div>
+    <div class="fr"><span class="fk">ExternalName</span><span class="fv">Returns a CNAME to an external DNS name. <b>No proxying.</b> Used to alias external services into the cluster DNS namespace. No ClusterIP allocated.</span></div>
+    <div class="code"><span class="ky">spec</span>:
+  <span class="ky">type</span>: <span class="st">ExternalName</span>
+  <span class="ky">externalName</span>: <span class="st">db.prod.example.com</span></div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">Headless</span><span class="fv"><code>clusterIP: None</code>. No VIP allocated. DNS returns <b>pod IPs directly</b> (A records). Client does its own LB/selection. Mandatory for StatefulSets.</span></div>
+    <div class="code"><span class="ky">spec</span>:
+  <span class="ky">clusterIP</span>: <span class="st">None</span>  <span class="cm"># headless</span>
+  <span class="ky">selector</span>:
+    <span class="ky">app</span>: <span class="st">mydb</span></div>
+    <div class="note">StatefulSet pod DNS: <code>pod-0.svc.namespace.svc.cluster.local</code> → specific pod IP. Stable even across restarts. Only works with headless service.</div>
+    <div class="trap"><b>ExternalName ignores ports and selectors.</b> Also: CNAME lookup adds a DNS round-trip. TLS with ExternalName can fail SNI matching — the client sees the original service name, not the external hostname.</div>
+  </div>
+
+</div>
+
+<!-- ══ 3. KUBE-PROXY ══ -->
+<div class="sh">
+  <div class="sh-icon">🔀</div>
+  <div class="sh-label" style="color:var(--cyan);">kube-proxy</div>
+  <div class="sh-sub">// iptables vs IPVS · how ClusterIP actually works · connection tracking</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(34,211,238,.3),transparent);"></div>
+</div>
+
+<div class="g32">
+  <div class="card" style="border-color:rgba(34,211,238,.2);">
+    <div class="ct" style="color:var(--cyan);">⚙️ iptables vs IPVS mode</div>
+    <table class="st">
+      <tr><th></th><th>iptables (default)</th><th>IPVS</th></tr>
+      <tr><td>Mechanism</td><td>Netfilter PREROUTING DNAT rules</td><td>Linux Virtual Server in-kernel LB</td></tr>
+      <tr><td>LB algorithm</td><td>Random (stateless probabilistic)</td><td>RR, LC, DH, SH, SED, NQ — configurable</td></tr>
+      <tr><td>Scale</td><td class="warn">O(n) rule scan per packet</td><td class="good">O(1) hash table lookup</td></tr>
+      <tr><td>Services</td><td class="warn">Degrades at ~10k services</td><td class="good">Handles 100k+ services</td></tr>
+      <tr><td>Conntrack</td><td>Full conntrack for every flow</td><td>IPVS conntrack (lighter)</td></tr>
+      <tr><td>Observability</td><td><code>iptables -t nat -L -n</code></td><td><code>ipvsadm -Ln</code></td></tr>
+      <tr><td>Kernel req.</td><td>Any modern kernel</td><td>Needs <code>ip_vs</code> modules loaded</td></tr>
+    </table>
+    <div class="note"><b>IPVS mode requires kernel modules:</b> <code>ip_vs</code>, <code>ip_vs_rr</code>, <code>ip_vs_wrr</code>, <code>ip_vs_sh</code>. Set kube-proxy <code>mode: ipvs</code> in ConfigMap. In iptables mode with 50k services, a single packet traverses 50k iptables rules — measurable latency.</div>
+    <div class="trap"><b>kube-proxy is optional with Cilium.</b> Cilium's eBPF mode replaces kube-proxy entirely — service load balancing handled in eBPF programs at the network hook point. Faster, no iptables, and works without the kube-proxy DaemonSet.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card" style="border-color:rgba(34,211,238,.15);">
+      <div class="ct" style="color:var(--cyan);">🔍 How DNAT Works</div>
+      <div class="code"><span class="cm"># Packet flow for ClusterIP 10.96.0.100:80</span>
+Pod sends to 10.96.0.100:80
+  ↓
+iptables PREROUTING chain
+  ↓
+KUBE-SERVICES chain
+  ↓ matches 10.96.0.100:80
+KUBE-SVC-XXXX chain
+  ↓ random select (33% each for 3 pods)
+KUBE-SEP-YYYY chain
+  ↓
+DNAT → 10.244.1.3:8080  (real pod IP)
+  ↓
+Normal IP routing to node
+  ↓ arrives at pod</div>
+    </div>
+    <div class="card" style="border-color:rgba(34,211,238,.15);">
+      <div class="ct" style="color:var(--cyan);">📊 Key kube-proxy facts</div>
+      <div class="fr"><span class="fk">Watches</span><span class="fv">EndpointSlices (not Endpoints). Rewrites iptables rules on any change.</span></div>
+      <div class="fr"><span class="fk">Connection sticky</span><span class="fv">Once a connection is DNAT'd to a pod, conntrack keeps it to the same pod. Even if pod is removed from endpoints. <b>Existing connections don't break on pod scale-down.</b></span></div>
+      <div class="fr"><span class="fk">Session affinity</span><span class="fv"><code>sessionAffinity: ClientIP</code> — same client IP always hits same pod. Implemented via iptables <code>recent</code> module. <code>timeoutSeconds</code> default 10800.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 4. DNS ══ -->
+<div class="sh">
+  <div class="sh-icon">🔤</div>
+  <div class="sh-label" style="color:var(--cyan);">CoreDNS & In-Cluster DNS</div>
+  <div class="sh-sub">// service discovery · pod DNS · search domains · ndots</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(34,211,238,.3),transparent);"></div>
+</div>
+
+<div class="g3">
+  <div class="card" style="border-color:rgba(34,211,238,.2);">
+    <div class="ct" style="color:var(--cyan);">📖 DNS Record Types</div>
+    <table class="st">
+      <tr><th>Record</th><th>FQDN</th><th>Returns</th></tr>
+      <tr><td>Service A</td><td><code>svc.ns.svc.cluster.local</code></td><td>ClusterIP</td></tr>
+      <tr><td>Headless A</td><td><code>svc.ns.svc.cluster.local</code></td><td>All pod IPs (multi-A)</td></tr>
+      <tr><td>Pod A</td><td><code>10-244-1-3.ns.pod.cluster.local</code></td><td>Pod IP (hyphens replace dots)</td></tr>
+      <tr><td>SRV</td><td><code>_port._proto.svc.ns.svc.cluster.local</code></td><td>Port + A record target</td></tr>
+      <tr><td>StatefulSet pod</td><td><code>pod-0.svc.ns.svc.cluster.local</code></td><td>Specific pod IP</td></tr>
+      <tr><td>ExternalName</td><td><code>svc.ns.svc.cluster.local</code></td><td>CNAME → external name</td></tr>
+    </table>
+    <div class="note"><b>ndots:5 default = 5 extra DNS queries per lookup.</b> Searching <code>mydb</code>: tries <code>mydb.default.svc.cluster.local</code> → <code>mydb.svc.cluster.local</code> → <code>mydb.cluster.local</code> → <code>mydb</code> → eventually resolves. Set <code>ndots: 2</code> for apps doing many external DNS lookups.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(34,211,238,.15);">
+    <div class="ct" style="color:var(--cyan);">⚙️ Pod DNS Configuration</div>
+    <div class="code"><span class="cm"># /etc/resolv.conf inside every pod:</span>
+nameserver 10.96.0.10    <span class="cm"># CoreDNS ClusterIP</span>
+search default.svc.cluster.local \
+       svc.cluster.local \
+       cluster.local
+options ndots:5
+
+<span class="cm"># Custom DNS per pod:</span>
+<span class="ky">spec</span>:
+  <span class="ky">dnsPolicy</span>: <span class="st">None</span>
+  <span class="ky">dnsConfig</span>:
+    <span class="ky">nameservers</span>: [<span class="st">"8.8.8.8"</span>]
+    <span class="ky">searches</span>: [<span class="st">"prod.svc.cluster.local"</span>]
+    <span class="ky">options</span>:
+    - <span class="ky">name</span>: <span class="st">ndots</span>
+      <span class="ky">value</span>: <span class="st">"2"</span></div>
+    <div class="fr"><span class="fk">dnsPolicy</span><span class="fv"><code>ClusterFirst</code> (default), <code>ClusterFirstWithHostNet</code> (hostNetwork pods), <code>Default</code> (node's resolv.conf), <code>None</code> (fully custom).</span></div>
+    <div class="trap"><b>DNS cache in CoreDNS is not per-namespace.</b> All namespaces share the same CoreDNS pods. A buggy app doing DNS floods will impact other tenants. Set resource limits + rate limits on CoreDNS.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(34,211,238,.15);">
+    <div class="ct" style="color:var(--cyan);">🔧 CoreDNS Architecture</div>
+    <div class="fr"><span class="fk">Deployment</span><span class="fv"><b>Runs as a Deployment</b> (not DaemonSet). 2+ replicas behind a ClusterIP Service (<code>kube-dns</code>) at <code>10.96.0.10</code>.</span></div>
+    <div class="fr"><span class="fk">Plugin chain</span><span class="fv">Corefile configures plugins: <code>errors</code> → <code>health</code> → <code>kubernetes</code> (watches API) → <code>forward</code> (upstream). Each plugin handles or passes the query.</span></div>
+    <div class="fr"><span class="fk">kubernetes plugin</span><span class="fv">Watches Services + Pods via informers. Answers <code>cluster.local</code> queries from in-memory cache. Zero etcd reads for DNS.</span></div>
+    <div class="fr"><span class="fk">NodeLocal DNSCache</span><span class="fv">DaemonSet runs a DNS cache on each node. Pods bypass CoreDNS for most queries. Eliminates conntrack race condition and reduces CoreDNS load. Highly recommended at scale.</span></div>
+    <div class="code"><span class="cm"># Debug DNS from inside pod</span>
+nslookup kubernetes.default
+nslookup myservice.mynamespace
+<span class="cm"># Trace actual queries</span>
+kubectl -n kube-system logs -l k8s-app=kube-dns</div>
+  </div>
+</div>
+
+<!-- ══ 5. INGRESS ══ -->
+<div class="sh">
+  <div class="sh-icon">🚪</div>
+  <div class="sh-label" style="color:var(--pink);">Ingress & Gateway API</div>
+  <div class="sh-sub">// L7 routing · TLS termination · IngressClass · Gateway API (next-gen)</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(244,114,182,.3),transparent);"></div>
+</div>
+
+<div class="g32">
+  <div class="card" style="border-color:rgba(244,114,182,.2);">
+    <div class="ct" style="color:var(--pink);">🔀 Ingress Resource</div>
+    <div class="code"><span class="ky">apiVersion</span>: networking.k8s.io/v1
+<span class="ky">kind</span>: Ingress
+<span class="ky">metadata</span>:
+  <span class="ky">annotations</span>:
+    <span class="cm"># nginx-specific:</span>
+    nginx.ingress.kubernetes.io/rewrite-target: <span class="st">/</span>
+    nginx.ingress.kubernetes.io/ssl-redirect: <span class="st">"true"</span>
+    nginx.ingress.kubernetes.io/proxy-body-size: <span class="st">"50m"</span>
+<span class="ky">spec</span>:
+  <span class="ky">ingressClassName</span>: <span class="st">nginx</span>   <span class="cm"># which controller handles this</span>
+  <span class="ky">tls</span>:
+  - <span class="ky">hosts</span>: [<span class="st">api.example.com</span>]
+    <span class="ky">secretName</span>: <span class="st">tls-secret</span>   <span class="cm"># kubernetes.io/tls type</span>
+  <span class="ky">rules</span>:
+  - <span class="ky">host</span>: <span class="st">api.example.com</span>
+    <span class="ky">http</span>:
+      <span class="ky">paths</span>:
+      - <span class="ky">path</span>: <span class="st">/v1</span>
+        <span class="ky">pathType</span>: <span class="st">Prefix</span>    <span class="cm"># Exact | Prefix | ImplementationSpecific</span>
+        <span class="ky">backend</span>:
+          <span class="ky">service</span>:
+            <span class="ky">name</span>: <span class="st">api-svc</span>
+            <span class="ky">port</span>: { <span class="ky">number</span>: <span class="nu">80</span> }</div>
+    <div class="fr" style="margin-top:8px;"><span class="fk">pathType: Exact</span><span class="fv">Matches exactly <code>/v1</code> — no trailing slash, no subdirs.</span></div>
+    <div class="fr"><span class="fk">pathType: Prefix</span><span class="fv">Matches <code>/v1</code>, <code>/v1/</code>, <code>/v1/users</code>. URL segment split on <code>/</code>.</span></div>
+    <div class="fr"><span class="fk">pathType: ImplSpec</span><span class="fv">Controller-defined matching (nginx regex, Traefik rules). Not portable.</span></div>
+    <div class="trap"><b>Ingress object does nothing by itself.</b> Without an Ingress controller running in the cluster, Ingress resources are ignored. <code>ingressClassName</code> must match a deployed IngressClass. Multiple controllers can coexist — wrong class = silent no-op.</div>
+    <div class="trap"><b>TLS secret must be in the same namespace as the Ingress.</b> Cannot reference a Secret from another namespace. Use cert-manager to auto-provision Let's Encrypt certs and keep Secrets co-located.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card" style="border-color:rgba(244,114,182,.15);">
+      <div class="ct" style="color:var(--pink);">🏭 Ingress Controllers</div>
+      <table class="st">
+        <tr><th>Controller</th><th>Backend</th><th>Notes</th></tr>
+        <tr><td>ingress-nginx</td><td>nginx</td><td class="good">Most common. Mature. Heavy annotation surface.</td></tr>
+        <tr><td>Traefik</td><td>Traefik proxy</td><td class="good">Native K8s CRDs, auto TLS, dashboard.</td></tr>
+        <tr><td>AWS ALB IC</td><td>AWS ALB</td><td class="warn">Each Ingress → one ALB. Expensive but integrated.</td></tr>
+        <tr><td>Istio Gateway</td><td>Envoy</td><td class="warn">Requires Istio mesh. Full mTLS, observability.</td></tr>
+        <tr><td>Kong</td><td>Kong/nginx</td><td>Plugin ecosystem, rate limiting, auth.</td></tr>
+        <tr><td>HAProxy IC</td><td>HAProxy</td><td>Low latency, TCP+HTTP.</td></tr>
+      </table>
+    </div>
+    <div class="card" style="border-color:rgba(163,230,53,.18);">
+      <div class="ct" style="color:var(--lime);">🆕 Gateway API (replacing Ingress)</div>
+      <div class="fr"><span class="fk">Why</span><span class="fv">Ingress is too limited and too annotation-heavy. Gateway API is a proper K8s SIG with role-separated CRDs.</span></div>
+      <div class="fr"><span class="fk">Resources</span><span class="fv"><code>GatewayClass</code> (infra owner) → <code>Gateway</code> (cluster op) → <code>HTTPRoute</code>/<code>TCPRoute</code>/<code>GRPCRoute</code> (app dev). RBAC-separated concerns.</span></div>
+      <div class="fr"><span class="fk">HTTPRoute</span><span class="fv">Header matching, weight-based splitting (canary: 10/90), URL rewrites, request mirroring — all first-class without annotations.</span></div>
+      <div class="code"><span class="ky">kind</span>: HTTPRoute
+<span class="ky">spec</span>:
+  <span class="ky">rules</span>:
+  - <span class="ky">backendRefs</span>:
+    - <span class="ky">name</span>: <span class="st">svc-v2</span>  <span class="ky">weight</span>: <span class="nu">10</span>
+    - <span class="ky">name</span>: <span class="st">svc-v1</span>  <span class="ky">weight</span>: <span class="nu">90</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 6. CNI ══ -->
+<div class="sh">
+  <div class="sh-icon">🧠</div>
+  <div class="sh-label" style="color:var(--violet);">CNI Plugins</div>
+  <div class="sh-sub">// Flannel · Calico · Cilium · Weave · how they implement the network model</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(167,139,250,.3),transparent);"></div>
+</div>
+
+<div class="g4">
+  <div class="card" style="border-color:rgba(167,139,250,.2);">
+    <div class="ct" style="color:var(--violet);">🟣 Flannel</div>
+    <div class="fr"><span class="fk">Approach</span><span class="fv">Overlay network using <b>VXLAN</b> (default) or IPIP. Pod packets encapsulated in UDP tunnels between nodes.</span></div>
+    <div class="fr"><span class="fk">Node CIDR</span><span class="fv">Each node allocated a /24 from cluster CIDR. Stored in node annotations. flannel daemon reads these to build routing table.</span></div>
+    <div class="fr"><span class="fk">Simplicity</span><span class="fv"><b>Simplest CNI.</b> No NetworkPolicy support. No encryption. Just gets pods talking. Good for dev/test clusters.</span></div>
+    <div class="fr"><span class="fk">Backend</span><span class="fv"><code>vxlan</code> (L3 overlay via UDP 8472), <code>host-gw</code> (pure L3 routing, no encap — nodes must be on same L2), <code>wireguard</code> (encrypted VXLAN).</span></div>
+    <div class="trap"><b>Flannel has NO NetworkPolicy support.</b> NetworkPolicy objects are silently ignored. Must pair with Calico in flannel+canal mode or switch CNI entirely to enforce policies.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(34,211,238,.2);">
+    <div class="ct" style="color:var(--cyan);">🔵 Calico</div>
+    <div class="fr"><span class="fk">Approach</span><span class="fv"><b>BGP-based L3 routing.</b> No overlay by default — pods get real IPs routed via BGP. Each node is a BGP peer. Optional VXLAN/IPIP overlay for non-BGP environments.</span></div>
+    <div class="fr"><span class="fk">NetworkPolicy</span><span class="fv"><b>Full K8s NetworkPolicy</b> + extended Calico GlobalNetworkPolicy (cluster-wide), HostEndpoint (secure node interfaces), order/priority rules.</span></div>
+    <div class="fr"><span class="fk">Dataplane</span><span class="fv">Default: iptables. Optional: eBPF dataplane (replaces kube-proxy + iptables, faster). Or Windows HNS dataplane.</span></div>
+    <div class="fr"><span class="fk">Wireguard</span><span class="fv">Optional <b>in-transit encryption</b> via WireGuard — transparent to pods. Enable with one annotation on node.</span></div>
+    <div class="note">Calico is the most production-common CNI. BGP mode is fast (no encap overhead) but requires L3-aware network gear or a Route Reflector for large clusters.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(74,222,128,.2);">
+    <div class="ct" style="color:var(--green);">🟢 Cilium</div>
+    <div class="fr"><span class="fk">Approach</span><span class="fv"><b>eBPF-native.</b> No iptables. All packet processing in eBPF programs attached to veth/XDP hooks. Fastest and most observable.</span></div>
+    <div class="fr"><span class="fk">kube-proxy</span><span class="fv">Cilium replaces kube-proxy entirely. Service load balancing via eBPF map lookups — O(1), no netfilter traversal.</span></div>
+    <div class="fr"><span class="fk">L7 policy</span><span class="fv"><b>L7-aware NetworkPolicy</b> — can enforce HTTP method/path, Kafka topic, gRPC method. Goes far beyond K8s NetworkPolicy spec.</span></div>
+    <div class="fr"><span class="fk">Hubble</span><span class="fv">Built-in observability: flow logs, service map, dropped packet reasons — all from eBPF maps without touching the dataplane.</span></div>
+    <div class="fr"><span class="fk">Requirement</span><span class="fv">Linux kernel ≥ 4.9 (recommended 5.10+). Full eBPF features need 5.15+. Can run alongside older kernels in legacy mode.</span></div>
+    <div class="trap"><b>Cilium Hubble requires the Hubble relay deployment.</b> The eBPF maps are per-node — Hubble relay aggregates across all nodes. Without it you only see flows for one node at a time.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(248,113,113,.18);">
+    <div class="ct" style="color:var(--red);">📊 CNI Comparison</div>
+    <table class="st">
+      <tr><th>CNI</th><th>Policy</th><th>Perf</th><th>Complexity</th></tr>
+      <tr><td style="color:var(--violet);">Flannel</td><td class="bad">None</td><td class="warn">Overlay</td><td class="good">Low</td></tr>
+      <tr><td style="color:var(--cyan);">Calico</td><td class="good">Full+</td><td class="good">BGP/ebpf</td><td class="warn">Med</td></tr>
+      <tr><td style="color:var(--green);">Cilium</td><td class="good">L7</td><td class="good">eBPF</td><td class="warn">Med</td></tr>
+      <tr><td style="color:var(--slate);">Weave</td><td class="good">K8s</td><td class="warn">Overlay</td><td class="good">Low</td></tr>
+      <tr><td style="color:var(--ambl);">AWS VPC</td><td class="good">K8s+SG</td><td class="good">Native</td><td class="warn">AWS-only</td></tr>
+    </table>
+    <div class="note"><b>AWS VPC CNI</b> gives each pod a real VPC IP (ENI secondary IP). No overlay — traffic goes directly through VPC routing. Limited by node's max ENI/IP count. Best latency on AWS.</div>
+    <div class="trap"><b>Switching CNI requires cluster rebuild.</b> You cannot hot-swap a CNI plugin on a running cluster. All pods lose networking during transition. Plan for blue/green cluster migration.</div>
+  </div>
+</div>
+
+<!-- ══ 7. NETWORK POLICY ══ -->
+<div class="sh">
+  <div class="sh-icon">🛡️</div>
+  <div class="sh-label" style="color:var(--red);">NetworkPolicy</div>
+  <div class="sh-sub">// ingress/egress rules · podSelector · namespaceSelector · default deny</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(248,113,113,.3),transparent);"></div>
+</div>
+
+<div class="g32">
+  <div class="card" style="border-color:rgba(248,113,113,.2);">
+    <div class="ct" style="color:var(--red);">🔒 NetworkPolicy Anatomy</div>
+    <div class="code"><span class="ky">apiVersion</span>: networking.k8s.io/v1
+<span class="ky">kind</span>: NetworkPolicy
+<span class="ky">spec</span>:
+  <span class="ky">podSelector</span>:          <span class="cm"># applies to pods matching this</span>
+    <span class="ky">matchLabels</span>: { <span class="ky">app</span>: <span class="st">api</span> }
+  <span class="ky">policyTypes</span>: [<span class="st">Ingress</span>, <span class="st">Egress</span>]
+  <span class="ky">ingress</span>:
+  - <span class="ky">from</span>:
+    - <span class="ky">podSelector</span>:         <span class="cm"># same namespace only</span>
+        <span class="ky">matchLabels</span>: { <span class="ky">role</span>: <span class="st">frontend</span> }
+    - <span class="ky">namespaceSelector</span>:   <span class="cm"># from specific namespace</span>
+        <span class="ky">matchLabels</span>: { <span class="ky">env</span>: <span class="st">prod</span> }
+    <span class="ky">ports</span>:
+    - <span class="ky">protocol</span>: <span class="st">TCP</span>
+      <span class="ky">port</span>: <span class="nu">8080</span>
+  <span class="ky">egress</span>:
+  - <span class="ky">to</span>:
+    - <span class="ky">ipBlock</span>:             <span class="cm"># external CIDR</span>
+        <span class="ky">cidr</span>: <span class="st">10.0.0.0/8</span>
+        <span class="ky">except</span>: [<span class="st">10.0.0.1/32</span>]
+    <span class="ky">ports</span>:
+    - <span class="ky">port</span>: <span class="nu">5432</span>
+  - <span class="ky">ports</span>:               <span class="cm"># allow DNS egress</span>
+    - <span class="ky">port</span>: <span class="nu">53</span>
+      <span class="ky">protocol</span>: <span class="st">UDP</span></div>
+    <div class="trap"><b>podSelector + namespaceSelector in same <code>from</code> array entry = AND.</b> In separate entries = OR. This is the most common NetworkPolicy bug. <code>from: [{podSelector: X, namespaceSelector: Y}]</code> = pods matching X <i>in</i> namespace matching Y. Two separate entries = pods matching X in any namespace OR any pod in namespace matching Y.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card" style="border-color:rgba(248,113,113,.15);">
+      <div class="ct" style="color:var(--red);">⚠️ Default-Deny Patterns</div>
+      <div class="code"><span class="cm"># DEFAULT DENY ALL INGRESS in namespace</span>
+<span class="ky">spec</span>:
+  <span class="ky">podSelector</span>: {}    <span class="cm"># matches ALL pods</span>
+  <span class="ky">policyTypes</span>: [<span class="st">Ingress</span>]
+  <span class="cm"># no ingress rules = deny all</span>
+
+<span class="cm"># DEFAULT DENY ALL EGRESS</span>
+<span class="ky">spec</span>:
+  <span class="ky">podSelector</span>: {}
+  <span class="ky">policyTypes</span>: [<span class="st">Egress</span>]
+  <span class="cm"># no egress rules = deny all</span>
+  <span class="cm"># ⚠ blocks DNS too! Must add port 53 allow</span>
+
+<span class="cm"># ALLOW ALL (explicit permissive)</span>
+<span class="ky">spec</span>:
+  <span class="ky">podSelector</span>: {}
+  <span class="ky">ingress</span>:
+  - {}               <span class="cm"># empty = allow all sources</span></div>
+      <div class="trap"><b>Default-deny egress blocks DNS.</b> After applying a deny-all egress, all pod DNS lookups fail. Always add an egress rule allowing UDP/TCP port 53 to CoreDNS before applying egress default-deny.</div>
+    </div>
+    <div class="card" style="border-color:rgba(248,113,113,.15);">
+      <div class="ct" style="color:var(--red);">🔑 NetworkPolicy Rules</div>
+      <div class="fr"><span class="fk">Default open</span><span class="fv"><b>No NetworkPolicy = allow all traffic.</b> A policy only restricts when one exists for a pod. First deny-all creates a secure boundary.</span></div>
+      <div class="fr"><span class="fk">Additive</span><span class="fv">Multiple policies for same pod are <b>unioned</b> (OR). You cannot use one policy to override/restrict another. Policies only add permissions.</span></div>
+      <div class="fr"><span class="fk">Stateful</span><span class="fv">NetworkPolicy is <b>connection-tracking aware.</b> Allow TCP ingress on 8080 = reply packets automatically allowed (no egress rule needed for the response).</span></div>
+      <div class="fr"><span class="fk">No deny rules</span><span class="fv">K8s NetworkPolicy only has allow rules. For deny-with-priority, need Calico GlobalNetworkPolicy or Cilium CiliumNetworkPolicy.</span></div>
+      <div class="fr"><span class="fk">kubelet probes</span><span class="fv">NodePort health checks come from node IP, not pod IP. If you block all ingress, kubelet liveness/readiness probes also blocked — pod gets killed.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 8. LOAD BALANCERS & METALLB ══ -->
+<div class="sh">
+  <div class="sh-icon">⚖️</div>
+  <div class="sh-label" style="color:var(--ambl);">Load Balancers, MetalLB & Cloud Integration</div>
+  <div class="sh-sub">// cloud CCM · MetalLB · externalTrafficPolicy · health checks</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(252,211,77,.3),transparent);"></div>
+</div>
+
+<div class="g3">
+  <div class="card" style="border-color:rgba(252,211,77,.2);">
+    <div class="ct" style="color:var(--ambl);">☁️ Cloud LB Provisioning</div>
+    <div class="fr"><span class="fk">CCM role</span><span class="fv">Cloud Controller Manager watches <code>type:LoadBalancer</code> services. Calls cloud API (AWS/GCP/Azure) to provision LB. Writes external IP to <code>status.loadBalancer</code>.</span></div>
+    <div class="fr"><span class="fk">AWS NLB vs CLB</span><span class="fv"><code>aws-load-balancer-type: nlb</code> = NLB (L4, preserves client IP, TCP). Default = CLB (legacy). Use NLB for gRPC, WebSocket, static IP requirements.</span></div>
+    <div class="fr"><span class="fk">Internal LB</span><span class="fv"><code>service.beta.kubernetes.io/aws-load-balancer-internal: "true"</code> → VPC-internal LB. No public IP. Access from within VPC only.</span></div>
+    <div class="fr"><span class="fk">ETP: Local</span><span class="fv"><code>externalTrafficPolicy: Local</code> on LB service → LB only routes to nodes with matching pods → client IP preserved (no SNAT) → LB must health-check the NodePort.</span></div>
+    <div class="code"><span class="cm"># AWS ALB (via AWS Load Balancer Controller)</span>
+<span class="ky">metadata</span>:
+  <span class="ky">annotations</span>:
+    kubernetes.io/ingress.class: <span class="st">alb</span>
+    alb.ingress.kubernetes.io/scheme: <span class="st">internet-facing</span>
+    alb.ingress.kubernetes.io/target-type: <span class="st">ip</span>
+    alb.ingress.kubernetes.io/certificate-arn: <span class="st">arn:aws:acm:...</span>
+    alb.ingress.kubernetes.io/listen-ports: <span class="st">'[{"HTTPS":443}]'</span></div>
+    <div class="trap"><b>ALB target-type: ip vs instance.</b> <code>ip</code> = routes directly to pod IPs (requires VPC CNI). <code>instance</code> = routes to node NodePort. Use <code>ip</code> mode to avoid the extra hop and preserve client IP.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(252,211,77,.2);">
+    <div class="ct" style="color:var(--ambl);">🏠 MetalLB (bare-metal)</div>
+    <div class="fr"><span class="fk">What it solves</span><span class="fv">On bare-metal/on-prem K8s, there's no cloud CCM. <code>type:LoadBalancer</code> stays Pending forever. MetalLB implements LB provisioning for physical clusters.</span></div>
+    <div class="fr"><span class="fk">L2 mode</span><span class="fv">One node answers ARP/NDP for the assigned external IP. Traffic lands on that node, then kube-proxy distributes. <b>Single-node bottleneck</b> — no HA on the ingress node.</span></div>
+    <div class="fr"><span class="fk">BGP mode</span><span class="fv">Each node advertises external IPs via BGP. Router distributes traffic to all nodes via ECMP. True LB across nodes. Requires BGP-capable upstream router.</span></div>
+    <div class="fr"><span class="fk">IPAddressPool</span><span class="fv">Define address pools in <code>IPAddressPool</code> CRD. Services request from specific pool via <code>metallb.universe.tf/address-pool</code> annotation.</span></div>
+    <div class="code"><span class="ky">apiVersion</span>: metallb.io/v1beta1
+<span class="ky">kind</span>: IPAddressPool
+<span class="ky">spec</span>:
+  <span class="ky">addresses</span>: [<span class="st">"192.168.1.240-192.168.1.250"</span>]
+---
+<span class="ky">kind</span>: L2Advertisement
+<span class="ky">spec</span>:
+  <span class="ky">ipAddressPools</span>: [<span class="st">mypool</span>]</div>
+    <div class="trap"><b>MetalLB L2 mode leader election:</b> only one node holds each IP at a time. Failover requires ARP/NDP withdrawal + re-advertisement — 10-30s gap. For HA, use BGP mode + ECMP.</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(252,211,77,.15);">
+    <div class="ct" style="color:var(--ambl);">📋 externalTrafficPolicy Deep Dive</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:9px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--red);margin-bottom:5px;">ETP: Cluster (default)</div>
+        <div style="font-size:10px;color:var(--mid);line-height:1.6;">✓ Traffic to any node, proxied to any pod<br>✓ All nodes healthy to LB<br>✗ Source IP lost (SNAT)<br>✗ Extra hop node→pod<br>✗ Uneven LB (hot nodes)</div>
+      </div>
+      <div style="background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.15);border-radius:5px;padding:9px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--green);margin-bottom:5px;">ETP: Local</div>
+        <div style="font-size:10px;color:var(--mid);line-height:1.6;">✓ Client IP preserved<br>✓ No extra hop<br>✗ Only nodes with pods healthy<br>✗ Uneven if pods not spread<br>✗ Dropped on nodes without pods</div>
+      </div>
+    </div>
+    <div class="fr"><span class="fk">internalTP</span><span class="fv"><code>internalTrafficPolicy: Local</code> (1.26 stable) — same concept for traffic arriving via ClusterIP from within the cluster. Forces traffic to local-node pods only.</span></div>
+    <div class="trap"><b>ETP:Local + DaemonSet = perfect.</b> DaemonSet ensures every node has a pod → every node is healthy to LB → client IP preserved + no extra hop. Ideal pattern for log shippers, proxies, per-node agents.</div>
+  </div>
+</div>
+
+<!-- ══ 9. SERVICE MESH ══ -->
+<div class="sh">
+  <div class="sh-icon">🕸️</div>
+  <div class="sh-label" style="color:var(--mesh-c);">Service Mesh</div>
+  <div class="sh-sub">// sidecar pattern · mTLS · traffic management · Istio · Linkerd</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(110,231,183,.3),transparent);"></div>
+</div>
+
+<div class="g32">
+  <div class="card" style="border-color:rgba(110,231,183,.2);">
+    <div class="ct" style="color:var(--mesh-c);">🔄 Sidecar Proxy Pattern</div>
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin-bottom:10px;">
+      <defs>
+        <marker id="am" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(110,231,183,.7)"/></marker>
+        <marker id="am2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,1 L5,3 L0,5 Z" fill="rgba(245,158,11,.6)"/></marker>
+      </defs>
+
+      <!-- Pod A -->
+      <rect x="10" y="20" width="200" height="150" rx="7" fill="rgba(20,184,166,.04)" stroke="rgba(20,184,166,.2)" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text x="110" y="14" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="rgba(20,184,166,.4)">POD A</text>
+      <rect x="22" y="35" width="80" height="50" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.35)" stroke-width="1"/>
+      <text x="62" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">app</text>
+      <text x="62" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(74,222,128,.4)">:8080</text>
+      <rect x="118" y="35" width="82" height="50" rx="5" fill="rgba(110,231,183,.08)" stroke="rgba(110,231,183,.35)" stroke-width="1"/>
+      <text x="159" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#6ee7b7" font-weight="700">Envoy proxy</text>
+      <text x="159" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(110,231,183,.4)">sidecar</text>
+      <!-- iptables intercept labels -->
+      <text x="110" y="112" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,.5)">iptables intercepts all traffic</text>
+      <text x="110" y="126" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,.4)">→ redirects to Envoy :15001/15006</text>
+      <text x="110" y="148" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(255,255,255,.2)">init container sets iptables rules on pod start</text>
+      <text x="110" y="162" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(255,255,255,.15)">Envoy applies policy, then forwards</text>
+
+      <!-- Arrows within pod -->
+      <line x1="102" y1="60" x2="118" y2="60" stroke="rgba(245,158,11,.5)" stroke-width="1.5" marker-end="url(#am2)"/>
+
+      <!-- Control plane -->
+      <rect x="270" y="50" width="130" height="70" rx="6" fill="rgba(167,139,250,.07)" stroke="rgba(167,139,250,.3)" stroke-width="1"/>
+      <text x="335" y="72" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#a78bfa" font-weight="700">Control Plane</text>
+      <text x="335" y="88" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(167,139,250,.5)">Istiod / Linkerd ctrl</text>
+      <text x="335" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,.35)">cert mgmt + xDS config</text>
+
+      <!-- Pod B -->
+      <rect x="490" y="20" width="200" height="120" rx="7" fill="rgba(20,184,166,.04)" stroke="rgba(20,184,166,.2)" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text x="590" y="14" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="rgba(20,184,166,.4)">POD B</text>
+      <rect x="502" y="35" width="82" height="50" rx="5" fill="rgba(110,231,183,.08)" stroke="rgba(110,231,183,.35)" stroke-width="1"/>
+      <text x="543" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#6ee7b7" font-weight="700">Envoy proxy</text>
+      <text x="543" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(110,231,183,.4)">sidecar</text>
+      <rect x="594" y="35" width="80" height="50" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.35)" stroke-width="1"/>
+      <text x="634" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">app</text>
+      <text x="634" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(74,222,128,.4)">:8080</text>
+      <!-- inner arrow -->
+      <line x1="584" y1="60" x2="594" y2="60" stroke="rgba(245,158,11,.5)" stroke-width="1.5" marker-end="url(#am2)"/>
+
+      <!-- mTLS arrow between proxies -->
+      <path d="M 200 60 L 490 60" fill="none" stroke="rgba(110,231,183,.6)" stroke-width="2" stroke-dasharray="7 3" marker-end="url(#am)"/>
+      <text x="345" y="53" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(110,231,183,.6)">mTLS (SPIFFE certs)</text>
+
+      <!-- xDS arrows from control plane -->
+      <path d="M 335 120 L 165 80" fill="none" stroke="rgba(167,139,250,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#am)"/>
+      <path d="M 335 120 L 543 90" fill="none" stroke="rgba(167,139,250,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#am)"/>
+      <text x="245" y="110" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,.4)">xDS config push</text>
+    </svg>
+    <div class="fr"><span class="fk">Injection</span><span class="fv">Istio mutating webhook automatically injects Envoy sidecar + <code>istio-init</code> container into pods in labeled namespaces (<code>istio-injection: enabled</code>).</span></div>
+    <div class="fr"><span class="fk">iptables intercept</span><span class="fv">Init container runs <code>iptables</code> rules in pod network NS: all inbound traffic redirected to Envoy port 15006, all outbound to 15001. App code is unaware of the proxy.</span></div>
+    <div class="fr"><span class="fk">mTLS</span><span class="fv">SPIFFE X.509 certs issued per service identity. Istiod acts as CA. Cert rotation every 24h by default. Zero-trust: services only trust each other with valid SPIFFE certs.</span></div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card" style="border-color:rgba(110,231,183,.15);">
+      <div class="ct" style="color:var(--mesh-c);">📊 Istio vs Linkerd</div>
+      <table class="st">
+        <tr><th></th><th>Istio</th><th>Linkerd</th></tr>
+        <tr><td>Proxy</td><td>Envoy (C++)</td><td>Linkerd2-proxy (Rust)</td></tr>
+        <tr><td>Overhead</td><td class="warn">~50-100MB/pod</td><td class="good">~10MB/pod</td></tr>
+        <tr><td>Latency</td><td class="warn">+2-5ms</td><td class="good">+sub-ms</td></tr>
+        <tr><td>Features</td><td class="good">Extensive</td><td class="warn">Focused</td></tr>
+        <tr><td>Complexity</td><td class="bad">High (xDS/CRDs)</td><td class="good">Low</td></tr>
+        <tr><td>L7 policy</td><td class="good">VirtualService</td><td class="warn">HTTPRoute only</td></tr>
+      </table>
+    </div>
+    <div class="card" style="border-color:rgba(110,231,183,.15);">
+      <div class="ct" style="color:var(--mesh-c);">⚡ Ambient Mesh (Istio)</div>
+      <div class="fr"><span class="fk">What it is</span><span class="fv"><b>Sidecar-free service mesh.</b> Istio 1.18+. Uses per-node <code>ztunnel</code> for mTLS + L4 policies, optional per-namespace <code>waypoint</code> proxy for L7.</span></div>
+      <div class="fr"><span class="fk">Benefit</span><span class="fv">No sidecar injection = no pod restart needed, no per-pod overhead, gradual adoption. Traffic redirection is handled by <code>istio-cni</code> via iptables in the pod's netns; ztunnel is the node-level zero-trust L4/mTLS proxy.</span></div>
+      <div class="trap"><b>Ambient mesh is GA in Istio 1.24+</b> but not all features are parity with sidecar. Check feature matrix before adopting ambient for critical workloads.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 10. DEBUG ══ -->
+<div class="sh">
+  <div class="sh-icon">🔍</div>
+  <div class="sh-label" style="color:var(--lime);">Debug Playbook</div>
+  <div class="sh-sub">// pod can't reach service · DNS fails · traffic not reaching pod</div>
+  <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(163,230,53,.3),transparent);"></div>
+</div>
+
+<div class="g3">
+  <div class="card" style="border-color:rgba(163,230,53,.18);">
+    <div class="ct" style="color:var(--lime);">🚦 Service Connectivity Triage</div>
+    <div class="code"><span class="cm"># 1. Does the Service exist and have endpoints?</span>
+kubectl get svc myservice -o wide
+kubectl get endpoints myservice
+kubectl get endpointslices -l kubernetes.io/service-name=myservice
+<span class="cm"># No endpoints = selector doesn't match any pod</span>
+
+<span class="cm"># 2. Do pods have the right labels?</span>
+kubectl get pods -l app=myapp --show-labels
+<span class="cm"># Compare with service spec.selector</span>
+
+<span class="cm"># 3. Are pods Ready?</span>
+kubectl get pods -l app=myapp
+<span class="cm"># 0/1 Running = readinessProbe failing</span>
+<span class="cm"># EndpointSlice only includes Ready pods</span>
+
+<span class="cm"># 4. Test from inside a debug pod</span>
+kubectl run debug --rm -it --image=nicolaka/netshoot -- bash
+curl http://myservice.default.svc.cluster.local:80
+<span class="cm"># If curl fails but nslookup works = port/protocol issue</span>
+<span class="cm"># If nslookup fails = CoreDNS or network issue</span>
+
+<span class="cm"># 5. Check iptables rules for service</span>
+iptables -t nat -L KUBE-SERVICES -n | grep <CLUSTER-IP>
+<span class="cm"># Rule missing = kube-proxy hasn't synced yet</span></div>
+  </div>
+
+  <div class="card" style="border-color:rgba(163,230,53,.15);">
+    <div class="ct" style="color:var(--lime);">🌐 DNS & Network Debug</div>
+    <div class="code"><span class="cm"># DNS debug — from inside pod</span>
+cat /etc/resolv.conf
+nslookup kubernetes.default
+nslookup myservice          <span class="cm"># short name</span>
+nslookup myservice.prod.svc.cluster.local  <span class="cm"># FQDN</span>
+
+<span class="cm"># CoreDNS health check</span>
+kubectl -n kube-system get pods -l k8s-app=kube-dns
+kubectl -n kube-system logs deploy/coredns | grep error
+
+<span class="cm"># Packet-level debug with ephemeral container</span>
+kubectl debug -it mypod --image=nicolaka/netshoot \
+  --target=mycontainer -- tcpdump -i eth0 -n port 8080
+
+<span class="cm"># Test NetworkPolicy isn't blocking</span>
+kubectl run test --rm -it --image=curlimages/curl \
+  --labels="role=frontend" -- \
+  curl http://api-service.default:8080/health
+
+<span class="cm"># Trace path with traceroute</span>
+kubectl exec -it mypod -- traceroute 10.244.1.5</div>
+    <div class="trap"><b>Can curl the IP but not the service name = DNS issue.</b> Can curl the service ClusterIP but not pod IPs = NetworkPolicy blocking. Can't reach ClusterIP from pod = kube-proxy rules not programmed (check kube-proxy logs).</div>
+  </div>
+
+  <div class="card" style="border-color:rgba(163,230,53,.15);">
+    <div class="ct" style="color:var(--lime);">📊 Quick Reference: Common Failures</div>
+    <table class="st">
+      <tr><th>Symptom</th><th>Most likely cause</th></tr>
+      <tr><td>Service has no endpoints</td><td>Selector mismatch or all pods NotReady</td></tr>
+      <tr><td>DNS resolves but connect refused</td><td>Wrong targetPort or app not listening</td></tr>
+      <tr><td>DNS NXDOMAIN</td><td>Service doesn't exist in that namespace</td></tr>
+      <tr><td>Intermittent failures</td><td>One pod unhealthy, included in endpoints</td></tr>
+      <tr><td>External → NodePort works, pod → service fails</td><td>kube-proxy loop-prevention (use <code>externalIPs</code>)</td></tr>
+      <tr><td>Connection reset after pod scale-down</td><td>Normal — conntrack held to old pod. Brief.</td></tr>
+      <tr><td>LB status: Pending forever</td><td>No CCM, or quota exceeded, or wrong annotations</td></tr>
+      <tr><td>Ingress 404</td><td>No matching rule, wrong ingressClass, or controller not running</td></tr>
+      <tr><td>Ingress 502</td><td>Backend service down or no healthy pods</td></tr>
+      <tr><td>Pod can't egress to internet</td><td>Missing egress NetworkPolicy rule or NAT gateway</td></tr>
+    </table>
+    <div class="code"><span class="cm"># Watch EndpointSlice changes live</span>
+kubectl get endpointslices -w
+
+<span class="cm"># Cilium: see why packet was dropped</span>
+cilium monitor --type drop
+
+<span class="cm"># Calico: policy trace</span>
+calicoctl policy trace --src-pod myns/pod-a \
+  --dst-pod myns/pod-b --proto tcp --dst-port 8080</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="ft">K8s Networking · Complete Map · Services · Ingress · CNI · NetworkPolicy · DNS</div>
+  <div class="ft" style="color:rgba(20,184,166,.3);">ClusterIP=iptables fiction · Ingress=L7 config only · NetworkPolicy default=allow · CNI implements K8s network model</div>
+</div>
+
+</div>
+</body>
+</html>

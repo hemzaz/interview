@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Prep — Index</title>
+<style>
+  :root {
+    --bg:#0a0c10; --surface:#111318; --surface2:#181c24; --border:#1e2530;
+    --border2:#2a3444; --fg:#e6edf3; --muted:#8b98a9; --accent:#00d4ff;
+    --pdf:#ff7a59; --diagram:#a78bfa;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--sans);
+         line-height:1.5; padding-bottom:4rem; }
+  header { position:sticky; top:0; z-index:10; background:rgba(10,12,16,.93);
+           backdrop-filter:blur(8px); border-bottom:1px solid var(--border);
+           padding:1.1rem 1.5rem; }
+  h1 { margin:0; font-size:1.35rem; letter-spacing:.5px; }
+  h1 small { color:var(--muted); font-weight:400; font-size:.8rem; margin-left:.6rem; }
+  .sub { color:var(--muted); font-size:.82rem; margin-top:.25rem; }
+  #q { width:100%; margin-top:.7rem; padding:.6rem .85rem; background:var(--surface);
+       border:1px solid var(--border2); border-radius:8px; color:var(--fg);
+       font-family:var(--mono); font-size:.92rem; }
+  #q:focus { outline:none; border-color:var(--accent); }
+  main { padding:1.5rem; max-width:1400px; margin:0 auto; }
+  h2.group { font-size:.85rem; text-transform:uppercase; letter-spacing:2px;
+             color:var(--accent); border-bottom:1px solid var(--border);
+             padding-bottom:.4rem; margin:2.2rem 0 1rem; display:flex; align-items:baseline; gap:.6rem; }
+  h2.group .g-desc { color:var(--muted); font-size:.7rem; letter-spacing:.5px; text-transform:none; font-weight:400; }
+  h2.group .count { color:var(--muted); font-size:.7rem; margin-left:auto; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:.9rem; }
+  a.card { display:flex; flex-direction:column; gap:.35rem; text-decoration:none;
+           background:var(--surface); border:1px solid var(--border); border-radius:11px;
+           padding:.85rem 1rem; color:var(--fg); transition:border-color .12s, transform .12s; }
+  a.card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .card .top { display:flex; align-items:center; gap:.5rem; }
+  .badge { font-family:var(--mono); font-size:.6rem; font-weight:600; letter-spacing:.5px;
+           padding:.1rem .4rem; border-radius:4px; text-transform:uppercase; }
+  .b-html { background:rgba(0,212,255,.13); color:var(--accent); }
+  .b-pdf  { background:rgba(255,122,89,.14); color:var(--pdf); }
+  .b-diagram { background:rgba(167,139,250,.15); color:var(--diagram); }
+  .card .title { font-weight:600; font-size:.95rem; }
+  .card .desc { color:var(--muted); font-size:.8rem; }
+  .card .path { font-family:var(--mono); font-size:.68rem; color:#5a6675; margin-top:.15rem; }
+  .hidden { display:none !important; }
+  #empty { color:var(--muted); padding:2rem 0; display:none; }
+  footer { color:#5a6675; font-size:.72rem; text-align:center; margin-top:3rem; }
+
+  @media print {
+    html, body { background:#fff !important; }
+    body, body * { background:#fff !important; color:#111 !important;
+      border-color:#bbb !important; box-shadow:none !important; text-shadow:none !important; }
+    a { color:#111 !important; text-decoration:underline; }
+    a[title="Back to index"], .openfull, #viewer, #q, nav, .offline-note,
+    input[type=search] { display:none !important; }
+    header { position:static !important; }
+    pre, code, table, th, td { border:1px solid #bbb !important; }
+    pre, code { white-space:pre-wrap !important; word-break:break-word; }
+    svg, svg * { background:transparent !important; }
+    h1, h2, h3, h4 { break-after:avoid; }
+    section, .card, figure, table, tr, pre, blockquote { break-inside:avoid; }
+    @page { margin:1.4cm; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Interview Prep <small>DevOps · Kubernetes · SRE</small></h1>
+  <div class="sub">32 cheatsheets · 4 PDFs · 21 diagrams — click any card to open. Type to filter.</div>
+  <input id="q" type="search" placeholder="filter by name, topic, or keyword…  (e.g. rbac, argocd, scheduler, tls)" autocomplete="off" autofocus>
+</header>
+<main id="app"></main>
+<div id="empty">No matches. Try a different term.</div>
+<footer>Static index — no network required. Regenerate diagrams gallery with <code>diagrams/gallery.html</code>.</footer>
+
+<script>
+const GROUPS = [
+  { name:"Kubernetes", desc:"core cheatsheets & deep-dives", items:[
+    { t:"Kubernetes Interview Cheatsheet", d:"General K8s reference", p:"kubernetes/k8s-cheatsheet.html", type:"html", k:"pods deployments services core" },
+    { t:"K8s Visual Cheatsheet", d:"Diagram-heavy reference", p:"kubernetes/k8s-visual-cheatsheet.html", type:"html", k:"visual" },
+    { t:"K8s Engine Deep Dive", d:"Engine internals", p:"kubernetes/k8s-engine-cheatsheet.html", type:"html", k:"internals apiserver etcd" },
+    { t:"K8s Object Hierarchy", d:"Complete ownership map", p:"kubernetes/k8s-hierarchy.html", type:"html", k:"owner references garbage collection" },
+    { t:"K8s Networking", d:"Networking model & data path", p:"kubernetes/k8s-networking.html", type:"html", k:"cni kube-proxy service cluster ip" },
+    { t:"K8s Probes", d:"Liveness / readiness / startup", p:"kubernetes/k8s-probes.html", type:"html", k:"healthcheck liveness readiness startup" },
+    { t:"K8s Deployment Flow", d:"How a deploy rolls out", p:"kubernetes/k8s-deploy-flow.html", type:"html", k:"rollout replicaset" },
+    { t:"Kubernetes Upgrade Guide", d:"Cluster upgrade field guide", p:"kubernetes/k8s-upgrade-guide.html", type:"html", k:"version skew kubeadm drain" },
+    { t:"kube-controller-manager Deep Dive", d:"KCM internals", p:"kubernetes/kcm-deepdive.html", type:"html", k:"kcm reconcile control loop" },
+    { t:"EKS — Field Guide", d:"AWS EKS specifics", p:"kubernetes/eks-cheatsheet.html", type:"html", k:"aws eks vpc cni iam irsa" },
+    { t:"Helm & Kustomize", d:"K8s packaging & templating", p:"kubernetes/helm-kustomize-cheatsheet.html", type:"html", k:"helm chart values kustomize overlay patch templating gitops packaging" },
+    { t:"kubectl apply — What Happens Next", d:"Request lifecycle (PDF)", p:"kubernetes/kubectl-apply-what-happens-next.pdf", type:"pdf", k:"admission webhook validate" },
+  ]},
+  { name:"CI / CD & GitOps", desc:"pipelines, continuous delivery & GitOps", items:[
+    { t:"ArgoCD — Field Guide", d:"Complete ArgoCD reference", p:"gitops-cd/argocd-cheatsheet.html", type:"html", k:"application appproject sync waves" },
+    { t:"FluxCD — Field Guide", d:"Complete Flux reference", p:"gitops-cd/fluxcd-cheatsheet.html", type:"html", k:"kustomization helmrelease source" },
+    { t:"GitOps — Field Guide", d:"GitOps principles & patterns", p:"gitops-cd/gitops-cheatsheet.html", type:"html", k:"pull reconcile drift" },
+    { t:"werf — Field Guide", d:"Complete werf reference", p:"gitops-cd/werf-cheatsheet.html", type:"html", k:"build deploy giterminism" },
+    { t:"CI Pipelines — Actions/GitLab/Jenkins", d:"CI concepts & three engines", p:"ci/ci-pipelines-cheatsheet.html", type:"html", k:"ci github actions gitlab jenkins pipeline oidc sbom supply chain runner artifact" },
+  ]},
+  { name:"IaC & Config", desc:"infrastructure-as-code & config mgmt", items:[
+    { t:"Terraform Trap Sheet", d:"Senior interview pitfalls", p:"iac-config/terraform-trap-sheet.html", type:"html", k:"state drift import lifecycle count for_each" },
+    { t:"Ansible — Cheatsheet & Traps", d:"Playbooks + interview traps", p:"iac-config/ansible-cheatsheet.html", type:"html", k:"playbook idempotent handlers roles" },
+  ]},
+  { name:"Platform (misc)", desc:"cross-cutting platform topics", items:[
+    { t:"Service Mesh — Field Guide", d:"Istio / Linkerd concepts", p:"platform-misc/service-mesh-cheatsheet.html", type:"html", k:"istio envoy sidecar mtls" },
+    { t:"Kafka + KEDA Deep Dive", d:"Streaming & event autoscaling", p:"platform-misc/kafka-keda-cheatsheet.html", type:"html", k:"consumer group lag partition scaledobject" },
+    { t:"cgroups — Container Floor", d:"Resource limits internals", p:"platform-misc/cgroups-cheatsheet.html", type:"html", k:"cgroup v2 cpu memory limit oom" },
+    { t:"The Trap Sheet — Senior DevOps", d:"Cross-domain gotchas", p:"platform-misc/senior-devops-trap-sheet.html", type:"html", k:"k8s kafka linux aws gotchas" },
+    { t:"Docker & Container Images", d:"Layers, Dockerfiles, OCI runtimes", p:"containers/docker-cheatsheet.html", type:"html", k:"docker container image dockerfile layers multi-stage oci containerd runc registry buildkit scanning" },
+  ]},
+  { name:"Linux & OS Internals", desc:"OS fundamentals & practical ops", items:[
+    { t:"System Calls", d:"The user/kernel boundary", p:"OS-internals/syscalls-cheatsheet.html", type:"html", k:"syscall ring0 strace seccomp io_uring trap" },
+    { t:"CPU Execution", d:"Cycles, pipeline & cache", p:"OS-internals/cpu-execution-cheatsheet.html", type:"html", k:"fetch decode pipeline cache l1 l2 locality" },
+    { t:"CPU Scheduling", d:"CFS, run queues, context switches", p:"OS-internals/cpu-scheduling-cheatsheet.html", type:"html", k:"cfs vruntime eevdf numa preempt" },
+    { t:"Process Lifecycle", d:"fork, exec, exit & threads", p:"OS-internals/process-lifecycle-cheatsheet.html", type:"html", k:"fork exec wait zombie orphan pid1 cow" },
+    { t:"Memory Management", d:"Virtual memory, paging, TLB, OOM", p:"OS-internals/memory-management-cheatsheet.html", type:"html", k:"memory virtual paging page table tlb page fault swap oom overcommit huge pages thp numa page cache rss pss vsz cow mmap slab smaps" },
+    { t:"Linux Ops & Troubleshooting", d:"systemd, USE method, perf triage", p:"linux/linux-ops-cheatsheet.html", type:"html", k:"linux systemd systemctl journalctl use method perf top vmstat iostat ss tcpdump strace oom permissions troubleshooting" },
+  ]},
+  { name:"Cloud", desc:"AWS & cloud platform core", items:[
+    { t:"AWS Core — IAM/VPC/EC2/S3", d:"IAM, VPC, EC2, S3, RDS, ELB", p:"cloud/aws-cheatsheet.html", type:"html", k:"aws iam vpc ec2 s3 rds elb alb nlb route53 nat security group nacl sts assume role autoscaling kms cloudwatch" },
+  ]},
+  { name:"Observability & SRE", desc:"metrics, tracing & reliability", items:[
+    { t:"Observability — Metrics/Logs/Traces", d:"Prometheus, PromQL, OTel, alerting", p:"observability/observability-cheatsheet.html", type:"html", k:"observability prometheus promql metrics logs traces opentelemetry grafana alertmanager loki jaeger red use golden signals cardinality" },
+    { t:"SRE — SLO/SLI & Error Budgets", d:"Reliability, burn rate, incidents", p:"observability/sre-practices-cheatsheet.html", type:"html", k:"sre sli slo sla error budget burn rate toil incident postmortem mttr on-call circuit breaker chaos golden signals" },
+  ]},
+  { name:"Interview Q&A", desc:"long-form study guides", items:[
+    { t:"DevOps Interview — 160Q", d:"CI/CD, Docker, Terraform, cloud", p:"interview-qa/devops-interview-160q.pdf", type:"pdf", k:"questions monitoring" },
+    { t:"DevOps Interview — 150Q", d:"Culture, CI/CD, SRE, deployments", p:"interview-qa/devops-interview-150q.pdf", type:"pdf", k:"questions sre culture" },
+    { t:"Kubernetes Interview Q&A", d:"K8s fundamentals Q&A", p:"interview-qa/k8s-interview-qa.pdf", type:"pdf", k:"questions fundamentals" },
+  ]},
+  { name:"Diagrams", desc:"rendered Mermaid gallery", items:[
+    { t:"Diagram Gallery", d:"21 Mermaid diagrams rendered inline — K8s, Linux, networking, runtimes", p:"diagrams/gallery.html", type:"diagram", k:"mermaid architecture rbac boot scheduler tls saml vpn compiler jvm" },
+  ]},
+];
+
+const BADGE = { html:["b-html","HTML"], pdf:["b-pdf","PDF"], diagram:["b-diagram","VIEW"] };
+const app = document.getElementById('app');
+const empty = document.getElementById('empty');
+
+for (const g of GROUPS) {
+  const h = document.createElement('h2');
+  h.className = 'group';
+  h.dataset.group = '';
+  h.innerHTML = `<span>${g.name}</span><span class="g-desc">${g.desc}</span><span class="count">${g.items.length}</span>`;
+  app.appendChild(h);
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  for (const it of g.items) {
+    const a = document.createElement('a');
+    a.className = 'card';
+    a.href = it.p;
+    if (it.type !== 'html') a.target = '_blank';
+    a.dataset.search = `${it.t} ${it.d} ${it.k} ${g.name} ${it.p}`.toLowerCase();
+    const [cls, label] = BADGE[it.type];
+    a.innerHTML = `<div class="top"><span class="badge ${cls}">${label}</span><span class="title">${it.t}</span></div>`
+      + `<div class="desc">${it.d}</div><div class="path">${it.p}</div>`;
+    grid.appendChild(a);
+  }
+  app.appendChild(grid);
+}
+
+const q = document.getElementById('q');
+q.addEventListener('input', () => {
+  const term = q.value.trim().toLowerCase();
+  let anyGlobal = false;
+  document.querySelectorAll('h2.group').forEach(h => {
+    const grid = h.nextElementSibling;
+    let any = false;
+    grid.querySelectorAll('.card').forEach(c => {
+      const show = !term || c.dataset.search.includes(term);
+      c.classList.toggle('hidden', !show);
+      if (show) any = true;
+    });
+    h.classList.toggle('hidden', !any);
+    grid.classList.toggle('hidden', !any);
+    if (any) anyGlobal = true;
+  });
+  empty.style.display = anyGlobal ? 'none' : 'block';
+});
+</script>
+</body>
+</html>
