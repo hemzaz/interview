@@ -25,8 +25,8 @@
   --ep:    #fde68a;   /* pale yellow - EndpointSlice */
   --ing:   #f97316;   /* orange - Ingress */
   --pvc:   #818cf8;   /* indigo - PVC */
-  --pv:    #6366f1;   /* indigo dark - PV */
-  --sc:    #4f46e5;   /* indigo darker - StorageClass */
+  --pv:    #6f72f2;   /* indigo dark - PV */
+  --sc:    #766feb;   /* indigo darker - StorageClass */
   --cm:    #2dd4bf;   /* teal - ConfigMap */
   --sec:   #f43f5e;   /* rose - Secret */
   --sa:    #e879f9;   /* fuchsia - ServiceAccount */
@@ -38,13 +38,13 @@
   --np:    #f87171;   /* red - NetworkPolicy */
 
   --text: #d0dce8;
-  --dim:  #304050;
-  --mid:  #5a7080;
+  --dim:  #727d88;
+  --mid:  #6a7e8d;
   --wrong: #ff2d55;
   --right: #39ff14;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;line-height:1.5;}
 body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -61,17 +61,17 @@ body::before{
 .hl h1{font-family:'Barlow Condensed',sans-serif;font-size:72px;font-weight:900;letter-spacing:-2px;line-height:.88;text-transform:uppercase;}
 .hl h1 .t1{color:#fff;}
 .hl h1 .t2{background:linear-gradient(90deg,var(--dep),var(--rs),var(--pod));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:6px;}
+.sub{font-family:'Share Tech Mono',monospace;font-size:12.5px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:6px;}
 
 /* legend */
 .legend{display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
 .legend-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
-.litem{display:flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border-radius:3px;border:1px solid;white-space:nowrap;}
+.litem{display:flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border-radius:3px;border:1px solid;white-space:nowrap;}
 
 /* ── SECTION ── */
 .sh{display:flex;align-items:center;gap:12px;margin:22px 0 12px;}
 .sh-label{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;letter-spacing:2px;text-transform:uppercase;}
-.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:1px;}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -88,12 +88,12 @@ body::before{
 /* ── HIERARCHY CHAIN ── */
 .chain{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:8px 0;}
 .cnode{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
-.cbox{padding:6px 12px;border-radius:5px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-align:center;white-space:nowrap;}
-.cbox-sm{padding:4px 8px;font-size:9px;}
-.clabel{font-size:8px;color:var(--mid);font-family:'Share Tech Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
+.cbox{padding:6px 12px;border-radius:5px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.5px;text-align:center;white-space:nowrap;}
+.cbox-sm{padding:4px 8px;font-size:11.5px;}
+.clabel{font-size:11.5px;color:var(--mid);font-family:'Share Tech Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
 .carr{font-size:22px;color:var(--dim);padding:0 4px;margin-top:-8px;line-height:1;align-self:center;}
 .carr-sm{font-size:18px;padding:0 2px;}
-.cmulti{font-size:9px;color:var(--mid);font-family:'Share Tech Mono',monospace;align-self:center;margin-top:-8px;padding:0 2px;}
+.cmulti{font-size:11.5px;color:var(--mid);font-family:'Share Tech Mono',monospace;align-self:center;margin-top:-8px;padding:0 2px;}
 
 /* object node colors */
 .o-cron{background:rgba(244,114,182,.1);border-color:rgba(244,114,182,.4);color:var(--cron);}
@@ -120,25 +120,25 @@ body::before{
 .o-np{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:var(--np);}
 
 /* trap */
-.trap{background:rgba(255,45,85,.04);border:1px solid rgba(255,45,85,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:10px;line-height:1.55;}
+.trap{background:rgba(255,45,85,.04);border:1px solid rgba(255,45,85,.15);border-radius:5px;padding:7px 10px;font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.55;}
 .trap::before{content:'⚡ ';color:var(--wrong);}
 .trap b{color:var(--text);}
-.trap code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
+.trap code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
 
 /* note */
-.note{background:rgba(255,255,255,.02);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.note{background:rgba(255,255,255,.02);border-left:2px solid var(--bd);padding:6px 10px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
 .note b{color:var(--text);}
-.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
+.note code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
 
 /* fact row */
-.fr{display:grid;grid-template-columns:110px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.03);align-items:baseline;font-size:11px;}
-.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:110px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.03);align-items:baseline;font-size:12.5px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.5;}
 .fv b{color:var(--text);}
-.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
 
 /* owner ref badge */
-.ownerref{display:inline-flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:8.5px;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);color:rgba(96,165,250,.8);margin-top:6px;}
+.ownerref{display:inline-flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:11.5px;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);color:rgba(96,165,250,.8);margin-top:6px;}
 
 /* big chain block */
 .bigchain{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:14px;}
@@ -155,15 +155,15 @@ body::before{
 .arr-inj{color:rgba(45,212,191,.5);}  /* teal = injection */
 .arr-sch{color:rgba(34,211,238,.5);}  /* cyan = scheduling */
 
-.arr-label{font-family:'Share Tech Mono',monospace;font-size:7.5px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase;display:block;text-align:center;white-space:nowrap;}
+.arr-label{font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase;display:block;text-align:center;white-space:nowrap;}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
-.st th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.st th{font-family:'Share Tech Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.025);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
+.st td code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:#60a5fa;}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .page>*{animation:fi .38s ease both;}
@@ -176,7 +176,7 @@ body::before{
 .page>*:nth-child(13){animation-delay:.37s}.page>*:nth-child(14){animation-delay:.40s}
 
 .footer{margin-top:32px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -250,49 +250,49 @@ body::before{
 
     <!-- NAMESPACE umbrella -->
     <rect x="5" y="5" width="1350" height="370" rx="10" fill="rgba(148,163,184,.025)" stroke="rgba(148,163,184,.12)" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="20" y="24" font-family="Share Tech Mono" font-size="9" fill="rgba(148,163,184,.4)" letter-spacing="3">NAMESPACE</text>
+    <text x="20" y="24" font-family="Share Tech Mono" font-size="9" fill="rgba(148,163,184,0.8)" letter-spacing="3">NAMESPACE</text>
 
     <!-- ── ROW 1: TOP-LEVEL WORKLOAD CONTROLLERS ── -->
     <!-- CronJob -->
     <g transform="translate(30,45)">
       <rect width="110" height="38" rx="6" fill="rgba(244,114,182,.1)" stroke="rgba(244,114,182,.45)" stroke-width="1.5" filter="url(#glow)"/>
       <text x="55" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f472b6" font-weight="700">CronJob</text>
-      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,114,182,.55)">batch/v1</text>
+      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,114,182,0.81)">batch/v1</text>
     </g>
 
     <!-- Deployment -->
     <g transform="translate(220,45)">
       <rect width="120" height="38" rx="6" fill="rgba(96,165,250,.12)" stroke="rgba(96,165,250,.5)" stroke-width="2" filter="url(#glow)"/>
       <text x="60" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#60a5fa" font-weight="700">Deployment</text>
-      <text x="60" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(96,165,250,.55)">apps/v1</text>
+      <text x="60" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(96,165,250,0.79)">apps/v1</text>
     </g>
 
     <!-- StatefulSet -->
     <g transform="translate(560,45)">
       <rect width="120" height="38" rx="6" fill="rgba(167,139,250,.1)" stroke="rgba(167,139,250,.45)" stroke-width="1.5"/>
       <text x="60" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#a78bfa" font-weight="700">StatefulSet</text>
-      <text x="60" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(167,139,250,.5)">apps/v1</text>
+      <text x="60" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(167,139,250,0.82)">apps/v1</text>
     </g>
 
     <!-- DaemonSet -->
     <g transform="translate(760,45)">
       <rect width="110" height="38" rx="6" fill="rgba(52,211,153,.1)" stroke="rgba(52,211,153,.4)" stroke-width="1.5"/>
       <text x="55" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#34d399" font-weight="700">DaemonSet</text>
-      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(52,211,153,.45)">apps/v1</text>
+      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(52,211,153,0.67)">apps/v1</text>
     </g>
 
     <!-- HPA -->
     <g transform="translate(980,45)">
       <rect width="80" height="38" rx="6" fill="rgba(251,191,36,.08)" stroke="rgba(251,191,36,.35)" stroke-width="1"/>
       <text x="40" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fbbf24" font-weight="700">HPA</text>
-      <text x="40" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(251,191,36,.45)">autoscaling/v2</text>
+      <text x="40" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(251,191,36,0.63)">autoscaling/v2</text>
     </g>
 
     <!-- Ingress -->
     <g transform="translate(1130,45)">
       <rect width="100" height="38" rx="6" fill="rgba(249,115,22,.08)" stroke="rgba(249,115,22,.35)" stroke-width="1"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f97316" font-weight="700">Ingress</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(249,115,22,.45)">networking/v1</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(249,115,22,0.85)">networking/v1</text>
     </g>
 
     <!-- ── ROW 2: JOB + REPLICASET ── -->
@@ -300,140 +300,140 @@ body::before{
     <g transform="translate(30,155)">
       <rect width="110" height="38" rx="6" fill="rgba(251,146,60,.1)" stroke="rgba(251,146,60,.45)" stroke-width="1.5"/>
       <text x="55" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fb923c" font-weight="700">Job</text>
-      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(251,146,60,.5)">batch/v1</text>
+      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(251,146,60,0.74)">batch/v1</text>
     </g>
 
     <!-- ReplicaSet (created by Deployment) -->
     <g transform="translate(220,155)">
       <rect width="120" height="38" rx="6" fill="rgba(56,189,248,.1)" stroke="rgba(56,189,248,.45)" stroke-width="1.5"/>
       <text x="60" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#38bdf8" font-weight="700">ReplicaSet</text>
-      <text x="60" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(56,189,248,.5)">apps/v1</text>
+      <text x="60" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(56,189,248,0.72)">apps/v1</text>
     </g>
 
     <!-- Service (selector → pods) -->
     <g transform="translate(460,155)">
       <rect width="100" height="38" rx="6" fill="rgba(250,204,21,.1)" stroke="rgba(250,204,21,.45)" stroke-width="1.5"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#facc15" font-weight="700">Service</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(250,204,21,.5)">v1</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(250,204,21,0.6)">v1</text>
     </g>
 
     <!-- PVC (created by StatefulSet volumeClaimTemplates) -->
     <g transform="translate(620,155)">
       <rect width="100" height="38" rx="6" fill="rgba(129,140,248,.1)" stroke="rgba(129,140,248,.4)" stroke-width="1.5"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#818cf8" font-weight="700">PVC</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(129,140,248,.45)">v1</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(129,140,248,0.87)">v1</text>
     </g>
 
     <!-- NetworkPolicy -->
     <g transform="translate(980,155)">
       <rect width="100" height="38" rx="6" fill="rgba(248,113,113,.08)" stroke="rgba(248,113,113,.3)" stroke-width="1"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f87171" font-weight="700">NetworkPolicy</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(248,113,113,.4)">networking/v1</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(248,113,113,0.84)">networking/v1</text>
     </g>
 
     <!-- EndpointSlice (created by EndpointSlice ctrl) -->
     <g transform="translate(1140,155)">
       <rect width="110" height="38" rx="6" fill="rgba(253,230,138,.06)" stroke="rgba(253,230,138,.3)" stroke-width="1"/>
       <text x="55" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fde68a" font-weight="700">EndpointSlice</text>
-      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(253,230,138,.4)">discovery/v1</text>
+      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(253,230,138,0.54)">discovery/v1</text>
     </g>
 
     <!-- ── ROW 3: POD (center everything flows to) ── -->
     <g transform="translate(330,270)">
       <rect width="160" height="48" rx="8" fill="rgba(74,222,128,.14)" stroke="rgba(74,222,128,.65)" stroke-width="2.5" filter="url(#glow)"/>
       <text x="80" y="21" text-anchor="middle" font-family="Share Tech Mono" font-size="13" fill="#4ade80" font-weight="700">POD</text>
-      <text x="80" y="37" text-anchor="middle" font-family="Barlow" font-size="8.5" fill="rgba(74,222,128,.55)">v1 · all workloads converge here</text>
+      <text x="80" y="37" text-anchor="middle" font-family="Barlow" font-size="8.5" fill="rgba(74,222,128,0.65)">v1 · all workloads converge here</text>
     </g>
 
     <!-- PV (bound to PVC) -->
     <g transform="translate(620,270)">
       <rect width="100" height="38" rx="6" fill="rgba(99,102,241,.1)" stroke="rgba(99,102,241,.4)" stroke-width="1.5"/>
-      <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#6366f1" font-weight="700">PV</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(99,102,241,.45)">v1 · cluster-scoped</text>
+      <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#7678f3" font-weight="700">PV</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(118,120,243,1)">v1 · cluster-scoped</text>
     </g>
 
     <!-- ConfigMap + Secret injected into Pod -->
     <g transform="translate(820,270)">
       <rect width="100" height="38" rx="6" fill="rgba(45,212,191,.1)" stroke="rgba(45,212,191,.4)" stroke-width="1.5"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#2dd4bf" font-weight="700">ConfigMap</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(45,212,191,.4)">v1</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(45,212,191,0.66)">v1</text>
     </g>
     <g transform="translate(940,270)">
       <rect width="80" height="38" rx="6" fill="rgba(244,63,94,.1)" stroke="rgba(244,63,94,.4)" stroke-width="1.5"/>
       <text x="40" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f43f5e" font-weight="700">Secret</text>
-      <text x="40" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,63,94,.4)">v1</text>
+      <text x="40" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,63,94,1)">v1</text>
     </g>
 
     <!-- ServiceAccount injected into Pod -->
     <g transform="translate(1040,270)">
       <rect width="110" height="38" rx="6" fill="rgba(232,121,249,.08)" stroke="rgba(232,121,249,.35)" stroke-width="1"/>
       <text x="55" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#e879f9" font-weight="700">ServiceAccount</text>
-      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(232,121,249,.35)">v1</text>
+      <text x="55" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(232,121,249,0.79)">v1</text>
     </g>
 
     <!-- Node (scheduled onto) -->
     <g transform="translate(1200,270)">
       <rect width="100" height="38" rx="6" fill="rgba(34,211,238,.08)" stroke="rgba(34,211,238,.35)" stroke-width="1"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#22d3ee" font-weight="700">Node</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(34,211,238,.35)">v1 · cluster-scoped</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(34,211,238,0.65)">v1 · cluster-scoped</text>
     </g>
 
     <!-- StorageClass (provisions PV) -->
     <g transform="translate(760,330)">
       <rect width="110" height="34" rx="6" fill="rgba(79,70,229,.08)" stroke="rgba(79,70,229,.3)" stroke-width="1"/>
-      <text x="55" y="15" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#4f46e5" font-weight="700">StorageClass</text>
-      <text x="55" y="27" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(79,70,229,.4)">storage.k8s.io/v1 · cluster-scoped</text>
+      <text x="55" y="15" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#7d76ec" font-weight="700">StorageClass</text>
+      <text x="55" y="27" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(125,118,236,1)">storage.k8s.io/v1 · cluster-scoped</text>
     </g>
 
     <!-- ── ARROWS ── -->
     <!-- CronJob → Job (ownerRef) -->
     <line x1="85" y1="83" x2="85" y2="155" stroke="rgba(74,222,128,.6)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ao)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
-    <text x="90" y="122" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.5)">ownerRef</text>
+    <text x="90" y="122" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,0.64)">ownerRef</text>
 
     <!-- Deployment → RS (ownerRef) -->
     <line x1="280" y1="83" x2="280" y2="155" stroke="rgba(74,222,128,.7)" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#ao)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
-    <text x="285" y="122" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.5)">ownerRef</text>
+    <text x="285" y="122" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,0.64)">ownerRef</text>
 
     <!-- HPA → Deployment (scale target) -->
     <path d="M 980 64 L 380 64 L 360 64" fill="none" stroke="rgba(251,191,36,.4)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#as)"/>
-    <text x="620" y="57" font-family="Share Tech Mono" font-size="7" fill="rgba(251,191,36,.4)">scaleTargetRef</text>
+    <text x="620" y="57" font-family="Share Tech Mono" font-size="7" fill="rgba(251,191,36,0.62)">scaleTargetRef</text>
 
     <!-- Ingress → Service (backend ref) -->
     <path d="M 1155 83 L 1155 130 L 550 130 L 510 155" fill="none" stroke="rgba(249,115,22,.4)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#as)"/>
-    <text x="900" y="126" font-family="Share Tech Mono" font-size="7" fill="rgba(249,115,22,.4)">backend.service</text>
+    <text x="900" y="126" font-family="Share Tech Mono" font-size="7" fill="rgba(249,115,22,0.84)">backend.service</text>
 
     <!-- Job → Pod (ownerRef) -->
     <path d="M 85 193 L 85 252 L 330 285" fill="none" stroke="rgba(74,222,128,.6)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ao)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></path>
-    <text x="60" y="240" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.45)">ownerRef</text>
+    <text x="60" y="240" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,0.65)">ownerRef</text>
 
     <!-- RS → Pod (ownerRef) -->
     <line x1="280" y1="193" x2="380" y2="270" stroke="rgba(74,222,128,.7)" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#ao)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
-    <text x="295" y="240" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.5)">ownerRef</text>
+    <text x="295" y="240" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,0.64)">ownerRef</text>
 
     <!-- StatefulSet → Pod (ownerRef, direct) -->
     <path d="M 620 83 L 470 83 L 430 270" fill="none" stroke="rgba(167,139,250,.5)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ao)"/>
-    <text x="455" y="175" font-family="Share Tech Mono" font-size="7" fill="rgba(167,139,250,.4)">ownerRef (direct)</text>
+    <text x="455" y="175" font-family="Share Tech Mono" font-size="7" fill="rgba(167,139,250,0.82)">ownerRef (direct)</text>
 
     <!-- StatefulSet → PVC (volumeClaimTemplate) -->
     <line x1="670" y1="83" x2="670" y2="155" stroke="rgba(129,140,248,.55)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ao)"/>
-    <text x="675" y="122" font-family="Share Tech Mono" font-size="7" fill="rgba(129,140,248,.45)">volumeClaimTemplate</text>
+    <text x="675" y="122" font-family="Share Tech Mono" font-size="7" fill="rgba(129,140,248,0.87)">volumeClaimTemplate</text>
 
     <!-- DaemonSet → Pod (ownerRef) -->
     <path d="M 815 83 L 490 270" fill="none" stroke="rgba(52,211,153,.55)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ao)"/>
-    <text x="680" y="175" font-family="Share Tech Mono" font-size="7" fill="rgba(52,211,153,.4)">ownerRef</text>
+    <text x="680" y="175" font-family="Share Tech Mono" font-size="7" fill="rgba(52,211,153,0.68)">ownerRef</text>
 
     <!-- Service → EndpointSlice (ownerRef) -->
     <line x1="1190" y1="164" x2="1195" y2="155" stroke="rgba(74,222,128,.4)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ao)"/>
     <path d="M 560 174 L 560 230 L 490 280" fill="none" stroke="rgba(250,204,21,.45)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#as)"/>
-    <text x="535" y="215" font-family="Share Tech Mono" font-size="7" fill="rgba(250,204,21,.4)">selector match</text>
+    <text x="535" y="215" font-family="Share Tech Mono" font-size="7" fill="rgba(250,204,21,0.6)">selector match</text>
 
     <!-- Service → EndpointSlice owned -->
     <path d="M 510 193 L 510 230 L 1155 230 L 1185 193" fill="none" stroke="rgba(74,222,128,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ao)"/>
-    <text x="840" y="226" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.3)">EndpointSlice ctrl creates · ownerRef → Service</text>
+    <text x="840" y="226" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,0.64)">EndpointSlice ctrl creates · ownerRef → Service</text>
 
     <!-- PVC → PV (binding) -->
     <line x1="670" y1="193" x2="670" y2="270" stroke="rgba(167,139,250,.5)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ab)"/>
-    <text x="675" y="234" font-family="Share Tech Mono" font-size="7" fill="rgba(167,139,250,.4)">bound</text>
+    <text x="675" y="234" font-family="Share Tech Mono" font-size="7" fill="rgba(167,139,250,0.82)">bound</text>
 
     <!-- PVC → Pod (volume mount) -->
     <path d="M 620 174 L 490 280" fill="none" stroke="rgba(129,140,248,.45)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ab)"/>
@@ -443,29 +443,29 @@ body::before{
 
     <!-- ConfigMap → Pod (injection) -->
     <path d="M 870 270 L 490 294" fill="none" stroke="rgba(45,212,191,.45)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ai)"/>
-    <text x="620" y="265" font-family="Share Tech Mono" font-size="7" fill="rgba(45,212,191,.35)">envFrom / volumeMount</text>
+    <text x="620" y="265" font-family="Share Tech Mono" font-size="7" fill="rgba(45,212,191,0.67)">envFrom / volumeMount</text>
 
     <!-- Secret → Pod (injection) -->
     <path d="M 960 270 L 490 297" fill="none" stroke="rgba(244,63,94,.4)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ai)"/>
 
     <!-- ServiceAccount → Pod (automount) -->
     <path d="M 1095 270 L 490 300" fill="none" stroke="rgba(232,121,249,.4)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ai)"/>
-    <text x="800" y="308" font-family="Share Tech Mono" font-size="7" fill="rgba(232,121,249,.3)">serviceAccountName</text>
+    <text x="800" y="308" font-family="Share Tech Mono" font-size="7" fill="rgba(232,121,249,0.78)">serviceAccountName</text>
 
     <!-- NetworkPolicy → Pod (podSelector) -->
     <path d="M 1030 174 L 490 285" fill="none" stroke="rgba(248,113,113,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#as)"/>
-    <text x="760" y="220" font-family="Share Tech Mono" font-size="7" fill="rgba(248,113,113,.3)">podSelector</text>
+    <text x="760" y="220" font-family="Share Tech Mono" font-size="7" fill="rgba(248,113,113,0.84)">podSelector</text>
 
     <!-- Node → Pod (scheduled) -->
     <path d="M 1250 270 L 490 295" fill="none" stroke="rgba(34,211,238,.4)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ai)"/>
-    <text x="1100" y="265" font-family="Share Tech Mono" font-size="7" fill="rgba(34,211,238,.3)">nodeName</text>
+    <text x="1100" y="265" font-family="Share Tech Mono" font-size="7" fill="rgba(34,211,238,0.66)">nodeName</text>
 
     <!-- LEGEND inside SVG -->
-    <text x="30" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(74,222,128,.6)">── ownerReference (ctrl creates)</text>
-    <text x="230" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(250,204,21,.55)">── selector match</text>
-    <text x="360" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,.55)">── binding (PVC↔PV)</text>
-    <text x="500" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(45,212,191,.55)">── injection (env/volume/SA)</text>
-    <text x="680" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(34,211,238,.5)">── scheduling (nodeName)</text>
+    <text x="30" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(74,222,128,0.64)">── ownerReference (ctrl creates)</text>
+    <text x="230" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(250,204,21,0.59)">── selector match</text>
+    <text x="360" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,0.83)">── binding (PVC↔PV)</text>
+    <text x="500" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(45,212,191,0.67)">── injection (env/volume/SA)</text>
+    <text x="680" y="355" font-family="Share Tech Mono" font-size="7.5" fill="rgba(34,211,238,0.66)">── scheduling (nodeName)</text>
   </svg>
 </div>
 
@@ -501,12 +501,12 @@ body::before{
     <div class="chainrow">
       <div class="cnode"><div class="cbox o-sts">StatefulSet</div><div class="clabel">spec.template</div></div>
       <div class="carr arr-own">→</div>
-      <div class="cnode"><div class="cbox o-pod" style="font-size:9px;">Pod sts-0,1,2</div><div class="clabel">ownerRef→STS (direct)</div></div>
+      <div class="cnode"><div class="cbox o-pod" style="font-size:11.5px;">Pod sts-0,1,2</div><div class="clabel">ownerRef→STS (direct)</div></div>
     </div>
     <div class="chainrow">
       <div class="cnode"><div class="cbox o-sts">StatefulSet</div><div class="clabel">volumeClaimTemplates</div></div>
       <div class="carr arr-own">→</div>
-      <div class="cnode"><div class="cbox o-pvc" style="font-size:9px;">PVC data-sts-0</div><div class="clabel">no ownerRef — survives!</div></div>
+      <div class="cnode"><div class="cbox o-pvc" style="font-size:11.5px;">PVC data-sts-0</div><div class="clabel">no ownerRef — survives!</div></div>
       <div class="carr arr-bind">→</div>
       <div class="cnode"><div class="cbox o-pv">PV</div><div class="clabel">bound</div></div>
     </div>
@@ -521,7 +521,7 @@ body::before{
       <div class="chainrow">
         <div class="cnode"><div class="cbox o-ds">DaemonSet</div><div class="clabel">watches Nodes</div></div>
         <div class="carr arr-own">→</div>
-        <div class="cnode"><div class="cbox o-pod" style="font-size:9px;">Pod (one/node)</div><div class="clabel">ownerRef→DS</div></div>
+        <div class="cnode"><div class="cbox o-pod" style="font-size:11.5px;">Pod (one/node)</div><div class="clabel">ownerRef→DS</div></div>
         <div class="carr arr-own" style="font-size:16px;">→</div>
         <div class="cnode"><div class="cbox o-node">Node</div><div class="clabel">nodeName preset</div></div>
       </div>
@@ -554,17 +554,17 @@ body::before{
       <div class="cnode"><div class="cbox o-ing">Ingress</div><div class="clabel">L7 routing rules</div></div>
       <div style="display:flex;flex-direction:column;align-items:center;align-self:center;margin-bottom:8px;">
         <span class="arr-sel" style="font-size:20px;">→</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--dim);">backend.service</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);">backend.service</span>
       </div>
       <div class="cnode"><div class="cbox o-svc">Service</div><div class="clabel">ClusterIP / NodePort / LB</div></div>
       <div style="display:flex;flex-direction:column;align-items:center;align-self:center;margin-bottom:8px;">
         <span class="arr-own" style="font-size:20px;">→</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--dim);">ctrl creates</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);">ctrl creates</span>
       </div>
       <div class="cnode"><div class="cbox o-ep">EndpointSlice</div><div class="clabel">ownerRef→Service</div></div>
       <div style="display:flex;flex-direction:column;align-items:center;align-self:center;margin-bottom:8px;">
         <span class="arr-sel" style="font-size:20px;">→</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--dim);">pod IPs listed</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);">pod IPs listed</span>
       </div>
       <div class="cnode"><div class="cbox o-pod">Pod</div><div class="clabel">label selector match</div></div>
     </div>
@@ -670,7 +670,7 @@ body::before{
       <div class="cnode"><div class="cbox o-cm">ConfigMap</div><div class="clabel">namespaced · no ownerRef</div></div>
       <div style="display:flex;flex-direction:column;align-items:center;align-self:center;margin-bottom:8px;padding:0 6px;">
         <span class="arr-inj" style="font-size:20px;">→</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--dim);">injection</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);">injection</span>
       </div>
       <div class="cnode"><div class="cbox o-pod">Pod</div><div class="clabel">references CM by name</div></div>
     </div>
@@ -744,7 +744,7 @@ body::before{
       <div class="cnode"><div class="cbox o-node">Node</div><div class="clabel">cluster-scoped</div></div>
       <div style="display:flex;flex-direction:column;align-items:center;align-self:center;padding:0 8px;margin-bottom:8px;">
         <span style="font-size:20px;color:rgba(34,211,238,.5);">←</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--dim);">nodeName</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);">nodeName</span>
       </div>
       <div class="cnode"><div class="cbox o-pod">Pod</div><div class="clabel">scheduled here</div></div>
     </div>
@@ -761,7 +761,7 @@ body::before{
 <div class="g32">
   <div class="card" style="border-color:rgba(56,189,248,.2);">
     <div class="bigchain-title" style="color:var(--rs);">🔗 ownerReferences Array Structure</div>
-    <div style="background:#030508;border:1px solid var(--bd);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.9;color:var(--mid);margin-bottom:10px;">
+    <div style="background:#030508;border:1px solid var(--bd);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:12.5px;line-height:1.9;color:var(--mid);margin-bottom:10px;">
       <span style="color:#c084fc;">metadata</span>:<br>
       &nbsp;&nbsp;<span style="color:#60a5fa;">ownerReferences</span>:<br>
       &nbsp;&nbsp;- <span style="color:#34d399;">apiVersion</span>: apps/v1<br>

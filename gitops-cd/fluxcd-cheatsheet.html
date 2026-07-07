@@ -26,14 +26,14 @@
   --lime:  #AEEA00;
 
   --text:  #cfe0f8;
-  --dim:   #0e1e35;
-  --mid:   #2c4870;
+  --dim:   #737c8a;
+  --mid:   #6b7f9b;
 
   --mono: 'JetBrains Mono', monospace;
   --sans: 'Plus Jakarta Sans', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;overflow-x:hidden;}
 
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -53,14 +53,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--flux),var(--teal),var(--grn),var(--vio));}
 .hero-bg{position:absolute;right:30px;bottom:-10px;font-size:130px;font-weight:800;color:rgba(84,104,255,.04);line-height:1;letter-spacing:-4px;pointer-events:none;font-family:var(--mono);}
 .hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
-.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
 .hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--teal);}
 .hero h1{font-size:72px;font-weight:800;line-height:.88;letter-spacing:-3px;}
 .h1a{background:linear-gradient(135deg,var(--flux) 0%,var(--sky) 50%,#fff 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .h1b{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(84,104,255,.2);}
-.hero-sub{font-size:11px;color:var(--mid);margin-top:10px;line-height:1.9;font-weight:400;}
+.hero-sub{font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.9;font-weight:400;}
 .hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
-.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
+.hp{font-family:var(--mono);font-size:11.5px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
 .hp-f{background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.35);color:var(--fl2);}
 .hp-t{background:rgba(0,229,204,.07);border-color:rgba(0,229,204,.3);color:var(--teal);}
 .hp-g{background:rgba(57,217,138,.07);border-color:rgba(57,217,138,.3);color:var(--grn);}
@@ -70,11 +70,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
 .hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
 .hcard-n{font-size:22px;font-weight:800;color:var(--flux);line-height:1;font-family:var(--mono);}
-.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+.hcard-l{font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
 
 /* ── NAV ── */
 .nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
-.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
 .nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
 .nb.on{background:rgba(84,104,255,.12);color:var(--flux);box-shadow:0 0 0 1px rgba(84,104,255,.3);}
 
@@ -85,7 +85,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
 .sh-i{font-size:18px;flex-shrink:0;}
 .sh-l{font-size:20px;font-weight:800;letter-spacing:-.3px;}
-.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh-s{font-family:var(--mono);font-size:11.5px;color:var(--mid);}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -109,37 +109,37 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .cl::before{background:linear-gradient(90deg,var(--lime),transparent);}
 .cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
 
-.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.ctit{font-size:13px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
 
 /* facts */
-.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
-.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:12.5px;}
+.fk{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.6;}
 .fv b{color:var(--text);}
-.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+.fv code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
 
 /* code */
-.code{background:#030912;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.code{background:#030912;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
 .kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--yel);}
-.nu{color:var(--teal);} .cm{color:#122038;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+.nu{color:var(--teal);} .cm{color:#767e8c;} .fn{color:#7cb8ff;} .re{color:var(--red);}
 
 /* trap / note */
-.trap{background:rgba(255,69,96,.04);border:1px solid rgba(255,69,96,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap{background:rgba(255,69,96,.04);border:1px solid rgba(255,69,96,.15);border-radius:5px;padding:7px 11px;font-size:12.5px;color:var(--mid);margin-top:9px;line-height:1.6;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
-.note{border-left:2px solid rgba(0,229,204,.35);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(0,229,204,.03);}
+.trap code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(0,229,204,.35);padding:7px 11px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(0,229,204,.03);}
 .note b{color:var(--text);}
-.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
-.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.st td code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── CONTROLLER CARDS ── */
 .ctrl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
@@ -147,67 +147,67 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .ctrl-card:hover,.ctrl-card.open{border-color:rgba(84,104,255,.35);}
 .cc-head{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;}
 .cc-icon{font-size:20px;}
-.cc-name{font-size:11.5px;font-weight:700;}
-.cc-role{font-family:var(--mono);font-size:8px;color:var(--mid);margin-top:2px;}
-.cc-arrow{color:var(--mid);transition:.2s;font-size:12px;}
+.cc-name{font-size:13px;font-weight:700;}
+.cc-role{font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-top:2px;}
+.cc-arrow{color:var(--mid);transition:.2s;font-size:13px;}
 .ctrl-card.open .cc-arrow{transform:rotate(90deg);color:var(--flux);}
 .cc-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);}
 .ctrl-card.open .cc-body{display:block;}
-.cc-body code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.cc-body code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── TRAP GRID ── */
 .trap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
 .trap-card{background:var(--s1);border:1px solid rgba(255,69,96,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
 .trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,96,.45),transparent);}
 .tc-n{position:absolute;top:7px;right:11px;font-family:var(--mono);font-size:28px;color:rgba(255,69,96,.06);line-height:1;}
-.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
-.tc-q{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
-.tc-q code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
-.tc-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.tc-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-q code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.tc-a{font-size:12.5px;color:var(--mid);line-height:1.55;}
 .tc-a b{color:var(--text);}
-.tc-a code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.tc-a code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── QUIZ ── */
 .quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
 .quiz-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .quiz-title{font-size:14px;font-weight:700;color:var(--flux);}
-.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
 .quiz-score span{color:var(--grn);font-weight:700;}
 .q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
 .q-item.revealed{border-color:rgba(57,217,138,.2);}
 .q-item.revealed-bad{border-color:rgba(255,69,96,.2);}
-.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
-.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-text{font-size:13px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
 .q-opts{display:flex;flex-direction:column;gap:5px;}
-.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt{font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
 .q-opt:hover:not(:disabled){background:rgba(84,104,255,.07);border-color:rgba(84,104,255,.3);color:var(--text);}
 .q-opt.correct{background:rgba(57,217,138,.08);border-color:rgba(57,217,138,.35);color:var(--grn);}
 .q-opt.wrong{background:rgba(255,69,96,.07);border-color:rgba(255,69,96,.3);color:var(--red);}
 .q-opt:disabled{cursor:default;}
-.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:12.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
 .q-explain.show{display:block;}
 .q-explain b{color:var(--text);}
-.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.q-explain code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .quiz-btns{display:flex;gap:8px;margin-top:12px;}
-.qbtn{font-family:var(--mono);font-size:8.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qbtn{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
 .qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
 .qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
 .qb-f{background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.3);color:var(--flux);}
 .qb-f:hover{background:rgba(84,104,255,.18);}
 
 /* ── BADGES ── */
-.new-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(57,217,138,.08);border:1px solid rgba(57,217,138,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
-.v28-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(84,104,255,.09);border:1px solid rgba(84,104,255,.3);color:var(--fl2);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
-.breaking-badge{display:inline-flex;font-family:var(--mono);font-size:7.5px;padding:2px 7px;border-radius:3px;background:rgba(255,69,96,.08);border:1px solid rgba(255,69,96,.3);color:var(--red);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.new-badge{display:inline-flex;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:3px;background:rgba(57,217,138,.08);border:1px solid rgba(57,217,138,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.v28-badge{display:inline-flex;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:3px;background:rgba(84,104,255,.09);border:1px solid rgba(84,104,255,.3);color:var(--fl2);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.breaking-badge{display:inline-flex;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:3px;background:rgba(255,69,96,.08);border:1px solid rgba(255,69,96,.3);color:var(--red);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
 
 /* ── DEPENDENCY TREE ── */
-.dep-tree{background:#030912;border:1px solid var(--bd);border-radius:6px;padding:14px;font-family:var(--mono);font-size:10px;line-height:2.2;}
+.dep-tree{background:#030912;border:1px solid var(--bd);border-radius:6px;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:2.2;}
 .dt-r{color:var(--flux);font-weight:600;}
 .dt-l1{color:var(--teal);padding-left:16px;}
 .dt-l2{color:var(--grn);padding-left:32px;}
 .dt-l3{color:var(--mid);padding-left:48px;}
-.dt-ann{color:#0e1e35;font-size:9px;}
-.dt-wait{color:rgba(84,104,255,.4);font-size:9px;}
+.dt-ann{color:#737c8a;font-size:11.5px;}
+.dt-wait{color:rgba(84,104,255,.4);font-size:11.5px;}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .sec.on>*{animation:fi .3s ease both;}
@@ -217,7 +217,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sec.on>*:nth-child(7){animation-delay:.20s}
 
 .footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:var(--mono);font-size:11.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -305,29 +305,29 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   <g transform="translate(20,15)">
     <rect width="120" height="45" rx="6" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5"/>
     <text x="60" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#F05033" font-weight="600">Git Repo</text>
-    <text x="60" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,80,51,.5)">GitHub/GitLab/Gitea</text>
+    <text x="60" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,80,51,0.98)">GitHub/GitLab/Gitea</text>
   </g>
   <g transform="translate(160,15)">
     <rect width="110" height="45" rx="6" fill="rgba(84,104,255,.07)" stroke="rgba(84,104,255,.25)" stroke-width="1"/>
-    <text x="55" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5468FF" font-weight="600">OCI Registry</text>
-    <text x="55" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(84,104,255,.45)">ECR/GHCR/Docker</text>
+    <text x="55" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#697aff" font-weight="600">OCI Registry</text>
+    <text x="55" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(105,122,255,1)">ECR/GHCR/Docker</text>
   </g>
   <g transform="translate(285,15)">
     <rect width="100" height="45" rx="6" fill="rgba(84,104,255,.05)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
     <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7f8fff" font-weight="600">Helm Repo</text>
-    <text x="50" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(127,143,255,.4)">charts.bitnami.com</text>
+    <text x="50" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(127,143,255,0.86)">charts.bitnami.com</text>
   </g>
   <g transform="translate(400,15)">
     <rect width="90" height="45" rx="6" fill="rgba(255,182,39,.05)" stroke="rgba(255,182,39,.2)" stroke-width="1"/>
     <text x="45" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#FFB627" font-weight="600">S3 Bucket</text>
-    <text x="45" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(255,182,39,.4)">MinIO/GCS/R2</text>
+    <text x="45" y="35" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(255,182,39,0.64)">MinIO/GCS/R2</text>
   </g>
 
   <!-- Source Controller -->
   <g transform="translate(20,90)">
     <rect width="480" height="80" rx="8" fill="rgba(84,104,255,.07)" stroke="rgba(84,104,255,.35)" stroke-width="1.5" filter="url(#gw)"/>
-    <text x="240" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5468FF" font-weight="700">source-controller</text>
-    <text x="240" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" fill="rgba(84,104,255,.5)">fetches + caches all sources → produces Artifacts (tarballs)</text>
+    <text x="240" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#697aff" font-weight="700">source-controller</text>
+    <text x="240" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" fill="rgba(105,122,255,1)">fetches + caches all sources → produces Artifacts (tarballs)</text>
     <!-- Source CRDs -->
     <rect x="12" y="50" width="100" height="20" rx="3" fill="rgba(84,104,255,.1)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
     <text x="62" y="64" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#7f8fff">GitRepository</text>
@@ -348,51 +348,51 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   <line x1="445" y1="60" x2="380" y2="90" stroke="rgba(255,182,39,.3)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a4)"/>
 
   <!-- Artifact (output of source-controller) -->
-  <text x="255" y="190" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="rgba(84,104,255,.5)">↓ Artifact (tarball URL) ↓</text>
+  <text x="255" y="190" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="rgba(105,122,255,1)">↓ Artifact (tarball URL) ↓</text>
 
   <!-- Consumer controllers row -->
   <g transform="translate(20,200)">
     <rect width="220" height="80" rx="8" fill="rgba(57,217,138,.06)" stroke="rgba(57,217,138,.3)" stroke-width="1.5"/>
     <text x="110" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#39D98A" font-weight="600">kustomize-controller</text>
-    <text x="110" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(57,217,138,.5)">reconciles Kustomizations</text>
-    <text x="110" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.4)">kustomize build → apply</text>
-    <text x="110" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.35)">SOPS decryption · prune</text>
+    <text x="110" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(57,217,138,0.66)">reconciles Kustomizations</text>
+    <text x="110" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,0.66)">kustomize build → apply</text>
+    <text x="110" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,0.65)">SOPS decryption · prune</text>
   </g>
   <g transform="translate(255,200)">
     <rect width="220" height="80" rx="8" fill="rgba(176,109,255,.06)" stroke="rgba(176,109,255,.3)" stroke-width="1.5"/>
     <text x="110" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#B06DFF" font-weight="600">helm-controller</text>
-    <text x="110" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(176,109,255,.5)">reconciles HelmReleases</text>
-    <text x="110" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(176,109,255,.4)">helm install/upgrade/test</text>
-    <text x="110" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(176,109,255,.35)">Helm v4 SSA (v2.8)</text>
+    <text x="110" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(176,109,255,0.92)">reconciles HelmReleases</text>
+    <text x="110" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(176,109,255,0.92)">helm install/upgrade/test</text>
+    <text x="110" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(176,109,255,0.93)">Helm v4 SSA (v2.8)</text>
   </g>
 
   <!-- Notification + Image controllers (right side) -->
   <g transform="translate(540,90)">
     <rect width="200" height="80" rx="8" fill="rgba(255,112,67,.06)" stroke="rgba(255,112,67,.25)" stroke-width="1"/>
     <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#FF7043" font-weight="600">notification-controller</text>
-    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(255,112,67,.45)">alerts + webhooks</text>
-    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,112,67,.35)">Provider · Alert · Receiver</text>
-    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,112,67,.3)">PR comments (v2.8)</text>
+    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(255,112,67,0.83)">alerts + webhooks</text>
+    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,112,67,0.83)">Provider · Alert · Receiver</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,112,67,0.84)">PR comments (v2.8)</text>
   </g>
   <g transform="translate(755,90)">
     <rect width="200" height="80" rx="8" fill="rgba(240,98,146,.06)" stroke="rgba(240,98,146,.25)" stroke-width="1"/>
     <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#F06292" font-weight="600">image-reflector-ctrl</text>
-    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,.45)">scans registry</text>
-    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.35)">ImageRepository</text>
-    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.3)">ImagePolicy → latest tag</text>
+    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,0.89)">scans registry</text>
+    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,0.89)">ImageRepository</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,0.9)">ImagePolicy → latest tag</text>
   </g>
   <g transform="translate(970,90)">
     <rect width="200" height="80" rx="8" fill="rgba(174,234,0,.04)" stroke="rgba(174,234,0,.2)" stroke-width="1"/>
     <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#AEEA00" font-weight="600">image-automation-ctrl</text>
-    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,.4)">commits image tag to Git</text>
-    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.3)">ImageUpdateAutomation</text>
-    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.25)">closes the GitOps loop</text>
+    <text x="100" y="38" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,0.58)">commits image tag to Git</text>
+    <text x="100" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.58)">ImageUpdateAutomation</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.57)">closes the GitOps loop</text>
   </g>
 
   <!-- K8s Cluster (output) -->
   <g transform="translate(20,310)">
     <rect width="455" height="28" rx="6" fill="rgba(57,217,138,.04)" stroke="rgba(57,217,138,.2)" stroke-width="1"/>
-    <text x="227" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(57,217,138,.5)" letter-spacing="2">KUBERNETES CLUSTER → kubectl apply</text>
+    <text x="227" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(57,217,138,0.66)" letter-spacing="2">KUBERNETES CLUSTER → kubectl apply</text>
   </g>
 
   <!-- Source → consumers -->
@@ -405,15 +405,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
   <!-- image-automation → Git (commit back) -->
   <path d="M 1070 90 L 1070 50 L 80 50 L 80 60" fill="none" stroke="rgba(174,234,0,.35)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a2)"/>
-  <text x="580" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.4)">commit updated image tag to Git → triggers reconcile</text>
+  <text x="580" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.58)">commit updated image tag to Git → triggers reconcile</text>
 
   <!-- image-reflector → image-automation -->
   <line x1="955" y1="130" x2="970" y2="130" stroke="rgba(174,234,0,.4)" stroke-width="1.2" marker-end="url(#a2)"/>
 
   <!-- Legend -->
-  <text x="540" y="215" font-family="JetBrains Mono" font-size="8" fill="rgba(84,104,255,.45)">── pull (source-controller fetches from external)</text>
-  <text x="540" y="233" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.45)">── apply (kustomize/helm controller → K8s)</text>
-  <text x="540" y="251" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.4)">·· commit (image-automation → Git → new reconcile cycle)</text>
+  <text x="540" y="215" font-family="JetBrains Mono" font-size="8" fill="rgba(105,122,255,1)">── pull (source-controller fetches from external)</text>
+  <text x="540" y="233" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,0.65)">── apply (kustomize/helm controller → K8s)</text>
+  <text x="540" y="251" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.58)">·· commit (image-automation → Git → new reconcile cycle)</text>
 </svg>
 </div>
 
@@ -885,7 +885,7 @@ host: <span class="st">api.${domain}</span>
   <div class="card cv">
     <div class="ctit" style="color:var(--vio);">🎨 Post-Renderers — Patching Helm Output</div>
     <div class="fr"><span class="fk">Why needed</span><span class="fv">Helm chart almost fits but you need to add a label, change a container image, or patch a field the chart doesn't expose. Post-renderer applies Kustomize patches on top of the Helm-rendered manifests without forking the chart.</span></div>
-    <div class="code" style="font-size:9px;"><span class="cm"># Add tolerations to all Deployments in chart</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># Add tolerations to all Deployments in chart</span>
 <span class="ky">postRenderers</span>:
 - <span class="ky">kustomize</span>:
     <span class="ky">patches</span>:
@@ -907,7 +907,7 @@ host: <span class="st">api.${domain}</span>
 
   <div class="card cv">
     <div class="ctit" style="color:var(--vio);">⚙️ HelmRelease Operations</div>
-    <div class="code" style="font-size:9px;"><span class="cm"># Suspend HelmRelease (stop reconciling)</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># Suspend HelmRelease (stop reconciling)</span>
 flux suspend helmrelease nginx-ingress -n ingress-nginx
 <span class="cm"># Resume</span>
 flux resume helmrelease nginx-ingress -n ingress-nginx
@@ -954,81 +954,81 @@ kubectl get helmrelease nginx-ingress \
     <!-- CI -->
     <g transform="translate(10,45)">
       <rect width="130" height="60" rx="7" fill="rgba(84,104,255,.07)" stroke="rgba(84,104,255,.3)" stroke-width="1.5"/>
-      <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5468FF" font-weight="600">CI Pipeline</text>
-      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(84,104,255,.5)">build + push image</text>
-      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(84,104,255,.35)">myapp:v1.2.4</text>
+      <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#697aff" font-weight="600">CI Pipeline</text>
+      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(105,122,255,1)">build + push image</text>
+      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(105,122,255,1)">myapp:v1.2.4</text>
     </g>
 
     <!-- Image Registry -->
     <g transform="translate(200,45)">
       <rect width="140" height="60" rx="7" fill="rgba(240,98,146,.07)" stroke="rgba(240,98,146,.3)" stroke-width="1.5"/>
       <text x="70" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#F06292" font-weight="600">Container Registry</text>
-      <text x="70" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,.5)">ghcr.io / ECR / Docker</text>
-      <text x="70" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.35)">stores all image tags</text>
+      <text x="70" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,0.9)">ghcr.io / ECR / Docker</text>
+      <text x="70" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,0.89)">stores all image tags</text>
     </g>
 
     <!-- ImageRepository -->
     <g transform="translate(400,45)">
       <rect width="130" height="60" rx="7" fill="rgba(240,98,146,.06)" stroke="rgba(240,98,146,.25)" stroke-width="1"/>
       <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#F06292" font-weight="600">ImageRepository</text>
-      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,.45)">polls registry</text>
-      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.3)">lists available tags</text>
+      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,98,146,0.89)">polls registry</text>
+      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,0.9)">lists available tags</text>
     </g>
 
     <!-- ImagePolicy -->
     <g transform="translate(590,45)">
       <rect width="130" height="60" rx="7" fill="rgba(174,234,0,.05)" stroke="rgba(174,234,0,.25)" stroke-width="1"/>
       <text x="65" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#AEEA00" font-weight="600">ImagePolicy</text>
-      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,.45)">selects latest</text>
-      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.3)">semver / alpha / num</text>
+      <text x="65" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,0.57)">selects latest</text>
+      <text x="65" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.58)">semver / alpha / num</text>
     </g>
 
     <!-- ImageUpdateAutomation -->
     <g transform="translate(785,45)">
       <rect width="160" height="60" rx="7" fill="rgba(174,234,0,.04)" stroke="rgba(174,234,0,.2)" stroke-width="1"/>
       <text x="80" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#AEEA00" font-weight="600">ImageUpdateAutomation</text>
-      <text x="80" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,.4)">commits new tag to Git</text>
-      <text x="80" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.3)">v1.2.3 → v1.2.4</text>
+      <text x="80" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(174,234,0,0.58)">commits new tag to Git</text>
+      <text x="80" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.58)">v1.2.3 → v1.2.4</text>
     </g>
 
     <!-- Git Repo -->
     <g transform="translate(1010,45)">
       <rect width="120" height="60" rx="7" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5"/>
       <text x="60" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#F05033" font-weight="600">Git Repo</text>
-      <text x="60" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,80,51,.5)">image: v1.2.4</text>
-      <text x="60" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,80,51,.35)">new commit pushed</text>
+      <text x="60" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(240,80,51,0.98)">image: v1.2.4</text>
+      <text x="60" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,80,51,0.99)">new commit pushed</text>
     </g>
 
     <!-- K8s -->
     <g transform="translate(1195,45)">
       <rect width="110" height="60" rx="7" fill="rgba(57,217,138,.06)" stroke="rgba(57,217,138,.25)" stroke-width="1.5"/>
       <text x="55" y="24" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#39D98A" font-weight="600">Cluster</text>
-      <text x="55" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(57,217,138,.5)">new pods running</text>
-      <text x="55" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.3)">v1.2.4 deployed</text>
+      <text x="55" y="40" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8.5" fill="rgba(57,217,138,0.66)">new pods running</text>
+      <text x="55" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,0.66)">v1.2.4 deployed</text>
     </g>
 
     <!-- Arrows -->
     <line x1="140" y1="75" x2="200" y2="75" stroke="rgba(84,104,255,.6)" stroke-width="1.8" marker-end="url(#ia2)"/>
     <line x1="340" y1="75" x2="400" y2="75" stroke="rgba(240,98,146,.5)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ia1)"/>
-    <text x="370" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(240,98,146,.4)">polls</text>
+    <text x="370" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(240,98,146,0.9)">polls</text>
     <line x1="530" y1="75" x2="590" y2="75" stroke="rgba(174,234,0,.5)" stroke-width="1.5" marker-end="url(#ia3)"/>
     <line x1="720" y1="75" x2="785" y2="75" stroke="rgba(174,234,0,.5)" stroke-width="1.5" marker-end="url(#ia3)"/>
     <line x1="945" y1="75" x2="1010" y2="75" stroke="rgba(174,234,0,.6)" stroke-width="1.8" marker-end="url(#ia3)"/>
-    <text x="977" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(174,234,0,.4)">git commit</text>
+    <text x="977" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(174,234,0,0.58)">git commit</text>
     <line x1="1130" y1="75" x2="1195" y2="75" stroke="rgba(57,217,138,.6)" stroke-width="1.8" marker-end="url(#ia3)"/>
-    <text x="1162" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(57,217,138,.4)">flux reconcile</text>
+    <text x="1162" y="65" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="rgba(57,217,138,0.66)">flux reconcile</text>
 
     <!-- Labels -->
-    <text x="280" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,.4)">① registry scan</text>
-    <text x="655" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,.4)">② policy selects v1.2.4 as latest</text>
-    <text x="1000" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,.4)">③ commit triggers Flux → apply</text>
+    <text x="280" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(240,98,146,0.9)">① registry scan</text>
+    <text x="655" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(174,234,0,0.58)">② policy selects v1.2.4 as latest</text>
+    <text x="1000" y="140" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(57,217,138,0.66)">③ commit triggers Flux → apply</text>
   </svg>
 </div>
 
 <div class="g3">
   <div class="card cp">
     <div class="ctit" style="color:var(--pink);">📸 ImageRepository + ImagePolicy</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># 1. ImageRepository: scan the registry</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># 1. ImageRepository: scan the registry</span>
 <span class="kw">kind</span>: ImageRepository
 <span class="ky">spec</span>:
   <span class="ky">image</span>: <span class="st">ghcr.io/myorg/myapp</span>
@@ -1064,7 +1064,7 @@ kubectl get helmrelease nginx-ingress \
 
   <div class="card cl">
     <div class="ctit" style="color:var(--lime);">🤖 ImageUpdateAutomation</div>
-    <div class="code" style="font-size:9.5px;"><span class="kw">kind</span>: ImageUpdateAutomation
+    <div class="code" style="font-size:12.5px;"><span class="kw">kind</span>: ImageUpdateAutomation
 <span class="ky">spec</span>:
   <span class="ky">interval</span>: <span class="st">1m</span>
   <span class="ky">sourceRef</span>:
@@ -1093,7 +1093,7 @@ kubectl get helmrelease nginx-ingress \
   <div class="card cp">
     <div class="ctit" style="color:var(--pink);">🏷️ Marker Annotations</div>
     <div class="fr"><span class="fk">How Flux finds image refs</span><span class="fv">Add a comment marker next to the image field in your manifests. automation-controller scans for these markers and updates the tagged line when the policy selects a new image.</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># deployment.yaml — mark for auto-update</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># deployment.yaml — mark for auto-update</span>
 <span class="ky">spec</span>:
   <span class="ky">template</span>:
     <span class="ky">spec</span>:
@@ -1173,7 +1173,7 @@ kubectl get helmrelease nginx-ingress \
 <div style="display:flex;flex-direction:column;gap:12px;">
   <div class="card cy">
     <div class="ctit" style="color:var(--yel);">📁 Multi-Tenancy Git Structure</div>
-    <div class="code" style="font-size:9px;"><span class="cm"># Platform team: one repo (fleet-infra)</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># Platform team: one repo (fleet-infra)</span>
 fleet-infra/
 ├── clusters/prod/
 │   ├── flux-system/      <span class="cm"># Flux itself</span>
@@ -1221,7 +1221,7 @@ team-a-configs/
 <div class="g3">
   <div class="card ct">
     <div class="ctit" style="color:var(--teal);">🚀 flux bootstrap</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Bootstrap to GitHub</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Bootstrap to GitHub</span>
 flux bootstrap github \
   --owner=myorg \
   --repository=fleet-infra \
@@ -1260,7 +1260,7 @@ flux get kustomizations</div>
 
   <div class="card ct">
     <div class="ctit" style="color:var(--teal);">💻 Essential CLI Reference</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm">## Get status of all resources</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm">## Get status of all resources</span>
 flux get all -A
 flux get kustomizations -A
 flux get helmreleases -A
@@ -1309,7 +1309,7 @@ flux check --pre    <span class="cm"># pre-install check</span></div>
 
   <div class="card ct">
     <div class="ctit" style="color:var(--teal);">🔍 Debugging</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm">## Check resource status with conditions</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm">## Check resource status with conditions</span>
 kubectl describe kustomization apps -n flux-system
 kubectl describe helmrelease nginx -n ingress
 
@@ -1623,7 +1623,7 @@ function buildQuiz() {
   QS.forEach((q, qi) => {
     const d = document.createElement('div');
     d.className = 'q-item'; d.id = 'qi-'+qi;
-    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:11.5px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
       <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
       <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
     c.appendChild(d);

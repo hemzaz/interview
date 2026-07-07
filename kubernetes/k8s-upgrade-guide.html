@@ -27,13 +27,13 @@
 
   --text:  #d0e4f8;
   --dim:   #0f2030;
-  --mid:   #3a6080;
+  --mid:   #618099;
 
   --mono:  'JetBrains Mono', monospace;
   --sans:  'Space Grotesk', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;overflow-x:hidden;}
 
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -54,9 +54,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hero h1{font-size:56px;font-weight:700;line-height:.9;letter-spacing:-2px;}
 .h-k{background:linear-gradient(90deg,var(--k8s2),var(--teal),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .h-u{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(50,108,229,.25);}
-.hero-sub{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--mid);text-transform:uppercase;margin-top:10px;}
+.hero-sub{font-family:var(--mono);font-size:12.5px;letter-spacing:2px;color:var(--mid);text-transform:uppercase;margin-top:10px;}
 .hero-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
-.htag{font-family:var(--mono);font-size:8.5px;padding:4px 11px;border-radius:4px;border:1px solid;font-weight:500;}
+.htag{font-family:var(--mono);font-size:11.5px;padding:4px 11px;border-radius:4px;border:1px solid;font-weight:500;}
 .ht-k{background:rgba(50,108,229,.08);border-color:rgba(50,108,229,.3);color:var(--k8s2);}
 .ht-g{background:rgba(0,200,150,.07);border-color:rgba(0,200,150,.3);color:var(--grn);}
 .ht-r{background:rgba(255,69,96,.07);border-color:rgba(255,69,96,.3);color:var(--red);}
@@ -65,11 +65,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-width:280px;}
 .hstat{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:14px 12px;text-align:center;}
 .hstat-n{font-size:26px;font-weight:700;line-height:1;}
-.hstat-l{font-family:var(--mono);font-size:7px;color:var(--mid);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;}
+.hstat-l{font-family:var(--mono);font-size:11.5px;color:var(--mid);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px;}
 
 /* ── NAV ── */
 .nav{display:flex;gap:3px;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:5px;flex-wrap:wrap;}
-.nb{font-family:var(--mono);font-size:9px;letter-spacing:.5px;font-weight:600;padding:9px 16px;border-radius:6px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb{font-family:var(--mono);font-size:11.5px;letter-spacing:.5px;font-weight:600;padding:9px 16px;border-radius:6px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
 .nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
 .nb.on{background:rgba(50,108,229,.12);color:var(--k8s2);box-shadow:0 0 0 1px rgba(50,108,229,.25);}
 
@@ -80,7 +80,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
 .sh-i{font-size:20px;flex-shrink:0;}
 .sh-l{font-size:22px;font-weight:700;letter-spacing:-.5px;}
-.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh-s{font-family:var(--mono);font-size:11.5px;color:var(--mid);}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -106,33 +106,33 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .ctt{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.2px;}
 
 /* facts */
-.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
-.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:12.5px;}
+.fk{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.6;}
 .fv b{color:var(--text);}
-.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+.fv code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
 
 /* code */
-.code{background:#020408;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:10px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
+.code{background:#020408;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
 .kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--yel);}
-.nu{color:var(--teal);} .cm{color:#0d2030;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+.nu{color:var(--teal);} .cm{color:#737e87;} .fn{color:#7cb8ff;} .re{color:var(--red);}
 
 /* trap / note */
-.trap{background:rgba(255,69,96,.04);border:1px solid rgba(255,69,96,.15);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap{background:rgba(255,69,96,.04);border:1px solid rgba(255,69,96,.15);border-radius:6px;padding:8px 12px;font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
-.note{border-left:3px solid var(--bd);padding:8px 12px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(255,255,255,.02);}
+.trap code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:3px solid var(--bd);padding:8px 12px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(255,255,255,.02);}
 .note b{color:var(--text);}
-.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
-.st th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;}
+.st th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.st td code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
 
 /* ── INTERACTIVE CHECKLIST ── */
@@ -140,18 +140,18 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .cl-item{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:7px;border:1px solid var(--bd);background:var(--s2);cursor:pointer;transition:.2s;user-select:none;}
 .cl-item:hover{border-color:var(--b2);}
 .cl-item.checked{background:rgba(0,200,150,.05);border-color:rgba(0,200,150,.2);}
-.cl-cb{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bd);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:.2s;}
+.cl-cb{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bd);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12.5px;transition:.2s;}
 .cl-item.checked .cl-cb{background:rgba(0,200,150,.2);border-color:rgba(0,200,150,.4);color:var(--grn);}
-.cl-text{font-size:11px;line-height:1.6;color:var(--mid);}
+.cl-text{font-size:12.5px;line-height:1.6;color:var(--mid);}
 .cl-item.checked .cl-text{color:rgba(255,255,255,.4);}
 .cl-text b{color:var(--text);}
-.cl-text code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.cl-text code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .cl-item.checked .cl-text b,.cl-item.checked .cl-text code{color:inherit;}
-.cl-tag{font-family:var(--mono);font-size:7.5px;padding:2px 6px;border-radius:3px;flex-shrink:0;align-self:flex-start;margin-top:2px;border:1px solid;}
+.cl-tag{font-family:var(--mono);font-size:11.5px;padding:2px 6px;border-radius:3px;flex-shrink:0;align-self:flex-start;margin-top:2px;border:1px solid;}
 .tg-crit{background:rgba(255,69,96,.1);border-color:rgba(255,69,96,.3);color:var(--red);}
 .tg-imp{background:rgba(255,182,39,.08);border-color:rgba(255,182,39,.3);color:var(--yel);}
 .tg-rec{background:rgba(50,108,229,.08);border-color:rgba(50,108,229,.3);color:var(--k8s2);}
-.cl-progress{font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.cl-progress{font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
 .cl-bar{flex:1;height:4px;background:var(--dim);border-radius:2px;overflow:hidden;}
 .cl-fill{height:100%;background:linear-gradient(90deg,var(--k8s),var(--grn));border-radius:2px;transition:.4s;}
 
@@ -162,21 +162,21 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .of-circle{width:36px;height:36px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;z-index:1;position:relative;}
 .of-line{width:2px;flex:1;min-height:20px;}
 .of-body{padding:8px 0 16px 12px;}
-.of-title{font-weight:700;font-size:12.5px;margin-bottom:4px;}
-.of-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.of-title{font-weight:700;font-size:13px;margin-bottom:4px;}
+.of-desc{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .of-desc b{color:var(--text);}
-.of-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.of-desc code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── VERSION MATRIX ── */
 .vm-wrap{overflow-x:auto;margin-bottom:12px;}
-.vm{border-collapse:collapse;font-size:10.5px;min-width:900px;width:100%;}
-.vm th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);padding:7px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap;}
+.vm{border-collapse:collapse;font-size:12.5px;min-width:900px;width:100%;}
+.vm th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);padding:7px 10px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap;}
 .vm td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.022);vertical-align:top;line-height:1.5;}
-.vm td:first-child{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--teal);white-space:nowrap;}
-.vm-removed{background:rgba(255,69,96,.07);color:var(--red);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(255,69,96,.2);}
-.vm-deprecated{background:rgba(255,182,39,.07);color:var(--yel);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(255,182,39,.2);}
-.vm-new{background:rgba(0,200,150,.07);color:var(--grn);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(0,200,150,.2);}
-.vm-change{background:rgba(50,108,229,.07);color:var(--k8s2);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(50,108,229,.2);}
+.vm td:first-child{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--teal);white-space:nowrap;}
+.vm-removed{background:rgba(255,69,96,.07);color:var(--red);font-size:11.5px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(255,69,96,.2);}
+.vm-deprecated{background:rgba(255,182,39,.07);color:var(--yel);font-size:11.5px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(255,182,39,.2);}
+.vm-new{background:rgba(0,200,150,.07);color:var(--grn);font-size:11.5px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(0,200,150,.2);}
+.vm-change{background:rgba(50,108,229,.07);color:var(--k8s2);font-size:11.5px;font-family:var(--mono);padding:1px 5px;border-radius:3px;display:inline-block;margin:1px;border:1px solid rgba(50,108,229,.2);}
 
 /* ── FAILURE CARDS ── */
 .fail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
@@ -184,12 +184,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .fail-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,96,.4),transparent);}
 .fail-card:hover{border-color:rgba(255,69,96,.2);transform:translateY(-1px);}
 .fc-num{position:absolute;top:8px;right:12px;font-size:30px;font-weight:700;color:rgba(255,69,96,.06);font-family:var(--mono);line-height:1;}
-.fc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
-.fc-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
-.fc-title code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
-.fc-body{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.fc-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.fc-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.fc-title code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.fc-body{font-size:12.5px;color:var(--mid);line-height:1.55;}
 .fc-body b{color:var(--text);}
-.fc-body code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.fc-body code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── METHOD CARDS ── */
 .method-card{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:16px;cursor:pointer;transition:.2s;position:relative;}
@@ -197,7 +197,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .mc-head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;}
 .mc-icon{font-size:24px;}
 .mc-name{font-size:13px;font-weight:700;}
-.mc-type{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--mid);margin-top:2px;}
+.mc-type{font-family:var(--mono);font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mid);margin-top:2px;}
 .mc-arrow{color:var(--mid);transition:.2s;}
 .method-card.open .mc-arrow{transform:rotate(90deg);color:var(--k8s2);}
 .mc-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);}
@@ -205,11 +205,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 /* ── VALIDATION ── */
 .val-category{margin-bottom:16px;}
-.vc-title{font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.vc-title{font-family:var(--mono);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
 .vc-title::after{content:'';flex:1;height:1px;background:var(--bd);}
 .val-checks{display:flex;flex-direction:column;gap:5px;}
-.vcheck{display:flex;gap:10px;align-items:baseline;padding:6px 10px;background:var(--s2);border-radius:5px;border:1px solid var(--bd);font-size:11px;}
-.vcheck-cmd{font-family:var(--mono);font-size:9.5px;color:var(--teal);flex-shrink:0;width:280px;}
+.vcheck{display:flex;gap:10px;align-items:baseline;padding:6px 10px;background:var(--s2);border-radius:5px;border:1px solid var(--bd);font-size:12.5px;}
+.vcheck-cmd{font-family:var(--mono);font-size:12.5px;color:var(--teal);flex-shrink:0;width:280px;}
 .vcheck-what{color:var(--mid);line-height:1.5;}
 .vcheck-what b{color:var(--text);}
 
@@ -218,11 +218,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--k8s),var(--grn),var(--vio));}
 .tl-item{position:relative;padding:0 0 20px 24px;}
 .tl-dot{position:absolute;left:-5px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid;background:var(--bg);}
-.tl-time{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
-.tl-title{font-size:12px;font-weight:700;margin-bottom:4px;}
-.tl-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.tl-time{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.tl-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.tl-desc{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .tl-desc b{color:var(--text);}
-.tl-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.tl-desc code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .sec.on>*{animation:fi .3s ease both;}
@@ -232,7 +232,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sec.on>*:nth-child(7){animation-delay:.20s}.sec.on>*:nth-child(8){animation-delay:.23s}
 
 .footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:var(--mono);font-size:11.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -414,7 +414,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
   <div class="card cy">
     <div class="ctt" style="color:var(--yel);">⚠️ The Version Skew Window</div>
-    <div style="background:#020408;border:1px solid var(--bd);border-radius:6px;padding:12px;font-family:var(--mono);font-size:10px;line-height:2;color:var(--mid);">
+    <div style="background:#020408;border:1px solid var(--bd);border-radius:6px;padding:12px;font-family:var(--mono);font-size:12.5px;line-height:2;color:var(--mid);">
       <div style="color:var(--k8s2);">Start:  CP=1.29, Workers=1.29  ← all same version ✓</div>
       <div style="color:var(--yel);">Step 1: CP=1.30, Workers=1.29  ← skew=1 (allowed) ✓</div>
       <div style="color:var(--yel);">Step 2: CP=1.30, Workers=1.30  ← all upgraded ✓</div>
@@ -534,8 +534,8 @@ ETCDCTL_API=3 etcdctl snapshot status \
     <div class="mc-body">
       <div class="g2">
         <div>
-          <div style="font-family:var(--mono);font-size:9.5px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">FULL UPGRADE PROCEDURE</div>
-          <div class="code" style="font-size:9.5px;"><span class="cm">## On FIRST control plane node ##</span>
+          <div style="font-family:var(--mono);font-size:12.5px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">FULL UPGRADE PROCEDURE</div>
+          <div class="code" style="font-size:12.5px;"><span class="cm">## On FIRST control plane node ##</span>
 
 <span class="cm"># 1. Update kubeadm</span>
 apt-get update && apt-get install -y kubeadm=1.31.0-1.1
@@ -601,8 +601,8 @@ kubectl uncordon &lt;worker&gt;</div>
     <div class="mc-body">
       <div class="g3">
         <div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">AWS EKS</div>
-          <div class="code" style="font-size:9px;"><span class="cm"># Upgrade control plane</span>
+          <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">AWS EKS</div>
+          <div class="code" style="font-size:11.5px;"><span class="cm"># Upgrade control plane</span>
 aws eks update-cluster-version \
   --name my-cluster \
   --kubernetes-version 1.31
@@ -625,8 +625,8 @@ aws eks describe-cluster \
   --query 'cluster.status'</div>
         </div>
         <div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">GKE</div>
-          <div class="code" style="font-size:9px;"><span class="cm"># Enable release channel or manual</span>
+          <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">GKE</div>
+          <div class="code" style="font-size:11.5px;"><span class="cm"># Enable release channel or manual</span>
 gcloud container clusters upgrade my-cluster \
   --master \
   --cluster-version 1.31.0-gke.100
@@ -641,8 +641,8 @@ gcloud container get-server-config \
   --format "yaml(validMasterVersions)"</div>
         </div>
         <div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">AKS</div>
-          <div class="code" style="font-size:9px;"><span class="cm"># Check available versions</span>
+          <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">AKS</div>
+          <div class="code" style="font-size:11.5px;"><span class="cm"># Check available versions</span>
 az aks get-versions \
   --location eastus -o table
 
@@ -834,7 +834,7 @@ cluster_version: "1.31"
 
 <div class="sh"><div class="sh-i">📅</div><div class="sh-l" style="color:var(--teal);">API Changes Between Versions</div><div class="sh-s">// removed APIs · deprecations · behavior changes · 1.22 → 1.32</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,.3),transparent);"></div></div>
 
-<div style="display:flex;gap:8px;margin-bottom:12px;font-size:10px;flex-wrap:wrap;">
+<div style="display:flex;gap:8px;margin-bottom:12px;font-size:12.5px;flex-wrap:wrap;">
   <div style="display:flex;align-items:center;gap:5px;"><span class="vm-removed">REMOVED</span> API completely removed — apps using it break immediately</div>
   <div style="display:flex;align-items:center;gap:5px;"><span class="vm-deprecated">DEPRECATED</span> API will be removed in future version</div>
   <div style="display:flex;align-items:center;gap:5px;"><span class="vm-new">NEW</span> New feature or promoted to stable</div>
@@ -1222,7 +1222,7 @@ kubescape scan framework nsa \
 <div class="g3">
   <div class="card ck">
     <div class="ctt" style="color:var(--k8s2);">🚦 What "Healthy" Looks Like</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># All nodes Ready, same version</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># All nodes Ready, same version</span>
 $ kubectl get nodes
 NAME       STATUS   ROLES    VERSION
 master-1   Ready    cp       v1.31.0
@@ -1250,7 +1250,7 @@ No output = nothing deprecated ✓</div>
   </div>
   <div class="card cr">
     <div class="ctt" style="color:var(--red);">🚨 What "Broken" Looks Like</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Node stuck on old version</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Node stuck on old version</span>
 $ kubectl get nodes
 worker-3   NotReady   v1.29.0  <span class="re">← old kubelet</span>
 
@@ -1275,7 +1275,7 @@ Warning   BackOff   pod/legacy   Back-off restarting failed container</div>
   </div>
   <div class="card cg">
     <div class="ctt" style="color:var(--grn);">📊 Quick Health Script</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm">#!/usr/bin/env bash</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm">#!/usr/bin/env bash</span>
 <span class="cm"># post-upgrade-health-check.sh</span>
 
 echo "=== Node Status ==="

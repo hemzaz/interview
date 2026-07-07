@@ -27,15 +27,15 @@
   --slate: #8696B0;
 
   --text:  #d4e0f0;
-  --dim:   #131825;
-  --mid:   #3a4d6a;
+  --dim:   #7b7e85;
+  --mid:   #758297;
 
   --mono: 'Fira Code', monospace;
   --sans: 'Inter', sans-serif;
   --disp: 'Bebas Neue', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;overflow-x:hidden;}
 
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -56,13 +56,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--red),var(--coral),var(--teal),var(--vio));}
 .hero-logo{position:absolute;right:32px;top:50%;transform:translateY(-50%);font-family:var(--disp);font-size:140px;color:rgba(249,94,98,.04);line-height:1;letter-spacing:4px;pointer-events:none;}
 .hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
-.hero-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
 .hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--red);}
 .hero h1{font-family:var(--disp);font-size:78px;letter-spacing:3px;line-height:.88;color:#fff;}
 .hero h1 span{background:linear-gradient(135deg,var(--red),var(--coral),var(--red2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{font-size:11.5px;color:var(--mid);margin-top:10px;line-height:1.8;font-weight:400;}
+.hero-sub{font-size:13px;color:var(--mid);margin-top:10px;line-height:1.8;font-weight:400;}
 .hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
-.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;letter-spacing:.3px;}
+.hp{font-family:var(--mono);font-size:11.5px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;letter-spacing:.3px;}
 .hp-r{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
 .hp-t{background:rgba(78,205,196,.07);border-color:rgba(78,205,196,.3);color:var(--cyan);}
 .hp-g{background:rgba(69,233,148,.07);border-color:rgba(69,233,148,.3);color:var(--grn);}
@@ -72,11 +72,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
 .hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
 .hcard-n{font-family:var(--disp);font-size:26px;letter-spacing:1px;line-height:1;color:var(--red);}
-.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
+.hcard-l{font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;}
 
 /* ── NAV ── */
 .nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
-.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);letter-spacing:.3px;}
+.nb{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);letter-spacing:.3px;}
 .nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
 .nb.on{background:rgba(249,94,98,.12);color:var(--red);box-shadow:0 0 0 1px rgba(249,94,98,.3);}
 
@@ -87,7 +87,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
 .sh-i{font-size:18px;flex-shrink:0;}
 .sh-l{font-size:20px;font-weight:700;letter-spacing:-.3px;}
-.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh-s{font-family:var(--mono);font-size:11.5px;color:var(--mid);}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -109,40 +109,40 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .cb::before{background:linear-gradient(90deg,var(--blue),transparent);}
 .cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
 
-.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;letter-spacing:-.1px;}
+.ctit{font-size:13px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;letter-spacing:-.1px;}
 
 /* facts */
-.fr{display:grid;grid-template-columns:114px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
-.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:114px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:12.5px;}
+.fk{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.6;}
 .fv b{color:var(--text);}
-.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+.fv code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
 
 /* code */
-.code{background:#06070c;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.9;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.code{background:#06070c;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:12.5px;line-height:1.9;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
 .kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--yel);}
-.nu{color:var(--teal);} .cm{color:#1a2040;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+.nu{color:var(--teal);} .cm{color:#7a7e90;} .fn{color:#7cb8ff;} .re{color:var(--red);}
 
 /* trap / note */
-.trap{background:rgba(249,94,98,.04);border:1px solid rgba(249,94,98,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap{background:rgba(249,94,98,.04);border:1px solid rgba(249,94,98,.15);border-radius:5px;padding:7px 11px;font-size:12.5px;color:var(--mid);margin-top:9px;line-height:1.6;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
-.note{border-left:2px solid rgba(78,205,196,.4);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(78,205,196,.03);}
+.trap code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(78,205,196,.4);padding:7px 11px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(78,205,196,.03);}
 .note b{color:var(--text);}
-.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
-.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.st td code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── STATUS BADGES ── */
-.badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:8.5px;padding:3px 9px;border-radius:4px;border:1px solid;font-weight:600;white-space:nowrap;}
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;padding:3px 9px;border-radius:4px;border:1px solid;font-weight:600;white-space:nowrap;}
 .b-synced {background:rgba(69,233,148,.08);border-color:rgba(69,233,148,.3);color:var(--grn);}
 .b-outofsync{background:rgba(255,217,61,.08);border-color:rgba(255,217,61,.3);color:var(--yel);}
 .b-unknown{background:rgba(134,150,176,.08);border-color:rgba(134,150,176,.3);color:var(--slate);}
@@ -157,11 +157,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .gen-card{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:13px;cursor:pointer;transition:.2s;position:relative;}
 .gen-card:hover,.gen-card.open{border-color:rgba(249,94,98,.3);}
 .gen-icon{font-size:22px;margin-bottom:6px;}
-.gen-name{font-size:11.5px;font-weight:700;margin-bottom:3px;}
-.gen-desc{font-size:10px;color:var(--mid);line-height:1.5;}
+.gen-name{font-size:13px;font-weight:700;margin-bottom:3px;}
+.gen-desc{font-size:12.5px;color:var(--mid);line-height:1.5;}
 .gen-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);}
 .gen-card.open .gen-detail{display:block;}
-.gen-detail code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.gen-detail code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── COMPARISON ── */
 .vs-wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin-bottom:12px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;}
@@ -169,11 +169,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .vs-divider{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 10px;background:var(--s2);border-left:1px solid var(--bd);border-right:1px solid var(--bd);}
 .vs-vs{font-family:var(--disp);font-size:20px;color:var(--mid);letter-spacing:2px;}
 .vs-title{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
-.vs-item{display:flex;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);font-size:11px;align-items:baseline;}
-.vs-icon{flex-shrink:0;font-size:12px;width:16px;}
+.vs-item{display:flex;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);font-size:12.5px;align-items:baseline;}
+.vs-icon{flex-shrink:0;font-size:13px;width:16px;}
 .vs-text{color:var(--mid);line-height:1.5;}
 .vs-text b{color:var(--text);}
-.vs-text code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.vs-text code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── SYNC LIFECYCLE ── */
 .lifecycle{display:flex;gap:0;margin-bottom:12px;overflow-x:auto;}
@@ -183,13 +183,13 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .lc-step:first-child .lc-body{border-radius:8px 0 0 8px;}
 .lc-step:last-child .lc-body{border-right-color:var(--bd);border-radius:0 8px 8px 0;}
 .lc-step:last-child::after{display:none;}
-.lc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
-.lc-name{font-size:11px;font-weight:700;margin-bottom:4px;}
-.lc-desc{font-size:9.5px;color:var(--mid);line-height:1.5;}
+.lc-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;}
+.lc-name{font-size:12.5px;font-weight:700;margin-bottom:4px;}
+.lc-desc{font-size:12.5px;color:var(--mid);line-height:1.5;}
 
 /* ── RBAC FLOW ── */
 .rbac-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
-.rbox{padding:5px 12px;border-radius:5px;border:1px solid;font-family:var(--mono);font-size:9px;font-weight:600;white-space:nowrap;}
+.rbox{padding:5px 12px;border-radius:5px;border:1px solid;font-family:var(--mono);font-size:11.5px;font-weight:600;white-space:nowrap;}
 .rb-r{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
 .rb-v{background:rgba(155,109,255,.08);border-color:rgba(155,109,255,.3);color:var(--vio);}
 .rb-g{background:rgba(69,233,148,.07);border-color:rgba(69,233,148,.3);color:var(--grn);}
@@ -201,45 +201,45 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .trap-card{background:var(--s1);border:1px solid rgba(249,94,98,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
 .trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(249,94,98,.5),transparent);}
 .tc-n{position:absolute;top:7px;right:11px;font-family:var(--disp);font-size:30px;color:rgba(249,94,98,.06);line-height:1;letter-spacing:1px;}
-.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
-.tc-q{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
-.tc-q code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
-.tc-a{font-size:10.5px;color:var(--mid);line-height:1.6;}
+.tc-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-q code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--yel);}
+.tc-a{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .tc-a b{color:var(--text);}
-.tc-a code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.tc-a code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── QUIZ ── */
 .quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
 .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .quiz-title{font-size:14px;font-weight:700;color:var(--red);}
-.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
 .quiz-score span{color:var(--grn);font-weight:700;}
 .q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
 .q-item.revealed{border-color:rgba(69,233,148,.2);}
 .q-item.revealed-bad{border-color:rgba(249,94,98,.2);}
-.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
-.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-text{font-size:13px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
 .q-opts{display:flex;flex-direction:column;gap:5px;}
-.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt{font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
 .q-opt:hover:not(:disabled){background:rgba(249,94,98,.07);border-color:rgba(249,94,98,.3);color:var(--text);}
 .q-opt.correct{background:rgba(69,233,148,.08);border-color:rgba(69,233,148,.35);color:var(--grn);}
 .q-opt.wrong{background:rgba(249,94,98,.07);border-color:rgba(249,94,98,.3);color:var(--red);}
 .q-opt:disabled{cursor:default;}
-.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.025);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.025);border-radius:4px;font-size:12.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
 .q-explain.show{display:block;}
 .q-explain b{color:var(--text);}
-.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.q-explain code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .quiz-btns{display:flex;gap:8px;margin-top:12px;}
-.qbtn{font-family:var(--mono);font-size:8.5px;letter-spacing:.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qbtn{font-family:var(--mono);font-size:11.5px;letter-spacing:.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
 .qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
 .qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
 .qb-s{background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--red);}
 .qb-s:hover{background:rgba(249,94,98,.15);}
 
 /* ── v3 BADGE ── */
-.v3-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;background:rgba(69,233,148,.08);border:1px solid rgba(69,233,148,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
-.new-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.3);color:var(--blue);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
-.breaking-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;background:rgba(249,94,98,.08);border:1px solid rgba(249,94,98,.3);color:var(--red);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.v3-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:3px;background:rgba(69,233,148,.08);border:1px solid rgba(69,233,148,.3);color:var(--grn);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.new-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:3px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.3);color:var(--blue);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
+.breaking-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:3px;background:rgba(249,94,98,.08);border:1px solid rgba(249,94,98,.3);color:var(--red);font-weight:700;letter-spacing:.5px;vertical-align:middle;margin-left:5px;}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .sec.on>*{animation:fi .3s ease both;}
@@ -249,7 +249,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sec.on>*:nth-child(7){animation-delay:.20s}.sec.on>*:nth-child(8){animation-delay:.23s}
 
 .footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:var(--mono);font-size:11.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -334,88 +334,88 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   <g transform="translate(10,130)">
     <rect width="130" height="90" rx="8" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5"/>
     <text x="65" y="26" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F95E62" font-weight="600">Git Repo</text>
-    <text x="65" y="44" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.5)">source of truth</text>
+    <text x="65" y="44" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">source of truth</text>
     <rect x="12" y="54" width="106" height="16" rx="3" fill="rgba(249,94,98,.1)" stroke="rgba(249,94,98,.2)" stroke-width="1"/>
-    <text x="65" y="66" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.7)">manifests · helm · kust</text>
+    <text x="65" y="66" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">manifests · helm · kust</text>
     <rect x="12" y="74" width="106" height="14" rx="3" fill="rgba(249,94,98,.06)" stroke="rgba(249,94,98,.15)" stroke-width="1"/>
-    <text x="65" y="85" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.5)">OCI artifacts (v3.1)</text>
+    <text x="65" y="85" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">OCI artifacts (v3.1)</text>
   </g>
 
   <!-- Arrow Git → Repo Server -->
   <line x1="140" y1="175" x2="215" y2="175" stroke="rgba(249,94,98,.5)" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#aa)"/>
-  <text x="177" y="165" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.4)">pull</text>
+  <text x="177" y="165" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">pull</text>
 
   <!-- ArgoCD system box -->
   <rect x="215" y="20" width="660" height="310" rx="10" fill="rgba(249,94,98,.03)" stroke="rgba(249,94,98,.18)" stroke-width="1.5"/>
-  <text x="545" y="42" text-anchor="middle" font-family="Fira Code" font-size="10" fill="rgba(249,94,98,.4)" letter-spacing="3">ARGOCD SYSTEM</text>
+  <text x="545" y="42" text-anchor="middle" font-family="Fira Code" font-size="10" fill="rgba(249,94,98,0.9)" letter-spacing="3">ARGOCD SYSTEM</text>
 
   <!-- Repo Server -->
   <g transform="translate(228,58)">
     <rect width="160" height="100" rx="7" fill="rgba(249,94,98,.08)" stroke="rgba(249,94,98,.35)" stroke-width="1.5" filter="url(#gw)"/>
     <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#F95E62" font-weight="600">Repo Server</text>
-    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(249,94,98,.5)">fetches + caches Git</text>
-    <text x="80" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.4)">renders templates</text>
-    <text x="80" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.35)">Helm · Kustomize · YAML</text>
-    <text x="80" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.3)">Jsonnet · CMP plugins</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(249,94,98,0.9)">fetches + caches Git</text>
+    <text x="80" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">renders templates</text>
+    <text x="80" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.89)">Helm · Kustomize · YAML</text>
+    <text x="80" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">Jsonnet · CMP plugins</text>
   </g>
 
   <!-- API Server -->
   <g transform="translate(430,58)">
     <rect width="160" height="100" rx="7" fill="rgba(78,205,196,.07)" stroke="rgba(78,205,196,.3)" stroke-width="1.5"/>
     <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#4ECDC4" font-weight="600">API Server</text>
-    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(78,205,196,.5)">gRPC + REST</text>
-    <text x="80" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.4)">UI + CLI + API</text>
-    <text x="80" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.35)">auth · sync trigger</text>
-    <text x="80" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.3)">webhook receiver</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(78,205,196,0.68)">gRPC + REST</text>
+    <text x="80" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,0.68)">UI + CLI + API</text>
+    <text x="80" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,0.67)">auth · sync trigger</text>
+    <text x="80" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,0.68)">webhook receiver</text>
   </g>
 
   <!-- Application Controller -->
   <g transform="translate(632,58)">
     <rect width="180" height="100" rx="7" fill="rgba(155,109,255,.07)" stroke="rgba(155,109,255,.3)" stroke-width="1.5"/>
     <text x="90" y="24" text-anchor="middle" font-family="Fira Code" font-size="10" fill="#9B6DFF" font-weight="600">App Controller</text>
-    <text x="90" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(155,109,255,.5)">the reconciler</text>
-    <text x="90" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.4)">watches Applications CRD</text>
-    <text x="90" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.35)">diff desired vs actual</text>
-    <text x="90" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.3)">triggers sync</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Inter" font-size="8.5" fill="rgba(155,109,255,0.96)">the reconciler</text>
+    <text x="90" y="58" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,0.96)">watches Applications CRD</text>
+    <text x="90" y="72" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,0.97)">diff desired vs actual</text>
+    <text x="90" y="86" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,0.96)">triggers sync</text>
   </g>
 
   <!-- Redis -->
   <g transform="translate(228,185)">
     <rect width="120" height="70" rx="6" fill="rgba(255,217,61,.06)" stroke="rgba(255,217,61,.25)" stroke-width="1"/>
     <text x="60" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#FFD93D" font-weight="600">Redis</text>
-    <text x="60" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(255,217,61,.45)">cluster state cache</text>
-    <text x="60" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,217,61,.3)">rendered manifest cache</text>
+    <text x="60" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(255,217,61,0.57)">cluster state cache</text>
+    <text x="60" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,217,61,0.56)">rendered manifest cache</text>
   </g>
 
   <!-- Dex -->
   <g transform="translate(368,185)">
     <rect width="100" height="70" rx="6" fill="rgba(79,142,247,.06)" stroke="rgba(79,142,247,.22)" stroke-width="1"/>
     <text x="50" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#4F8EF7" font-weight="600">Dex</text>
-    <text x="50" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(79,142,247,.45)">OIDC/SSO proxy</text>
-    <text x="50" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(79,142,247,.3)">optional</text>
+    <text x="50" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(79,142,247,0.91)">OIDC/SSO proxy</text>
+    <text x="50" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(79,142,247,0.92)">optional</text>
   </g>
 
   <!-- ApplicationSet Controller -->
   <g transform="translate(488,185)">
     <rect width="180" height="70" rx="6" fill="rgba(69,233,148,.06)" stroke="rgba(69,233,148,.25)" stroke-width="1"/>
     <text x="90" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#45E994" font-weight="600">AppSet Controller</text>
-    <text x="90" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(69,233,148,.45)">generates Applications</text>
-    <text x="90" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(69,233,148,.3)">from generators → templates</text>
+    <text x="90" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(69,233,148,0.61)">generates Applications</text>
+    <text x="90" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(69,233,148,0.6)">from generators → templates</text>
   </g>
 
   <!-- Notification Controller -->
   <g transform="translate(688,185)">
     <rect width="160" height="70" rx="6" fill="rgba(255,149,0,.05)" stroke="rgba(255,149,0,.2)" stroke-width="1"/>
     <text x="80" y="24" text-anchor="middle" font-family="Fira Code" font-size="9.5" fill="#FF9500" font-weight="600">Notification Ctrl</text>
-    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(255,149,0,.45)">alerts · webhooks</text>
-    <text x="80" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,149,0,.3)">Slack/PD/email triggers</text>
+    <text x="80" y="40" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(255,149,0,0.73)">alerts · webhooks</text>
+    <text x="80" y="55" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(255,149,0,0.74)">Slack/PD/email triggers</text>
   </g>
 
   <!-- Source Hydrator (v3.1) -->
   <g transform="translate(228,280)">
     <rect width="620" height="40" rx="6" fill="rgba(69,233,148,.04)" stroke="rgba(69,233,148,.15)" stroke-width="1" stroke-dasharray="5 3"/>
-    <text x="310" y="17" text-anchor="middle" font-family="Fira Code" font-size="8.5" fill="rgba(69,233,148,.5)" font-weight="600">Source Hydrator</text>
-    <text x="310" y="31" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(69,233,148,.35)">v3.1 · pre-renders manifests into a hydrated branch · decouples render from apply</text>
+    <text x="310" y="17" text-anchor="middle" font-family="Fira Code" font-size="8.5" fill="rgba(69,233,148,0.6)" font-weight="600">Source Hydrator</text>
+    <text x="310" y="31" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(69,233,148,0.61)">v3.1 · pre-renders manifests into a hydrated branch · decouples render from apply</text>
   </g>
 
   <!-- Internal arrows -->
@@ -428,42 +428,42 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
   <!-- Arrow: App Controller → managed clusters -->
   <path d="M 875 108 L 960 108" fill="none" stroke="rgba(155,109,255,.6)" stroke-width="1.8" marker-end="url(#ad)"/>
-  <text x="917" y="98" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,.5)">kubectl apply</text>
+  <text x="917" y="98" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(155,109,255,0.96)">kubectl apply</text>
 
   <!-- Managed Clusters box -->
   <rect x="960" y="40" width="380" height="290" rx="8" fill="rgba(255,255,255,.01)" stroke="rgba(255,255,255,.07)" stroke-width="1" stroke-dasharray="6 4"/>
-  <text x="1150" y="62" text-anchor="middle" font-family="Fira Code" font-size="9" fill="rgba(255,255,255,.2)" letter-spacing="2">MANAGED CLUSTERS</text>
+  <text x="1150" y="62" text-anchor="middle" font-family="Fira Code" font-size="9" fill="rgba(255,255,255,0.48)" letter-spacing="2">MANAGED CLUSTERS</text>
 
   <!-- Local cluster -->
   <g transform="translate(975,75)">
     <rect width="160" height="100" rx="6" fill="rgba(78,205,196,.05)" stroke="rgba(78,205,196,.2)" stroke-width="1"/>
     <text x="80" y="22" text-anchor="middle" font-family="Fira Code" font-size="9" fill="#4ECDC4" font-weight="600">in-cluster</text>
-    <text x="80" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(78,205,196,.4)">https://kubernetes.default.svc</text>
+    <text x="80" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(78,205,196,0.68)">https://kubernetes.default.svc</text>
     <rect x="12" y="48" width="136" height="18" rx="3" fill="rgba(78,205,196,.07)" stroke="rgba(78,205,196,.18)" stroke-width="1"/>
-    <text x="80" y="61" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.6)">Apps · Services · etc</text>
+    <text x="80" y="61" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,0.68)">Apps · Services · etc</text>
     <rect x="12" y="70" width="136" height="18" rx="3" fill="rgba(78,205,196,.04)" stroke="rgba(78,205,196,.1)" stroke-width="1"/>
-    <text x="80" y="83" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,.4)">ArgoCD itself</text>
+    <text x="80" y="83" text-anchor="middle" font-family="Fira Code" font-size="8" fill="rgba(78,205,196,0.68)">ArgoCD itself</text>
   </g>
 
   <!-- Remote cluster 1 -->
   <g transform="translate(1160,75)">
     <rect width="155" height="60" rx="6" fill="rgba(155,109,255,.05)" stroke="rgba(155,109,255,.18)" stroke-width="1"/>
     <text x="77" y="22" text-anchor="middle" font-family="Fira Code" font-size="9" fill="#9B6DFF" font-weight="600">remote cluster</text>
-    <text x="77" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(155,109,255,.4)">prod / staging</text>
-    <text x="77" y="52" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,109,255,.3)">kubeconfig registered</text>
+    <text x="77" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(155,109,255,0.96)">prod / staging</text>
+    <text x="77" y="52" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,109,255,0.96)">kubeconfig registered</text>
   </g>
 
   <!-- Remote cluster 2 -->
   <g transform="translate(1160,155)">
     <rect width="155" height="60" rx="6" fill="rgba(155,109,255,.04)" stroke="rgba(155,109,255,.14)" stroke-width="1"/>
     <text x="77" y="22" text-anchor="middle" font-family="Fira Code" font-size="9" fill="#9B6DFF" font-weight="600">remote cluster 2</text>
-    <text x="77" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(155,109,255,.4)">eu-west / ap-east</text>
-    <text x="77" y="52" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,109,255,.3)">managed via API</text>
+    <text x="77" y="38" text-anchor="middle" font-family="Inter" font-size="8" fill="rgba(155,109,255,0.96)">eu-west / ap-east</text>
+    <text x="77" y="52" text-anchor="middle" font-family="Fira Code" font-size="7.5" fill="rgba(155,109,255,0.96)">managed via API</text>
   </g>
 
   <!-- Legend -->
-  <text x="970" y="290" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.4)">── App Controller pushes to clusters</text>
-  <text x="970" y="308" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,.35)">   One ArgoCD instance → N clusters (hub model)</text>
+  <text x="970" y="290" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.9)">── App Controller pushes to clusters</text>
+  <text x="970" y="308" font-family="Fira Code" font-size="8" fill="rgba(249,94,98,0.89)">   One ArgoCD instance → N clusters (hub model)</text>
 </svg>
 </div>
 
@@ -574,18 +574,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   <div class="card cr">
     <div class="ctit" style="color:var(--red);">🚦 Application Status States</div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">SYNC STATUS</div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-synced">● Synced</div><div style="font-size:11px;color:var(--mid);flex:1;">Git desired state = cluster actual state</div></div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-outofsync">● OutOfSync</div><div style="font-size:11px;color:var(--mid);flex:1;">Drift detected — cluster differs from Git</div></div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-unknown">● Unknown</div><div style="font-size:11px;color:var(--mid);flex:1;">Cannot determine state (connectivity / render error)</div></div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">SYNC STATUS</div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-synced">● Synced</div><div style="font-size:12.5px;color:var(--mid);flex:1;">Git desired state = cluster actual state</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-outofsync">● OutOfSync</div><div style="font-size:12.5px;color:var(--mid);flex:1;">Drift detected — cluster differs from Git</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-unknown">● Unknown</div><div style="font-size:12.5px;color:var(--mid);flex:1;">Cannot determine state (connectivity / render error)</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">HEALTH STATUS</div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-healthy">● Healthy</div><div style="font-size:11px;color:var(--mid);flex:1;">All resources pass health checks</div></div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-progress">● Progressing</div><div style="font-size:11px;color:var(--mid);flex:1;">Deployment rolling out / pods starting</div></div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-degraded">● Degraded</div><div style="font-size:11px;color:var(--mid);flex:1;">CrashLoopBackOff / pod failures</div></div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-missing">● Missing</div><div style="font-size:11px;color:var(--mid);flex:1;">Expected resource absent from cluster</div></div>
-      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-suspended">● Suspended</div><div style="font-size:11px;color:var(--mid);flex:1;">Intentionally paused (CronJob, Rollout)</div></div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">HEALTH STATUS</div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-healthy">● Healthy</div><div style="font-size:12.5px;color:var(--mid);flex:1;">All resources pass health checks</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-progress">● Progressing</div><div style="font-size:12.5px;color:var(--mid);flex:1;">Deployment rolling out / pods starting</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-degraded">● Degraded</div><div style="font-size:12.5px;color:var(--mid);flex:1;">CrashLoopBackOff / pod failures</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-missing">● Missing</div><div style="font-size:12.5px;color:var(--mid);flex:1;">Expected resource absent from cluster</div></div>
+      <div style="display:flex;gap:6px;align-items:center;"><div class="badge b-suspended">● Suspended</div><div style="font-size:12.5px;color:var(--mid);flex:1;">Intentionally paused (CronJob, Rollout)</div></div>
     </div>
     <div class="note"><b>Healthy ≠ Synced.</b> An app can be Synced + Degraded (Git applied but pods crashing) or OutOfSync + Healthy (manual change that happens to work). Watch both independently.</div>
   </div>
@@ -626,7 +626,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
 <div class="card cg" style="margin-bottom:12px;">
   <div class="ctit" style="color:var(--grn);">⚡ What ApplicationSet Does</div>
-  <div style="font-size:11.5px;color:var(--mid);line-height:1.8;margin-bottom:12px;">An ApplicationSet is a <b style="color:var(--text);">generator + template</b>. It iterates over a list (clusters, directories, files, PRs…) and stamps out one Application per item. One ApplicationSet CRD → N Application objects. Applications are created, updated, and deleted automatically as the generator inputs change.</div>
+  <div style="font-size:13px;color:var(--mid);line-height:1.8;margin-bottom:12px;">An ApplicationSet is a <b style="color:var(--text);">generator + template</b>. It iterates over a list (clusters, directories, files, PRs…) and stamps out one Application per item. One ApplicationSet CRD → N Application objects. Applications are created, updated, and deleted automatically as the generator inputs change.</div>
   <div class="code"><span class="kw">apiVersion</span>: argoproj.io/v1alpha1
 <span class="kw">kind</span>: ApplicationSet
 <span class="ky">metadata</span>:
@@ -662,7 +662,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <span class="ky">preserveResourcesOnDeletion</span>: <span class="kw">false</span></div>
 </div>
 
-<div style="font-family:var(--mono);font-size:10px;color:var(--mid);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Generators — click to expand</div>
+<div style="font-family:var(--mono);font-size:12.5px;color:var(--mid);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Generators — click to expand</div>
 <div class="gen-grid">
 
   <div class="gen-card" onclick="toggleGen(this)">
@@ -671,7 +671,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">Iterate registered ArgoCD clusters. Filter by labels.</div>
     <div class="gen-detail">
       One Application per registered cluster. Variables: <code>{{.name}}</code>, <code>{{.server}}</code>, <code>{{.metadata.labels.env}}</code>. Add new cluster to ArgoCD → Application auto-created. Remove cluster → Application auto-deleted.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">clusters</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">clusters</span>:
   <span class="ky">selector</span>:
     <span class="ky">matchLabels</span>:
       <span class="ky">region</span>: <span class="st">us-east-1</span></div>
@@ -685,7 +685,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">One app per directory in a Git repo path.</div>
     <div class="gen-detail">
       Scans a Git path, creates one Application per directory found. Variables: <code>{{.path}}</code>, <code>{{.path.basename}}</code>, <code>{{.path.basenameNormalized}}</code>. Add a directory → Application appears. Delete directory → Application removed (with prune).
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">git</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">git</span>:
   <span class="ky">repoURL</span>: <span class="st">https://github.com/org/apps</span>
   <span class="ky">revision</span>: <span class="st">HEAD</span>
   <span class="ky">directories</span>:
@@ -701,7 +701,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">One app per JSON/YAML file matching a glob pattern.</div>
     <div class="gen-detail">
       Scan Git for files matching a glob. File contents are parsed as JSON/YAML and injected as template variables. Enables rich per-app config — each file can define name, namespace, values, etc.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">git</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">git</span>:
   <span class="ky">repoURL</span>: <span class="st">https://github.com/org/configs</span>
   <span class="ky">revision</span>: <span class="st">HEAD</span>
   <span class="ky">files</span>:
@@ -719,7 +719,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">Explicit static list of key-value maps.</div>
     <div class="gen-detail">
       Simplest generator. Define a static list of parameter maps. Good for a fixed set of environments or tenants. Not dynamic — adding an entry requires a Git commit.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">list</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">list</span>:
   <span class="ky">elements</span>:
   - { <span class="ky">env</span>: <span class="st">dev</span>,   <span class="ky">ns</span>: <span class="st">myapp-dev</span>,   <span class="ky">replicas</span>: <span class="st">"1"</span> }
   - { <span class="ky">env</span>: <span class="st">staging</span>, <span class="ky">ns</span>: <span class="st">myapp-stg</span>, <span class="ky">replicas</span>: <span class="st">"2"</span> }
@@ -733,7 +733,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">Cross-product of two generators. N×M = N×M Applications.</div>
     <div class="gen-detail">
       Combines two generators: every element from gen A × every element from gen B. Example: 3 clusters × 5 apps = 15 Applications. Powerful but can create an explosion of Applications if not scoped carefully.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">matrix</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">matrix</span>:
   <span class="ky">generators</span>:
   - <span class="ky">clusters</span>: {}         <span class="cm"># gen A: all clusters</span>
   - <span class="ky">git</span>:               <span class="cm"># gen B: all apps in git</span>
@@ -749,7 +749,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">Combine generators with a merge key — override specific values.</div>
     <div class="gen-detail">
       Merges results from multiple generators on a key. Use case: default values from a List generator, override specific fields for specific clusters from a second generator.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">merge</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">merge</span>:
   <span class="ky">mergeKeys</span>: [<span class="st">server</span>]    <span class="cm"># merge on cluster server URL</span>
   <span class="ky">generators</span>:
   - <span class="ky">clusters</span>: {}         <span class="cm"># base: all clusters</span>
@@ -765,7 +765,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">One app per open PR. Auto-deletes when PR closes.</div>
     <div class="gen-detail">
       Scans GitHub/GitLab/Gitea for open pull requests. Creates one Application per PR — preview environments. Automatically deletes the Application when the PR is closed or merged.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">pullRequest</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">pullRequest</span>:
   <span class="ky">github</span>:
     <span class="ky">owner</span>: <span class="st">myorg</span>
     <span class="ky">repo</span>: <span class="st">myapp</span>
@@ -784,7 +784,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <div class="gen-desc">All repos in a GitHub Org / GitLab Group matching filters.</div>
     <div class="gen-detail">
       Scans a GitHub Org / GitLab Group / Gitea org for all repositories matching filters (label, topic, language). One Application per matching repo. Platform teams use this to auto-onboard new services.
-      <div class="code" style="margin-top:6px;font-size:9px;"><span class="ky">scmProvider</span>:
+      <div class="code" style="margin-top:6px;font-size:11.5px;"><span class="ky">scmProvider</span>:
   <span class="ky">github</span>:
     <span class="ky">organization</span>: <span class="st">myorg</span>
     <span class="ky">tokenRef</span>:
@@ -868,7 +868,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <div class="g3">
   <div class="card cv">
     <div class="ctit" style="color:var(--vio);">🌳 App-of-Apps — Full Pattern</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Git structure:</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Git structure:</span>
 clusters/prod/
 ├── root-app.yaml          <span class="cm"># bootstrapped by Terraform/Helm</span>
 └── applications/
@@ -904,7 +904,7 @@ clusters/prod/
 
   <div class="card cg">
     <div class="ctit" style="color:var(--grn);">⚡ ApplicationSet Equivalent</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Git structure:</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Git structure:</span>
 apps/
 ├── nginx-ingress/
 │   └── values.yaml
@@ -939,7 +939,7 @@ apps/
 
   <div class="card cy">
     <div class="ctit" style="color:var(--yel);">🎯 Decision Guide: Which to Use?</div>
-    <div style="background:#06070c;border-radius:6px;padding:12px;font-family:var(--mono);font-size:9.5px;line-height:2.1;color:var(--mid);">
+    <div style="background:#06070c;border-radius:6px;padding:12px;font-family:var(--mono);font-size:12.5px;line-height:2.1;color:var(--mid);">
       <div style="color:var(--yel);">Apps all similar + scaling to many clusters?</div>
       <div style="padding-left:14px;">→ YES: <span style="color:var(--grn);">ApplicationSet (Cluster generator)</span></div>
       <div style="color:var(--yel);">PR preview environments?</div>
@@ -1020,7 +1020,7 @@ apps/
 
   <div class="g2" style="margin-top:10px;margin-bottom:0;">
     <div>
-      <div class="code" style="font-size:9.5px;"><span class="cm"># Hook + wave annotation pattern</span>
+      <div class="code" style="font-size:12.5px;"><span class="cm"># Hook + wave annotation pattern</span>
 <span class="ky">metadata</span>:
   <span class="ky">annotations</span>:
     argocd.argoproj.io/hook: PreSync
@@ -1039,7 +1039,7 @@ argocd.argoproj.io/sync-wave: <span class="st">"1"</span>   <span class="cm"># H
 argocd.argoproj.io/sync-wave: <span class="st">"5"</span>   <span class="cm"># PostSync validation job</span></div>
     </div>
     <div>
-      <div class="code" style="font-size:9.5px;"><span class="cm"># Sync Window — block or allow syncs at times</span>
+      <div class="code" style="font-size:12.5px;"><span class="cm"># Sync Window — block or allow syncs at times</span>
 <span class="ky">apiVersion</span>: argoproj.io/v1alpha1
 <span class="kw">kind</span>: AppProject
 <span class="ky">spec</span>:
@@ -1063,7 +1063,7 @@ argocd.argoproj.io/sync-wave: <span class="st">"5"</span>   <span class="cm"># P
     <div class="ctit" style="color:var(--teal);">🔍 Custom Health Checks (Lua)</div>
     <div class="fr"><span class="fk">Why needed</span><span class="fv">ArgoCD has built-in health checks for standard K8s resources. For CRDs (cert-manager Certificate, Argo Rollout, etc.), you define custom Lua scripts to determine health.</span></div>
     <div class="fr"><span class="fk">Built-in CRDs</span><span class="fv">ArgoCD includes health checks for: Deployment, StatefulSet, DaemonSet, ReplicaSet, Job, Ingress, PVC, cert-manager Certificate, Argo Rollout, and many others. Check the ArgoCD resource-customizations repo.</span></div>
-    <div class="code" style="font-size:9px;"><span class="cm"># argocd-cm ConfigMap: custom health check</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># argocd-cm ConfigMap: custom health check</span>
 resource.customizations.health.<span class="st">mygroup_MyCRD</span>: |
   hs = {}
   if obj.status == nil then
@@ -1084,7 +1084,7 @@ resource.customizations.health.<span class="st">mygroup_MyCRD</span>: |
 
   <div class="card cr">
     <div class="ctit" style="color:var(--red);">⚙️ ignoreDifferences Patterns</div>
-    <div class="code" style="font-size:9px;"><span class="cm"># ignoreDifferences: common patterns</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># ignoreDifferences: common patterns</span>
 <span class="ky">ignoreDifferences</span>:
 
 <span class="cm"># 1. HPA manages replicas</span>
@@ -1116,7 +1116,7 @@ resource.customizations.health.<span class="st">mygroup_MyCRD</span>: |
     <div class="fr"><span class="fk">Hard Refresh</span><span class="fv">Bypasses repo cache — forces a fresh Git fetch. Use when you just pushed to Git and want ArgoCD to pick it up immediately without waiting for the poll interval.</span></div>
     <div class="fr"><span class="fk">Sync</span><span class="fv">Applies the diff to the cluster. Can be triggered manually or automatically (if syncPolicy.automated is set). Sync without refresh uses last cached state.</span></div>
     <div class="fr"><span class="fk">Force sync</span><span class="fv"><code>argocd app sync --force</code>: replaces resources (uses <code>replace</code> instead of <code>apply</code>). Used when an apply is stuck due to immutable field change (e.g., Job selector). Destructive — deletes and recreates.</span></div>
-    <div class="code" style="font-size:9px;"><span class="cm"># CLI equivalents</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># CLI equivalents</span>
 argocd app get myapp --hard-refresh  <span class="cm"># force fetch from Git</span>
 argocd app diff myapp                <span class="cm"># show what would change</span>
 argocd app sync myapp                <span class="cm"># apply changes</span>
@@ -1196,7 +1196,7 @@ argocd app sync myapp --resource-name deploy/myapp  <span class="cm"># specific 
 <div style="display:flex;flex-direction:column;gap:12px;">
   <div class="card cy">
     <div class="ctit" style="color:var(--yel);">📋 Casbin RBAC Policy Format</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># argocd-rbac-cm ConfigMap</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># argocd-rbac-cm ConfigMap</span>
 <span class="cm"># Format: p, subject, resource, action, object, effect</span>
 
 <span class="cm"># Built-in roles</span>
@@ -1232,7 +1232,7 @@ g, alice@company.com, role:dev</div>
   <div class="card cb">
     <div class="ctit" style="color:var(--blue);">🔑 SSO Configuration (Dex)</div>
     <div class="fr"><span class="fk">OIDC providers</span><span class="fv">Dex supports: GitHub OAuth, GitLab, Google, Microsoft, LDAP, SAML 2.0, Bitbucket. Configure in <code>argocd-cm</code> under <code>dex.config</code>.</span></div>
-    <div class="code" style="font-size:9px;"><span class="cm"># argocd-cm: GitHub SSO via Dex</span>
+    <div class="code" style="font-size:11.5px;"><span class="cm"># argocd-cm: GitHub SSO via Dex</span>
 dex.config: |
   connectors:
   - type: github
@@ -1316,7 +1316,7 @@ g, myorg:dev-team, role:readonly</div>
   <div style="display:flex;flex-direction:column;gap:12px;">
     <div class="card co">
       <div class="ctit" style="color:var(--orn);">🔵 Blue-Green Strategy</div>
-      <div class="code" style="font-size:9.5px;"><span class="ky">strategy</span>:
+      <div class="code" style="font-size:12.5px;"><span class="ky">strategy</span>:
   <span class="ky">blueGreen</span>:
     <span class="ky">activeService</span>: <span class="st">myapp-active</span>    <span class="cm"># live traffic</span>
     <span class="ky">previewService</span>: <span class="st">myapp-preview</span>  <span class="cm"># new version (no traffic)</span>
@@ -1331,7 +1331,7 @@ g, myorg:dev-team, role:readonly</div>
     </div>
     <div class="card co">
       <div class="ctit" style="color:var(--orn);">🔧 Key Argo Rollouts CLI</div>
-      <div class="code" style="font-size:9.5px;"><span class="cm"># kubectl plugin</span>
+      <div class="code" style="font-size:12.5px;"><span class="cm"># kubectl plugin</span>
 kubectl argo rollouts get rollout myapp -w
 kubectl argo rollouts promote myapp         <span class="cm"># promote to next step</span>
 kubectl argo rollouts promote myapp --full  <span class="cm"># skip all steps</span>
@@ -1355,7 +1355,7 @@ kubectl argo rollouts pause myapp           <span class="cm"># pause at current 
 <div class="g3">
   <div class="card ct">
     <div class="ctit" style="color:var(--teal);">💻 Essential CLI Reference</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm">## App management</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm">## App management</span>
 argocd app list                    <span class="cm"># all apps</span>
 argocd app list -o wide            <span class="cm"># with more detail</span>
 argocd app get myapp               <span class="cm"># status + resources</span>
@@ -1400,7 +1400,7 @@ argocd admin settings validate     <span class="cm"># validate argocd-cm</span><
 
   <div class="card cg">
     <div class="ctit" style="color:var(--grn);">🔍 Debugging Unhealthy Apps</div>
-    <div class="code" style="font-size:9.5px;"><span class="cm">## Step 1: identify the issue</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm">## Step 1: identify the issue</span>
 argocd app get myapp
 <span class="cm"># Look at: Sync Status, Health Status, Resources list</span>
 <span class="cm"># Degraded resources show reason in the resources table</span>
@@ -1437,7 +1437,7 @@ kubectl rollout restart -n argocd \
   <div class="card cv">
     <div class="ctit" style="color:var(--vio);">🔔 Notifications</div>
     <div class="fr"><span class="fk">Install</span><span class="fv">Notifications controller ships with ArgoCD since v2.3. Manages itself — configure via <code>argocd-notifications-cm</code> (templates) and <code>argocd-notifications-secret</code> (credentials).</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># argocd-notifications-cm</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># argocd-notifications-cm</span>
 <span class="ky">service.slack</span>: |
   token: <span class="re">$slack-token</span>
 
@@ -1658,7 +1658,7 @@ function buildQuiz() {
     const d = document.createElement('div');
     d.className = 'q-item';
     d.id = 'qi-'+qi;
-    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:11.5px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
       <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
       <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
     c.appendChild(d);

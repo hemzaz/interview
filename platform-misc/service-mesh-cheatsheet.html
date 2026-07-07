@@ -31,14 +31,14 @@
   --sky:   #40C4FF;
 
   --text:  #cee0f5;
-  --dim:   #0a1e35;
-  --mid:   #264560;
+  --dim:   #717c8a;
+  --mid:   #677d90;
 
   --mono: 'JetBrains Mono', monospace;
   --sans: 'Manrope', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;overflow-x:hidden;}
 
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -61,14 +61,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--mesh),var(--ist2),var(--lnk),var(--kum));}
 .hero-bg{position:absolute;right:20px;bottom:-20px;font-size:160px;font-weight:800;color:rgba(108,99,255,.04);line-height:1;pointer-events:none;font-family:var(--mono);}
 .hero-grid{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;position:relative;}
-.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--m2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:3px;color:var(--m2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
 .hero-eyebrow::before{content:'';width:20px;height:2px;background:var(--mesh);}
 .hero h1{font-size:62px;font-weight:800;line-height:.88;letter-spacing:-2px;}
 .h1a{background:linear-gradient(135deg,var(--m2) 0%,var(--ist2) 40%,var(--lnk2) 70%,var(--kum2) 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .h1b{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(108,99,255,.2);}
-.hero-sub{font-size:11px;color:var(--mid);margin-top:10px;line-height:1.9;}
+.hero-sub{font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.9;}
 .hero-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
-.hp{font-family:var(--mono);font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
+.hp{font-family:var(--mono);font-size:11.5px;padding:3px 10px;border-radius:3px;border:1px solid;font-weight:500;}
 .hm{background:rgba(108,99,255,.09);border-color:rgba(108,99,255,.35);color:var(--m2);}
 .hi{background:rgba(70,107,176,.09);border-color:rgba(70,107,176,.35);color:var(--ist2);}
 .hl{background:rgba(43,170,223,.08);border-color:rgba(43,170,223,.3);color:var(--lnk2);}
@@ -77,11 +77,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .hero-right{display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:260px;}
 .hcard{background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:8px;padding:12px;text-align:center;}
 .hcard-n{font-size:18px;font-weight:800;line-height:1;margin-bottom:4px;}
-.hcard-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;}
+.hcard-l{font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;}
 
 /* ── NAV ── */
 .nav{display:flex;gap:3px;margin-bottom:18px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:4px;flex-wrap:wrap;}
-.nb{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nb{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:8px 14px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
 .nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
 .nb.on{background:rgba(108,99,255,.12);color:var(--m2);box-shadow:0 0 0 1px rgba(108,99,255,.3);}
 
@@ -92,7 +92,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
 .sh-i{font-size:18px;flex-shrink:0;}
 .sh-l{font-size:20px;font-weight:800;letter-spacing:-.3px;}
-.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh-s{font-family:var(--mono);font-size:11.5px;color:var(--mid);}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -116,37 +116,37 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .cp::before{background:linear-gradient(90deg,var(--pink),transparent);}
 .ce::before{background:linear-gradient(90deg,var(--env),transparent);}
 
-.ctit{font-size:12.5px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.ctit{font-size:13px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
 
 /* facts */
-.fr{display:grid;grid-template-columns:122px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
-.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:122px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:12.5px;}
+.fk{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.6;}
 .fv b{color:var(--text);}
-.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+.fv code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
 
 /* code */
-.code{background:#020508;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:9.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
+.code{background:#020508;border:1px solid var(--bd);border-radius:6px;padding:11px 13px;font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--mid);margin-top:9px;overflow-x:auto;white-space:pre;}
 .kw{color:var(--env);} .ky{color:var(--grn);} .st{color:var(--yel);}
-.nu{color:var(--sky);} .cmm{color:#102030;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+.nu{color:var(--sky);} .cmm{color:#747e87;} .fn{color:#7cb8ff;} .re{color:var(--red);}
 
 /* trap / note */
-.trap{background:rgba(255,82,82,.04);border:1px solid rgba(255,82,82,.15);border-radius:5px;padding:7px 11px;font-size:11px;color:var(--mid);margin-top:9px;line-height:1.6;}
+.trap{background:rgba(255,82,82,.04);border:1px solid rgba(255,82,82,.15);border-radius:5px;padding:7px 11px;font-size:12.5px;color:var(--mid);margin-top:9px;line-height:1.6;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
-.note{border-left:2px solid rgba(108,99,255,.4);padding:7px 11px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(108,99,255,.03);}
+.trap code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:2px solid rgba(108,99,255,.4);padding:7px 11px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(108,99,255,.03);}
 .note b{color:var(--text);}
-.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:9px;}
-.st th{font-family:var(--mono);font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:9px;}
+.st th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:6px 9px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.55;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.st td code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── TOOL DEEP DIVE CARDS ── */
 .tool-card{background:var(--s2);border:1px solid var(--bd);border-radius:11px;overflow:hidden;cursor:pointer;transition:.2s;margin-bottom:10px;}
@@ -154,16 +154,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .tc-head{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center;padding:18px 20px;}
 .tc-logo{width:50px;height:50px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0;}
 .tc-name{font-size:16px;font-weight:800;letter-spacing:-.2px;}
-.tc-tagline{font-family:var(--mono);font-size:8.5px;color:var(--mid);margin-top:3px;}
+.tc-tagline{font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-top:3px;}
 .tc-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
-.tc-pill{font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:3px;border:1px solid;}
+.tc-pill{font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:3px;border:1px solid;}
 .tc-arrow{color:var(--mid);transition:.2s;font-size:14px;flex-shrink:0;}
 .tool-card.open .tc-arrow{transform:rotate(90deg);}
 .tc-body{display:none;padding:0 20px 20px;border-top:1px solid var(--bd);}
 .tool-card.open .tc-body{display:block;}
 
 /* ── DECISION TREE ── */
-.dtree{background:#020508;border:1px solid var(--bd);border-radius:8px;padding:18px;font-family:var(--mono);font-size:9.5px;line-height:2.4;margin-bottom:12px;}
+.dtree{background:#020508;border:1px solid var(--bd);border-radius:8px;padding:18px;font-family:var(--mono);font-size:12.5px;line-height:2.4;margin-bottom:12px;}
 .dt-q{color:var(--m2);font-weight:600;}
 .dt-a{padding-left:16px;color:var(--mid);}
 .dt-y{color:var(--grn);}
@@ -179,35 +179,35 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .trap-card{background:var(--s1);border:1px solid rgba(255,82,82,.1);border-radius:8px;padding:13px;position:relative;overflow:hidden;}
 .trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,82,82,.4),transparent);}
 .tc-n{position:absolute;top:7px;right:11px;font-family:var(--mono);font-size:28px;color:rgba(255,82,82,.06);line-height:1;}
-.tc-tag{font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
-.tc-q2{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
-.tc-a2{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.tc-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.tc-q2{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.tc-a2{font-size:12.5px;color:var(--mid);line-height:1.55;}
 .tc-a2 b{color:var(--text);}
-.tc-a2 code{font-family:var(--mono);font-size:8.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.tc-a2 code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── QUIZ ── */
 .quiz-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:12px;}
 .quiz-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .quiz-title{font-size:14px;font-weight:700;color:var(--mesh);}
-.quiz-score{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
+.quiz-score{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:4px;padding:4px 12px;color:var(--mid);}
 .quiz-score span{color:var(--grn);font-weight:700;}
 .q-item{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:13px;margin-bottom:8px;transition:.2s;}
 .q-item.revealed{border-color:rgba(0,230,118,.2);}
 .q-item.revealed-bad{border-color:rgba(255,82,82,.2);}
-.q-text{font-size:11.5px;color:var(--text);margin-bottom:9px;line-height:1.6;}
-.q-text code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
+.q-text{font-size:13px;color:var(--text);margin-bottom:9px;line-height:1.6;}
+.q-text code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.07);padding:2px 6px;border-radius:3px;color:var(--yel);}
 .q-opts{display:flex;flex-direction:column;gap:5px;}
-.q-opt{font-family:var(--mono);font-size:10px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
+.q-opt{font-family:var(--mono);font-size:12.5px;padding:7px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;background:rgba(255,255,255,.02);color:var(--mid);transition:.2s;text-align:left;}
 .q-opt:hover:not(:disabled){background:rgba(108,99,255,.07);border-color:rgba(108,99,255,.3);color:var(--text);}
 .q-opt.correct{background:rgba(0,230,118,.08);border-color:rgba(0,230,118,.35);color:var(--grn);}
 .q-opt.wrong{background:rgba(255,82,82,.07);border-color:rgba(255,82,82,.3);color:var(--red);}
 .q-opt:disabled{cursor:default;}
-.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:10.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
+.q-explain{display:none;margin-top:8px;padding:8px 11px;background:rgba(255,255,255,.02);border-radius:4px;font-size:12.5px;color:var(--mid);line-height:1.6;border-left:2px solid var(--grn);}
 .q-explain.show{display:block;}
 .q-explain b{color:var(--text);}
-.q-explain code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.q-explain code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .quiz-btns{display:flex;gap:8px;margin-top:12px;}
-.qbtn{font-family:var(--mono);font-size:8.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
+.qbtn{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid;cursor:pointer;transition:.2s;}
 .qb-r{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--mid);}
 .qb-r:hover{background:rgba(255,255,255,.07);color:var(--text);}
 .qb-m{background:rgba(108,99,255,.09);border-color:rgba(108,99,255,.3);color:var(--m2);}
@@ -216,10 +216,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 /* ── SCENARIO CARDS ── */
 .scenario{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;}
 .sc-icon{font-size:20px;}
-.sc-title{font-size:12px;font-weight:700;margin-bottom:3px;}
-.sc-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.sc-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.sc-desc{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .sc-desc b{color:var(--text);}
-.sc-rec{font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:5px;border:1px solid;font-weight:700;white-space:nowrap;text-align:center;min-width:80px;}
+.sc-rec{font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:5px;border:1px solid;font-weight:700;white-space:nowrap;text-align:center;min-width:80px;}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .sec.on>*{animation:fi .3s ease both;}
@@ -229,7 +229,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .sec.on>*:nth-child(7){animation-delay:.20s}
 
 .footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:var(--mono);font-size:11.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -313,32 +313,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </defs>
 
   <!-- WITHOUT MESH (left) -->
-  <text x="320" y="22" text-anchor="middle" font-family="Manrope" font-size="13" fill="rgba(255,82,82,.6)" font-weight="700" letter-spacing="2">WITHOUT MESH</text>
+  <text x="320" y="22" text-anchor="middle" font-family="Manrope" font-size="13" fill="rgba(255,82,82,0.92)" font-weight="700" letter-spacing="2">WITHOUT MESH</text>
 
   <!-- Pods (chaotic) -->
   <g transform="translate(30,45)">
     <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.3)" stroke-width="1.5"/>
-    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-A</text>
-    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.45)">owns retry logic</text>
-    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.35)">auth in code</text>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,0.92)" font-weight="600">svc-A</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.91)">owns retry logic</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.91)">auth in code</text>
   </g>
   <g transform="translate(160,45)">
     <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.25)" stroke-width="1.5"/>
-    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-B</text>
-    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.4)">different timeout</text>
-    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.3)">no tracing</text>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,0.92)" font-weight="600">svc-B</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.92)">different timeout</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.92)">no tracing</text>
   </g>
   <g transform="translate(290,45)">
     <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.2)" stroke-width="1.5"/>
-    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-C</text>
-    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.35)">HTTP only</text>
-    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.25)">no circuit break</text>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,0.92)" font-weight="600">svc-C</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.91)">HTTP only</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.91)">no circuit break</text>
   </g>
   <g transform="translate(420,45)">
     <rect width="100" height="55" rx="7" fill="rgba(255,82,82,.07)" stroke="rgba(255,82,82,.18)" stroke-width="1.5"/>
-    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,.7)" font-weight="600">svc-D</text>
-    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.3)">plaintext traffic</text>
-    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,.2)">no identity</text>
+    <text x="50" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(255,82,82,0.92)" font-weight="600">svc-D</text>
+    <text x="50" y="37" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.92)">plaintext traffic</text>
+    <text x="50" y="50" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(255,82,82,0.92)">no identity</text>
   </g>
 
   <!-- Chaotic connections -->
@@ -351,56 +351,56 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <!-- Problems list -->
   <g transform="translate(30,130)">
     <rect width="490" height="120" rx="8" fill="rgba(255,82,82,.03)" stroke="rgba(255,82,82,.1)" stroke-width="1"/>
-    <text x="15" y="22" font-family="Manrope" font-size="10" fill="rgba(255,82,82,.6)" font-weight="700">Problems you end up solving in application code:</text>
-    <text x="15" y="42" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.45)">✗  Retry logic duplicated in every service (and inconsistently)</text>
-    <text x="15" y="58" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.4)">✗  TLS/mTLS negotiation owned by each team — or skipped</text>
-    <text x="15" y="74" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.35)">✗  No unified observability — tracing requires SDK changes per service</text>
-    <text x="15" y="90" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.3)">✗  Traffic splitting / canaries need code changes or separate tools</text>
-    <text x="15" y="106" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,.25)">✗  No service identity — any pod can talk to any pod</text>
+    <text x="15" y="22" font-family="Manrope" font-size="10" fill="rgba(255,82,82,0.92)" font-weight="700">Problems you end up solving in application code:</text>
+    <text x="15" y="42" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,0.91)">✗  Retry logic duplicated in every service (and inconsistently)</text>
+    <text x="15" y="58" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,0.92)">✗  TLS/mTLS negotiation owned by each team — or skipped</text>
+    <text x="15" y="74" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,0.91)">✗  No unified observability — tracing requires SDK changes per service</text>
+    <text x="15" y="90" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,0.92)">✗  Traffic splitting / canaries need code changes or separate tools</text>
+    <text x="15" y="106" font-family="Manrope" font-size="9.5" fill="rgba(255,82,82,0.91)">✗  No service identity — any pod can talk to any pod</text>
   </g>
 
   <!-- Divider -->
   <line x1="560" y1="20" x2="560" y2="260" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="6 4"/>
 
   <!-- WITH MESH (right) -->
-  <text x="960" y="22" text-anchor="middle" font-family="Manrope" font-size="13" fill="rgba(0,230,118,.6)" font-weight="700" letter-spacing="2">WITH MESH</text>
+  <text x="960" y="22" text-anchor="middle" font-family="Manrope" font-size="13" fill="rgba(0,230,118,0.64)" font-weight="700" letter-spacing="2">WITH MESH</text>
 
   <!-- Pods with sidecars -->
   <g transform="translate(610,45)">
     <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.06)" stroke="rgba(0,230,118,.25)" stroke-width="1.5"/>
     <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-A</text>
     <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
-    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
-    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">mTLS auto</text>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,0.64)">mTLS auto</text>
   </g>
   <g transform="translate(740,45)">
     <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.05)" stroke="rgba(0,230,118,.2)" stroke-width="1.5"/>
     <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-B</text>
     <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
-    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
-    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">retry auto</text>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,0.64)">retry auto</text>
   </g>
   <g transform="translate(870,45)">
     <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.05)" stroke="rgba(0,230,118,.18)" stroke-width="1.5"/>
     <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-C</text>
     <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
-    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
-    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">tracing auto</text>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,0.64)">tracing auto</text>
   </g>
   <g transform="translate(1000,45)">
     <rect width="100" height="65" rx="7" fill="rgba(0,230,118,.04)" stroke="rgba(0,230,118,.15)" stroke-width="1.5"/>
     <text x="50" y="20" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.7)" font-weight="600">svc-D</text>
     <rect x="10" y="28" width="80" height="16" rx="3" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.25)" stroke-width="1"/>
-    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.8)">proxy</text>
-    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,.4)">SPIFFE identity</text>
+    <text x="50" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">proxy</text>
+    <text x="50" y="58" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(0,230,118,0.64)">SPIFFE identity</text>
   </g>
 
   <!-- Control plane -->
   <g transform="translate(1130,45)">
     <rect width="180" height="65" rx="7" fill="rgba(108,99,255,.08)" stroke="rgba(108,99,255,.3)" stroke-width="1.5" filter="url(#gw)"/>
     <text x="90" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#9B93FF" font-weight="700">Control Plane</text>
-    <text x="90" y="38" text-anchor="middle" font-family="Manrope" font-size="8.5" fill="rgba(108,99,255,.5)">policy · certs · config</text>
-    <text x="90" y="52" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.4)">istiod / linkerd-cp / kuma-cp</text>
+    <text x="90" y="38" text-anchor="middle" font-family="Manrope" font-size="8.5" fill="rgba(123,115,255,1)">policy · certs · config</text>
+    <text x="90" y="52" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">istiod / linkerd-cp / kuma-cp</text>
   </g>
 
   <!-- Ordered mesh connections -->
@@ -414,12 +414,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <!-- Benefits list -->
   <g transform="translate(610,140)">
     <rect width="700" height="110" rx="8" fill="rgba(0,230,118,.03)" stroke="rgba(0,230,118,.1)" stroke-width="1"/>
-    <text x="15" y="22" font-family="Manrope" font-size="10" fill="rgba(0,230,118,.6)" font-weight="700">What mesh gives you — in the proxy, transparent to your code:</text>
-    <text x="15" y="42" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.5)">✓  Automatic mTLS between every service (zero code changes)</text>
-    <text x="15" y="58" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.45)">✓  Unified retry / timeout / circuit-breaker policy via CRDs</text>
-    <text x="15" y="74" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.4)">✓  Automatic distributed tracing and golden signals (L7 metrics)</text>
-    <text x="15" y="90" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.35)">✓  Traffic splitting, canary, blue-green without app changes</text>
-    <text x="15" y="106" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,.3)">✓  SPIFFE service identity — authorization policies per workload</text>
+    <text x="15" y="22" font-family="Manrope" font-size="10" fill="rgba(0,230,118,0.64)" font-weight="700">What mesh gives you — in the proxy, transparent to your code:</text>
+    <text x="15" y="42" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,0.64)">✓  Automatic mTLS between every service (zero code changes)</text>
+    <text x="15" y="58" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,0.63)">✓  Unified retry / timeout / circuit-breaker policy via CRDs</text>
+    <text x="15" y="74" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,0.64)">✓  Automatic distributed tracing and golden signals (L7 metrics)</text>
+    <text x="15" y="90" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,0.63)">✓  Traffic splitting, canary, blue-green without app changes</text>
+    <text x="15" y="106" font-family="Manrope" font-size="9.5" fill="rgba(0,230,118,0.64)">✓  SPIFFE service identity — authorization policies per workload</text>
   </g>
 </svg>
 </div>
@@ -472,32 +472,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <!-- Pod A -->
       <g transform="translate(10,20)">
         <rect width="200" height="155" rx="8" fill="rgba(0,230,118,.04)" stroke="rgba(0,230,118,.2)" stroke-width="1.5"/>
-        <text x="100" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.5)">POD A</text>
+        <text x="100" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,0.64)">POD A</text>
         <rect x="12" y="28" width="176" height="40" rx="5" fill="rgba(0,230,118,.08)" stroke="rgba(0,230,118,.25)" stroke-width="1"/>
         <text x="100" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00E676" font-weight="600">app container</text>
         <rect x="12" y="78" width="176" height="40" rx="5" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.3)" stroke-width="1.5"/>
         <text x="100" y="96" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#9B93FF" font-weight="700">proxy (sidecar)</text>
-        <text x="100" y="109" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(108,99,255,.5)">Envoy / linkerd2-proxy</text>
+        <text x="100" y="109" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(123,115,255,1)">Envoy / linkerd2-proxy</text>
         <rect x="12" y="128" width="176" height="20" rx="3" fill="rgba(108,99,255,.05)" stroke="rgba(108,99,255,.15)" stroke-width="1"/>
-        <text x="100" y="141" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.5)">iptables redirect all traffic to proxy</text>
+        <text x="100" y="141" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">iptables redirect all traffic to proxy</text>
       </g>
 
       <!-- Arrow (encrypted) -->
       <path d="M 212 98 L 340 98" fill="none" stroke="rgba(0,230,118,.6)" stroke-width="2" marker-end="url(#b1)"/>
-      <text x="276" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(0,230,118,.6)">mTLS</text>
-      <text x="276" y="113" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(0,230,118,.4)">encrypted</text>
+      <text x="276" y="88" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(0,230,118,0.64)">mTLS</text>
+      <text x="276" y="113" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(0,230,118,0.64)">encrypted</text>
 
       <!-- Pod B -->
       <g transform="translate(340,20)">
         <rect width="200" height="155" rx="8" fill="rgba(0,230,118,.04)" stroke="rgba(0,230,118,.2)" stroke-width="1.5"/>
-        <text x="100" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,.5)">POD B</text>
+        <text x="100" y="18" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(0,230,118,0.64)">POD B</text>
         <rect x="12" y="78" width="176" height="40" rx="5" fill="rgba(108,99,255,.1)" stroke="rgba(108,99,255,.3)" stroke-width="1.5"/>
         <text x="100" y="96" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#9B93FF" font-weight="700">proxy (sidecar)</text>
-        <text x="100" y="109" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(108,99,255,.5)">terminates mTLS</text>
+        <text x="100" y="109" text-anchor="middle" font-family="Manrope" font-size="8" fill="rgba(123,115,255,1)">terminates mTLS</text>
         <rect x="12" y="28" width="176" height="40" rx="5" fill="rgba(0,230,118,.08)" stroke="rgba(0,230,118,.25)" stroke-width="1"/>
         <text x="100" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00E676" font-weight="600">app container</text>
         <rect x="12" y="128" width="176" height="20" rx="3" fill="rgba(108,99,255,.05)" stroke="rgba(108,99,255,.15)" stroke-width="1"/>
-        <text x="100" y="141" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(108,99,255,.5)">app sees plaintext</text>
+        <text x="100" y="141" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(123,115,255,1)">app sees plaintext</text>
       </g>
     </svg>
     <div class="fr"><span class="fk">How injection works</span><span class="fv"><b>Init container</b> runs first, rewrites iptables rules to redirect all inbound/outbound traffic to the sidecar proxy port. App container starts normally — it sends to <code>localhost:80</code>, iptables catches it, proxy handles the rest.</span></div>
@@ -596,7 +596,7 @@ istioctl authn tls-check svc-a.default.svc.cluster.local</div>
     <div class="fr"><span class="fk">AuthorizationPolicy</span><span class="fv">Allow/deny rules based on source identity (SPIFFE), method, path, headers. Zero-trust policy enforcement.</span></div>
     <div class="fr"><span class="fk">Gateway</span><span class="fv">Configure inbound/outbound traffic for the mesh edge. Exposes services outside the cluster through the ingress gateway.</span></div>
     <div class="fr"><span class="fk">PeerAuthentication</span><span class="fv">Set mTLS mode per namespace/workload: STRICT (mTLS required), PERMISSIVE (mTLS or plaintext), DISABLE.</span></div>
-    <div class="code" style="font-size:9px;"><span class="cmm"># Traffic split: 90% stable, 10% canary</span>
+    <div class="code" style="font-size:11.5px;"><span class="cmm"># Traffic split: 90% stable, 10% canary</span>
 <span class="kw">kind</span>: VirtualService
 <span class="ky">spec</span>:
   <span class="ky">hosts</span>: [<span class="st">myapp</span>]
@@ -682,7 +682,7 @@ linkerd check --proxy -n default</div>
     <div class="fr"><span class="fk">AuthorizationPolicy</span><span class="fv">Allow specific clients (by identity or namespace) to access a Server. Default: deny all in locked-down mode.</span></div>
     <div class="fr"><span class="fk">HTTPRoute</span><span class="fv">Gateway API compatible. Fine-grained HTTP routing: path matching, header matching, traffic splitting, retries, timeouts.</span></div>
     <div class="fr"><span class="fk">ServiceProfile</span><span class="fv">Legacy CRD: per-route metrics, retries, timeouts per endpoint. Replaced by HTTPRoute in newer Linkerd versions.</span></div>
-    <div class="code" style="font-size:9px;"><span class="cmm"># Server: define what myapp exposes</span>
+    <div class="code" style="font-size:11.5px;"><span class="cmm"># Server: define what myapp exposes</span>
 <span class="kw">apiVersion</span>: policy.linkerd.io/v1beta3
 <span class="kw">kind</span>: Server
 <span class="ky">spec</span>:
@@ -774,7 +774,7 @@ kumactl get dataplanes --mesh default</div>
 <div style="display:flex;flex-direction:column;gap:12px;">
   <div class="card ck">
     <div class="ctit" style="color:var(--kum2);">📋 Key Policies</div>
-    <div class="code" style="font-size:9px;"><span class="cmm"># MeshTrafficPermission (zero trust)</span>
+    <div class="code" style="font-size:11.5px;"><span class="cmm"># MeshTrafficPermission (zero trust)</span>
 <span class="kw">kind</span>: MeshTrafficPermission
 <span class="ky">spec</span>:
   <span class="ky">targetRef</span>:
@@ -994,19 +994,19 @@ kumactl get dataplanes --mesh default</div>
   <div class="ctit" style="color:var(--grn);">🛤️ Mesh Adoption Strategy</div>
   <div class="g3" style="margin-bottom:0;">
     <div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 1: Observe</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 1: Observe</div>
       <div class="fr" style="border-top:none;"><span class="fk">Install mesh</span><span class="fv">Install with PERMISSIVE mTLS mode. Enable injection on one namespace. Zero changes to applications.</span></div>
       <div class="fr"><span class="fk">Observe</span><span class="fv">Watch the service topology appear. See where traffic is flowing, which services are communicating, baseline latencies and error rates.</span></div>
       <div class="fr"><span class="fk">Fix issues</span><span class="fv">Some apps have health checks that break with sidecar injection (timing, port conflicts). Fix before proceeding.</span></div>
     </div>
     <div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 2: Secure</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 2: Secure</div>
       <div class="fr" style="border-top:none;"><span class="fk">Enable namespace</span><span class="fv">Inject remaining namespaces. Still PERMISSIVE — apps that don't support mTLS won't break.</span></div>
       <div class="fr"><span class="fk">Strict mTLS</span><span class="fv">Switch to STRICT per namespace as you verify each service handles mTLS correctly. PeerAuthentication policy per namespace.</span></div>
       <div class="fr"><span class="fk">AuthZ policies</span><span class="fv">Start with deny-all default, then add explicit ALLOW rules between services. Zero trust by default.</span></div>
     </div>
     <div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 3: Control</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Phase 3: Control</div>
       <div class="fr" style="border-top:none;"><span class="fk">Traffic policies</span><span class="fv">Add retry policies, circuit breakers, timeouts via mesh CRDs. Remove the same logic from application code over time.</span></div>
       <div class="fr"><span class="fk">Canary infra</span><span class="fv">Configure Argo Rollouts or Flagger to use the mesh for traffic splitting. Progressive delivery now works at L7.</span></div>
       <div class="fr"><span class="fk">Tune & optimize</span><span class="fv">Ambient mode (Istio): migrate namespaces from sidecar to ambient for resource savings. Fine-tune timeouts based on observed P99 latencies.</span></div>
@@ -1226,7 +1226,7 @@ function buildQuiz() {
   QS.forEach((q, qi) => {
     const d = document.createElement('div');
     d.className = 'q-item'; d.id = 'qi-'+qi;
-    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:9px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
+    d.innerHTML = `<div class="q-text"><b style="font-family:var(--mono);font-size:11.5px;color:var(--mid);">Q${qi+1}.</b> ${q.q}</div>
       <div class="q-opts">${q.opts.map((o,oi) => `<button class="q-opt" id="qo-${qi}-${oi}" onclick="answer(${qi},${oi})">${o}</button>`).join('')}</div>
       <div class="q-explain" id="qe-${qi}">${q.ex}</div>`;
     c.appendChild(d);

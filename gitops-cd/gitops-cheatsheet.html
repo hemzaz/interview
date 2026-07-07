@@ -30,14 +30,14 @@
   --grn:   #32D74B;
 
   --text:  #ccd8f0;
-  --dim:   #0e1530;
-  --mid:   #354870;
+  --dim:   #787c8b;
+  --mid:   #6e7b98;
   --sans:  'DM Sans', sans-serif;
   --mono:  'DM Mono', monospace;
   --disp:  'Playfair Display', serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;overflow-x:hidden;}
 
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -59,14 +59,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--git),var(--go),var(--flux),var(--argo),var(--pink));}
 .hero-bg-txt{position:absolute;right:-20px;top:-30px;font-size:180px;font-weight:900;color:rgba(0,220,130,.03);font-family:var(--mono);line-height:1;pointer-events:none;user-select:none;}
 .hero-grid{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;position:relative;}
-.hero-kicker{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--go2);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.hero-kicker{font-family:var(--mono);font-size:12.5px;letter-spacing:3px;color:var(--go2);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 .hero-kicker::before{content:'';width:24px;height:1px;background:var(--go);}
 .hero h1{font-family:var(--disp);font-size:68px;font-weight:900;line-height:.88;letter-spacing:-2px;}
 .h1a{background:linear-gradient(135deg,var(--go) 0%,var(--teal) 60%,#fff 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .h1b{color:rgba(255,255,255,.07);-webkit-text-stroke:1px rgba(0,220,130,.2);}
-.hero-sub{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--mid);margin-top:12px;line-height:1.8;}
+.hero-sub{font-family:var(--mono);font-size:12.5px;letter-spacing:.5px;color:var(--mid);margin-top:12px;line-height:1.8;}
 .hero-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
-.hp{font-family:var(--mono);font-size:8.5px;padding:4px 12px;border-radius:20px;border:1px solid;font-weight:500;}
+.hp{font-family:var(--mono);font-size:11.5px;padding:4px 12px;border-radius:20px;border:1px solid;font-weight:500;}
 .hp-g {background:rgba(0,220,130,.08);border-color:rgba(0,220,130,.3);color:var(--go);}
 .hp-a {background:rgba(249,94,98,.08);border-color:rgba(249,94,98,.3);color:var(--argo);}
 .hp-f {background:rgba(84,104,255,.09);border-color:rgba(84,104,255,.35);color:var(--flux);}
@@ -76,15 +76,15 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .hero-right{display:flex;flex-direction:column;gap:8px;}
 .hquote{background:rgba(0,220,130,.06);border:1px solid rgba(0,220,130,.15);border-radius:10px;padding:16px 18px;max-width:280px;}
 .hq-text{font-family:var(--disp);font-size:13px;line-height:1.6;color:rgba(255,255,255,.7);font-style:italic;}
-.hq-src{font-family:var(--mono);font-size:8.5px;color:var(--go2);margin-top:8px;letter-spacing:1px;}
+.hq-src{font-family:var(--mono);font-size:11.5px;color:var(--go2);margin-top:8px;letter-spacing:1px;}
 .h4p{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
 .h4pi{background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:7px;padding:10px;text-align:center;}
 .h4pi-n{font-family:var(--disp);font-size:20px;font-weight:800;color:var(--go);line-height:1;}
-.h4pi-l{font-family:var(--mono);font-size:7px;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.h4pi-l{font-family:var(--mono);font-size:11.5px;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
 
 /* ── NAV ── */
 .nav{display:flex;gap:3px;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:5px;flex-wrap:wrap;}
-.nb{font-family:var(--mono);font-size:9px;font-weight:600;padding:9px 16px;border-radius:6px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);letter-spacing:.3px;}
+.nb{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:9px 16px;border-radius:6px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);letter-spacing:.3px;}
 .nb:hover{color:var(--text);background:rgba(255,255,255,.04);}
 .nb.on{background:rgba(0,220,130,.1);color:var(--go);box-shadow:0 0 0 1px rgba(0,220,130,.25);}
 
@@ -95,7 +95,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
 .sh-i{font-size:20px;flex-shrink:0;}
 .sh-l{font-size:22px;font-weight:700;letter-spacing:-.5px;}
-.sh-s{font-family:var(--mono);font-size:9px;color:var(--mid);}
+.sh-s{font-family:var(--mono);font-size:11.5px;color:var(--mid);}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -123,43 +123,43 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ctit{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;letter-spacing:-.2px;}
 
 /* facts */
-.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:11px;}
-.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.022);align-items:baseline;font-size:12.5px;}
+.fk{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.6;}
 .fv b{color:var(--text);}
-.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
+.fv code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--yel);}
 
 /* code */
-.code{background:#030510;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:10px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
+.code{background:#030510;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
 .kw{color:#b4a0ff;} .ky{color:var(--go);} .st{color:var(--yel);}
-.nu{color:var(--teal);} .cm{color:#1a2850;} .fn{color:#7cb8ff;} .re{color:var(--red);}
+.nu{color:var(--teal);} .cm{color:#767e96;} .fn{color:#7cb8ff;} .re{color:var(--red);}
 
 /* trap / note */
-.trap{background:rgba(255,69,58,.04);border:1px solid rgba(255,69,58,.15);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap{background:rgba(255,69,58,.04);border:1px solid rgba(255,69,58,.15);border-radius:6px;padding:8px 12px;font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
-.note{border-left:3px solid rgba(0,220,130,.3);padding:8px 12px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(0,220,130,.03);}
+.trap code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note{border-left:3px solid rgba(0,220,130,.3);padding:8px 12px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;background:rgba(0,220,130,.03);}
 .note b{color:var(--text);}
-.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 .good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
-.st th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;}
+.st th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.st td code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── PRINCIPLES ── */
 .principle{display:grid;grid-template-columns:56px 1fr;gap:14px;padding:14px 0;border-top:1px solid rgba(255,255,255,.028);align-items:start;}
 .p-num{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:22px;font-weight:900;flex-shrink:0;}
 .p-body{}
 .p-title{font-size:13px;font-weight:700;margin-bottom:4px;}
-.p-desc{font-size:11px;color:var(--mid);line-height:1.65;}
+.p-desc{font-size:12.5px;color:var(--mid);line-height:1.65;}
 .p-desc b{color:var(--text);}
-.p-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.p-desc code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── RECONCILIATION LOOP SVG ── */
 
@@ -170,16 +170,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .tc-head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;}
 .tc-logo{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;font-family:var(--mono);flex-shrink:0;}
 .tc-name{font-size:15px;font-weight:700;}
-.tc-tagline{font-family:var(--mono);font-size:9px;color:var(--mid);margin-top:3px;}
+.tc-tagline{font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-top:3px;}
 .tc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
-.tc-tag{font-family:var(--mono);font-size:7.5px;padding:2px 8px;border-radius:12px;border:1px solid;}
+.tc-tag{font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:12px;border:1px solid;}
 .tc-arrow{color:var(--mid);transition:.2s;font-size:14px;}
 .tool-card.open .tc-arrow{transform:rotate(90deg);color:var(--go);}
 .tc-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);}
 .tool-card.open .tc-body{display:block;}
 .tc-comparison{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
 .tc-col{background:rgba(0,0,0,.2);border-radius:6px;padding:10px;}
-.tc-col-title{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;}
+.tc-col-title{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;}
 
 /* ── BOUNDARY DIAGRAM ── */
 .boundary-wrap{margin-bottom:14px;}
@@ -187,9 +187,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .bzone-tf{background:rgba(123,66,188,.07);border:1px solid rgba(123,66,188,.2);}
 .bzone-bridge{background:rgba(255,214,10,.04);border:1px solid rgba(255,214,10,.15);border-style:dashed;}
 .bzone-gitops{background:rgba(0,220,130,.06);border:1px solid rgba(0,220,130,.2);}
-.bz-title{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.bz-title{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
 .bz-items{display:flex;flex-wrap:wrap;gap:6px;}
-.bz-item{padding:5px 12px;border-radius:6px;font-size:11px;display:flex;align-items:center;gap:5px;}
+.bz-item{padding:5px 12px;border-radius:6px;font-size:12.5px;display:flex;align-items:center;gap:5px;}
 .bz-tf{background:rgba(123,66,188,.12);border:1px solid rgba(123,66,188,.3);color:#b060ff;}
 .bz-go{background:rgba(0,220,130,.1);border:1px solid rgba(0,220,130,.3);color:var(--go);}
 .bz-both{background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.25);color:var(--yel);}
@@ -198,24 +198,24 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 /* ── PATTERN CARDS ── */
 .pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .pat-card{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:14px;}
-.pat-title{font-size:12.5px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
-.pat-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.pat-title{font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.pat-desc{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .pat-desc b{color:var(--text);}
-.pat-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.pat-desc code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── TRAPS ── */
 .trap-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
 .trap-card{background:var(--s1);border:1px solid rgba(255,69,58,.1);border-radius:9px;padding:14px;position:relative;overflow:hidden;}
 .trap-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(255,69,58,.45),transparent);}
 .trap-n{position:absolute;top:8px;right:12px;font-family:var(--disp);font-size:30px;font-weight:900;color:rgba(255,69,58,.06);line-height:1;}
-.trap-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
-.trap-q{font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
-.trap-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.trap-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.trap-q{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;line-height:1.4;}
+.trap-a{font-size:12.5px;color:var(--mid);line-height:1.55;}
 .trap-a b{color:var(--text);}
-.trap-a code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
+.trap-a code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--yel);}
 
 /* ── VS TABLE ── */
-.vs-pill{padding:3px 8px;border-radius:4px;font-size:9px;font-family:var(--mono);display:inline-block;}
+.vs-pill{padding:3px 8px;border-radius:4px;font-size:11.5px;font-family:var(--mono);display:inline-block;}
 .vs-push{background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.2);}
 .vs-pull{background:rgba(0,220,130,.08);color:var(--go);border:1px solid rgba(0,220,130,.2);}
 
@@ -227,7 +227,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .sec.on>*:nth-child(7){animation-delay:.20s}.sec.on>*:nth-child(8){animation-delay:.23s}
 
 .footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:var(--mono);font-size:11.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -413,25 +413,25 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <g transform="translate(30,90)">
       <rect width="160" height="130" rx="10" fill="rgba(240,80,51,.07)" stroke="rgba(240,80,51,.3)" stroke-width="1.5" filter="url(#gw)"/>
       <text x="80" y="30" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#F05033" font-weight="700">Git Repository</text>
-      <text x="80" y="50" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(240,80,51,.55)">single source of truth</text>
+      <text x="80" y="50" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(240,80,51,0.99)">single source of truth</text>
       <rect x="15" y="62" width="130" height="22" rx="4" fill="rgba(240,80,51,.1)" stroke="rgba(240,80,51,.2)" stroke-width="1"/>
-      <text x="80" y="77" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,.8)">app/deployment.yaml</text>
+      <text x="80" y="77" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,0.98)">app/deployment.yaml</text>
       <rect x="15" y="90" width="130" height="22" rx="4" fill="rgba(240,80,51,.08)" stroke="rgba(240,80,51,.15)" stroke-width="1"/>
-      <text x="80" y="105" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,.6)">infra/service.yaml</text>
+      <text x="80" y="105" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,0.98)">infra/service.yaml</text>
       <rect x="15" y="118" width="130" height="18" rx="4" fill="rgba(240,80,51,.06)" stroke="rgba(240,80,51,.1)" stroke-width="1"/>
-      <text x="80" y="131" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,.45)">helm/values.yaml</text>
+      <text x="80" y="131" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(240,80,51,0.99)">helm/values.yaml</text>
     </g>
 
     <!-- Arrow: Git → Operator (PULL) -->
     <path d="M 350 155 L 440 155" fill="none" stroke="rgba(0,220,130,.7)" stroke-width="2" marker-end="url(#a1)"/>
-    <text x="395" y="145" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,.6)">PULL (watch/poll)</text>
-    <text x="395" y="170" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,.35)">every 30-180s</text>
+    <text x="395" y="145" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,0.66)">PULL (watch/poll)</text>
+    <text x="395" y="170" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,0.65)">every 30-180s</text>
 
     <!-- ── OPERATOR / AGENT ── -->
     <g transform="translate(440,60)">
       <rect width="200" height="190" rx="10" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.3)" stroke-width="2" filter="url(#gw)"/>
       <text x="100" y="28" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#00DC82" font-weight="700">GitOps Agent</text>
-      <text x="100" y="45" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(0,220,130,.45)">ArgoCD / FluxCD</text>
+      <text x="100" y="45" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(0,220,130,0.65)">ArgoCD / FluxCD</text>
 
       <!-- Fetch desired state -->
       <rect x="15" y="58" width="170" height="30" rx="5" fill="rgba(0,216,255,.08)" stroke="rgba(0,216,255,.2)" stroke-width="1"/>
@@ -439,7 +439,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
       <!-- Get actual state -->
       <rect x="15" y="96" width="170" height="30" rx="5" fill="rgba(84,104,255,.08)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
-      <text x="100" y="115" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#5468FF">2. Get actual state</text>
+      <text x="100" y="115" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#697aff">2. Get actual state</text>
 
       <!-- Compare / diff -->
       <rect x="15" y="134" width="170" height="30" rx="5" fill="rgba(255,214,10,.07)" stroke="rgba(255,214,10,.2)" stroke-width="1"/>
@@ -447,53 +447,53 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
       <!-- Apply -->
       <rect x="15" y="172" width="170" height="12" rx="4" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.15)" stroke-width="1"/>
-      <text x="100" y="182" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,.5)">4. Apply delta if drift found</text>
+      <text x="100" y="182" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,0.66)">4. Apply delta if drift found</text>
     </g>
 
     <!-- Arrow: Agent → K8s (apply) -->
     <path d="M 640 155 L 730 155" fill="none" stroke="rgba(0,220,130,.7)" stroke-width="2" marker-end="url(#a1)"/>
-    <text x="685" y="145" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,.6)">kubectl apply</text>
-    <text x="685" y="170" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,.35)">server-side apply</text>
+    <text x="685" y="145" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,0.66)">kubectl apply</text>
+    <text x="685" y="170" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(0,220,130,0.65)">server-side apply</text>
 
     <!-- ── KUBERNETES CLUSTER ── -->
     <g transform="translate(730,50)">
       <rect width="250" height="210" rx="10" fill="rgba(50,108,229,.05)" stroke="rgba(50,108,229,.25)" stroke-width="1.5"/>
       <text x="125" y="28" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#5090f8" font-weight="700">Kubernetes Cluster</text>
-      <text x="125" y="45" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(50,108,229,.5)">actual running state</text>
+      <text x="125" y="45" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(83,132,233,1)">actual running state</text>
       <rect x="15" y="58" width="220" height="35" rx="5" fill="rgba(50,108,229,.08)" stroke="rgba(50,108,229,.2)" stroke-width="1"/>
       <text x="125" y="79" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#7090ff">Deployment · Service · Ingress</text>
       <rect x="15" y="100" width="220" height="30" rx="5" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.18)" stroke-width="1"/>
       <text x="125" y="119" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#00DC82">Pod (running container)</text>
       <rect x="15" y="137" width="220" height="30" rx="5" fill="rgba(84,104,255,.06)" stroke="rgba(84,104,255,.18)" stroke-width="1"/>
-      <text x="125" y="156" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#5468FF">ConfigMap · Secret · PVC</text>
+      <text x="125" y="156" text-anchor="middle" font-family="DM Mono" font-size="9" fill="#697aff">ConfigMap · Secret · PVC</text>
       <rect x="15" y="174" width="220" height="25" rx="5" fill="rgba(255,78,205,.04)" stroke="rgba(255,78,205,.15)" stroke-width="1"/>
-      <text x="125" y="190" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(255,78,205,.6)">RBAC · NetworkPolicy</text>
+      <text x="125" y="190" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(255,78,205,0.86)">RBAC · NetworkPolicy</text>
     </g>
 
     <!-- Arrow: K8s → Agent (status report back) -->
     <path d="M 730 200 L 640 200" fill="none" stroke="rgba(84,104,255,.5)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a4)"/>
-    <text x="685" y="218" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(84,104,255,.4)">status / events</text>
+    <text x="685" y="218" text-anchor="middle" font-family="DM Mono" font-size="8" fill="rgba(105,122,255,1)">status / events</text>
 
     <!-- ── CI PIPELINE ── -->
     <g transform="translate(30,260)">
       <rect width="160" height="48" rx="7" fill="rgba(84,104,255,.06)" stroke="rgba(84,104,255,.2)" stroke-width="1"/>
-      <text x="80" y="22" text-anchor="middle" font-family="DM Mono" font-size="10" fill="#5468FF" font-weight="700">CI Pipeline</div>
-      <text x="80" y="36" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(84,104,255,.5)">build · test · push image</text>
-      <text x="80" y="48" text-anchor="middle" font-family="DM Mono" font-size="7.5" fill="rgba(84,104,255,.35)">GitHub Actions / Jenkins / etc</text>
+      <text x="80" y="22" text-anchor="middle" font-family="DM Mono" font-size="10" fill="#697aff" font-weight="700">CI Pipeline</div>
+      <text x="80" y="36" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(105,122,255,1)">build · test · push image</text>
+      <text x="80" y="48" text-anchor="middle" font-family="DM Mono" font-size="7.5" fill="rgba(105,122,255,1)">GitHub Actions / Jenkins / etc</text>
     </g>
 
     <!-- Arrow: CI → Git (image tag update) -->
     <path d="M 190 284 L 110 230" fill="none" stroke="rgba(84,104,255,.45)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#a4)"/>
-    <text x="135" y="273" font-family="DM Mono" font-size="8" fill="rgba(84,104,255,.45)">bump image tag</text>
-    <text x="135" y="285" font-family="DM Mono" font-size="7.5" fill="rgba(84,104,255,.3)">commit to Git</text>
+    <text x="135" y="273" font-family="DM Mono" font-size="8" fill="rgba(105,122,255,1)">bump image tag</text>
+    <text x="135" y="285" font-family="DM Mono" font-size="7.5" fill="rgba(105,122,255,1)">commit to Git</text>
 
     <!-- ── DRIFT SCENARIO ── -->
     <g transform="translate(1050,60)">
       <rect width="290" height="240" rx="10" fill="rgba(255,69,58,.04)" stroke="rgba(255,69,58,.2)" stroke-width="1.5" stroke-dasharray="6 4"/>
-      <text x="145" y="28" text-anchor="middle" font-family="DM Mono" font-size="10" fill="rgba(255,69,58,.6)" letter-spacing="2">DRIFT SCENARIO</text>
+      <text x="145" y="28" text-anchor="middle" font-family="DM Mono" font-size="10" fill="rgba(255,69,58,0.96)" letter-spacing="2">DRIFT SCENARIO</text>
 
       <rect x="15" y="40" width="260" height="35" rx="5" fill="rgba(255,69,58,.06)" stroke="rgba(255,69,58,.15)" stroke-width="1"/>
-      <text x="145" y="61" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,69,58,.7)">Someone runs: <tspan font-family="DM Mono">kubectl delete svc api</tspan></text>
+      <text x="145" y="61" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,69,58,0.96)">Someone runs: <tspan font-family="DM Mono">kubectl delete svc api</tspan></text>
 
       <text x="145" y="100" text-anchor="middle" font-size="20" fill="rgba(255,214,10,.6)">↓</text>
 
@@ -504,7 +504,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
       <rect x="15" y="180" width="260" height="40" rx="5" fill="rgba(0,220,130,.06)" stroke="rgba(0,220,130,.2)" stroke-width="1"/>
       <text x="145" y="198" text-anchor="middle" font-family="DM Mono" font-size="9" fill="rgba(0,220,130,.8)">Reconciles: recreates svc api</text>
-      <text x="145" y="213" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(0,220,130,.5)">Cluster self-heals automatically</text>
+      <text x="145" y="213" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(0,220,130,0.66)">Cluster self-heals automatically</text>
     </g>
   </svg>
 </div>
@@ -588,7 +588,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <div class="trap"><b>ArgoCD manages cluster resources — if ArgoCD itself is in the cluster and it syncs a broken config, it can break itself.</b> Bootstrap ArgoCD out-of-band (Helm install via CI), then hand control over to ArgoCD to manage its own config ("App-of-apps for ArgoCD").</div>
         </div>
         <div>
-          <div class="code" style="font-size:9.5px;"><span class="cm"># ArgoCD Application CRD</span>
+          <div class="code" style="font-size:12.5px;"><span class="cm"># ArgoCD Application CRD</span>
 <span class="kw">apiVersion</span>: argoproj.io/v1alpha1
 <span class="kw">kind</span>: Application
 <span class="ky">metadata</span>:
@@ -615,7 +615,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <span class="ky">backoff</span>:
         <span class="ky">duration</span>: <span class="st">5s</span>
         <span class="ky">maxDuration</span>: <span class="st">3m</span></div>
-          <div class="code" style="font-size:9.5px;margin-top:8px;"><span class="cm"># ApplicationSet: one app per cluster</span>
+          <div class="code" style="font-size:12.5px;margin-top:8px;"><span class="cm"># ApplicationSet: one app per cluster</span>
 <span class="kw">kind</span>: ApplicationSet
 <span class="ky">spec</span>:
   <span class="ky">generators</span>:
@@ -658,7 +658,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <div class="fr"><span class="fk">Multi-tenancy</span><span class="fv">Kustomization CRD has <code>serviceAccountName</code> — each tenant's sync runs with a specific SA (with limited RBAC). Platform team owns Flux; app teams own their Kustomizations within their namespace permissions.</span></div>
         </div>
         <div>
-          <div class="code" style="font-size:9.5px;"><span class="cm"># FluxCD: GitRepository source</span>
+          <div class="code" style="font-size:12.5px;"><span class="cm"># FluxCD: GitRepository source</span>
 <span class="kw">apiVersion</span>: source.toolkit.fluxcd.io/v1
 <span class="kw">kind</span>: GitRepository
 <span class="ky">metadata</span>:
@@ -724,7 +724,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <div class="fr"><span class="fk">vs ArgoCD/Flux</span><span class="fv">Werf is more CI-oriented — runs in CI pipeline. ArgoCD/Flux are cluster agents — run inside Kubernetes. Werf fits "run from CI" mental model; Argo/Flux fit "cluster pulls from Git" model.</span></div>
         </div>
         <div>
-          <div class="code" style="font-size:9.5px;"><span class="cm"># werf.yaml (define images)</span>
+          <div class="code" style="font-size:12.5px;"><span class="cm"># werf.yaml (define images)</span>
 configVersion: 1
 project: myapp
 
@@ -768,20 +768,20 @@ image: {{ .Values.werf.image.backend }}
     <div class="tc-body">
       <div class="g3">
         <div>
-          <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--teal);margin-bottom:8px;">🐄 Rancher Fleet</div>
+          <div style="font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--teal);margin-bottom:8px;">🐄 Rancher Fleet</div>
           <div class="fr" style="border-top:none;"><span class="fk">Focus</span><span class="fv">Massive-scale multi-cluster GitOps. Designed for 1000+ clusters. Built into Rancher.</span></div>
           <div class="fr"><span class="fk">Model</span><span class="fv">GitRepo + Fleet (target clusters). One Git repo → N clusters matching labels.</span></div>
           <div class="fr"><span class="fk">Sharding</span><span class="fv">Groups clusters into "bundles" for parallel sync. Handles cluster sprawl at enterprise scale that ArgoCD/Flux can't easily manage.</span></div>
           <div class="note"><b>Use when:</b> you have 50+ clusters and need a single management plane across all of them. Fleet shines at cluster-fleet management.</div>
         </div>
         <div>
-          <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--pink);margin-bottom:8px;">🔧 Jenkins X</div>
+          <div style="font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--pink);margin-bottom:8px;">🔧 Jenkins X</div>
           <div class="fr" style="border-top:none;"><span class="fk">Focus</span><span class="fv">Full CI/CD + GitOps platform with preview environments for every PR.</span></div>
           <div class="fr"><span class="fk">Preview envs</span><span class="fv">Automatically creates K8s namespace + deployment for every PR. Destroyed on PR close. Great developer experience.</span></div>
           <div class="fr"><span class="fk">Complexity</span><span class="fv">Very opinionated — uses Tekton for pipelines, Lighthouse for Git events. High learning curve. Best for teams fully buying into the Jenkins X ecosystem.</span></div>
         </div>
         <div>
-          <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--yel);margin-bottom:8px;">⚖️ Tool Selection Guide</div>
+          <div style="font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--yel);margin-bottom:8px;">⚖️ Tool Selection Guide</div>
           <table class="st" style="margin-top:0;">
             <tr><th>Need</th><th>Use</th></tr>
             <tr><td>Rich UI + multi-cluster</td><td class="good">ArgoCD</td></tr>
@@ -870,7 +870,7 @@ argocd app delete myapp --cascade</div>
     <div class="card ca">
       <div class="ctit" style="color:var(--argo);">📋 AppProject — Tenancy + RBAC</div>
       <div class="fr"><span class="fk">What it is</span><span class="fv">AppProject scopes what an Application can do: which source repos, which destination clusters/namespaces, which K8s resources, which cluster resource whitelist.</span></div>
-      <div class="code" style="font-size:9px;"><span class="kw">kind</span>: AppProject
+      <div class="code" style="font-size:11.5px;"><span class="kw">kind</span>: AppProject
 <span class="ky">spec</span>:
   <span class="ky">sourceRepos</span>:
   - <span class="st">https://github.com/myorg/*</span>
@@ -889,7 +889,7 @@ argocd app delete myapp --cascade</div>
       <div class="ctit" style="color:var(--argo);">🪝 Sync Hooks & Waves</div>
       <div class="fr"><span class="fk">Hooks</span><span class="fv"><code>argocd.argoproj.io/hook: PreSync</code> — Job/Workflow runs before sync. PreSync (migration), Sync (main apply), PostSync (smoke tests), SyncFail (alerting), PostDelete (cleanup).</span></div>
       <div class="fr"><span class="fk">Sync waves</span><span class="fv"><code>argocd.argoproj.io/sync-wave: "1"</code> — within a sync, resources with lower wave number are applied first and must be healthy before higher waves start. Order-dependent deploys.</span></div>
-      <div class="code" style="font-size:9px;"><span class="cm"># Run DB migration before app deploys</span>
+      <div class="code" style="font-size:11.5px;"><span class="cm"># Run DB migration before app deploys</span>
 <span class="ky">metadata</span>:
   <span class="ky">annotations</span>:
     argocd.argoproj.io/hook: PreSync
@@ -899,7 +899,7 @@ argocd app delete myapp --cascade</div>
     </div>
     <div class="card ca">
       <div class="ctit" style="color:var(--argo);">⚙️ Sync Options Reference</div>
-      <div class="code" style="font-size:9px;"><span class="ky">syncOptions</span>:
+      <div class="code" style="font-size:11.5px;"><span class="ky">syncOptions</span>:
 - <span class="st">CreateNamespace=true</span>     <span class="cm"># auto-create dest ns</span>
 - <span class="st">ServerSideApply=true</span>     <span class="cm"># use SSA not CSA</span>
 - <span class="st">PrunePropagationPolicy=foreground</span>
@@ -926,7 +926,7 @@ argocd app delete myapp --cascade</div>
     <div class="fr"><span class="fk">HelmRepository</span><span class="fv">Fetches and indexes a Helm chart repository. Caches index. HelmRelease objects reference this.</span></div>
     <div class="fr"><span class="fk">OCIRepository</span><span class="fv">Fetches an OCI artifact (container image or OCI Helm chart) from a registry. Flux can use OCI registries as config stores — no Git required.</span></div>
     <div class="fr"><span class="fk">Bucket</span><span class="fv">Fetches from S3-compatible object storage. For teams storing configs in S3, Minio, GCS.</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Bootstrap FluxCD</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Bootstrap FluxCD</span>
 flux bootstrap github \
   --owner=myorg \
   --repository=fleet-infra \
@@ -951,7 +951,7 @@ flux get sources git</div>
     <div class="fr"><span class="fk">Dependencies</span><span class="fv"><code>dependsOn</code> field: Kustomization B won't sync until A is healthy. Chain ordering: infra → crds → apps. Prevents race conditions on CRD-dependent resources.</span></div>
     <div class="fr"><span class="fk">HelmRelease</span><span class="fv">Flux manages a Helm release. Reconciles on chart version change or values change. Rollbacks: <code>upgrade.remediation.remediateLastFailure: true</code> rolls back on upgrade failure automatically.</span></div>
     <div class="fr"><span class="fk">PostRenderers</span><span class="fv">Apply Kustomize patches on top of Helm-rendered output. Fixes "this Helm chart almost does what I want but I need to patch X." No chart fork needed.</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="ky">apiVersion</span>: helm.toolkit.fluxcd.io/v2
+    <div class="code" style="font-size:12.5px;"><span class="ky">apiVersion</span>: helm.toolkit.fluxcd.io/v2
 <span class="kw">kind</span>: HelmRelease
 <span class="ky">spec</span>:
   <span class="ky">chart</span>:
@@ -982,7 +982,7 @@ flux get sources git</div>
     <div class="fr"><span class="fk">ImageRepository</span><span class="fv">Watches a container registry for new image tags. Polls at <code>interval</code>. Requires read access to registry (imagePullSecret).</span></div>
     <div class="fr"><span class="fk">ImagePolicy</span><span class="fv">Selects which tag to use from ImageRepository. Supports semver ranges (<code>>=1.0.0</code>), alphabetical (latest alphabetically), numerical (latest numerically).</span></div>
     <div class="fr"><span class="fk">ImageUpdateAutomation</span><span class="fv">When a new tag matches ImagePolicy, commits the updated image reference back to Git. Triggers a reconcile. CI pushes image → Flux detects → commits to Git → Flux deploys. Fully automated image upgrade loop.</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># deployment.yaml — mark for auto-update</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># deployment.yaml — mark for auto-update</span>
 <span class="ky">spec</span>:
   <span class="ky">template</span>:
     <span class="ky">spec</span>:
@@ -1028,7 +1028,7 @@ flux get sources git</div>
         <div class="bz-item bz-tf">🔌 VPN, Direct Connect, Transit Gateway</div>
         <div class="bz-item bz-tf">📊 CloudWatch alarms, SNS topics</div>
       </div>
-      <div style="font-family:var(--mono);font-size:9px;color:#b060ff;opacity:.5;margin-top:8px;">// Cloud API calls · state in tfstate file · not K8s resources</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:#b060ff;opacity:.5;margin-top:8px;">// Cloud API calls · state in tfstate file · not K8s resources</div>
     </div>
 
     <div class="bz-arrow">↕ the gray zone</div>
@@ -1044,7 +1044,7 @@ flux get sources git</div>
         <div class="bz-item bz-both">🔗 ArgoCD bootstrap itself (chicken-and-egg)</div>
         <div class="bz-item bz-both">🏷️ aws-auth ConfigMap (Terraform OR manual)</div>
       </div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--yel);opacity:.5;margin-top:8px;">// Decision: pick ONE tool per resource. Never let both manage the same resource — drift hell.</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--yel);opacity:.5;margin-top:8px;">// Decision: pick ONE tool per resource. Never let both manage the same resource — drift hell.</div>
     </div>
 
     <div class="bz-arrow">↕ the clear line</div>
@@ -1063,7 +1063,7 @@ flux get sources git</div>
         <div class="bz-item bz-go">🏷️ Kyverno/OPA policies</div>
         <div class="bz-item bz-go">🗂️ PersistentVolumeClaims (app-level storage)</div>
       </div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--go);opacity:.5;margin-top:8px;">// K8s resources · Git as source of truth · reconciled continuously</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--go);opacity:.5;margin-top:8px;">// K8s resources · Git as source of truth · reconciled continuously</div>
     </div>
   </div>
 </div>
@@ -1075,7 +1075,7 @@ flux get sources git</div>
     <div class="fr"><span class="fk">The handoff</span><span class="fv">TF creates cluster → TF installs ArgoCD (Helm provider or kubectl exec) → TF creates the "root" Application pointing at Git → from that point, Git drives everything.</span></div>
     <div class="fr"><span class="fk">TF managing K8s</span><span class="fv">The Terraform <code>kubernetes</code> provider can manage K8s resources — but for app-level resources, this is an anti-pattern. TF reconciles on <code>apply</code> only (not continuously). No drift detection.</span></div>
     <div class="fr"><span class="fk">IAM + IRSA</span><span class="fv">IAM roles for pods (IRSA) = Terraform creates the IAM role. The ServiceAccount annotation referencing the role ARN = GitOps. Each tool does what it's good at.</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Terraform: provision cluster + bootstrap</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Terraform: provision cluster + bootstrap</span>
 resource "aws_eks_cluster" "this" { ... }
 
 resource "helm_release" "argocd" {
@@ -1106,8 +1106,8 @@ resource "kubectl_manifest" "root_app" {
 
   <div class="card cy">
     <div class="ctit" style="color:var(--yel);">⚠️ Gray Zone Decision Framework</div>
-    <div style="font-size:11px;line-height:1.8;color:var(--mid);">
-      <div style="background:rgba(0,0,0,.2);border-radius:6px;padding:12px;font-family:var(--mono);font-size:10px;line-height:2.1;">
+    <div style="font-size:12.5px;line-height:1.8;color:var(--mid);">
+      <div style="background:rgba(0,0,0,.2);border-radius:6px;padding:12px;font-family:var(--mono);font-size:12.5px;line-height:2.1;">
         <div style="color:var(--yel);">Is the resource a cloud API resource?</div>
         <div style="padding-left:12px;">→ YES: <span style="color:var(--tf);">Terraform</span></div>
         <div style="padding-left:12px;">→ NO: Is it a K8s resource?</div>
@@ -1137,8 +1137,8 @@ resource "kubectl_manifest" "root_app" {
     <div class="ctit" style="color:var(--pink);">📁 Repo Structure Patterns</div>
     <div class="g2" style="margin-bottom:0;gap:8px;">
       <div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Monorepo</div>
-        <div class="code" style="margin-top:0;font-size:9px;">fleet-infra/
+        <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Monorepo</div>
+        <div class="code" style="margin-top:0;font-size:11.5px;">fleet-infra/
 ├── clusters/
 │   ├── dev/
 │   │   ├── flux-system/   <span class="cm"># Flux CRDs</span>
@@ -1157,11 +1157,11 @@ resource "kubectl_manifest" "root_app" {
     ├── cert-manager/
     ├── ingress-nginx/
     └── monitoring/</div>
-        <div class="note" style="margin-top:6px;font-size:10px;"><b>Monorepo:</b> everything in one place. Easy to see full system state. Good for small-medium teams. Harder to grant per-team access.</div>
+        <div class="note" style="margin-top:6px;font-size:12.5px;"><b>Monorepo:</b> everything in one place. Easy to see full system state. Good for small-medium teams. Harder to grant per-team access.</div>
       </div>
       <div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Multi-repo</div>
-        <div class="code" style="margin-top:0;font-size:9px;">fleet-infra/         <span class="cm"># platform team</span>
+        <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Multi-repo</div>
+        <div class="code" style="margin-top:0;font-size:11.5px;">fleet-infra/         <span class="cm"># platform team</span>
 ├── clusters/
 └── infra/
 
@@ -1174,7 +1174,7 @@ team-a-configs/      <span class="cm"># team A owns</span>
 
 team-b-configs/      <span class="cm"># team B owns</span>
 └── service/</div>
-        <div class="note" style="margin-top:6px;font-size:10px;"><b>Multi-repo:</b> each team owns their config repo. Better separation of concerns, better RBAC (teams can only see their repo). Harder to see whole-system state.</div>
+        <div class="note" style="margin-top:6px;font-size:12.5px;"><b>Multi-repo:</b> each team owns their config repo. Better separation of concerns, better RBAC (teams can only see their repo). Harder to see whole-system state.</div>
       </div>
     </div>
   </div>
@@ -1185,7 +1185,7 @@ team-b-configs/      <span class="cm"># team B owns</span>
     <div class="fr"><span class="fk">Directory per env</span><span class="fv"><b>Recommended.</b> Main branch, different paths: <code>clusters/dev</code>, <code>clusters/staging</code>, <code>clusters/prod</code>. Promote: copy/Kustomize overlay update. Single branch, clear diffs.</span></div>
     <div class="fr"><span class="fk">Kustomize overlays</span><span class="fv"><code>base/</code> has shared config. <code>overlays/prod/</code> patches replicas, resource limits, image tags. Promotion = updating the image tag in the overlay. Clear diff between envs.</span></div>
     <div class="fr"><span class="fk">Image tag promotion</span><span class="fv">CI builds image → tags with <code>:dev-$SHA</code> → deploys to dev → passes tests → PR to bump image tag in staging overlay → merge → ArgoCD deploys to staging → repeat for prod.</span></div>
-    <div class="code" style="font-size:9.5px;"><span class="cm"># Kustomize overlay for prod</span>
+    <div class="code" style="font-size:12.5px;"><span class="cm"># Kustomize overlay for prod</span>
 <span class="cm"># clusters/prod/myapp/kustomization.yaml</span>
 <span class="kw">bases</span>:
 - ../../../apps/myapp/base
@@ -1329,23 +1329,23 @@ team-b-configs/      <span class="cm"># team B owns</span>
     <div style="counter-reset: trap-counter;">
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">1</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Managing the same resource from both Terraform and GitOps</b> — dual ownership creates perpetual drift fights.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Managing the same resource from both Terraform and GitOps</b> — dual ownership creates perpetual drift fights.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">2</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">No secrets strategy before going live</b> — teams commit plaintext secrets "temporarily" and they stay forever.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">No secrets strategy before going live</b> — teams commit plaintext secrets "temporarily" and they stay forever.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">3</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">prune=true on prod without an emergency bypass procedure</b> — accidental Git deletion = production outage.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">prune=true on prod without an emergency bypass procedure</b> — accidental Git deletion = production outage.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">4</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">No AppProject/namespace isolation in multi-tenant ArgoCD</b> — teams can accidentally or maliciously affect each other.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">No AppProject/namespace isolation in multi-tenant ArgoCD</b> — teams can accidentally or maliciously affect each other.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:900;color:rgba(255,69,58,.25);line-height:1;flex-shrink:0;width:24px;">5</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Using :latest image tags</b> — destroys the GitOps audit trail and makes rollback impossible.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Using :latest image tags</b> — destroys the GitOps audit trail and makes rollback impossible.</div>
       </div>
     </div>
   </div>

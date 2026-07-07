@@ -11,7 +11,7 @@
   --s1: #0c1018;
   --s2: #111720;
   --border: #1b2333;
-  --b2: #253045;
+  --b2: #787f8c;
   /* Kafka = warm orange-red, KEDA = electric blue-teal */
   --kfk: #ff5722;
   --kfk2: #ff8a65;
@@ -22,7 +22,7 @@
   --pur: #9c27b0;
   --red: #f44336;
   --text: #eceff1;
-  --dim: #546e7a;
+  --dim: #697f8a;
   --mid: #90a4ae;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -31,7 +31,7 @@ body{
   background:var(--bg);
   color:var(--text);
   font-family:'DM Sans',sans-serif;
-  font-size:12px;line-height:1.5;
+  font-size:13px;line-height:1.5;
 }
 body::before{
   content:'';
@@ -53,9 +53,9 @@ body::before{
 .hl h1 .kfk{background:linear-gradient(135deg,var(--kfk),var(--kfk2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .hl h1 .plus{color:var(--b2);font-size:48px;}
 .hl h1 .kda{background:linear-gradient(135deg,var(--kda),var(--kda2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hl-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:-4px;}
+.hl-sub{font-family:'Space Mono',monospace;font-size:12.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:-4px;}
 .hr-badges{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
-.hbadge{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1px solid;}
+.hbadge{font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:2px;border:1px solid;}
 .hb-k{border-color:var(--kfk);color:var(--kfk);background:rgba(255,87,34,0.06);}
 .hb-d{border-color:var(--kda);color:var(--kda);background:rgba(0,188,212,0.06);}
 .hb-g{border-color:var(--grn);color:var(--grn);background:rgba(76,175,80,0.06);}
@@ -69,7 +69,7 @@ body::before{
 .sl.kda-s::after{background:linear-gradient(90deg,rgba(0,188,212,.35),transparent);}
 .sl.mix-s{color:var(--mid);}
 .sl.mix-s::after{background:linear-gradient(90deg,rgba(144,164,174,.2),transparent);}
-.sl span{font-family:'Space Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;font-weight:400;}
+.sl span{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:1px;font-weight:400;}
 .mb{margin-bottom:20px;}
 
 /* ── GRIDS ── */
@@ -102,7 +102,7 @@ body::before{
 .cp .ci{background:rgba(156,39,176,0.1);}
 .cr .ci{background:rgba(244,67,54,0.1);}
 .cx .ci{background:linear-gradient(135deg,rgba(255,87,34,0.1),rgba(0,188,212,0.1));}
-.ct{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;}
+.ct{font-family:'Space Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.5px;}
 .ck .ct{color:var(--kfk);}
 .cd .ct{color:var(--kda);}
 .cg .ct{color:var(--grn);}
@@ -110,11 +110,11 @@ body::before{
 .cp .ct{color:var(--pur);}
 .cr .ct{color:var(--red);}
 .cx .ct{background:linear-gradient(90deg,var(--kfk),var(--kda));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.csub{font-size:9px;color:var(--dim);margin-top:2px;}
+.csub{font-size:11.5px;color:var(--dim);margin-top:2px;}
 
 /* ── FACT ROWS ── */
-.fr{display:grid;grid-template-columns:108px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.035);align-items:baseline;font-size:11px;}
-.fk{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.fr{display:grid;grid-template-columns:108px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.035);align-items:baseline;font-size:12.5px;}
+.fk{font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
 .ck .fk{color:rgba(255,87,34,.7);}
 .cd .fk{color:rgba(0,188,212,.7);}
 .cg .fk{color:rgba(76,175,80,.7);}
@@ -124,10 +124,10 @@ body::before{
 .cx .fk{color:rgba(0,188,212,.7);}
 .fv{color:var(--mid);line-height:1.55;}
 .fv b,.fv strong{color:var(--text);font-weight:500;}
-.fv code{font-family:'Space Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--kda);}
+.fv code{font-family:'Space Mono',monospace;font-size:11.5px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--kda);}
 
 /* ── CALLOUT ── */
-.cal{padding:8px 11px;font-size:10.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 4px 4px 0;line-height:1.6;}
+.cal{padding:8px 11px;font-size:12.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 4px 4px 0;line-height:1.6;}
 .cal b,.cal strong{color:var(--text);}
 .ck .cal{background:rgba(255,87,34,0.05);border-color:var(--kfk);}
 .cd .cal{background:rgba(0,188,212,0.05);border-color:var(--kda);}
@@ -138,18 +138,18 @@ body::before{
 .cx .cal{background:rgba(0,188,212,0.04);border-color:var(--kda);}
 
 /* ── CODE ── */
-.code{background:#050810;border:1px solid var(--border);border-radius:6px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:10px;line-height:1.8;color:var(--dim);margin-top:8px;overflow-x:auto;}
+.code{background:#050810;border:1px solid var(--border);border-radius:6px;padding:11px 14px;font-family:'Space Mono',monospace;font-size:12.5px;line-height:1.8;color:var(--dim);margin-top:8px;overflow-x:auto;}
 .code .kw{color:#ce93d8;}
 .code .fn{color:var(--grn);}
 .code .str{color:var(--amb);}
-.code .cm{color:#2e3d4f;}
+.code .cm{color:#757f8b;}
 .code .ky{color:var(--kda);}
 .code .va{color:var(--kfk2);}
 .code .num{color:#f48fb1;}
 
 /* ── PILL ── */
 .pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-.pill{padding:3px 9px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid;font-family:'Space Mono',monospace;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid;font-family:'Space Mono',monospace;}
 .pk{border-color:rgba(255,87,34,.4);color:var(--kfk);background:rgba(255,87,34,.07);}
 .pd{border-color:rgba(0,188,212,.4);color:var(--kda);background:rgba(0,188,212,.07);}
 .pg{border-color:rgba(76,175,80,.4);color:var(--grn);background:rgba(76,175,80,.07);}
@@ -158,36 +158,36 @@ body::before{
 .pr{border-color:rgba(244,67,54,.4);color:var(--red);background:rgba(244,67,54,.07);}
 
 /* ── GOTCHA ── */
-.trap{background:rgba(244,67,54,0.05);border:1px solid rgba(244,67,54,0.2);border-radius:6px;padding:9px 11px;font-size:10.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
-.trap::before{content:'⚡ GOTCHA — ';font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;color:var(--red);letter-spacing:1px;}
+.trap{background:rgba(244,67,54,0.05);border:1px solid rgba(244,67,54,0.2);border-radius:6px;padding:9px 11px;font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ GOTCHA — ';font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;color:var(--red);letter-spacing:1px;}
 .trap b{color:var(--text);}
 
 /* ── KEY/VAL mini ── */
-.kv{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);font-size:10.5px;}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);font-size:12.5px;}
 .kv:first-child{border-top:none;}
-.kvk{font-family:'Space Mono',monospace;font-size:9px;color:var(--mid);}
-.kvv{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;}
+.kvk{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--mid);}
+.kvv{font-family:'Space Mono',monospace;font-size:12.5px;font-weight:700;}
 
 /* ── TIMELINE ── */
 .tl{display:flex;flex-direction:column;}
 .tl-step{display:grid;grid-template-columns:20px 1fr;gap:10px;position:relative;}
 .tl-step:not(:last-child) .tls::after{content:'';position:absolute;left:9px;top:22px;bottom:-4px;width:1px;background:linear-gradient(180deg,var(--border),transparent);}
 .tls{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
-.tln{width:18px;height:18px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'Space Mono',monospace;font-weight:700;flex-shrink:0;}
+.tln{width:18px;height:18px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-family:'Space Mono',monospace;font-weight:700;flex-shrink:0;}
 .tlc{padding:2px 0 12px;}
-.tlt{font-weight:600;font-size:11px;margin-bottom:2px;}
-.tlb{font-size:10.5px;color:var(--mid);line-height:1.5;}
+.tlt{font-weight:600;font-size:12.5px;margin-bottom:2px;}
+.tlb{font-size:12.5px;color:var(--mid);line-height:1.5;}
 .tlb b{color:var(--text);}
 
 /* ── FORMULA ── */
-.formula{background:#070c14;border:1px solid var(--b2);border-radius:6px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:12px;text-align:center;margin-top:8px;color:var(--text);}
+.formula{background:#070c14;border:1px solid var(--b2);border-radius:6px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:13px;text-align:center;margin-top:8px;color:var(--text);}
 .formula .highlight{color:var(--kda);font-weight:700;}
 .formula .op{color:var(--dim);}
-.formula .label{font-size:9px;color:var(--dim);display:block;margin-top:4px;letter-spacing:1px;}
+.formula .label{font-size:11.5px;color:var(--dim);display:block;margin-top:4px;letter-spacing:1px;}
 
 /* ── SCALE TABLE ── */
-.stable{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px;}
-.stable th{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.stable{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px;}
+.stable th{font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;}
 .stable td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--mid);vertical-align:top;}
 .stable td:first-child{color:var(--text);font-weight:500;}
 .stable tr:last-child td{border-bottom:none;}
@@ -200,7 +200,7 @@ body::before{
 .hbox-k{background:rgba(255,87,34,0.05);border:1px solid rgba(255,87,34,0.15);}
 .hbox-d{background:rgba(0,188,212,0.05);border:1px solid rgba(0,188,212,0.15);}
 .hbox-mix{background:linear-gradient(135deg,rgba(255,87,34,0.04),rgba(0,188,212,0.04));border:1px solid rgba(255,255,255,0.06);}
-.hbox-title{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.hbox-title{font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
 .hbox-k .hbox-title{color:var(--kfk);}
 .hbox-d .hbox-title{color:var(--kda);}
 .hbox-mix .hbox-title{color:var(--mid);}
@@ -209,11 +209,11 @@ body::before{
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
 .metric{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;text-align:center;}
 .metric-num{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;line-height:1;}
-.metric-lbl{font-family:'Space Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.metric-lbl{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
 
 /* ── FLOW DIAGRAM ── */
 .flow-wrap{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden;}
-.flow-wrap .corner-tag{position:absolute;top:14px;right:16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.flow-wrap .corner-tag{position:absolute;top:14px;right:16px;font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
 /* animations */
 @keyframes fadein{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
@@ -231,7 +231,7 @@ body::before{
 .page>*:nth-child(11){animation-delay:.40s}
 
 .footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
-.ft{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -289,11 +289,11 @@ body::before{
 
     <!-- Producers zone -->
     <rect x="10" y="30" width="190" height="250" rx="8" fill="rgba(156,39,176,0.04)" stroke="rgba(156,39,176,0.12)" stroke-width="1" stroke-dasharray="4 4"/>
-    <text x="22" y="48" font-family="Space Mono" font-size="8" fill="rgba(156,39,176,0.5)" letter-spacing="2">PRODUCERS</text>
+    <text x="22" y="48" font-family="Space Mono" font-size="8" fill="rgba(186,104,200,1)" letter-spacing="2">PRODUCERS</text>
     <!-- Producer boxes -->
-    <g transform="translate(22,58)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#9c27b0" font-weight="700">Ad Event Service</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">billions of events/day</text></g>
-    <g transform="translate(22,110)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#9c27b0" font-weight="700">Attribution API</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">click/install events</text></g>
-    <g transform="translate(22,162)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#9c27b0" font-weight="700">Fraud Detector</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">fraud signals</text></g>
+    <g transform="translate(22,58)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ba68c8" font-weight="700">Ad Event Service</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.48)">billions of events/day</text></g>
+    <g transform="translate(22,110)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ba68c8" font-weight="700">Attribution API</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.48)">click/install events</text></g>
+    <g transform="translate(22,162)"><rect width="166" height="40" rx="5" fill="url(#g-p)" stroke="#9c27b0" stroke-width="1"/><text x="83" y="16" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ba68c8" font-weight="700">Fraud Detector</text><text x="83" y="30" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.48)">fraud signals</text></g>
 
     <!-- Arrows producers → broker -->
     <line x1="188" y1="78" x2="240" y2="135" stroke="#9c27b0" stroke-width="1.5" stroke-dasharray="5 3" opacity=".5" marker-end="url(#arr-w)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
@@ -302,39 +302,39 @@ body::before{
 
     <!-- BROKERS zone -->
     <rect x="238" y="30" width="480" height="250" rx="8" fill="rgba(255,87,34,0.04)" stroke="rgba(255,87,34,0.15)" stroke-width="1.2"/>
-    <text x="252" y="48" font-family="Space Mono" font-size="8" fill="rgba(255,87,34,0.5)" letter-spacing="2">KAFKA BROKERS (RF=3)</text>
+    <text x="252" y="48" font-family="Space Mono" font-size="8" fill="rgba(255,87,34,0.92)" letter-spacing="2">KAFKA BROKERS (RF=3)</text>
 
     <!-- Broker 1 -->
     <g transform="translate(250,58)">
       <rect width="140" height="210" rx="6" fill="url(#g-k)" stroke="#ff5722" stroke-width="1.5" filter="url(#glow)"/>
       <text x="70" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">BROKER 0</text>
-      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">LEADER for P0,P3</text>
+      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">LEADER for P0,P3</text>
       <!-- Partitions -->
       <rect x="10" y="42" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
       <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P0 [LEADER]</text>
       <rect x="10" y="70" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P1 [replica]</text>
+      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P1 [replica]</text>
       <rect x="10" y="98" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P2 [replica]</text>
+      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P2 [replica]</text>
       <rect x="10" y="126" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
       <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P3 [LEADER]</text>
-      <text x="70" y="175" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">ISR: B0, B1, B2</text>
-      <text x="70" y="190" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">offset 0→8.4M</text>
+      <text x="70" y="175" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.48)">ISR: B0, B1, B2</text>
+      <text x="70" y="190" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.48)">offset 0→8.4M</text>
     </g>
 
     <!-- Broker 2 -->
     <g transform="translate(408,58)">
       <rect width="140" height="210" rx="6" fill="url(#g-k)" stroke="#ff5722" stroke-width="1.5"/>
       <text x="70" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">BROKER 1</text>
-      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">LEADER for P1,P4</text>
+      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">LEADER for P1,P4</text>
       <rect x="10" y="42" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P0 [replica]</text>
+      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P0 [replica]</text>
       <rect x="10" y="70" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
       <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P1 [LEADER]</text>
       <rect x="10" y="98" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P2 [replica]</text>
+      <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P2 [replica]</text>
       <rect x="10" y="126" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P3 [replica]</text>
+      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P3 [replica]</text>
       <rect x="10" y="154" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
       <text x="70" y="169" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P4 [LEADER]</text>
     </g>
@@ -343,15 +343,15 @@ body::before{
     <g transform="translate(566,58)">
       <rect width="140" height="210" rx="6" fill="url(#g-k)" stroke="#ff5722" stroke-width="1.5"/>
       <text x="70" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">BROKER 2</text>
-      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">LEADER for P2,P5</text>
+      <text x="70" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">LEADER for P2,P5</text>
       <rect x="10" y="42" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P0 [replica]</text>
+      <text x="70" y="57" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P0 [replica]</text>
       <rect x="10" y="70" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P1 [replica]</text>
+      <text x="70" y="85" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P1 [replica]</text>
       <rect x="10" y="98" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
       <text x="70" y="113" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P2 [LEADER]</text>
       <rect x="10" y="126" width="120" height="22" rx="3" fill="rgba(255,87,34,0.06)" stroke="rgba(255,87,34,0.2)" stroke-width="1"/>
-      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.6)">P3 [replica]</text>
+      <text x="70" y="141" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,87,34,0.92)">P3 [replica]</text>
       <rect x="10" y="154" width="120" height="22" rx="3" fill="rgba(255,87,34,0.15)" stroke="rgba(255,87,34,0.4)" stroke-width="1"/>
       <text x="70" y="169" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff5722">P5 [LEADER]</text>
     </g>
@@ -363,50 +363,50 @@ body::before{
     <!-- ZooKeeper / KRaft -->
     <g transform="translate(252,278)">
       <rect width="430" height="0" rx="3" fill="none"/>
-      <text x="215" y="0" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(255,87,34,0.4)" letter-spacing="2">↑ KRaft mode (Kafka 3.x) — no ZooKeeper needed · metadata in internal topic</text>
+      <text x="215" y="0" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(255,87,34,0.92)" letter-spacing="2">↑ KRaft mode (Kafka 3.x) — no ZooKeeper needed · metadata in internal topic</text>
     </g>
 
     <!-- CONSUMERS zone -->
     <rect x="776" y="30" width="490" height="250" rx="8" fill="rgba(0,188,212,0.03)" stroke="rgba(0,188,212,0.12)" stroke-width="1" stroke-dasharray="4 4"/>
-    <text x="790" y="48" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.5)" letter-spacing="2">CONSUMER GROUP: attribution-workers</text>
+    <text x="790" y="48" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.74)" letter-spacing="2">CONSUMER GROUP: attribution-workers</text>
 
     <!-- Consumer boxes with KEDA marker -->
     <g transform="translate(788,58)">
       <rect width="210" height="60" rx="6" fill="url(#g-d)" stroke="#00bcd4" stroke-width="1.5"/>
       <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00bcd4" font-weight="700">Consumer Pod 0</text>
-      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">consumes: P0, P1</text>
-      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.5)">committed offset: 8,389,201</text>
+      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">consumes: P0, P1</text>
+      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.74)">committed offset: 8,389,201</text>
     </g>
     <g transform="translate(788,134)">
       <rect width="210" height="60" rx="6" fill="url(#g-d)" stroke="#00bcd4" stroke-width="1.5"/>
       <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#00bcd4" font-weight="700">Consumer Pod 1</text>
-      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">consumes: P2, P3</text>
-      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.5)">committed offset: 8,390,044</text>
+      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">consumes: P2, P3</text>
+      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.74)">committed offset: 8,390,044</text>
     </g>
     <g transform="translate(788,210)">
       <rect width="210" height="60" rx="6" fill="rgba(0,188,212,0.04)" stroke="rgba(0,188,212,0.3)" stroke-width="1" stroke-dasharray="4 3"/>
-      <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="rgba(0,188,212,0.5)" font-weight="700">Consumer Pod 2</text>
-      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.3)">consumes: P4, P5</text>
-      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.35)">committed offset: 8,385,990</text>
+      <text x="105" y="18" text-anchor="middle" font-family="Space Mono" font-size="10" fill="rgba(0,188,212,0.74)" font-weight="700">Consumer Pod 2</text>
+      <text x="105" y="32" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.48)">consumes: P4, P5</text>
+      <text x="105" y="48" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(0,188,212,0.75)">committed offset: 8,385,990</text>
     </g>
 
     <!-- KEDA indicator -->
     <g transform="translate(1012,58)">
       <rect width="240" height="212" rx="8" fill="rgba(0,188,212,0.04)" stroke="rgba(0,188,212,0.2)" stroke-width="1" stroke-dasharray="3 3"/>
       <text x="120" y="22" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4" font-weight="700" letter-spacing="2">KEDA</text>
-      <text x="120" y="38" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.35)">monitors lag, drives HPA</text>
+      <text x="120" y="38" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">monitors lag, drives HPA</text>
       <!-- Lag indicator -->
       <rect x="16" y="48" width="208" height="30" rx="4" fill="rgba(255,179,0,0.08)" stroke="rgba(255,179,0,0.3)" stroke-width="1"/>
       <text x="20" y="65" font-family="Space Mono" font-size="9" fill="#ffb300">LAG: 124,500 msgs</text>
-      <text x="20" y="76" font-family="DM Sans" font-size="8" fill="rgba(255,179,0,0.5)">&gt; threshold=50000</text>
+      <text x="20" y="76" font-family="DM Sans" font-size="8" fill="rgba(255,179,0,0.66)">&gt; threshold=50000</text>
       <!-- Arrow scale up -->
-      <text x="120" y="100" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,255,255,0.3)">↓ triggers scale</text>
+      <text x="120" y="100" text-anchor="middle" font-family="Space Mono" font-size="9" fill="rgba(255,255,255,0.48)">↓ triggers scale</text>
       <rect x="16" y="108" width="208" height="30" rx="4" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.3)" stroke-width="1"/>
       <text x="20" y="126" font-family="Space Mono" font-size="9" fill="#4caf50">replicas: 3 → 6</text>
-      <text x="20" y="137" font-family="DM Sans" font-size="8" fill="rgba(76,175,80,0.5)">desiredReplicas = ceil(lag/target)</text>
-      <text x="120" y="162" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.3)">polling interval: 30s</text>
-      <text x="120" y="178" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.3)">cooldown period: 5m</text>
-      <text x="120" y="194" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.3)">maxReplicas: 12</text>
+      <text x="20" y="137" font-family="DM Sans" font-size="8" fill="rgba(76,175,80,0.84)">desiredReplicas = ceil(lag/target)</text>
+      <text x="120" y="162" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.48)">polling interval: 30s</text>
+      <text x="120" y="178" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.48)">cooldown period: 5m</text>
+      <text x="120" y="194" text-anchor="middle" font-family="DM Sans" font-size="8.5" fill="rgba(255,255,255,0.48)">maxReplicas: 12</text>
     </g>
   </svg>
 </div>
@@ -603,15 +603,15 @@ kafka-consumer-groups.sh \
     <g transform="translate(20,80)">
       <rect width="150" height="100" rx="8" fill="url(#gk4)" stroke="#ff5722" stroke-width="1.5"/>
       <text x="75" y="22" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#ff5722" font-weight="700">Kafka Broker</text>
-      <text x="75" y="40" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.4)">Consumer Group Lag</text>
+      <text x="75" y="40" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.48)">Consumer Group Lag</text>
       <rect x="12" y="48" width="126" height="20" rx="3" fill="rgba(255,179,0,0.1)" stroke="rgba(255,179,0,0.3)" stroke-width="1"/>
       <text x="75" y="62" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ffb300">lag: 124,500</text>
-      <text x="75" y="82" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,87,34,0.5)">topic: ad-events</text>
+      <text x="75" y="82" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,87,34,0.92)">topic: ad-events</text>
     </g>
 
     <!-- Arrow Kafka → KEDA Metrics Adapter -->
     <line x1="170" y1="130" x2="230" y2="130" stroke="#00bcd4" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-d)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="0.8s" repeatCount="indefinite"/></line>
-    <text x="190" y="124" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.5)">poll lag</text>
+    <text x="190" y="124" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.74)">poll lag</text>
 
     <!-- KEDA Operator box (central) -->
     <g transform="translate(228,30)">
@@ -622,7 +622,7 @@ kafka-consumer-groups.sh \
       <g transform="translate(16,32)">
         <rect width="170" height="150" rx="7" fill="url(#gk2)" stroke="#00bcd4" stroke-width="1"/>
         <text x="85" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4" font-weight="700">Scaler</text>
-        <text x="85" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">KafkaScaler</text>
+        <text x="85" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">KafkaScaler</text>
         <text x="85" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">Polls Kafka</text>
         <text x="85" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">Gets lag / topic</text>
         <text x="85" y="82" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.5)">Computes desired</text>
@@ -639,13 +639,13 @@ kafka-consumer-groups.sh \
       <g transform="translate(228,32)">
         <rect width="200" height="150" rx="7" fill="url(#gk2)" stroke="#00bcd4" stroke-width="1"/>
         <text x="100" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00bcd4" font-weight="700">ScaledObject</text>
-        <text x="100" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">CRD (Custom Resource)</text>
-        <text x="100" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">scaleTargetRef: Deployment</text>
-        <text x="100" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">minReplicas: 0</text>
-        <text x="100" y="80" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">maxReplicas: 20</text>
-        <text x="100" y="96" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">trigger: kafka</text>
-        <text x="100" y="110" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">lagThreshold: 50000</text>
-        <text x="100" y="124" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">activationThreshold: 1</text>
+        <text x="100" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">CRD (Custom Resource)</text>
+        <text x="100" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">scaleTargetRef: Deployment</text>
+        <text x="100" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">minReplicas: 0</text>
+        <text x="100" y="80" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">maxReplicas: 20</text>
+        <text x="100" y="96" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">trigger: kafka</text>
+        <text x="100" y="110" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">lagThreshold: 50000</text>
+        <text x="100" y="124" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">activationThreshold: 1</text>
       </g>
 
       <!-- Arrow → HPA -->
@@ -655,25 +655,25 @@ kafka-consumer-groups.sh \
       <g transform="translate(470,32)">
         <rect width="170" height="150" rx="7" fill="url(#gk3)" stroke="#4caf50" stroke-width="1"/>
         <text x="85" y="18" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50" font-weight="700">HPA</text>
-        <text x="85" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">managed by KEDA</text>
-        <text x="85" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">metricName: kafka-lag</text>
-        <text x="85" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">targetValue: 50000</text>
-        <text x="85" y="82" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.45)">current: 124500</text>
+        <text x="85" y="32" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">managed by KEDA</text>
+        <text x="85" y="52" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">metricName: kafka-lag</text>
+        <text x="85" y="66" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">targetValue: 50000</text>
+        <text x="85" y="82" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.47)">current: 124500</text>
         <rect x="12" y="90" width="146" height="26" rx="3" fill="rgba(76,175,80,0.1)" stroke="rgba(76,175,80,0.3)" stroke-width="1"/>
         <text x="85" y="107" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50">desired: 3 replicas</text>
-        <text x="85" y="132" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.3)">stabilization: 300s</text>
+        <text x="85" y="132" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.48)">stabilization: 300s</text>
       </g>
     </g>
 
     <!-- Arrow → K8s Deployment -->
     <line x1="1008" y1="130" x2="1068" y2="130" stroke="#4caf50" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-g)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="1s" repeatCount="indefinite"/></line>
-    <text x="1022" y="124" font-family="Space Mono" font-size="8" fill="rgba(76,175,80,0.5)">scale</text>
+    <text x="1022" y="124" font-family="Space Mono" font-size="8" fill="rgba(76,175,80,0.84)">scale</text>
 
     <!-- K8s Deployment -->
     <g transform="translate(1066,60)">
       <rect width="190" height="140" rx="8" fill="url(#gk3)" stroke="#4caf50" stroke-width="1.5"/>
       <text x="95" y="20" text-anchor="middle" font-family="Space Mono" font-size="10" fill="#4caf50" font-weight="700">Deployment</text>
-      <text x="95" y="34" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.35)">attribution-consumer</text>
+      <text x="95" y="34" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(255,255,255,0.47)">attribution-consumer</text>
       <rect x="12" y="44" width="166" height="22" rx="3" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)" stroke-width="1"/>
       <text x="95" y="59" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#4caf50">Pod ✓ running</text>
       <rect x="12" y="72" width="166" height="22" rx="3" fill="rgba(76,175,80,0.08)" stroke="rgba(76,175,80,0.25)" stroke-width="1"/>
@@ -683,7 +683,7 @@ kafka-consumer-groups.sh \
     </g>
 
     <!-- Custom Metrics API path label -->
-    <text x="640" y="250" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.4)" letter-spacing="2">KEDA Metrics Adapter ← exposes kafka-lag to K8s Custom Metrics API → HPA reads it via metrics.k8s.io</text>
+    <text x="640" y="250" text-anchor="middle" font-family="Space Mono" font-size="8" fill="rgba(0,188,212,0.74)" letter-spacing="2">KEDA Metrics Adapter ← exposes kafka-lag to K8s Custom Metrics API → HPA reads it via metrics.k8s.io</text>
   </svg>
 </div>
 

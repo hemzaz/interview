@@ -14,10 +14,10 @@
   --mem:#a78bfa;    /* violet - memory / registers */
   --io:#34d399;     /* emerald - io */
   --ret:#4ade80;    /* green  - return path */
-  --text:#c8d8e8; --dim:#1a2a3a; --mid:#405060;
+  --text:#c8d8e8; --dim:#767f89; --mid:#727e89;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;line-height:1.5;}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
     radial-gradient(ellipse 60% 30% at 50% 0%,rgba(96,165,250,.07) 0%,transparent 50%),
@@ -32,9 +32,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .hl h1{font-family:'Barlow Condensed',sans-serif;font-size:72px;font-weight:900;letter-spacing:-3px;line-height:.88;text-transform:uppercase;}
 .t1{background:linear-gradient(90deg,var(--user) 0%,var(--trap) 45%,var(--kern) 80%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .t2{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(96,165,250,.22);}
-.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
+.sub{font-family:'Share Tech Mono',monospace;font-size:12.5px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
 .pills{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
-.pill{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 14px;border-radius:4px;border:1px solid;font-weight:700;text-transform:uppercase;}
+.pill{font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:1px;padding:5px 14px;border-radius:4px;border:1px solid;font-weight:700;text-transform:uppercase;}
 .pill-u{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.4);color:var(--user);}
 .pill-k{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.4);color:var(--kern);}
 .pill-t{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.4);color:var(--trap);}
@@ -43,7 +43,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sh{display:flex;align-items:center;gap:12px;margin:22px 0 11px;}
 .sh-icon{font-size:18px;}
 .sh-label{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
-.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:1px;}
 .sh::after{content:'';flex:1;height:1px;}
 .su .sh-label{color:var(--user);} .su .sh::after{background:linear-gradient(90deg,rgba(96,165,250,.3),transparent);}
 .sk .sh-label{color:var(--kern);} .sk .sh::after{background:linear-gradient(90deg,rgba(248,113,113,.3),transparent);}
@@ -68,33 +68,33 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .ctitle{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
 
 /* facts */
-.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
-.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:12.5px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.5;}
 .fv b{color:var(--text);}
-.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
 
 /* code */
-.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
+.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:12.5px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
 .kw{color:#a78bfa;} .ky{color:var(--io);} .stt{color:var(--trap);}
-.nu{color:var(--user);} .cm{color:#1a2a3a;} .re{color:var(--kern);}
+.nu{color:var(--user);} .cm{color:#767f89;} .re{color:var(--kern);}
 
 /* trap / note */
-.tp{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
+.tp{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:12.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
 .tp::before{content:'⚡ ';color:var(--kern);}
 .tp b{color:var(--text);}
-.tp code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
-.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.tp code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
+.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
 .note b{color:var(--text);}
-.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
+.note code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
 
 /* table */
-.tb{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
-.tb th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.tb{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.tb th{font-family:'Share Tech Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
 .tb td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.02);color:var(--mid);vertical-align:top;line-height:1.5;}
 .tb td:first-child{color:var(--text);font-weight:600;}
 .tb tr:last-child td{border-bottom:none;}
-.tb td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
+.tb td code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
 .good{color:var(--ret)!important;} .warn{color:var(--trap)!important;} .bad{color:var(--kern)!important;}
 
 /* boundary diagram */
@@ -102,30 +102,30 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .bzone{padding:14px 18px;position:relative;}
 .bzone-u{background:linear-gradient(180deg,rgba(96,165,250,.06),transparent);}
 .bzone-k{background:linear-gradient(0deg,rgba(248,113,113,.06),transparent);}
-.bzone-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;}
+.bzone-label{font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;}
 .bzone-u .bzone-label{color:var(--user);}
 .bzone-k .bzone-label{color:var(--kern);}
 .brow{display:flex;gap:8px;flex-wrap:wrap;}
 .bbox{flex:1;min-width:120px;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:5px;padding:8px 10px;}
-.bbox-t{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:3px;}
-.bbox-d{font-size:9.5px;color:var(--mid);line-height:1.45;}
+.bbox-t{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:3px;}
+.bbox-d{font-size:12.5px;color:var(--mid);line-height:1.45;}
 .divider{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px;background:rgba(245,158,11,.05);border-top:1px solid rgba(245,158,11,.2);border-bottom:1px solid rgba(245,158,11,.2);}
 .divider-line{flex:1;height:1px;background:repeating-linear-gradient(90deg,rgba(245,158,11,.4),rgba(245,158,11,.4) 4px,transparent 4px,transparent 8px);}
-.divider-txt{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--trap);font-weight:700;white-space:nowrap;}
+.divider-txt{font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--trap);font-weight:700;white-space:nowrap;}
 
 /* flow steps */
 .flow{display:flex;flex-direction:column;gap:0;margin-top:8px;}
 .fstep{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;padding:6px 0;position:relative;}
-.fnum{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;flex-shrink:0;}
+.fnum{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:12.5px;font-weight:700;flex-shrink:0;}
 .fn1{background:rgba(96,165,250,.12);color:var(--user);border:1px solid rgba(96,165,250,.35);}
 .fn2{background:rgba(245,158,11,.12);color:var(--trap);border:1px solid rgba(245,158,11,.35);}
 .fn3{background:rgba(248,113,113,.12);color:var(--kern);border:1px solid rgba(248,113,113,.35);}
 .fn4{background:rgba(74,222,128,.12);color:var(--ret);border:1px solid rgba(74,222,128,.35);}
-.ftxt{font-size:10.5px;color:var(--mid);line-height:1.5;padding-top:3px;}
+.ftxt{font-size:12.5px;color:var(--mid);line-height:1.5;padding-top:3px;}
 .ftxt b{color:var(--text);}
-.ftxt code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
+.ftxt code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--trap);}
 
-.footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:8.5px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+.footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
 @media (max-width:900px){.g2,.g3,.g4,.g23{grid-template-columns:1fr;}.hl h1{font-size:48px;}}
 
   @media print {
@@ -296,11 +296,11 @@ strace -e openat ./app</div>
     </div>
     <div class="card">
       <div class="ctitle">⚠️ EINTR</div>
-      <div class="fv" style="font-size:10.5px;line-height:1.55;">A blocking syscall can be interrupted by a signal and return <code>-EINTR</code>. Robust code <b>retries</b> the call. This surprises people who assume <code>read()</code> always completes or fails cleanly.</div>
+      <div class="fv" style="font-size:12.5px;line-height:1.55;">A blocking syscall can be interrupted by a signal and return <code>-EINTR</code>. Robust code <b>retries</b> the call. This surprises people who assume <code>read()</code> always completes or fails cleanly.</div>
     </div>
     <div class="card">
       <div class="ctitle">🔒 seccomp</div>
-      <div class="fv" style="font-size:10.5px;line-height:1.55;">Kernel filter that whitelists which syscalls a process may make. The basis of container/sandbox hardening — a blocked call gets the process killed or an errno.</div>
+      <div class="fv" style="font-size:12.5px;line-height:1.55;">Kernel filter that whitelists which syscalls a process may make. The basis of container/sandbox hardening — a blocked call gets the process killed or an errno.</div>
     </div>
   </div>
   <div class="tp"><b>Interview trap:</b> "What's the difference between an <b>exception</b>, an <b>interrupt</b>, and a <b>system call</b>?" All three trap into the kernel, but: a <b>syscall</b> is synchronous and <i>voluntary</i> (software asks); an <b>exception</b> is synchronous and <i>involuntary</i> (page fault, div-by-zero); an <b>interrupt</b> is asynchronous and hardware-driven (NIC, timer).</div>

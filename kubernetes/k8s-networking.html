@@ -42,11 +42,11 @@
   --mesh-c:#6ee7b7;   /* emerald- mesh */
 
   --text: #c8d8e8;
-  --dim:  #1e2d3d;
-  --mid:  #4a6070;
+  --dim:  #747d87;
+  --mid:  #6b7d8a;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;line-height:1.45;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;line-height:1.5;}
 body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -63,10 +63,10 @@ body::before{
 .hl h1{font-family:'Barlow Condensed',sans-serif;font-size:80px;font-weight:900;letter-spacing:-3px;line-height:.88;text-transform:uppercase;}
 .hl h1 .t1{background:linear-gradient(90deg,var(--teal) 0%,var(--cyan) 40%,#fff 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .hl h1 .t2{color:rgba(255,255,255,.05);-webkit-text-stroke:1px rgba(20,184,166,.22);}
-.sub{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
+.sub{font-family:'Share Tech Mono',monospace;font-size:12.5px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:7px;}
 .hright{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
 .layer-stack{display:flex;flex-direction:column;gap:3px;}
-.layer{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 12px;border-radius:3px;border:1px solid;text-align:right;white-space:nowrap;}
+.layer{font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:1px;padding:4px 12px;border-radius:3px;border:1px solid;text-align:right;white-space:nowrap;}
 .lay7{background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); color:var(--l7);}
 .lay4{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.3); color:var(--l4);}
 .lay3{background:rgba(20,184,166,.08);border-color:rgba(20,184,166,.3); color:var(--l3);}
@@ -76,7 +76,7 @@ body::before{
 .sh{display:flex;align-items:center;gap:12px;margin:22px 0 11px;}
 .sh-icon{font-size:18px;}
 .sh-label{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
-.sh-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;}
+.sh-sub{font-family:'Share Tech Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:1px;}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -94,44 +94,44 @@ body::before{
 .ct{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
 
 /* fact rows */
-.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
-.fk{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:118px 1fr;gap:4px 8px;padding:4px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:12.5px;}
+.fk{font-family:'Share Tech Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.5;}
 .fv b{color:var(--text);}
-.fv code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+.fv code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
 
 /* code block */
-.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
-.code .cm{color:#1a2a38;} .code .kw{color:#a78bfa;} .code .fn{color:var(--teal);}
+.code{background:#020406;border:1px solid var(--bd);border-radius:6px;padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:12.5px;line-height:1.85;color:var(--mid);margin-top:8px;overflow-x:auto;white-space:pre;}
+.code .cm{color:#717b84;} .code .kw{color:#a78bfa;} .code .fn{color:var(--teal);}
 .code .st{color:var(--amber);} .code .nu{color:var(--cyan);} .code .ky{color:var(--lime);}
 
 /* trap + note */
-.trap{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:10.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
+.trap{background:rgba(248,113,113,.04);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:7px 10px;font-size:12.5px;color:var(--mid);margin-top:9px;line-height:1.55;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
-.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:10.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
+.trap code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+.note{background:rgba(255,255,255,.018);border-left:2px solid var(--bd);padding:6px 10px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.55;border-radius:0 4px 4px 0;}
 .note b{color:var(--text);}
-.note code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+.note code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
-.st th{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.st th{font-family:'Share Tech Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:5px 9px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
+.st td code{font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);}
 .good{color:var(--green)!important;} .warn{color:var(--amber)!important;} .bad{color:var(--red)!important;}
 
 /* badge */
-.badge{display:inline-flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 7px;border-radius:3px;border:1px solid;font-weight:700;letter-spacing:.5px;margin:2px 2px 2px 0;white-space:nowrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid;font-weight:700;letter-spacing:.5px;margin:2px 2px 2px 0;white-space:nowrap;}
 
 /* chain node */
 .cnode{display:inline-flex;flex-direction:column;align-items:center;gap:2px;}
-.cbox{padding:6px 11px;border-radius:5px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-align:center;white-space:nowrap;}
-.cbox-sm{padding:4px 8px;font-size:9px;}
+.cbox{padding:6px 11px;border-radius:5px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.5px;text-align:center;white-space:nowrap;}
+.cbox-sm{padding:4px 8px;font-size:11.5px;}
 .carr{font-size:20px;padding:0 5px;align-self:center;line-height:1;}
-.clabel{font-size:7.5px;color:var(--mid);font-family:'Share Tech Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
+.clabel{font-size:11.5px;color:var(--mid);font-family:'Share Tech Mono',monospace;letter-spacing:.5px;text-transform:uppercase;}
 
 /* object colors */
 .o-pod{background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.4); color:var(--green);}
@@ -150,12 +150,12 @@ body::before{
 .chainrow:last-child{margin-bottom:0;}
 
 /* tree */
-.htree{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:2.0;color:var(--mid);}
+.htree{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:12.5px;line-height:2.0;color:var(--mid);}
 .htree .r{color:var(--teal);font-weight:700;}
 .htree .l1{color:var(--amber);padding-left:14px;}
 .htree .l2{color:var(--text);padding-left:28px;}
 .htree .l3{color:var(--mid);padding-left:42px;}
-.htree .ann{color:rgba(255,255,255,.14);font-size:9px;}
+.htree .ann{color:rgba(255,255,255,.14);font-size:11.5px;}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .page>*{animation:fi .35s ease both;}
@@ -168,7 +168,7 @@ body::before{
 .page>*:nth-child(13){animation-delay:.37s} .page>*:nth-child(14){animation-delay:.40s}
 
 .footer{margin-top:32px;padding-top:12px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:'Share Tech Mono',monospace;font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -221,19 +221,19 @@ body::before{
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
       <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 1 — Pod↔Pod, no NAT</div>
-        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">Every pod can reach every other pod using its <b style="color:var(--text);">real IP</b>. No address translation. Pod A at 10.0.1.5 reaches Pod B at 10.0.2.7 directly.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.55;">Every pod can reach every other pod using its <b style="color:var(--text);">real IP</b>. No address translation. Pod A at 10.0.1.5 reaches Pod B at 10.0.2.7 directly.</div>
       </div>
       <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 2 — Node↔Pod, no NAT</div>
-        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">Nodes can reach pods using pod IPs directly. No masquerade. Same applies in reverse — pods can reach nodes.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.55;">Nodes can reach pods using pod IPs directly. No masquerade. Same applies in reverse — pods can reach nodes.</div>
       </div>
       <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 3 — IP seen = IP used</div>
-        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">The IP a pod sees as its own (<code style="font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);">eth0</code>) is the same IP other pods use to reach it. No masquerade within the cluster.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.55;">The IP a pod sees as its own (<code style="font-family:'Share Tech Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--amber);">eth0</code>) is the same IP other pods use to reach it. No masquerade within the cluster.</div>
       </div>
       <div style="background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.2);border-radius:6px;padding:10px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--teal);margin-bottom:5px;">Rule 4 — Implemented by CNI</div>
-        <div style="font-size:10.5px;color:var(--mid);line-height:1.55;">K8s doesn't implement networking itself. CNI plugins (Calico, Cilium, Flannel) are responsible for making these rules true on real hardware.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.55;">K8s doesn't implement networking itself. CNI plugins (Calico, Cilium, Flannel) are responsible for making these rules true on real hardware.</div>
       </div>
     </div>
     <div class="fr"><span class="fk">Pod CIDR</span><span class="fv">Configured per-cluster (e.g., <code>10.244.0.0/16</code> for Flannel, <code>192.168.0.0/16</code> for Calico). Each node gets a slice: node-1 = <code>10.244.0.0/24</code>, node-2 = <code>10.244.1.0/24</code>.</span></div>
@@ -260,7 +260,7 @@ body::before{
     </div>
     <div class="card" style="border-color:rgba(20,184,166,.15);">
       <div class="ct" style="color:var(--teal);">📡 Cross-Node Pod Traffic</div>
-      <div style="font-size:10.5px;color:var(--mid);line-height:1.7;">
+      <div style="font-size:12.5px;color:var(--mid);line-height:1.7;">
         <div style="margin-bottom:6px;"><b style="color:var(--text);">Overlay (VXLAN/IPIP):</b> Flannel/Weave. Pod packet encapsulated inside UDP (VXLAN) or IP-in-IP. Node knows which pod CIDRs live on which nodes via etcd/annotations.</div>
         <div style="margin-bottom:6px;"><b style="color:var(--text);">Underlay (BGP):</b> Calico. Pod IPs advertised as real routes via BGP. No encapsulation overhead. Requires network equipment to support BGP.</div>
         <div><b style="color:var(--text);">eBPF (bypass kernel):</b> Cilium. Replaces iptables/kube-proxy entirely. Packets processed in eBPF programs at XDP/TC hook points. Lowest latency, best observability.</div>
@@ -292,64 +292,64 @@ body::before{
     <g transform="translate(10,70)">
       <rect width="100" height="50" rx="6" fill="rgba(148,163,184,.06)" stroke="rgba(148,163,184,.25)" stroke-width="1.5"/>
       <text x="50" y="22" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#94a3b8" font-weight="700">INTERNET</text>
-      <text x="50" y="37" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(148,163,184,.5)">client</text>
+      <text x="50" y="37" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(148,163,184,0.8)">client</text>
     </g>
 
     <!-- Cloud LB -->
     <g transform="translate(150,65)">
       <rect width="120" height="60" rx="6" fill="rgba(252,211,77,.1)" stroke="rgba(252,211,77,.45)" stroke-width="1.5" filter="url(#gw)"/>
       <text x="60" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fcd34d" font-weight="700">Cloud LB</text>
-      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(252,211,77,.5)">AWS/GCP/Azure</text>
-      <text x="60" y="48" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(252,211,77,.35)">type:LoadBalancer</text>
+      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(252,211,77,0.58)">AWS/GCP/Azure</text>
+      <text x="60" y="48" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(252,211,77,0.57)">type:LoadBalancer</text>
     </g>
 
     <!-- Ingress Controller pod -->
     <g transform="translate(320,55)">
       <rect width="140" height="80" rx="6" fill="rgba(244,114,182,.08)" stroke="rgba(244,114,182,.4)" stroke-width="1.5"/>
       <text x="70" y="22" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f472b6" font-weight="700">Ingress Controller</text>
-      <text x="70" y="36" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,114,182,.5)">nginx/Envoy/Traefik pod</text>
-      <text x="70" y="52" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(244,114,182,.3)">TLS termination</text>
-      <text x="70" y="65" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(244,114,182,.3)">L7 path/host routing</text>
+      <text x="70" y="36" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(244,114,182,0.82)">nginx/Envoy/Traefik pod</text>
+      <text x="70" y="52" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(244,114,182,0.82)">TLS termination</text>
+      <text x="70" y="65" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(244,114,182,0.82)">L7 path/host routing</text>
     </g>
 
     <!-- Service -->
     <g transform="translate(510,70)">
       <rect width="120" height="50" rx="6" fill="rgba(245,158,11,.1)" stroke="rgba(245,158,11,.45)" stroke-width="1.5"/>
       <text x="60" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#f59e0b" font-weight="700">Service</text>
-      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(245,158,11,.5)">ClusterIP · selector</text>
-      <text x="60" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(245,158,11,.3)">iptables / IPVS</text>
+      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(245,158,11,0.72)">ClusterIP · selector</text>
+      <text x="60" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(245,158,11,0.72)">iptables / IPVS</text>
     </g>
 
     <!-- kube-proxy -->
     <g transform="translate(510,148)">
       <rect width="120" height="34" rx="4" fill="rgba(34,211,238,.06)" stroke="rgba(34,211,238,.25)" stroke-width="1"/>
       <text x="60" y="15" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#22d3ee" font-weight="700">kube-proxy</text>
-      <text x="60" y="27" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(34,211,238,.4)">programs iptables/IPVS</text>
+      <text x="60" y="27" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(34,211,238,0.66)">programs iptables/IPVS</text>
     </g>
 
     <!-- EndpointSlice -->
     <g transform="translate(680,70)">
       <rect width="120" height="50" rx="6" fill="rgba(252,211,77,.06)" stroke="rgba(252,211,77,.3)" stroke-width="1"/>
       <text x="60" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#fcd34d" font-weight="700">EndpointSlice</text>
-      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(252,211,77,.45)">pod IPs + ports</text>
-      <text x="60" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(252,211,77,.3)">≤100 eps per slice</text>
+      <text x="60" y="34" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(252,211,77,0.57)">pod IPs + ports</text>
+      <text x="60" y="47" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(252,211,77,0.58)">≤100 eps per slice</text>
     </g>
 
     <!-- Pods -->
     <g transform="translate(860,45)">
       <rect width="90" height="40" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.4)" stroke-width="1.5"/>
       <text x="45" y="19" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">Pod A</text>
-      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,.45)">10.244.0.5:8080</text>
+      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,0.65)">10.244.0.5:8080</text>
     </g>
     <g transform="translate(860,100)">
       <rect width="90" height="40" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.4)" stroke-width="1.5"/>
       <text x="45" y="19" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">Pod B</text>
-      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,.45)">10.244.1.3:8080</text>
+      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,0.65)">10.244.1.3:8080</text>
     </g>
     <g transform="translate(860,155)">
       <rect width="90" height="40" rx="5" fill="rgba(74,222,128,.08)" stroke="rgba(74,222,128,.3)" stroke-width="1"/>
       <text x="45" y="19" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">Pod C</text>
-      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,.35)">10.244.1.9:8080</text>
+      <text x="45" y="32" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(74,222,128,0.65)">10.244.1.9:8080</text>
     </g>
 
     <!-- Arrows -->
@@ -366,22 +366,22 @@ body::before{
     <path d="M 740 120 L 570 148" fill="none" stroke="rgba(34,211,238,.3)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a1)"/>
 
     <!-- Labels above arrows -->
-    <text x="115" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(148,163,184,.4)">public IP</text>
-    <text x="275" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(252,211,77,.4)">:443 → :80</text>
-    <text x="462" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(244,114,182,.4)">L7 match</text>
-    <text x="635" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(245,158,11,.4)">DNAT lookup</text>
-    <text x="808" y="78" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,.4)">random/RR</text>
+    <text x="115" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(148,163,184,0.8)">public IP</text>
+    <text x="275" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(252,211,77,0.58)">:443 → :80</text>
+    <text x="462" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(244,114,182,0.82)">L7 match</text>
+    <text x="635" y="88" font-family="Share Tech Mono" font-size="7" fill="rgba(245,158,11,0.72)">DNAT lookup</text>
+    <text x="808" y="78" font-family="Share Tech Mono" font-size="7" fill="rgba(74,222,128,0.64)">random/RR</text>
 
     <!-- Layer labels on right -->
-    <text x="1000" y="20"  font-family="Share Tech Mono" font-size="8" fill="rgba(244,114,182,.5)" letter-spacing="2">L7 ─ Ingress layer</text>
-    <text x="1000" y="100" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,.5)"  letter-spacing="2">L4 ─ Service / iptables</text>
-    <text x="1000" y="185" font-family="Share Tech Mono" font-size="8" fill="rgba(74,222,128,.5)"  letter-spacing="2">L3 ─ Pod network / CNI</text>
+    <text x="1000" y="20"  font-family="Share Tech Mono" font-size="8" fill="rgba(244,114,182,0.82)" letter-spacing="2">L7 ─ Ingress layer</text>
+    <text x="1000" y="100" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,0.72)"  letter-spacing="2">L4 ─ Service / iptables</text>
+    <text x="1000" y="185" font-family="Share Tech Mono" font-size="8" fill="rgba(74,222,128,0.64)"  letter-spacing="2">L3 ─ Pod network / CNI</text>
 
     <!-- Network Policy gate -->
     <g transform="translate(1080,100)">
       <rect width="100" height="40" rx="4" fill="rgba(248,113,113,.06)" stroke="rgba(248,113,113,.25)" stroke-width="1" stroke-dasharray="5 3"/>
       <text x="50" y="16" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#f87171" font-weight="700">NetworkPolicy</text>
-      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(248,113,113,.4)">gates pod ingress/egress</text>
+      <text x="50" y="29" text-anchor="middle" font-family="Barlow" font-size="7.5" fill="rgba(248,113,113,0.84)">gates pod ingress/egress</text>
     </g>
     <line x1="950" y1="120" x2="1080" y2="120" stroke="rgba(248,113,113,.3)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a1)"/>
   </svg>
@@ -391,7 +391,7 @@ body::before{
 
   <!-- ClusterIP -->
   <div class="card" style="border-color:rgba(245,158,11,.25);"><div class="card" style="border:none;padding:0;background:transparent;">
-    <div class="ct" style="color:var(--amber);">🟡 ClusterIP <span style="font-size:10px;font-weight:400;color:var(--mid);">default</span></div>
+    <div class="ct" style="color:var(--amber);">🟡 ClusterIP <span style="font-size:12.5px;font-weight:400;color:var(--mid);">default</span></div>
     <div class="fr"><span class="fk">What it is</span><span class="fv"><b>Virtual IP inside the cluster only.</b> Stable IP+port that load-balances to matching pods. Never accessible from outside.</span></div>
     <div class="fr"><span class="fk">IP reality</span><span class="fv">ClusterIP <b>does not exist on any network interface.</b> It's a fiction — iptables DNAT rules rewrite packets destined for it to a real pod IP before routing.</span></div>
     <div class="fr"><span class="fk">DNS</span><span class="fv">CoreDNS resolves <code>svc-name.namespace.svc.cluster.local</code> → ClusterIP. In-cluster DNS always works regardless of actual pod IPs changing.</span></div>
@@ -810,11 +810,11 @@ kubectl -n kube-system logs -l k8s-app=kube-dns</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
       <div style="background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.15);border-radius:5px;padding:9px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--red);margin-bottom:5px;">ETP: Cluster (default)</div>
-        <div style="font-size:10px;color:var(--mid);line-height:1.6;">✓ Traffic to any node, proxied to any pod<br>✓ All nodes healthy to LB<br>✗ Source IP lost (SNAT)<br>✗ Extra hop node→pod<br>✗ Uneven LB (hot nodes)</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;">✓ Traffic to any node, proxied to any pod<br>✓ All nodes healthy to LB<br>✗ Source IP lost (SNAT)<br>✗ Extra hop node→pod<br>✗ Uneven LB (hot nodes)</div>
       </div>
       <div style="background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.15);border-radius:5px;padding:9px;">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--green);margin-bottom:5px;">ETP: Local</div>
-        <div style="font-size:10px;color:var(--mid);line-height:1.6;">✓ Client IP preserved<br>✓ No extra hop<br>✗ Only nodes with pods healthy<br>✗ Uneven if pods not spread<br>✗ Dropped on nodes without pods</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;">✓ Client IP preserved<br>✓ No extra hop<br>✗ Only nodes with pods healthy<br>✗ Uneven if pods not spread<br>✗ Dropped on nodes without pods</div>
       </div>
     </div>
     <div class="fr"><span class="fk">internalTP</span><span class="fv"><code>internalTrafficPolicy: Local</code> (1.26 stable) — same concept for traffic arriving via ClusterIP from within the cluster. Forces traffic to local-node pods only.</span></div>
@@ -841,18 +841,18 @@ kubectl -n kube-system logs -l k8s-app=kube-dns</div>
 
       <!-- Pod A -->
       <rect x="10" y="20" width="200" height="150" rx="7" fill="rgba(20,184,166,.04)" stroke="rgba(20,184,166,.2)" stroke-width="1.5" stroke-dasharray="6 3"/>
-      <text x="110" y="14" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="rgba(20,184,166,.4)">POD A</text>
+      <text x="110" y="14" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="rgba(20,184,166,0.78)">POD A</text>
       <rect x="22" y="35" width="80" height="50" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.35)" stroke-width="1"/>
       <text x="62" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">app</text>
-      <text x="62" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(74,222,128,.4)">:8080</text>
+      <text x="62" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(74,222,128,0.64)">:8080</text>
       <rect x="118" y="35" width="82" height="50" rx="5" fill="rgba(110,231,183,.08)" stroke="rgba(110,231,183,.35)" stroke-width="1"/>
       <text x="159" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#6ee7b7" font-weight="700">Envoy proxy</text>
-      <text x="159" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(110,231,183,.4)">sidecar</text>
+      <text x="159" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(110,231,183,0.6)">sidecar</text>
       <!-- iptables intercept labels -->
-      <text x="110" y="112" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,.5)">iptables intercepts all traffic</text>
-      <text x="110" y="126" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,.4)">→ redirects to Envoy :15001/15006</text>
-      <text x="110" y="148" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(255,255,255,.2)">init container sets iptables rules on pod start</text>
-      <text x="110" y="162" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(255,255,255,.15)">Envoy applies policy, then forwards</text>
+      <text x="110" y="112" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,0.72)">iptables intercepts all traffic</text>
+      <text x="110" y="126" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="rgba(245,158,11,0.72)">→ redirects to Envoy :15001/15006</text>
+      <text x="110" y="148" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(255,255,255,0.48)">init container sets iptables rules on pod start</text>
+      <text x="110" y="162" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(255,255,255,0.47)">Envoy applies policy, then forwards</text>
 
       <!-- Arrows within pod -->
       <line x1="102" y1="60" x2="118" y2="60" stroke="rgba(245,158,11,.5)" stroke-width="1.5" marker-end="url(#am2)"/>
@@ -860,18 +860,18 @@ kubectl -n kube-system logs -l k8s-app=kube-dns</div>
       <!-- Control plane -->
       <rect x="270" y="50" width="130" height="70" rx="6" fill="rgba(167,139,250,.07)" stroke="rgba(167,139,250,.3)" stroke-width="1"/>
       <text x="335" y="72" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#a78bfa" font-weight="700">Control Plane</text>
-      <text x="335" y="88" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(167,139,250,.5)">Istiod / Linkerd ctrl</text>
-      <text x="335" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,.35)">cert mgmt + xDS config</text>
+      <text x="335" y="88" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(167,139,250,0.82)">Istiod / Linkerd ctrl</text>
+      <text x="335" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,0.83)">cert mgmt + xDS config</text>
 
       <!-- Pod B -->
       <rect x="490" y="20" width="200" height="120" rx="7" fill="rgba(20,184,166,.04)" stroke="rgba(20,184,166,.2)" stroke-width="1.5" stroke-dasharray="6 3"/>
-      <text x="590" y="14" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="rgba(20,184,166,.4)">POD B</text>
+      <text x="590" y="14" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="rgba(20,184,166,0.78)">POD B</text>
       <rect x="502" y="35" width="82" height="50" rx="5" fill="rgba(110,231,183,.08)" stroke="rgba(110,231,183,.35)" stroke-width="1"/>
       <text x="543" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="8.5" fill="#6ee7b7" font-weight="700">Envoy proxy</text>
-      <text x="543" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(110,231,183,.4)">sidecar</text>
+      <text x="543" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(110,231,183,0.6)">sidecar</text>
       <rect x="594" y="35" width="80" height="50" rx="5" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.35)" stroke-width="1"/>
       <text x="634" y="57" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#4ade80" font-weight="700">app</text>
-      <text x="634" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(74,222,128,.4)">:8080</text>
+      <text x="634" y="72" text-anchor="middle" font-family="Barlow" font-size="8" fill="rgba(74,222,128,0.64)">:8080</text>
       <!-- inner arrow -->
       <line x1="584" y1="60" x2="594" y2="60" stroke="rgba(245,158,11,.5)" stroke-width="1.5" marker-end="url(#am2)"/>
 
@@ -882,7 +882,7 @@ kubectl -n kube-system logs -l k8s-app=kube-dns</div>
       <!-- xDS arrows from control plane -->
       <path d="M 335 120 L 165 80" fill="none" stroke="rgba(167,139,250,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#am)"/>
       <path d="M 335 120 L 543 90" fill="none" stroke="rgba(167,139,250,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#am)"/>
-      <text x="245" y="110" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,.4)">xDS config push</text>
+      <text x="245" y="110" font-family="Share Tech Mono" font-size="7.5" fill="rgba(167,139,250,0.82)">xDS config push</text>
     </svg>
     <div class="fr"><span class="fk">Injection</span><span class="fv">Istio mutating webhook automatically injects Envoy sidecar + <code>istio-init</code> container into pods in labeled namespaces (<code>istio-injection: enabled</code>).</span></div>
     <div class="fr"><span class="fk">iptables intercept</span><span class="fv">Init container runs <code>iptables</code> rules in pod network NS: all inbound traffic redirected to Envoy port 15006, all outbound to 15001. App code is unaware of the proxy.</span></div>

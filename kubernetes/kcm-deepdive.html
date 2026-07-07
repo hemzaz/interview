@@ -30,7 +30,7 @@
   /* work queue gold */
   --gld: #ffd700;
   --text: #dce8f0;
-  --dim: #4a6278;
+  --dim: #6b7e90;
   --mid: #7a97ae;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -39,7 +39,7 @@ body{
   background:var(--bg);
   color:var(--text);
   font-family:'Syne',sans-serif;
-  font-size:12px;
+  font-size:13px;
   line-height:1.5;
 }
 body::before{
@@ -58,16 +58,16 @@ body::before{
 /* ── HEADER ── */
 .header{margin-bottom:40px;padding-bottom:22px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-end;}
 .hl h1{font-size:70px;font-weight:800;letter-spacing:-1px;line-height:.95;text-transform:uppercase;background:linear-gradient(120deg, var(--acc) 0%, #fff 35%, var(--amb) 75%, var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hl .sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:6px;}
+.hl .sub{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:6px;}
 .hstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .hstat{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;text-align:center;}
 .hstat-n{font-size:28px;font-weight:800;color:var(--acc);line-height:1;}
-.hstat-l{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.hstat-l{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
 
 /* ── SECTION ── */
 .sl{font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:2px;margin:0 0 14px;display:flex;align-items:center;gap:14px;}
 .sl::after{content:'';flex:1;height:1px;}
-.sl span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;font-weight:400;text-transform:none;}
+.sl span{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--dim);letter-spacing:1px;font-weight:400;text-transform:none;}
 .sa{color:var(--acc);} .sa::after{background:linear-gradient(90deg,rgba(0,255,200,.3),transparent);}
 .sb{color:var(--amb);} .sb::after{background:linear-gradient(90deg,rgba(255,176,0,.3),transparent);}
 .sc{color:var(--sky);} .sc::after{background:linear-gradient(90deg,rgba(56,189,248,.3),transparent);}
@@ -108,26 +108,26 @@ body::before{
 .cf .ci{background:rgba(34,212,122,0.1);}
 .cg .ci{background:rgba(255,215,0,0.1);}
 .cx .ci{background:linear-gradient(135deg,rgba(0,255,200,0.1),rgba(255,176,0,0.1));}
-.ct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.ct{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;letter-spacing:.3px;}
 .ca .ct{color:var(--acc);} .cb .ct{color:var(--amb);} .cc .ct{color:var(--sky);}
 .cd .ct{color:var(--pur);} .ce .ct{color:var(--red);} .cf .ct{color:var(--grn);}
 .cg .ct{color:var(--gld);}
 .cx .ct{background:linear-gradient(90deg,var(--acc),var(--amb));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.csub{font-size:9px;color:var(--dim);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.csub{font-size:11.5px;color:var(--dim);margin-top:2px;font-family:'JetBrains Mono',monospace;}
 
 /* fact rows */
-.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);align-items:baseline;font-size:11px;}
-.fk{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.fr{display:grid;grid-template-columns:116px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,0.04);align-items:baseline;font-size:12.5px;}
+.fk{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
 .ca .fk{color:rgba(0,255,200,.65);} .cb .fk{color:rgba(255,176,0,.65);}
 .cc .fk{color:rgba(56,189,248,.65);} .cd .fk{color:rgba(168,85,247,.65);}
 .ce .fk{color:rgba(255,61,90,.65);} .cf .fk{color:rgba(34,212,122,.65);}
 .cg .fk{color:rgba(255,215,0,.65);} .cx .fk{color:rgba(0,255,200,.55);}
 .fv{color:var(--mid);line-height:1.55;}
 .fv b,.fv strong{color:var(--text);font-weight:600;}
-.fv code{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:3px;color:var(--acc);}
+.fv code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:3px;color:var(--acc);}
 
 /* callout */
-.cal{padding:8px 11px;font-size:10.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 5px 5px 0;line-height:1.65;}
+.cal{padding:8px 11px;font-size:12.5px;color:var(--mid);margin-top:12px;border-left:2px solid;border-radius:0 5px 5px 0;line-height:1.65;}
 .cal b,.cal strong{color:var(--text);}
 .ca .cal{background:rgba(0,255,200,0.04);border-color:var(--acc);}
 .cb .cal{background:rgba(255,176,0,0.04);border-color:var(--amb);}
@@ -139,19 +139,19 @@ body::before{
 .cx .cal{background:rgba(0,255,200,0.03);border-color:var(--sky);}
 
 /* code */
-.code{background:#030508;border:1px solid var(--bd);border-radius:6px;padding:11px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.9;color:var(--dim);margin-top:8px;overflow-x:auto;}
+.code{background:#030508;border:1px solid var(--bd);border-radius:6px;padding:11px 14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;color:var(--dim);margin-top:8px;overflow-x:auto;}
 .code .kw{color:#c084fc;} .code .fn{color:var(--grn);} .code .st{color:var(--amb);}
-.code .cm{color:#1f2f3f;} .code .ky{color:var(--acc);} .code .va{color:#fb923c);}
+.code .cm{color:#747e88;} .code .ky{color:var(--acc);} .code .va{color:#fb923c);}
 .code .va{color:#fb923c;} .code .re{color:var(--red);} .code .nu{color:#f472b6;}
 
 /* trap */
-.trap{background:rgba(255,61,90,0.05);border:1px solid rgba(255,61,90,0.2);border-radius:6px;padding:9px 12px;font-size:10.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
-.trap::before{content:'⚡ GOTCHA — ';font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;color:var(--red);letter-spacing:1px;}
+.trap{background:rgba(255,61,90,0.05);border:1px solid rgba(255,61,90,0.2);border-radius:6px;padding:9px 12px;font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap::before{content:'⚡ GOTCHA — ';font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;color:var(--red);letter-spacing:1px;}
 .trap b{color:var(--text);}
 
 /* pills */
 .pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-.pill{padding:3px 9px;border-radius:20px;font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:1px solid;font-family:'JetBrains Mono',monospace;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:1px solid;font-family:'JetBrains Mono',monospace;}
 .pa{border-color:rgba(0,255,200,.35);color:var(--acc);background:rgba(0,255,200,.06);}
 .pb{border-color:rgba(255,176,0,.35);color:var(--amb);background:rgba(255,176,0,.06);}
 .pc{border-color:rgba(56,189,248,.35);color:var(--sky);background:rgba(56,189,248,.06);}
@@ -162,31 +162,31 @@ body::before{
 
 /* flow wrap */
 .fw{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:22px;margin-bottom:20px;position:relative;overflow:hidden;}
-.fw .ftag{position:absolute;top:14px;right:16px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.fw .ftag{position:absolute;top:14px;right:16px;font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
 /* timeline */
 .tl{display:flex;flex-direction:column;}
 .tls{display:grid;grid-template-columns:22px 1fr;gap:10px;position:relative;}
 .tls:not(:last-child) .tlv::after{content:'';position:absolute;left:10px;top:22px;bottom:-4px;width:1px;background:linear-gradient(180deg,var(--bd),transparent);}
 .tlv{position:relative;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
-.tlc{width:20px;height:20px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'JetBrains Mono',monospace;font-weight:700;flex-shrink:0;}
+.tlc{width:20px;height:20px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-family:'JetBrains Mono',monospace;font-weight:700;flex-shrink:0;}
 .tlb{padding:2px 0 12px;}
-.tlt{font-weight:700;font-size:11px;margin-bottom:2px;}
-.tld{font-size:10.5px;color:var(--mid);line-height:1.5;}
+.tlt{font-weight:700;font-size:12.5px;margin-bottom:2px;}
+.tld{font-size:12.5px;color:var(--mid);line-height:1.5;}
 .tld b{color:var(--text);}
-.tld code{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--acc);}
+.tld code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--acc);}
 
 /* table */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;}
-.st th{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.st th{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
 .good{color:var(--grn)!important;} .warn{color:var(--amb)!important;} .bad{color:var(--red)!important;}
-.st td code{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px;color:var(--acc);}
+.st td code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px;color:var(--acc);}
 
 /* ctrl badge */
-.cbadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;border:1px solid;}
+.cbadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;border:1px solid;}
 .bga{border-color:rgba(0,255,200,.3);color:var(--acc);background:rgba(0,255,200,.06);}
 .bgb{border-color:rgba(255,176,0,.3);color:var(--amb);background:rgba(255,176,0,.06);}
 .bgc{border-color:rgba(56,189,248,.3);color:var(--sky);background:rgba(56,189,248,.06);}
@@ -197,7 +197,7 @@ body::before{
 
 /* controller deep-dive card */
 .dc{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:14px;margin-top:10px;}
-.dc-title{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.dc-title{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
 
 /* animations */
 @keyframes fadein{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
@@ -211,7 +211,7 @@ body::before{
 .page>*:nth-child(13){animation-delay:.50s} .page>*:nth-child(14){animation-delay:.54s}
 
 .footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;}
-.ft{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -315,31 +315,31 @@ kubectl <span class="fn">get</span> lease kube-controller-manager \
       <rect width="130" height="160" rx="8" fill="url(#gacc)" stroke="#00ffc8" stroke-width="1.5" filter="url(#neon)"/>
       <text x="65" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ffc8" font-weight="700">kube-</text>
       <text x="65" y="36" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#00ffc8" font-weight="700">apiserver</text>
-      <text x="65" y="58" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.35)">REST + Watch</text>
-      <text x="65" y="76" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.35)">single source</text>
-      <text x="65" y="90" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.35)">of truth</text>
-      <text x="65" y="110" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.4)">← etcd behind</text>
-      <text x="65" y="125" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.4)">admission pipeline</text>
-      <text x="65" y="140" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.4)">RBAC checks</text>
+      <text x="65" y="58" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.47)">REST + Watch</text>
+      <text x="65" y="76" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.47)">single source</text>
+      <text x="65" y="90" text-anchor="middle" font-family="Syne" font-size="9" fill="rgba(255,255,255,0.47)">of truth</text>
+      <text x="65" y="110" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.56)">← etcd behind</text>
+      <text x="65" y="125" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.56)">admission pipeline</text>
+      <text x="65" y="140" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(0,255,200,0.56)">RBAC checks</text>
     </g>
 
     <!-- LIST+WATCH arrow -->
     <line x1="140" y1="250" x2="188" y2="250" stroke="rgba(0,255,200,0.6)" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ma)"><animate attributeName="stroke-dashoffset" from="16" to="0" dur="0.9s" repeatCount="indefinite"/></line>
-    <text x="145" y="244" font-family="JetBrains Mono" font-size="8" fill="rgba(0,255,200,0.4)">List+Watch</text>
+    <text x="145" y="244" font-family="JetBrains Mono" font-size="8" fill="rgba(0,255,200,0.56)">List+Watch</text>
 
     <!-- write back arrow -->
     <path d="M 188 262 L 165 262 L 165 290 L 140 290" fill="none" stroke="rgba(255,176,0,0.5)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#mb)"><animate attributeName="stroke-dashoffset" from="0" to="14" dur="1.2s" repeatCount="indefinite"/></path>
-    <text x="145" y="306" font-family="JetBrains Mono" font-size="8" fill="rgba(255,176,0,0.45)">write back</text>
+    <text x="145" y="306" font-family="JetBrains Mono" font-size="8" fill="rgba(255,176,0,0.65)">write back</text>
 
     <!-- kube-controller-manager outer box -->
     <rect x="186" y="10" width="1120" height="500" rx="10" fill="rgba(0,255,200,0.02)" stroke="rgba(0,255,200,0.1)" stroke-width="1.5"/>
-    <text x="746" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(0,255,200,0.25)" letter-spacing="4">KUBE-CONTROLLER-MANAGER PROCESS</text>
+    <text x="746" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(0,255,200,0.55)" letter-spacing="4">KUBE-CONTROLLER-MANAGER PROCESS</text>
 
     <!-- Shared Informer Factory -->
     <g transform="translate(200,40)">
       <rect width="340" height="220" rx="8" fill="url(#gsky)" stroke="#38bdf8" stroke-width="1.5"/>
       <text x="170" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#38bdf8" font-weight="700">SharedInformerFactory</text>
-      <text x="170" y="36" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,255,255,0.3)">ONE List+Watch per resource type · ONE cache · shared by all controllers</text>
+      <text x="170" y="36" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,255,255,0.48)">ONE List+Watch per resource type · ONE cache · shared by all controllers</text>
 
       <!-- informers inside factory -->
       <g transform="translate(10,46)">
@@ -356,19 +356,19 @@ kubectl <span class="fn">get</span> lease kube-controller-manager \
         <text x="241" y="54" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.8)">Nodes Informer</text>
 
         <rect x="0"   y="72" width="152" height="28" rx="4" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
-        <text x="76"  y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.7)">PVCs Informer</text>
+        <text x="76"  y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.72)">PVCs Informer</text>
 
         <rect x="160" y="72" width="162" height="28" rx="4" fill="rgba(56,189,248,0.05)" stroke="rgba(56,189,248,0.15)" stroke-width="1"/>
-        <text x="241" y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.7)">ServiceAccounts Informer</text>
+        <text x="241" y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.72)">ServiceAccounts Informer</text>
 
         <rect x="0"   y="108" width="152" height="28" rx="4" fill="rgba(56,189,248,0.04)" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
-        <text x="76"  y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.6)">Jobs / CronJobs Info.</text>
+        <text x="76"  y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.72)">Jobs / CronJobs Info.</text>
 
         <rect x="160" y="108" width="162" height="28" rx="4" fill="rgba(56,189,248,0.04)" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
-        <text x="241" y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.6)">ResourceQuota Info.</text>
+        <text x="241" y="126" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(56,189,248,0.72)">ResourceQuota Info.</text>
 
-        <text x="161" y="152" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">each: DeltaFIFO → thread-safe Store → event handlers</text>
-        <text x="161" y="165" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">controllers register handlers → enqueue key to own work queue</text>
+        <text x="161" y="152" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">each: DeltaFIFO → thread-safe Store → event handlers</text>
+        <text x="161" y="165" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">controllers register handlers → enqueue key to own work queue</text>
       </g>
     </g>
 
@@ -381,36 +381,36 @@ kubectl <span class="fn">get</span> lease kube-controller-manager \
       <g>
         <rect x="8" y="30" width="180" height="36" rx="5" fill="rgba(255,176,0,0.12)" stroke="#ffb000" stroke-width="1.2"/>
         <text x="98" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#ffb000" font-weight="700">Deployment</text>
-        <text x="98" y="59" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.4)">watches: Deployments, ReplicaSets</text>
+        <text x="98" y="59" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">watches: Deployments, ReplicaSets</text>
 
         <rect x="8" y="74" width="180" height="36" rx="5" fill="rgba(255,176,0,0.09)" stroke="rgba(255,176,0,0.4)" stroke-width="1"/>
         <text x="98" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#ffb000" font-weight="700">ReplicaSet</text>
-        <text x="98" y="103" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.4)">watches: ReplicaSets, Pods</text>
+        <text x="98" y="103" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">watches: ReplicaSets, Pods</text>
 
         <rect x="8" y="118" width="180" height="36" rx="5" fill="rgba(255,176,0,0.07)" stroke="rgba(255,176,0,0.3)" stroke-width="1"/>
         <text x="98" y="133" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.85)">StatefulSet</text>
-        <text x="98" y="147" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.35)">watches: StatefulSets, Pods, PVCs</text>
+        <text x="98" y="147" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">watches: StatefulSets, Pods, PVCs</text>
 
         <rect x="8" y="162" width="180" height="36" rx="5" fill="rgba(255,176,0,0.07)" stroke="rgba(255,176,0,0.3)" stroke-width="1"/>
         <text x="98" y="177" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.85)">DaemonSet</text>
-        <text x="98" y="191" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.35)">watches: DaemonSets, Pods, Nodes</text>
+        <text x="98" y="191" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">watches: DaemonSets, Pods, Nodes</text>
 
         <rect x="8" y="206" width="180" height="36" rx="5" fill="rgba(255,176,0,0.05)" stroke="rgba(255,176,0,0.22)" stroke-width="1"/>
         <text x="98" y="221" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.75)">Job</text>
-        <text x="98" y="235" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.3)">watches: Jobs, Pods</text>
+        <text x="98" y="235" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">watches: Jobs, Pods</text>
 
         <rect x="8" y="250" width="180" height="36" rx="5" fill="rgba(255,176,0,0.05)" stroke="rgba(255,176,0,0.22)" stroke-width="1"/>
         <text x="98" y="265" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.75)">CronJob</text>
-        <text x="98" y="279" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.3)">watches: CronJobs, Jobs</text>
+        <text x="98" y="279" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">watches: CronJobs, Jobs</text>
 
         <rect x="8" y="294" width="180" height="36" rx="5" fill="rgba(255,176,0,0.04)" stroke="rgba(255,176,0,0.18)" stroke-width="1"/>
         <text x="98" y="309" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(255,176,0,0.65)">ReplicationController</text>
-        <text x="98" y="323" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">legacy — prefer RS</text>
+        <text x="98" y="323" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">legacy — prefer RS</text>
       </g>
 
-      <text x="98" y="360" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.3)">each has own work queue</text>
-      <text x="98" y="374" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.3)">+ N worker goroutines</text>
-      <text x="98" y="388" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.3)">default: 5 concurrent syncs</text>
+      <text x="98" y="360" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.66)">each has own work queue</text>
+      <text x="98" y="374" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.66)">+ N worker goroutines</text>
+      <text x="98" y="388" text-anchor="middle" font-family="Syne" font-size="8" fill="rgba(255,176,0,0.66)">default: 5 concurrent syncs</text>
     </g>
 
     <!-- CONTROLLERS column 2 -->
@@ -420,75 +420,75 @@ kubectl <span class="fn">get</span> lease kube-controller-manager \
 
       <rect x="8" y="30" width="180" height="36" rx="5" fill="rgba(34,212,122,0.1)" stroke="#22d47a" stroke-width="1.2"/>
       <text x="98" y="45" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="#22d47a" font-weight="700">NodeLifecycle</text>
-      <text x="98" y="59" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.4)">taints, eviction, conditions</text>
+      <text x="98" y="59" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">taints, eviction, conditions</text>
 
       <rect x="8" y="74" width="180" height="36" rx="5" fill="rgba(34,212,122,0.07)" stroke="rgba(34,212,122,0.35)" stroke-width="1"/>
       <text x="98" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.9)">EndpointSlice</text>
-      <text x="98" y="103" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.35)">watches: Services, Pods</text>
+      <text x="98" y="103" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">watches: Services, Pods</text>
 
       <rect x="8" y="118" width="180" height="36" rx="5" fill="rgba(34,212,122,0.05)" stroke="rgba(34,212,122,0.25)" stroke-width="1"/>
       <text x="98" y="133" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.8)">ServiceAccount Token</text>
-      <text x="98" y="147" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.3)">auto-mount tokens</text>
+      <text x="98" y="147" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">auto-mount tokens</text>
 
       <rect x="8" y="162" width="180" height="36" rx="5" fill="rgba(34,212,122,0.05)" stroke="rgba(34,212,122,0.2)" stroke-width="1"/>
       <text x="98" y="177" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.75)">Namespace</text>
-      <text x="98" y="191" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.28)">cleanup on deletion</text>
+      <text x="98" y="191" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">cleanup on deletion</text>
 
       <rect x="8" y="206" width="180" height="36" rx="5" fill="rgba(34,212,122,0.04)" stroke="rgba(34,212,122,0.18)" stroke-width="1"/>
       <text x="98" y="221" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.7)">PersistentVolume</text>
-      <text x="98" y="235" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.25)">bind PVC → PV</text>
+      <text x="98" y="235" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">bind PVC → PV</text>
 
       <rect x="8" y="250" width="180" height="36" rx="5" fill="rgba(34,212,122,0.04)" stroke="rgba(34,212,122,0.15)" stroke-width="1"/>
-      <text x="98" y="265" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.65)">GarbageCollector</text>
-      <text x="98" y="279" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.22)">ownerRef cascade GC</text>
+      <text x="98" y="265" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.69)">GarbageCollector</text>
+      <text x="98" y="279" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">ownerRef cascade GC</text>
 
       <rect x="8" y="294" width="180" height="36" rx="5" fill="rgba(34,212,122,0.04)" stroke="rgba(34,212,122,0.13)" stroke-width="1"/>
-      <text x="98" y="309" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.6)">ResourceQuota</text>
-      <text x="98" y="323" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.2)">usage tracking</text>
+      <text x="98" y="309" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.68)">ResourceQuota</text>
+      <text x="98" y="323" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">usage tracking</text>
 
       <rect x="8" y="338" width="180" height="36" rx="5" fill="rgba(34,212,122,0.03)" stroke="rgba(34,212,122,0.1)" stroke-width="1"/>
-      <text x="98" y="353" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.55)">HPA</text>
-      <text x="98" y="367" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.18)">scale based on metrics</text>
+      <text x="98" y="353" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.69)">HPA</text>
+      <text x="98" y="367" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.48)">scale based on metrics</text>
 
       <rect x="8" y="382" width="180" height="36" rx="5" fill="rgba(34,212,122,0.03)" stroke="rgba(34,212,122,0.1)" stroke-width="1"/>
-      <text x="98" y="397" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.5)">Node</text>
-      <text x="98" y="411" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.15)">node object lifecycle</text>
+      <text x="98" y="397" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5" fill="rgba(34,212,122,0.68)">Node</text>
+      <text x="98" y="411" text-anchor="middle" font-family="Syne" font-size="8.5" fill="rgba(255,255,255,0.47)">node object lifecycle</text>
     </g>
 
     <!-- CONTROLLERS column 3 -->
     <g transform="translate(980,40)">
       <rect width="180" height="460" rx="8" fill="rgba(168,85,247,0.04)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
-      <text x="90" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#a855f7" font-weight="700" letter-spacing="2">POLICY CTRL</text>
+      <text x="90" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ad5ff7" font-weight="700" letter-spacing="2">POLICY CTRL</text>
 
       <rect x="8" y="30" width="164" height="32" rx="4" fill="rgba(168,85,247,0.08)" stroke="rgba(168,85,247,0.3)" stroke-width="1"/>
-      <text x="90" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#a855f7">TokenCleaner</text>
+      <text x="90" y="50" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#ad5ff7">TokenCleaner</text>
 
       <rect x="8" y="70" width="164" height="32" rx="4" fill="rgba(168,85,247,0.06)" stroke="rgba(168,85,247,0.22)" stroke-width="1"/>
-      <text x="90" y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.8)">BootstrapSigner</text>
+      <text x="90" y="90" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">BootstrapSigner</text>
 
       <rect x="8" y="110" width="164" height="32" rx="4" fill="rgba(168,85,247,0.05)" stroke="rgba(168,85,247,0.18)" stroke-width="1"/>
-      <text x="90" y="130" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.75)">CertificateApprover</text>
+      <text x="90" y="130" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">CertificateApprover</text>
 
       <rect x="8" y="150" width="164" height="32" rx="4" fill="rgba(168,85,247,0.04)" stroke="rgba(168,85,247,0.15)" stroke-width="1"/>
-      <text x="90" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.7)">CertificateSigner</text>
+      <text x="90" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">CertificateSigner</text>
 
       <rect x="8" y="190" width="164" height="32" rx="4" fill="rgba(168,85,247,0.04)" stroke="rgba(168,85,247,0.13)" stroke-width="1"/>
-      <text x="90" y="210" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.65)">CertificateCleaner</text>
+      <text x="90" y="210" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">CertificateCleaner</text>
 
       <rect x="8" y="230" width="164" height="32" rx="4" fill="rgba(168,85,247,0.03)" stroke="rgba(168,85,247,0.1)" stroke-width="1"/>
-      <text x="90" y="250" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.6)">PodDisruptionBudget</text>
+      <text x="90" y="250" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">PodDisruptionBudget</text>
 
       <rect x="8" y="270" width="164" height="32" rx="4" fill="rgba(168,85,247,0.03)" stroke="rgba(168,85,247,0.1)" stroke-width="1"/>
-      <text x="90" y="290" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.55)">TTLAfterFinished</text>
+      <text x="90" y="290" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">TTLAfterFinished</text>
 
       <rect x="8" y="310" width="164" height="32" rx="4" fill="rgba(168,85,247,0.03)" stroke="rgba(168,85,247,0.08)" stroke-width="1"/>
-      <text x="90" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.5)">EphemeralVolume</text>
+      <text x="90" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">EphemeralVolume</text>
 
       <rect x="8" y="350" width="164" height="32" rx="4" fill="rgba(168,85,247,0.02)" stroke="rgba(168,85,247,0.07)" stroke-width="1"/>
-      <text x="90" y="370" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.45)">LegacySA Cleanup</text>
+      <text x="90" y="370" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">LegacySA Cleanup</text>
 
       <rect x="8" y="390" width="164" height="32" rx="4" fill="rgba(168,85,247,0.02)" stroke="rgba(168,85,247,0.06)" stroke-width="1"/>
-      <text x="90" y="410" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(168,85,247,0.4)">StorageVersionMigrator</text>
+      <text x="90" y="410" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(173,95,247,1)">StorageVersionMigrator</text>
     </g>
 
     <!-- arrows factory → controller columns -->
@@ -497,7 +497,7 @@ kubectl <span class="fn">get</span> lease kube-controller-manager \
     <line x1="540" y1="250" x2="980" y2="250" stroke="rgba(56,189,248,0.25)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#mc)"/>
 
     <!-- work queue annotation -->
-    <text x="760" y="488" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,176,0,0.35)" letter-spacing="2">EACH CONTROLLER HAS ITS OWN WORK QUEUE + N GOROUTINES — THEY NEVER SHARE QUEUES</text>
+    <text x="760" y="488" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(255,176,0,0.65)" letter-spacing="2">EACH CONTROLLER HAS ITS OWN WORK QUEUE + N GOROUTINES — THEY NEVER SHARE QUEUES</text>
   </svg>
 </div>
 
@@ -595,7 +595,7 @@ pods, _ := podInformer.<span class="fn">GetIndexer</span>().<span class="fn">ByI
     <div>
       <div class="dc">
         <div class="dc-title" style="color:var(--amb);">Rolling Update Math</div>
-        <div style="font-size:10.5px;color:var(--mid);line-height:1.9;">
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.9;">
           replicas=10, maxSurge=25%, maxUnavailable=25%<br>
           → max pods = 10 + ceil(10×0.25) = <b>13</b><br>
           → min pods = 10 - floor(10×0.25) = <b>7</b><br>

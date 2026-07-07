@@ -26,13 +26,13 @@
 
   --text:  #d4e4f4;
   --dim:   #1e3048;
-  --mid:   #446080;
+  --mid:   #698099;
   --mono:  'IBM Plex Mono', monospace;
   --sans:  'IBM Plex Sans', sans-serif;
   --disp:  'Syne', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:12px;line-height:1.5;overflow-x:hidden;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.5;overflow-x:hidden;}
 
 /* ── SCAN LINES EFFECT ── */
 body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);}
@@ -53,9 +53,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .welcome h1{font-family:var(--disp);font-size:64px;font-weight:800;line-height:.9;letter-spacing:-2px;text-transform:uppercase;}
 .wt1{background:linear-gradient(135deg,var(--aws) 0%,var(--aws2) 40%,#fff 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .wt2{color:rgba(255,255,255,.06);-webkit-text-stroke:1px rgba(255,153,0,.25);}
-.welcome-sub{font-family:var(--mono);font-size:9.5px;letter-spacing:2.5px;color:var(--mid);text-transform:uppercase;margin-top:10px;}
+.welcome-sub{font-family:var(--mono);font-size:12.5px;letter-spacing:2.5px;color:var(--mid);text-transform:uppercase;margin-top:10px;}
 .welcome-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
-.wtag{font-family:var(--mono);font-size:8.5px;letter-spacing:.5px;padding:4px 10px;border-radius:4px;border:1px solid;font-weight:600;}
+.wtag{font-family:var(--mono);font-size:11.5px;letter-spacing:.5px;padding:4px 10px;border-radius:4px;border:1px solid;font-weight:600;}
 .wt-aws{background:rgba(255,153,0,.08);border-color:rgba(255,153,0,.35);color:var(--aws);}
 .wt-eks{background:rgba(26,115,232,.08);border-color:rgba(26,115,232,.35);color:#6090ff;}
 .wt-grn{background:rgba(87,204,153,.07);border-color:rgba(87,204,153,.3);color:var(--grn);}
@@ -64,11 +64,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .welcome-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .wstat{background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:8px;padding:14px;text-align:center;}
 .wstat-n{font-family:var(--disp);font-size:26px;font-weight:800;color:var(--aws);line-height:1;}
-.wstat-l{font-family:var(--mono);font-size:7.5px;letter-spacing:1.5px;color:var(--mid);text-transform:uppercase;margin-top:3px;}
+.wstat-l{font-family:var(--mono);font-size:11.5px;letter-spacing:1.5px;color:var(--mid);text-transform:uppercase;margin-top:3px;}
 
 /* ── NAV TABS ── */
 .nav{display:flex;gap:4px;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:5px;overflow-x:auto;}
-.nav-btn{font-family:var(--mono);font-size:9px;letter-spacing:1px;font-weight:600;text-transform:uppercase;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
+.nav-btn{font-family:var(--mono);font-size:11.5px;letter-spacing:1px;font-weight:600;text-transform:uppercase;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;transition:.2s;white-space:nowrap;background:transparent;color:var(--mid);}
 .nav-btn:hover{color:var(--text);background:rgba(255,255,255,.04);}
 .nav-btn.active{background:rgba(255,153,0,.12);color:var(--aws);border:1px solid rgba(255,153,0,.25);}
 
@@ -80,7 +80,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .sh{display:flex;align-items:center;gap:12px;margin:0 0 14px;}
 .sh-icon{font-size:20px;flex-shrink:0;}
 .sh-label{font-family:var(--disp);font-size:22px;font-weight:700;letter-spacing:.5px;}
-.sh-sub{font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;}
+.sh-sub{font-family:var(--mono);font-size:11.5px;color:var(--mid);letter-spacing:1px;}
 .sh::after{content:'';flex:1;height:1px;}
 
 /* ── GRIDS ── */
@@ -106,46 +106,46 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .ct{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 
 /* ── FACT ROWS ── */
-.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:11px;}
-.fk{font-family:var(--mono);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
+.fr{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.025);align-items:baseline;font-size:12.5px;}
+.fk{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);}
 .fv{color:var(--mid);line-height:1.6;}
 .fv b{color:var(--text);}
-.fv code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--aws);}
+.fv code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;color:var(--aws);}
 
 /* ── CODE ── */
-.code{background:#020507;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:10px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
+.code{background:#020507;border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.95;color:var(--mid);margin-top:10px;overflow-x:auto;white-space:pre;}
 .kw{color:var(--vio);} .ky{color:var(--grn);} .st{color:var(--aws);}
-.nu{color:var(--teal);} .cm{color:#1e3048;} .fn{color:#60a5fa;}
+.nu{color:var(--teal);} .cm{color:#747f8e;} .fn{color:#60a5fa;}
 .re{color:var(--red);} .op{color:rgba(255,255,255,.25);}
 
 /* ── TRAP / NOTE ── */
-.trap{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--mid);margin-top:10px;line-height:1.6;}
+.trap{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:6px;padding:8px 12px;font-size:12.5px;color:var(--mid);margin-top:10px;line-height:1.6;}
 .trap::before{content:'⚡ ';color:var(--red);}
 .trap b{color:var(--text);}
-.trap code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
-.note{background:rgba(255,255,255,.02);border-left:3px solid var(--bd);padding:8px 12px;font-size:11px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;}
+.trap code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.note{background:rgba(255,255,255,.02);border-left:3px solid var(--bd);padding:8px 12px;font-size:12.5px;color:var(--mid);margin-top:8px;line-height:1.6;border-radius:0 5px 5px 0;}
 .note b{color:var(--text);}
-.note code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.note code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 
 /* ── TABLE ── */
-.st{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
-.st th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
+.st{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;}
+.st th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);text-align:left;}
 .st td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.022);color:var(--mid);vertical-align:top;line-height:1.5;}
 .st td:first-child{color:var(--text);font-weight:600;}
 .st tr:last-child td{border-bottom:none;}
-.st td code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.st td code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 .good{color:var(--grn)!important;} .warn{color:var(--yel)!important;} .bad{color:var(--red)!important;}
 
 /* ── UPGRADE WIZARD ── */
 .wizard{background:var(--s1);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-bottom:14px;}
 .wiz-header{background:linear-gradient(135deg,rgba(255,153,0,.08),rgba(26,115,232,.06));padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;}
 .wiz-title{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--aws);}
-.wiz-progress{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;color:var(--mid);}
+.wiz-progress{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--mid);}
 .wiz-bar{width:160px;height:5px;background:var(--dim);border-radius:3px;overflow:hidden;}
 .wiz-fill{height:100%;background:linear-gradient(90deg,var(--aws),var(--aws2));border-radius:3px;transition:.4s;}
 .wiz-body{padding:24px;}
 .wiz-steps{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;}
-.wiz-step{font-family:var(--mono);font-size:8px;letter-spacing:.5px;padding:6px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;transition:.2s;white-space:nowrap;color:var(--mid);background:transparent;}
+.wiz-step{font-family:var(--mono);font-size:11.5px;letter-spacing:.5px;padding:6px 12px;border-radius:4px;border:1px solid var(--bd);cursor:pointer;transition:.2s;white-space:nowrap;color:var(--mid);background:transparent;}
 .wiz-step:hover{border-color:rgba(255,153,0,.3);color:var(--text);}
 .wiz-step.active{background:rgba(255,153,0,.1);border-color:rgba(255,153,0,.4);color:var(--aws);}
 .wiz-step.done{background:rgba(87,204,153,.07);border-color:rgba(87,204,153,.3);color:var(--grn);}
@@ -160,43 +160,43 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .step-num.red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);}
 .step-num.vio{background:rgba(139,92,246,.12);color:var(--vio);border:1px solid rgba(139,92,246,.3);}
 .step-title{font-family:var(--disp);font-size:16px;font-weight:700;}
-.step-sub{font-family:var(--mono);font-size:9px;color:var(--mid);letter-spacing:1px;margin-top:2px;}
+.step-sub{font-family:var(--mono);font-size:11.5px;color:var(--mid);letter-spacing:1px;margin-top:2px;}
 
 /* fail items */
 .fail-item{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.12);border-radius:6px;padding:10px 14px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr;gap:0 12px;align-items:start;}
 .fail-icon{font-size:16px;margin-top:1px;}
-.fail-title{font-weight:600;color:var(--text);font-size:11.5px;margin-bottom:3px;}
-.fail-desc{font-size:11px;color:var(--mid);line-height:1.6;}
+.fail-title{font-weight:600;color:var(--text);font-size:13px;margin-bottom:3px;}
+.fail-desc{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .fail-desc b{color:var(--text);}
-.fail-desc code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.fail-desc code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 
 /* check items */
 .check-item{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid rgba(255,255,255,.025);}
 .check-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
-.check-text{font-size:11px;color:var(--mid);line-height:1.6;}
+.check-text{font-size:12.5px;color:var(--mid);line-height:1.6;}
 .check-text b{color:var(--text);}
-.check-text code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.check-text code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 
 .wiz-btns{display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--bd);}
-.wbtn{font-family:var(--mono);font-size:9px;letter-spacing:1px;font-weight:700;text-transform:uppercase;padding:9px 20px;border-radius:5px;border:1px solid;cursor:pointer;transition:.2s;}
+.wbtn{font-family:var(--mono);font-size:11.5px;letter-spacing:1px;font-weight:700;text-transform:uppercase;padding:9px 20px;border-radius:5px;border:1px solid;cursor:pointer;transition:.2s;}
 .wbtn-prev{background:transparent;border-color:var(--bd);color:var(--mid);}
 .wbtn-prev:hover{border-color:var(--b2);color:var(--text);}
 .wbtn-next{background:rgba(255,153,0,.1);border-color:rgba(255,153,0,.4);color:var(--aws);}
 .wbtn-next:hover{background:rgba(255,153,0,.18);}
 
 /* ── NODE UPGRADE DIFF ── */
-.diff-table{width:100%;border-collapse:collapse;font-size:11px;}
-.diff-table th{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);}
+.diff-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.diff-table th{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);padding:6px 10px;border-bottom:1px solid var(--bd);}
 .diff-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:top;line-height:1.5;}
-.diff-table .dkey{color:var(--text);font-weight:600;font-size:11px;}
+.diff-table .dkey{color:var(--text);font-weight:600;font-size:12.5px;}
 .diff-table .dal2{color:var(--mid);}
 .diff-table .dal23{color:var(--grn);}
-.diff-table code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.diff-table code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 .diff-table tr:last-child td{border-bottom:none;}
 
 /* ── PERMISSION FLOW ── */
 .perm-flow{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:8px 0;}
-.pbox{padding:5px 12px;border-radius:5px;border:1px solid;font-family:var(--mono);font-size:9px;font-weight:600;white-space:nowrap;}
+.pbox{padding:5px 12px;border-radius:5px;border:1px solid;font-family:var(--mono);font-size:11.5px;font-weight:600;white-space:nowrap;}
 .pb-aws{background:rgba(255,153,0,.09);border-color:rgba(255,153,0,.35);color:var(--aws);}
 .pb-k8s{background:rgba(26,115,232,.09);border-color:rgba(26,115,232,.35);color:#6090ff;}
 .pb-grn{background:rgba(87,204,153,.07);border-color:rgba(87,204,153,.3);color:var(--grn);}
@@ -209,14 +209,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .addon-card:hover{border-color:var(--b2);transform:translateY(-1px);}
 .addon-card.managed{border-left:3px solid var(--grn);}
 .addon-card.self{border-left:3px solid var(--aws);}
-.addon-name{font-family:var(--disp);font-size:12px;font-weight:700;margin-bottom:4px;}
-.addon-type{font-family:var(--mono);font-size:7.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.addon-name{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;}
+.addon-type{font-family:var(--mono);font-size:11.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
 .addon-type.m{color:var(--grn);}
 .addon-type.s{color:var(--aws);}
-.addon-desc{font-size:10.5px;color:var(--mid);line-height:1.55;}
-.addon-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);font-size:10.5px;color:var(--mid);line-height:1.6;}
+.addon-desc{font-size:12.5px;color:var(--mid);line-height:1.55;}
+.addon-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);font-size:12.5px;color:var(--mid);line-height:1.6;}
 .addon-detail b{color:var(--text);}
-.addon-detail code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.addon-detail code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 .addon-card.open .addon-detail{display:block;}
 .addon-card.open{border-color:rgba(255,153,0,.25);}
 
@@ -225,12 +225,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .trap-big{background:var(--s1);border:1px solid rgba(239,68,68,.12);border-radius:8px;padding:14px;position:relative;overflow:hidden;}
 .trap-big::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(239,68,68,.5),transparent);}
 .trap-n{position:absolute;top:8px;right:12px;font-family:var(--disp);font-size:34px;font-weight:800;color:rgba(239,68,68,.06);line-height:1;}
-.trap-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
-.trap-q{font-size:12px;color:var(--text);font-weight:600;margin-bottom:5px;line-height:1.5;}
-.trap-q code{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--aws);}
-.trap-a{font-size:10.5px;color:var(--mid);line-height:1.55;}
+.trap-tag{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:5px;}
+.trap-q{font-size:13px;color:var(--text);font-weight:600;margin-bottom:5px;line-height:1.5;}
+.trap-q code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.07);padding:2px 5px;border-radius:3px;color:var(--aws);}
+.trap-a{font-size:12.5px;color:var(--mid);line-height:1.55;}
 .trap-a b{color:var(--text);}
-.trap-a code{font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
+.trap-a code{font-family:var(--mono);font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 4px;border-radius:2px;color:var(--aws);}
 
 /* ── INLINE HIGHLIGHTS ── */
 .hl-aws{color:var(--aws);font-weight:600;}
@@ -250,7 +250,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 .section.active>*:nth-child(7){animation-delay:.26s}
 
 .footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;}
-.ft{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.ft{font-family:var(--mono);font-size:11.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
 
   @media print {
     html, body { background:#fff !important; }
@@ -327,63 +327,63 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 
   <!-- AWS Cloud boundary -->
   <rect x="5" y="5" width="1370" height="408" rx="10" fill="rgba(255,153,0,.02)" stroke="rgba(255,153,0,.12)" stroke-width="1.5" stroke-dasharray="8 4"/>
-  <text x="22" y="22" font-family="IBM Plex Mono" font-size="9" fill="rgba(255,153,0,.35)" letter-spacing="3">AWS CLOUD</text>
+  <text x="22" y="22" font-family="IBM Plex Mono" font-size="9" fill="rgba(255,153,0,0.73)" letter-spacing="3">AWS CLOUD</text>
 
   <!-- ── CONTROL PLANE ── -->
   <rect x="20" y="32" width="480" height="175" rx="8" fill="rgba(255,153,0,.04)" stroke="rgba(255,153,0,.25)" stroke-width="1.5"/>
-  <text x="260" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="rgba(255,153,0,.55)" letter-spacing="2">EKS MANAGED CONTROL PLANE (AWS-OWNED VPC)</text>
+  <text x="260" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="rgba(255,153,0,0.73)" letter-spacing="2">EKS MANAGED CONTROL PLANE (AWS-OWNED VPC)</text>
 
   <!-- API Server -->
   <g transform="translate(35,62)">
     <rect width="130" height="50" rx="6" fill="rgba(255,153,0,.1)" stroke="rgba(255,153,0,.4)" stroke-width="1.5" filter="url(#gw)"/>
     <text x="65" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#ff9900" font-weight="700">API Server</text>
-    <text x="65" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(255,153,0,.5)">HA multi-AZ</text>
-    <text x="65" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(255,153,0,.3)">OIDC endpoint</text>
+    <text x="65" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(255,153,0,0.72)">HA multi-AZ</text>
+    <text x="65" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(255,153,0,0.72)">OIDC endpoint</text>
   </g>
   <!-- etcd -->
   <g transform="translate(185,62)">
     <rect width="100" height="50" rx="6" fill="rgba(0,180,216,.07)" stroke="rgba(0,180,216,.3)" stroke-width="1"/>
     <text x="50" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#00b4d8" font-weight="700">etcd</text>
-    <text x="50" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(0,180,216,.45)">encrypted</text>
-    <text x="50" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(0,180,216,.3)">KMS CMK</text>
+    <text x="50" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(0,180,216,0.77)">encrypted</text>
+    <text x="50" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(0,180,216,0.78)">KMS CMK</text>
   </g>
   <!-- Scheduler + CM -->
   <g transform="translate(305,62)">
     <rect width="100" height="50" rx="6" fill="rgba(139,92,246,.07)" stroke="rgba(139,92,246,.25)" stroke-width="1"/>
-    <text x="50" y="18" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6" font-weight="700">Scheduler</text>
-    <text x="50" y="32" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">ctrl-manager</text>
-    <text x="50" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(139,92,246,.3)">cloud-ctrl-mgr</text>
+    <text x="50" y="18" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#976cf7" font-weight="700">Scheduler</text>
+    <text x="50" y="32" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#976cf7">ctrl-manager</text>
+    <text x="50" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(151,108,247,1)">cloud-ctrl-mgr</text>
   </g>
   <!-- CoreDNS CP -->
   <g transform="translate(425,62)">
     <rect width="65" height="50" rx="6" fill="rgba(87,204,153,.06)" stroke="rgba(87,204,153,.2)" stroke-width="1"/>
     <text x="32" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#57cc99" font-weight="700">CoreDNS</text>
-    <text x="32" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="7.5" fill="rgba(87,204,153,.4)">managed</text>
-    <text x="32" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,.3)">addon</text>
+    <text x="32" y="37" text-anchor="middle" font-family="IBM Plex Sans" font-size="7.5" fill="rgba(87,204,153,0.7)">managed</text>
+    <text x="32" y="48" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,0.7)">addon</text>
   </g>
 
   <!-- CP note -->
-  <text x="260" y="140" text-anchor="middle" font-family="IBM Plex Sans" font-size="9" fill="rgba(255,153,0,.35)">AWS manages: HA, patching, etcd backup, API server scaling, multi-AZ</text>
-  <text x="260" y="158" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(255,153,0,.25)">You pay $0.10/hr per cluster · SLA: 99.95%</text>
+  <text x="260" y="140" text-anchor="middle" font-family="IBM Plex Sans" font-size="9" fill="rgba(255,153,0,0.73)">AWS manages: HA, patching, etcd backup, API server scaling, multi-AZ</text>
+  <text x="260" y="158" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(255,153,0,0.73)">You pay $0.10/hr per cluster · SLA: 99.95%</text>
 
   <!-- ENI in customer VPC -->
   <rect x="20" y="220" width="480" height="60" rx="6" fill="rgba(255,153,0,.03)" stroke="rgba(255,153,0,.12)" stroke-width="1" stroke-dasharray="4 4"/>
-  <text x="260" y="240" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(255,153,0,.3)">Cross-account ENIs in your VPC (for kubelet→apiserver)</text>
-  <text x="260" y="256" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.2)">EKS-managed ENI  ←→  your node SG must allow 443 outbound</text>
-  <text x="260" y="270" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.2)">Endpoint: Public+Private (default) | Private only | Public only</text>
+  <text x="260" y="240" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(255,153,0,0.72)">Cross-account ENIs in your VPC (for kubelet→apiserver)</text>
+  <text x="260" y="256" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,0.72)">EKS-managed ENI  ←→  your node SG must allow 443 outbound</text>
+  <text x="260" y="270" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,0.72)">Endpoint: Public+Private (default) | Private only | Public only</text>
 
   <!-- ── YOUR VPC ── -->
   <rect x="520" y="32" width="845" height="370" rx="8" fill="rgba(87,204,153,.02)" stroke="rgba(87,204,153,.18)" stroke-width="1.5"/>
-  <text x="940" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="rgba(87,204,153,.45)" letter-spacing="2">YOUR VPC</text>
+  <text x="940" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="rgba(87,204,153,0.69)" letter-spacing="2">YOUR VPC</text>
 
   <!-- AZ-A -->
   <rect x="535" y="62" width="250" height="320" rx="6" fill="rgba(255,255,255,.01)" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="5 3"/>
-  <text x="660" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,255,255,.2)">AZ-A</text>
+  <text x="660" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,255,255,0.48)">AZ-A</text>
 
   <!-- Node in AZ-A -->
   <g transform="translate(550,90)">
     <rect width="220" height="240" rx="7" fill="rgba(0,180,216,.04)" stroke="rgba(0,180,216,.2)" stroke-width="1"/>
-    <text x="110" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(0,180,216,.5)" letter-spacing="1">MANAGED NODE GROUP</text>
+    <text x="110" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="rgba(0,180,216,0.78)" letter-spacing="1">MANAGED NODE GROUP</text>
     <!-- kubelet -->
     <rect x="10" y="30" width="90" height="32" rx="4" fill="rgba(0,180,216,.08)" stroke="rgba(0,180,216,.25)" stroke-width="1"/>
     <text x="55" y="50" text-anchor="middle" font-family="IBM Plex Mono" font-size="8.5" fill="#00b4d8" font-weight="700">kubelet</text>
@@ -393,79 +393,79 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
     <!-- VPC CNI -->
     <rect x="10" y="72" width="90" height="32" rx="4" fill="rgba(87,204,153,.08)" stroke="rgba(87,204,153,.25)" stroke-width="1"/>
     <text x="55" y="88" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#57cc99" font-weight="700">vpc-cni</text>
-    <text x="55" y="98" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,.4)">aws-node</text>
+    <text x="55" y="98" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,0.7)">aws-node</text>
     <!-- Pods -->
     <rect x="110" y="72" width="100" height="70" rx="4" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
-    <text x="160" y="92" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pod</text>
-    <text x="160" y="107" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pod</text>
-    <text x="160" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pod</text>
+    <text x="160" y="92" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#976cf7">Pod</text>
+    <text x="160" y="107" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#976cf7">Pod</text>
+    <text x="160" y="122" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#976cf7">Pod</text>
     <!-- ENI secondary IPs -->
     <rect x="10" y="154" width="200" height="30" rx="4" fill="rgba(255,153,0,.05)" stroke="rgba(255,153,0,.2)" stroke-width="1"/>
-    <text x="110" y="173" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.6)">ENI (secondary IPs = pod IPs)</text>
+    <text x="110" y="173" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,0.72)">ENI (secondary IPs = pod IPs)</text>
     <!-- Instance role -->
     <rect x="10" y="194" width="200" height="30" rx="4" fill="rgba(255,153,0,.04)" stroke="rgba(255,153,0,.15)" stroke-width="1"/>
-    <text x="110" y="213" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.5)">EC2 Instance Role (node IAM)</text>
+    <text x="110" y="213" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,0.72)">EC2 Instance Role (node IAM)</text>
   </g>
 
   <!-- AZ-B (abbreviated) -->
   <rect x="810" y="62" width="170" height="320" rx="6" fill="rgba(255,255,255,.01)" stroke="rgba(255,255,255,.06)" stroke-width="1" stroke-dasharray="5 3"/>
-  <text x="895" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,255,255,.2)">AZ-B</text>
+  <text x="895" y="80" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,255,255,0.48)">AZ-B</text>
   <g transform="translate(820,90)">
     <rect width="150" height="130" rx="6" fill="rgba(0,180,216,.03)" stroke="rgba(0,180,216,.15)" stroke-width="1"/>
-    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(0,180,216,.4)">MNG / Fargate</text>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(0,180,216,0.78)">MNG / Fargate</text>
     <rect x="10" y="30" width="130" height="25" rx="4" fill="rgba(0,180,216,.07)" stroke="rgba(0,180,216,.2)" stroke-width="1"/>
     <text x="75" y="46" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#00b4d8">kubelet + cni</text>
     <rect x="10" y="64" width="130" height="55" rx="4" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
-    <text x="75" y="87" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#8b5cf6">Pods</text>
-    <text x="75" y="103" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(139,92,246,.4)">(IRSA / Pod Identity)</text>
+    <text x="75" y="87" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#976cf7">Pods</text>
+    <text x="75" y="103" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(151,108,247,1)">(IRSA / Pod Identity)</text>
   </g>
 
   <!-- Fargate -->
   <g transform="translate(820,235)">
     <rect width="150" height="80" rx="6" fill="rgba(255,153,0,.04)" stroke="rgba(255,153,0,.2)" stroke-width="1"/>
-    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.6)">Fargate Profile</text>
-    <text x="75" y="38" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(255,153,0,.4)">serverless pods</text>
-    <text x="75" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(255,153,0,.3)">no node mgmt</text>
-    <text x="75" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(255,153,0,.25)">pod-level IAM roles</text>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,0.72)">Fargate Profile</text>
+    <text x="75" y="38" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(255,153,0,0.72)">serverless pods</text>
+    <text x="75" y="52" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(255,153,0,0.72)">no node mgmt</text>
+    <text x="75" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(255,153,0,0.73)">pod-level IAM roles</text>
   </g>
 
   <!-- Karpenter -->
   <g transform="translate(1000,90)">
     <rect width="150" height="80" rx="6" fill="rgba(251,191,36,.05)" stroke="rgba(251,191,36,.25)" stroke-width="1"/>
     <text x="75" y="22" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#fbbf24" font-weight="700">Karpenter</text>
-    <text x="75" y="38" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(251,191,36,.5)">node provisioner</text>
-    <text x="75" y="54" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(251,191,36,.35)">NodePool / EC2NodeClass</text>
-    <text x="75" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(251,191,36,.25)">direct EC2 fleet calls</text>
+    <text x="75" y="38" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(251,191,36,0.62)">node provisioner</text>
+    <text x="75" y="54" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(251,191,36,0.63)">NodePool / EC2NodeClass</text>
+    <text x="75" y="68" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(251,191,36,0.63)">direct EC2 fleet calls</text>
   </g>
 
   <!-- ALB / NLB -->
   <g transform="translate(1000,195)">
     <rect width="150" height="55" rx="6" fill="rgba(87,204,153,.05)" stroke="rgba(87,204,153,.2)" stroke-width="1"/>
     <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#57cc99" font-weight="700">ALB / NLB</text>
-    <text x="75" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(87,204,153,.45)">AWS LB Controller</text>
-    <text x="75" y="47" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,.3)">Ingress → ALB</text>
+    <text x="75" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(87,204,153,0.69)">AWS LB Controller</text>
+    <text x="75" y="47" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(87,204,153,0.7)">Ingress → ALB</text>
   </g>
 
   <!-- EBS CSI / EFS -->
   <g transform="translate(1000,275)">
     <rect width="150" height="55" rx="6" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
-    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8b5cf6" font-weight="700">EBS CSI / EFS</text>
-    <text x="75" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(139,92,246,.45)">storage addons</text>
-    <text x="75" y="47" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(139,92,246,.3)">PV provisioner</text>
+    <text x="75" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#976cf7" font-weight="700">EBS CSI / EFS</text>
+    <text x="75" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-size="8" fill="rgba(151,108,247,1)">storage addons</text>
+    <text x="75" y="47" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="rgba(151,108,247,1)">PV provisioner</text>
   </g>
 
   <!-- Arrows -->
   <!-- API Server ↔ nodes -->
   <path d="M 500 112 L 548 160" fill="none" stroke="rgba(255,153,0,.5)" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#aa)"/>
-  <text x="515" y="147" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(255,153,0,.4)">TLS/443</text>
+  <text x="515" y="147" font-family="IBM Plex Mono" font-size="7.5" fill="rgba(255,153,0,0.72)">TLS/443</text>
   <!-- API Server → Karpenter -->
   <path d="M 500 100 L 1000 130" fill="none" stroke="rgba(251,191,36,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#aa)"/>
   <!-- nodes → ALB -->
   <path d="M 770 200 L 1000 222" fill="none" stroke="rgba(87,204,153,.35)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ab)"/>
   <!-- legend -->
-  <text x="540" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,.45)">── control traffic (TLS 443)</text>
-  <text x="720" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(87,204,153,.45)">── data/app traffic</text>
-  <text x="900" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(139,92,246,.45)">── IRSA/Pod Identity</text>
+  <text x="540" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(255,153,0,0.73)">── control traffic (TLS 443)</text>
+  <text x="720" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(87,204,153,0.69)">── data/app traffic</text>
+  <text x="900" y="395" font-family="IBM Plex Mono" font-size="8" fill="rgba(151,108,247,1)">── IRSA/Pod Identity</text>
 </svg>
 </div>
 
@@ -512,8 +512,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 <div class="sh"><div class="sh-icon">🧩</div><div class="sh-label" style="color:var(--grn);">EKS Addons</div><div class="sh-sub">// managed vs self-managed · click each addon for details</div><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(87,204,153,.3),transparent);"></div></div>
 
 <div style="display:flex;gap:10px;margin-bottom:12px;">
-  <div style="font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:4px;background:rgba(87,204,153,.07);border:1px solid rgba(87,204,153,.25);color:var(--grn);">🟢 EKS Managed Addon — AWS handles upgrades, config stored in EKS</div>
-  <div style="font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:4px;background:rgba(255,153,0,.07);border:1px solid rgba(255,153,0,.25);color:var(--aws);">🟠 Self-Managed — Helm/manifests, you own the upgrade</div>
+  <div style="font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:4px;background:rgba(87,204,153,.07);border:1px solid rgba(87,204,153,.25);color:var(--grn);">🟢 EKS Managed Addon — AWS handles upgrades, config stored in EKS</div>
+  <div style="font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:4px;background:rgba(255,153,0,.07);border:1px solid rgba(255,153,0,.25);color:var(--aws);">🟠 Self-Managed — Helm/manifests, you own the upgrade</div>
 </div>
 
 <div class="addon-grid">
@@ -715,7 +715,7 @@ aws eks describe-addon \
       <tr><td>Complexity</td><td class="good">Simpler</td><td class="warn">More CRDs to learn</td></tr>
     </table>
     <div class="note" style="margin-top:10px;">Use <b>Karpenter</b> for new EKS clusters. Only use CA for legacy clusters or if your org has strict ASG-based policies. <b>Never run both on the same node groups.</b></div>
-    <div class="code" style="font-size:9.5px;"><span class="ky">apiVersion</span>: karpenter.sh/v1
+    <div class="code" style="font-size:12.5px;"><span class="ky">apiVersion</span>: karpenter.sh/v1
 <span class="ky">kind</span>: NodePool
 <span class="ky">spec</span>:
   <span class="ky">template</span>:
@@ -742,7 +742,7 @@ aws eks describe-addon \
   <div class="card c-vio">
     <div class="ct" style="color:var(--vio);">🗺️ Permission Layers</div>
     <div style="margin-bottom:12px;">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin-bottom:8px;">LAYER 1: AWS-level access (who can call EKS API)</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin-bottom:8px;">LAYER 1: AWS-level access (who can call EKS API)</div>
       <div class="perm-flow">
         <div class="pbox pb-aws">IAM User/Role</div>
         <div class="parr">→</div>
@@ -750,7 +750,7 @@ aws eks describe-addon \
         <div class="parr">→</div>
         <div class="pbox pb-aws">EKS Actions (CreateCluster, etc.)</div>
       </div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin:10px 0 8px;">LAYER 2: K8s-level access (who can call K8s API)</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin:10px 0 8px;">LAYER 2: K8s-level access (who can call K8s API)</div>
       <div class="perm-flow">
         <div class="pbox pb-aws">IAM Principal</div>
         <div class="parr">→</div>
@@ -758,7 +758,7 @@ aws eks describe-addon \
         <div class="parr">→</div>
         <div class="pbox pb-k8s">K8s RBAC (Role/ClusterRole)</div>
       </div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mid);margin:10px 0 8px;">LAYER 3: Pod-level AWS access (what pods can do in AWS)</div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:var(--mid);margin:10px 0 8px;">LAYER 3: Pod-level AWS access (what pods can do in AWS)</div>
       <div class="perm-flow">
         <div class="pbox pb-k8s">ServiceAccount</div>
         <div class="parr">→</div>
@@ -1351,23 +1351,23 @@ resource "aws_eks_node_group" "workers" {
     <div style="counter-reset: trap-counter;">
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">1</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Deprecated API usage</b> — Apps using old API versions fail immediately after CP upgrade. Scan with pluto before every upgrade.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Deprecated API usage</b> — Apps using old API versions fail immediately after CP upgrade. Scan with pluto before every upgrade.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">2</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">PDB deadlock</b> — Node drain hangs because PDB won't allow eviction. Always check PDBs before upgrading.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">PDB deadlock</b> — Node drain hangs because PDB won't allow eviction. Always check PDBs before upgrading.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">3</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Cluster Autoscaler version mismatch</b> — CA must match K8s minor version. Old CA on new cluster = erratic scaling.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">Cluster Autoscaler version mismatch</b> — CA must match K8s minor version. Old CA on new cluster = erratic scaling.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">4</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">EBS CSI not installed pre-1.23</b> — Upgrading to 1.23 without pre-installing EBS CSI = all new PVCs fail.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">EBS CSI not installed pre-1.23</b> — Upgrading to 1.23 without pre-installing EBS CSI = all new PVCs fail.</div>
       </div>
       <div style="display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.025);">
         <div style="font-family:var(--disp);font-size:24px;font-weight:800;color:rgba(239,68,68,.3);line-height:1;flex-shrink:0;width:28px;">5</div>
-        <div style="font-size:11px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">cgroups v2 on AL2023</b> — Java/monitoring tools reading cgroup v1 paths break silently when migrating to AL2023.</div>
+        <div style="font-size:12.5px;color:var(--mid);line-height:1.6;"><b style="color:var(--text);">cgroups v2 on AL2023</b> — Java/monitoring tools reading cgroup v1 paths break silently when migrating to AL2023.</div>
       </div>
     </div>
   </div>
